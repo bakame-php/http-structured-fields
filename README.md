@@ -139,7 +139,7 @@ $parameters->canonical();      // return ";a=1;b=2"
 
 The `Parameters` and the `Dictionary` classes allow associating index to members as such they expose
 
-- the `indexExists` method, to verify the existence of a specific index;
+- the `keyExists` method, to verify the existence of a specific index;
 - the `set` method expect a key and an structured field type;
 - the `unset` method expect a list of keys to remove it and its associated field type;
 
@@ -157,7 +157,7 @@ echo $dictionary->canonical(); //returns "a=?0, z=42.0"
 
 The `OrderedList` and the `InnerList` classes are list of members as such they expose
 
-- the `keyExists` method, to verify the existence of a specific index;
+- the `indexExists` method, to verify the existence of a specific index;
 - the `push` method expect a list of data type to append to it;
 - the `unshift` method expect a list of data type to prepend to it;
 - the `insert` method expect a list of data type to prepend to insert at a specific index;

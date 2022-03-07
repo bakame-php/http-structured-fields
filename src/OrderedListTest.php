@@ -62,4 +62,42 @@ final class OrderedListTest extends StructuredFieldTest
         self::assertCount(0, $instance);
         self::assertTrue($instance->isEmpty());
     }
+
+    /**
+     * @test
+     */
+    public function it_can_unshift_insert_and_replace(): void
+    {
+        $container = new OrderedList();
+        $container->unshift(Item::fromString('42'));
+        $container->push(Item::fromInteger(42));
+        $container->insert(1, Item::fromDecimal(42));
+        $container->replace(0, Item::fromByteSequence(ByteSequence::fromDecoded('Hello World')));
+
+        self::assertCount(3, $container);
+        self::assertFalse($container->isEmpty());
+        self::assertSame(':SGVsbG8gV29ybGQ=:, 42.0, 42', $container->canonical());
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_replace_invalid_index(): void
+    {
+        $this->expectException(InvalidIndex::class);
+
+        $container = new OrderedList();
+        $container->replace(0, Item::fromByteSequence(ByteSequence::fromDecoded('Hello World')));
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_insert_at_an_invalid_index(): void
+    {
+        $this->expectException(InvalidIndex::class);
+
+        $container = new OrderedList();
+        $container->insert(3, Item::fromByteSequence(ByteSequence::fromDecoded('Hello World')));
+    }
 }
