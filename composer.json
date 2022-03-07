@@ -1,0 +1,90 @@
+{
+    "name": "bakame/http-structured-fields",
+    "description": "Structured Field Values for HTTP manipulation in PHP",
+    "type": "library",
+    "license": [
+        "MIT"
+    ],
+    "authors": [
+        {
+            "name" : "Ignace Nyamagana Butera",
+            "email" : "nyamsprod@gmail.com",
+            "homepage" : "https://github.com/nyamsprod/",
+            "role" : "Developer"
+        }
+    ],
+    "support": {
+        "docs": "https://github.com/bakame-php/http-structured-fields",
+        "issues": "https://github.com/bakame-php/http-structured-fields/issues",
+        "source": "https://github.com/bakame-php/http-structured-fields"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/nyamsprod"
+        }
+    ],
+    "require": {
+        "php" : "^8.1",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^v3.5.0",
+        "httpwg/structured-field-tests": "*@dev",
+        "phpunit/phpunit": "^9.5.16",
+        "phpstan/phpstan": "^1.4",
+        "phpstan/phpstan-strict-rules": "^1.1",
+        "phpstan/phpstan-phpunit": "^1.0",
+        "phpstan/phpstan-deprecation-rules": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Bakame\\Http\\StructuredField\\": "src/"
+        },
+        "exclude-from-classmap": [
+            "src/**Test.php",
+            "src/Test**"
+        ]
+    },
+    "scripts": {
+        "phpcs": "php-cs-fixer fix --dry-run --diff -vvv --allow-risky=yes --ansi",
+        "phpcs:fix": "php-cs-fixer fix -vvv --allow-risky=yes --ansi",
+        "phpstan": "phpstan analyse -c phpstan.neon --ansi --memory-limit 192M",
+        "phpunit": "phpunit --coverage-text",
+        "test": [
+            "@phpunit",
+            "@phpstan",
+            "@phpcs"
+        ]
+    },
+    "scripts-descriptions": {
+        "phpstan": "Runs complete codebase static analysis",
+        "phpunit": "Runs unit and functional testing",
+        "phpcs": "Runs coding style testing",
+        "phpcs:fix": "Fix coding style issues",
+        "test": "Runs all tests"
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "httpwg/structured-field-tests",
+                "version": "dev-main",
+                "dist": {
+                    "url": "https://github.com/httpwg/structured-field-tests/archive/main.zip",
+                    "type": "zip"
+                },
+                "source": {
+                    "url": "git@github.com:httpwg/structured-field-tests.git",
+                    "type": "git",
+                    "reference": "main"
+                }
+            }
+        }
+    ],
+    "extra": {
+        "branch-alias": {
+            "dev-develop": "1.0.x-dev"
+        }
+    }
+}
