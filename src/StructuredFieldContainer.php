@@ -19,6 +19,11 @@ interface StructuredFieldContainer extends Countable, IteratorAggregate, Structu
     public function isEmpty(): bool;
 
     /**
+     * @return array<string>
+     */
+    public function keys(): array;
+
+    /**
      * @throws InvalidIndex If the key does not exist in the container
      */
     public function getByKey(string $key): Item|InnerList|null;

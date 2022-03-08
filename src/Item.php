@@ -16,15 +16,15 @@ final class Item implements StructuredField, SupportsParameters
     {
         $field = trim($field, ' ');
         [$value, $parameters] = match (true) {
-            $field === '',
+            $field === '' => throw new SyntaxError('Unexpected empty field value.'),
             1 === preg_match("/[\r\t\n]/", $field),
-            1 === preg_match("/[^\x20-\x7E]/", $field) => throw new SyntaxError('Unexpected empty input'),
+            1 === preg_match("/[^\x20-\x7E]/", $field) => throw new SyntaxError('The field `'.$field.'` contains invalid characters.'),
             1 === preg_match('/^(-?[0-9])/', $field) => self::parseNumber($field),
             $field[0] == '"' => self::parseString($field),
             $field[0] == ':' => self::parseBytesSequence($field),
             $field[0] == '?' => self::parseBoolean($field),
             1 === preg_match('/^([a-z*])/i', $field) => self::parseToken($field),
-            default => throw new SyntaxError('Unknown item type'),
+            default => throw new SyntaxError('`'.$field.'` contains unknown or unsupported item type.'),
         };
 
         return new self($value, Parameters::fromField($parameters));
@@ -41,7 +41,7 @@ final class Item implements StructuredField, SupportsParameters
         }
 
         if (1 !== preg_match('/'.$regexp.'/i', $string, $matches)) {
-            throw new SyntaxError('Invalid characters in token field.');
+            throw new SyntaxError('The token `'.$string.'` contains invalid characters.');
         }
 
         return [
@@ -56,7 +56,7 @@ final class Item implements StructuredField, SupportsParameters
     private static function parseBoolean(string $string): array
     {
         if (1 !== preg_match('/^\?[01]/', $string)) {
-            throw new SyntaxError('Invalid character in boolean');
+            throw new SyntaxError('The boolean `'.$string.'` contains invalid characters.');
         }
 
         return [$string[1] === '1', substr($string, 2)];
@@ -68,7 +68,7 @@ final class Item implements StructuredField, SupportsParameters
     private static function parseBytesSequence(string $string): array
     {
         if (1 !== preg_match('/^:(?<bytes>[a-z0-9+\/=]*):/i', $string, $matches)) {
-            throw new SyntaxError('Invalid character in byte sequence');
+            throw new SyntaxError('The Byte Sequence `'.$string.'` contains invalid characters.');
         }
 
         return [ByteSequence::fromEncoded($matches['bytes']), substr($string, strlen($matches[0]))];
@@ -80,7 +80,7 @@ final class Item implements StructuredField, SupportsParameters
     private static function parseNumber(string $string): array
     {
         if (1 !== preg_match('/^(?<number>-?\d+(?:\.\d+)?)(?:[^\d.]|$)/', $string, $found)) {
-            throw new SyntaxError('Invalid number format: `'.$string.'`');
+            throw new SyntaxError('The Number `'.$string.'` contains invalid characters and/or format.');
         }
 
         $number = match (true) {
@@ -98,7 +98,7 @@ final class Item implements StructuredField, SupportsParameters
     private static function parseString(string $string): array
     {
         $string = substr($string, 1);
-
+        $originalString = $string;
         $output_string = '';
 
         while (strlen($string)) {
@@ -121,7 +121,7 @@ final class Item implements StructuredField, SupportsParameters
             $char = $string[0];
             $string = substr($string, 1);
             if (!in_array($char, ['"', '\\'], true)) {
-                throw new SyntaxError('Invalid escaped character in string');
+                throw new SyntaxError('Invalid escaped character in string `'.$originalString.'`');
             }
 
             $output_string .= $char;
@@ -142,7 +142,7 @@ final class Item implements StructuredField, SupportsParameters
     public static function fromString(string $value, Parameters|null $parameters = null): self
     {
         if (1 === preg_match('/[^\x20-\x7E]/i', $value)) {
-            throw new SyntaxError('Invalid characters in string');
+            throw new SyntaxError('The string `'.$value.'` contains invalid characters.');
         }
 
         return new self($value, $parameters ?? new Parameters());
@@ -184,14 +184,7 @@ final class Item implements StructuredField, SupportsParameters
 
     public function canonical(): string
     {
-        $serializeValue = $this->serializeValue($this->value);
-        $serializeParameters = $this->parameters->canonical();
-
-        if ('' !== $serializeParameters) {
-            return $serializeValue.$serializeParameters;
-        }
-
-        return $serializeValue;
+        return $this->serializeValue($this->value).$this->parameters->canonical();
     }
 
     private function serializeValue(Token|ByteSequence|int|float|string|bool $value): string

@@ -127,6 +127,11 @@ final class InnerList implements StructuredFieldContainer, SupportsParameters
         return [] === $this->elements;
     }
 
+    public function keys(): array
+    {
+        return [];
+    }
+
     public function getByKey(string $key): Item|null
     {
         throw new InvalidIndex('No element exists with the key `'.$key.'`.');

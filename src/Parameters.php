@@ -68,6 +68,11 @@ final class Parameters implements StructuredFieldContainer
         }
     }
 
+    public function keys(): array
+    {
+        return array_keys($this->elements);
+    }
+
     public function getByKey(string $key): Item|InnerList|null
     {
         return $this->elements[$key] ?? null;

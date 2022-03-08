@@ -99,6 +99,11 @@ final class Dictionary implements StructuredFieldContainer
         }
     }
 
+    public function keys(): array
+    {
+        return array_keys($this->elements);
+    }
+
     public function hasKey(string $key): bool
     {
         return array_key_exists($key, $this->elements);

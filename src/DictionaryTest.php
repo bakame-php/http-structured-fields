@@ -105,4 +105,17 @@ final class DictionaryTest extends StructuredFieldTest
 
         self::assertSame('b, a=?0', $instance->canonical());
     }
+
+    /**
+     * @test
+     */
+    public function it_can_returns_the_container_element_keys(): void
+    {
+        $instance = new Dictionary();
+        self::assertSame([], $instance->keys());
+        $instance->append('a', Item::fromBoolean(false));
+        $instance->prepend('b', Item::fromBoolean(true));
+
+        self::assertSame(['b', 'a'], $instance->keys());
+    }
 }

@@ -56,6 +56,11 @@ final class OrderedList implements StructuredFieldContainer
         return [] === $this->elements;
     }
 
+    public function keys(): array
+    {
+        return [];
+    }
+
     public function getByKey(string $key): Item|InnerList|null
     {
         throw new InvalidIndex('No element exists with the key `'.$key.'`.');

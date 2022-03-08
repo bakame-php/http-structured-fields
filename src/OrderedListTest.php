@@ -126,4 +126,16 @@ final class OrderedListTest extends StructuredFieldTest
 
         $instance->getByIndex(3);
     }
+
+    /**
+     * @test
+     */
+    public function it_can_returns_the_container_element_keys(): void
+    {
+        $instance = new OrderedList();
+        self::assertSame([], $instance->keys());
+
+        $instance->push(Item::fromBoolean(false), Item::fromBoolean(true));
+        self::assertSame([], $instance->keys());
+    }
 }

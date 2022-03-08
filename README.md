@@ -88,18 +88,18 @@ $item->parameters()->getByKey("a")->value(); //returns 1
 
 The returned value of `Item::value` depends on its type. They are defined
 in the RFC and this package translate them to PHP native type when possible 
-and allow initiating the `Item` object based on the then. 
+and allow initiating the `Item` object based on them. 
 
 The information is represented in the table below:
 
-| HTTP DataType definition | Package Type representation              | Named constructor        |
-|--------------------------|------------------------------------------|--------------------------|
-| Integer                  | int                                      | `Item::fromInteger`      |
-| Decimal                  | float                                    | `Item::fromDecimal`      |
-| String                   | string                                   | `Item::fromString`       |
-| Boolean                  | bool                                     | `Item::fromBoolean`      |
-| Token                    | Bakame\Http\StructuredField\Token        | `Item::fromToken`        |
-| Byte Sequence            | Bakame\Http\StructuredField\ByteSequence | `Item::fromByteSequence` |
+| HTTP DataType definition | Package Type representation                | Named constructor        |
+|--------------------------|--------------------------------------------|--------------------------|
+| Integer                  | `int`                                      | `Item::fromInteger`      |
+| Decimal                  | `float`                                    | `Item::fromDecimal`      |
+| String                   | `string`                                   | `Item::fromString`       |
+| Boolean                  | `bool`                                     | `Item::fromBoolean`      |
+| Token                    | `Bakame\Http\StructuredField\Token`        | `Item::fromToken`        |
+| Byte Sequence            | `Bakame\Http\StructuredField\ByteSequence` | `Item::fromByteSequence` |
 
 Two additional classes `Token` and `ByteSequence` are used to represent non-native types.
 
@@ -124,6 +124,7 @@ interface StructuredFieldContainer extends \Countable, \IteratorAggregate, Struc
     public function hasIndex(int $index): bool
     public function getByKey(string $key): Item|InnerList|null;
     public function hasKey(string $key): bool
+    public function keys(): array
 }
 ```
 
@@ -142,11 +143,13 @@ use Bakame\Http\StructuredField\Parameters;
 $parameters = new Parameters();
 $parameters->append('a', Item::fromInteger(1));
 $parameters->append('b', Item::fromInteger(2));
-count($parameters); // return 2
+count($parameters);         // return 2
 $parameters->getByKey('b'); // return 2
 $parameters->getByIndex(1); // return 2
 $parameters->hasKey(42);    // return false because the key does not exist.
 $parameters->canonical();   // return ";a=1;b=2"
+$parameters->keys();        // return ["a", "b"]
+
 ```
 
 #### Ordered Maps
@@ -245,7 +248,7 @@ Credits
 -------
 
 - [ignace nyamagana butera](https://github.com/nyamsprod)
-- [All Contributors](https://github.com/thephpleague/uri/contributors)
+- [All Contributors](https://github.com/bakame-php/http-structured-fields/contributors)
 
 Attribution
 -------
