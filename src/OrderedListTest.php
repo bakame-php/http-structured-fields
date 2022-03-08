@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bakame\Http\StructuredField;
 
 /**
- * @coversDefaultClass \Bakame\Sfv\OrderedList
+ * @coversDefaultClass \Bakame\Http\StructuredField\OrderedList
  */
 final class OrderedListTest extends StructuredFieldTest
 {
@@ -23,9 +25,7 @@ final class OrderedListTest extends StructuredFieldTest
         $arrayParams = [$stringItem, $booleanItem];
         $instance = new OrderedList($arrayParams);
 
-        self::assertSame($stringItem, $instance->findByIndex(0));
-        self::assertNull($instance->findByKey('foobar'));
-        self::assertNull($instance->findByIndex(42));
+        self::assertSame($stringItem, $instance->getByIndex(0));
         self::assertFalse($instance->isEmpty());
 
         self::assertEquals($arrayParams, iterator_to_array($instance, true));
@@ -42,16 +42,15 @@ final class OrderedListTest extends StructuredFieldTest
         $instance = new OrderedList($arrayParams);
 
         self::assertCount(2, $instance);
-        self::assertNotNull($instance->findByIndex(1));
+        self::assertNotNull($instance->getByIndex(1));
 
         $instance->remove(1);
 
         self::assertCount(1, $instance);
-        self::assertNull($instance->findByIndex(1));
-        self::assertFalse($instance->indexExists(1));
+        self::assertFalse($instance->hasIndex(1));
 
         $instance->push(Item::fromString('BarBaz'));
-        $element = $instance->findByIndex(1);
+        $element = $instance->getByIndex(1);
 
         self::assertCount(2, $instance);
         self::assertInstanceOf(Item::class, $element);
@@ -74,6 +73,7 @@ final class OrderedListTest extends StructuredFieldTest
         $container->insert(1, Item::fromDecimal(42));
         $container->replace(0, Item::fromByteSequence(ByteSequence::fromDecoded('Hello World')));
 
+        self::assertFalse($container->hasKey('42'));
         self::assertCount(3, $container);
         self::assertFalse($container->isEmpty());
         self::assertSame(':SGVsbG8gV29ybGQ=:, 42.0, 42', $container->canonical());
@@ -99,5 +99,31 @@ final class OrderedListTest extends StructuredFieldTest
 
         $container = new OrderedList();
         $container->insert(3, Item::fromByteSequence(ByteSequence::fromDecoded('Hello World')));
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_return_an_member_with_invalid_key(): void
+    {
+        $this->expectException(InvalidIndex::class);
+
+        $instance = new OrderedList();
+        self::assertFalse($instance->hasKey('foobar'));
+
+        $instance->getByKey('foobar');
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_return_an_member_with_invalid_index(): void
+    {
+        $this->expectException(InvalidIndex::class);
+
+        $instance = new OrderedList();
+        self::assertFalse($instance->hasIndex(3));
+
+        $instance->getByIndex(3);
     }
 }

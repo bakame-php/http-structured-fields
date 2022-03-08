@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredField;
 
-use Stringable;
-
 final class Item implements StructuredField, SupportsParameters
 {
     public function __construct(
@@ -141,10 +139,8 @@ final class Item implements StructuredField, SupportsParameters
         return new self($value, $parameters ?? new Parameters());
     }
 
-    public static function fromString(Stringable|string $value, Parameters|null $parameters = null): self
+    public static function fromString(string $value, Parameters|null $parameters = null): self
     {
-        $value = (string) $value;
-
         if (1 === preg_match('/[^\x20-\x7E]/i', $value)) {
             throw new SyntaxError('Invalid characters in string');
         }

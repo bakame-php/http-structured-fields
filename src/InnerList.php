@@ -104,7 +104,7 @@ final class InnerList implements StructuredFieldContainer, SupportsParameters
     public function replace(int $index, Item|null $element): void
     {
         $offset = $this->filterIndex($index);
-        if (null === $offset || !$this->indexExists($offset)) {
+        if (null === $offset || !$this->hasIndex($offset)) {
             throw new InvalidIndex('The index does not exist for this instance.');
         }
 
@@ -127,21 +127,29 @@ final class InnerList implements StructuredFieldContainer, SupportsParameters
         return [] === $this->elements;
     }
 
-    public function findByKey(string $key): Item|null
+    public function getByKey(string $key): Item|null
     {
-        return null;
+        throw new InvalidIndex('No element exists with the key `'.$key.'`.');
     }
 
-    public function findByIndex(int $index): Item|null
+    public function hasKey(string $key): bool
     {
-        return $this->elements[$this->filterIndex($index)] ?? null;
+        return false;
     }
 
-    public function indexExists(int $index): bool
+    public function getByIndex(int $index): Item|null
     {
         $offset = $this->filterIndex($index);
+        if (null === $offset) {
+            throw new InvalidIndex('No element exists with the index `'.$index.'`.');
+        }
 
-        return null !== $offset && array_key_exists($offset, $this->elements);
+        return $this->elements[$offset];
+    }
+
+    public function hasIndex(int $index): bool
+    {
+        return null !== $this->filterIndex($index);
     }
 
     /**

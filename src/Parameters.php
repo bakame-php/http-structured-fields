@@ -68,19 +68,26 @@ final class Parameters implements StructuredFieldContainer
         }
     }
 
-    public function findByKey(string $key): Item|null
+    public function getByKey(string $key): Item|InnerList|null
     {
         return $this->elements[$key] ?? null;
     }
 
-    public function findByIndex(int $index): Item|null
+    public function hasKey(string $key): bool
     {
-        return array_values($this->elements)[$index] ?? null;
+        return array_key_exists($key, $this->elements);
     }
 
-    public function indexExist(string $index): bool
+    public function getByIndex(int $index): Item|InnerList|null
     {
-        return array_key_exists($index, $this->elements);
+        return array_values($this->elements)[$this->filterIndex($index)] ?? null;
+    }
+
+    public function hasIndex(int $index): bool
+    {
+        $offset = $this->filterIndex($index);
+
+        return null !== $offset && array_key_exists($offset, array_values($this->elements));
     }
 
     public function canonical(): string
@@ -115,5 +122,16 @@ final class Parameters implements StructuredFieldContainer
         }
 
         $this->elements[$index] = $value;
+    }
+
+    private function filterIndex(int $index): int|null
+    {
+        $max = count($this->elements);
+
+        return match (true) {
+            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            0 > $index => $max + $index,
+            default => $index,
+        };
     }
 }

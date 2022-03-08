@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Bakame\Http\StructuredField;
 
 /**
- * @coversDefaultClass \Bakame\Sfv\ByteSequence
+ * @coversDefaultClass \Bakame\Http\StructuredField\ByteSequence
  */
 final class ByteSequenceTest extends StructuredFieldTest
 {

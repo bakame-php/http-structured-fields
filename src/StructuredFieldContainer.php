@@ -1,13 +1,6 @@
 <?php
 
-/**
- * League.Period (https://github.com/bakame-php/http-sfv).
- *
- * (c) Ignace Nyamagana Butera <nyamsprod@gmail.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
+declare(strict_types=1);
 
 namespace Bakame\Http\StructuredField;
 
@@ -25,9 +18,19 @@ interface StructuredFieldContainer extends Countable, IteratorAggregate, Structu
 {
     public function isEmpty(): bool;
 
-    public function findByKey(string $key): Item|InnerList|null;
+    /**
+     * @throws InvalidIndex If the key does not exist in the container
+     */
+    public function getByKey(string $key): Item|InnerList|null;
 
-    public function findByIndex(int $index): Item|InnerList|null;
+    public function hasKey(string $key): bool;
+
+    /**
+     * @throws InvalidIndex If the index does not exist in the container
+     */
+    public function getByIndex(int $index): Item|InnerList|null;
+
+    public function hasIndex(int $index): bool;
 
     /**
      * @return Iterator<TKey, TValue>

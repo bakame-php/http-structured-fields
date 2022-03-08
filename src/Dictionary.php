@@ -57,19 +57,14 @@ final class Dictionary implements StructuredFieldContainer
                 $found['value'] = '?1'.$found['value'];
             }
 
-            $instance->set($found['key'], self::parseItemOrInnerList($found['value']));
+            $parser = fn (string $element): Item|InnerList => str_starts_with($element, '(')
+                ? InnerList::fromField($element)
+                : Item::fromField($element);
+
+            $instance->set($found['key'], $parser($found['value']));
         }
 
         return $instance;
-    }
-
-    private static function parseItemOrInnerList(string $element): Item|InnerList
-    {
-        if (str_starts_with($element, '(')) {
-            return InnerList::fromField($element);
-        }
-
-        return Item::fromField($element);
     }
 
     public function isEmpty(): bool
@@ -92,19 +87,33 @@ final class Dictionary implements StructuredFieldContainer
         }
     }
 
-    public function findByKey(string $key): Item|InnerList|null
-    {
-        return $this->elements[$key] ?? null;
-    }
-
-    public function findByIndex(int $index): Item|InnerList|null
-    {
-        return array_values($this->elements)[$index] ?? null;
-    }
-
-    public function keyExists(string $key): bool
+    public function hasKey(string $key): bool
     {
         return array_key_exists($key, $this->elements);
+    }
+
+    public function getByKey(string $key): Item|InnerList|null
+    {
+        if (!array_key_exists($key, $this->elements)) {
+            throw new InvalidIndex('No element exists with the key `'.$key.'`.');
+        }
+
+        return $this->elements[$key];
+    }
+
+    public function hasIndex(int $index): bool
+    {
+        return null !== $this->filterIndex($index);
+    }
+
+    public function getByIndex(int $index): Item|InnerList|null
+    {
+        $offset = $this->filterIndex($index);
+        if (null === $offset) {
+            throw new InvalidIndex('No element exists with the index `'.$index.'`.');
+        }
+
+        return array_values($this->elements)[$offset];
     }
 
     public function canonical(): string
@@ -134,5 +143,16 @@ final class Dictionary implements StructuredFieldContainer
         }
 
         $this->elements[$index] = $element;
+    }
+
+    private function filterIndex(int $index): int|null
+    {
+        $max = count($this->elements);
+
+        return match (true) {
+            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            0 > $index => $max + $index,
+            default => $index,
+        };
     }
 }

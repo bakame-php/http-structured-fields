@@ -7,7 +7,7 @@ namespace Bakame\Http\StructuredField;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass \Bakame\Sfv\Token
+ * @coversDefaultClass \Bakame\Http\StructuredField\Token
  */
 final class TokenTest extends TestCase
 {
