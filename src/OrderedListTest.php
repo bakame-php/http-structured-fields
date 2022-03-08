@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Bakame\Http\StructuredField;
+namespace Bakame\Http\StructuredFields;
 
 /**
- * @coversDefaultClass \Bakame\Http\StructuredField\OrderedList
+ * @coversDefaultClass \Bakame\Http\StructuredFields\OrderedList
  */
 final class OrderedListTest extends StructuredFieldTest
 {

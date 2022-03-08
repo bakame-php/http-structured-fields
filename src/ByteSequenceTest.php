@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Bakame\Http\StructuredField;
+namespace Bakame\Http\StructuredFields;
 
 /**
- * @coversDefaultClass \Bakame\Http\StructuredField\ByteSequence
+ * @coversDefaultClass \Bakame\Http\StructuredFields\ByteSequence
  */
 final class ByteSequenceTest extends StructuredFieldTest
 {

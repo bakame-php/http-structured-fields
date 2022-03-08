@@ -14,7 +14,7 @@ You will be able to
 - infer fields and data from HTTP Structured Fields;
 
 ```php
-use Bakame\Http\StructuredField\Dictionary;
+use Bakame\Http\StructuredFields\Dictionary;
 
 $dictionary = Dictionary::fromField("a=?0, b, c; foo=bar");
 count($dictionary); // returns 3 members
@@ -51,9 +51,9 @@ There are three top-level types that an HTTP field can be defined as:
 Depending on the field to parse the package provides a specific entry point via a common named constructor `:fromField`.
 
 ```php
-use Bakame\Http\StructuredField\Dictionary;
-use Bakame\Http\StructuredField\Item;
-use Bakame\Http\StructuredField\OrderedList;
+use Bakame\Http\StructuredFields\Dictionary;
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\OrderedList;
 
 $dictionary = Dictionary::fromField("a=?0,   b,   c; foo=bar");
 echo $dictionary->canonical(); // "a=?0, b, c;foo=bar"
@@ -77,7 +77,7 @@ Accessing `Item` properties is done via two methods:
 - `Item::parameters()` which returns the field associated parameters as a distinct `Parameters` object
 
 ```php
-use Bakame\Http\StructuredField\Item;
+use Bakame\Http\StructuredFields\Item;
 
 $item = Item::fromField("\"foo\";a=1;b=2");
 $item->value(); //returns "foo"
@@ -104,8 +104,8 @@ The information is represented in the table below:
 | Byte Sequence | class `ByteSequence` | `Item::fromByteSequence` | `Item::isByteSequence` |
 
 Two additional classes:
-- `Bakame\Http\StructuredField\Token` and 
-- `Bakame\Http\StructuredField\ByteSequence` 
+- `Bakame\Http\StructuredFields\Token` and 
+- `Bakame\Http\StructuredFields\ByteSequence` 
 - are used to represent non-native types.
 
 #### Item parameters
@@ -120,7 +120,7 @@ Apart from the `Item`, the RFC defines different items containers with different
 such `Parameters`, `Dictionary`, `InnerList` and `OrderedList` expose the same basic public API.
 
 ```php
-namespace Bakame\Http\StructuredField;
+namespace Bakame\Http\StructuredFields;
 
 interface StructuredFieldContainer extends \Countable, \IteratorAggregate, StructuredField
 {
@@ -142,8 +142,8 @@ This means that at any given time it is possible to know:
 - and to iterate over each contained members via the `IteratorAggregate` interface;
 
 ```php
-use Bakame\Http\StructuredField\Item;
-use Bakame\Http\StructuredField\Parameters;
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Parameters;
 
 $parameters = new Parameters();
 $parameters->append('a', Item::fromInteger(1));
@@ -168,9 +168,9 @@ following methods:
 - `delete` to remove elements based on their associated keys;
 
 ```php
-use Bakame\Http\StructuredField\Dictionary;
-use Bakame\Http\StructuredField\Item;
-use Bakame\Http\StructuredField\Parameters;
+use Bakame\Http\StructuredFields\Dictionary;
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Parameters;
 
 $dictionary = new Dictionary();
 $dictionary->set('b', Item::fromBoolean(true));
@@ -208,7 +208,7 @@ to enable manipulation their content.
 **EVERY CHANGE IN THE LIST WILL RE-INDEX THE LIST AS TO NOT EXPOSE MISSING INDEXES**
 
 ```php
-use Bakame\Http\StructuredField\OrderedList;
+use Bakame\Http\StructuredFields\OrderedList;
 
 $list = OrderedList::fromField("(\"foo\" \"bar\"), (\"baz\"), (\"bat\" \"one\"), ()");
 $list->hasIndex(2); //return true

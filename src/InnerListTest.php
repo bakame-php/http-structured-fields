@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Bakame\Http\StructuredField;
+namespace Bakame\Http\StructuredFields;
 
 use PHPUnit\Framework\TestCase;
 
 /**
- * @coversDefaultClass \Bakame\Http\StructuredField\InnerList
+ * @coversDefaultClass \Bakame\Http\StructuredFields\InnerList
  */
 final class InnerListTest extends TestCase
 {

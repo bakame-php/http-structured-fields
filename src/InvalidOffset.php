@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bakame\Http\StructuredField;
+namespace Bakame\Http\StructuredFields;
 
 use OutOfBoundsException;
 use Throwable;

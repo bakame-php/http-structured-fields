@@ -39,7 +39,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Bakame\\Http\\StructuredField\\": "src/"
+            "Bakame\\Http\\StructuredFields\\": "src/"
         },
         "exclude-from-classmap": [
             "src/**Test.php",
