@@ -37,34 +37,46 @@ final class Dictionary implements StructuredFieldContainer
             throw new SyntaxError("Invalid dictionary field: `$field`.");
         }
 
-        foreach (explode(',', $field) as $element) {
-            $element = trim($element);
+        $parser = fn (string $element): Item|InnerList => str_starts_with($element, '(')
+            ? InnerList::fromField($element)
+            : Item::fromField($element);
 
-            if ('' === $element) {
-                throw new SyntaxError("dictionary pair can not be empty: `$element`.");
-            }
+        return array_reduce(explode(',', $field), function (self $instance, string $element) use ($parser): self {
+            [$key, $value] = self::extractPair($element);
 
-            if (1 !== preg_match('/^(?<key>[a-z*][a-z0-9.*_-]*)(=)?(?<value>.*)/', $element, $found)) {
-                throw new SyntaxError("Invalid dictionary pair: `$element`.");
-            }
+            $instance->set($key, $parser($value));
 
-            if (rtrim($found['key']) !== $found['key'] || ltrim($found['value']) !== $found['value']) {
-                throw new SyntaxError("Invalid dictionary pair: `$element`.");
-            }
+            return $instance;
+        }, $instance);
+    }
 
-            $found['value'] = trim($found['value']);
-            if ('' === $found['value'] || str_starts_with($found['value'], ';')) {
-                $found['value'] = '?1'.$found['value'];
-            }
+    /**
+     * @throws SyntaxError
+     *
+     * @return array{0:string, 1:string}
+     */
+    private static function extractPair(string $element): array
+    {
+        $element = trim($element);
 
-            $parser = fn (string $element): Item|InnerList => str_starts_with($element, '(')
-                ? InnerList::fromField($element)
-                : Item::fromField($element);
-
-            $instance->set($found['key'], $parser($found['value']));
+        if ('' === $element) {
+            throw new SyntaxError("dictionary pair can not be empty: `$element`.");
         }
 
-        return $instance;
+        if (1 !== preg_match('/^(?<key>[a-z*][a-z0-9.*_-]*)(=)?(?<value>.*)/', $element, $found)) {
+            throw new SyntaxError("Invalid dictionary pair: `$element`.");
+        }
+
+        if (rtrim($found['key']) !== $found['key'] || ltrim($found['value']) !== $found['value']) {
+            throw new SyntaxError("Invalid dictionary pair: `$element`.");
+        }
+
+        $found['value'] = trim($found['value']);
+        if ('' === $found['value'] || str_starts_with($found['value'], ';')) {
+            $found['value'] = '?1'.$found['value'];
+        }
+
+        return [$found['key'], $found['value']];
     }
 
     public function isEmpty(): bool
@@ -129,20 +141,36 @@ final class Dictionary implements StructuredFieldContainer
         return implode(', ', $returnValue);
     }
 
-    public function unset(string ...$indexes): void
+    public function set(string $key, Item|InnerList $element): void
+    {
+        $this->filterKey($key);
+
+        $this->elements[$key] = $element;
+    }
+
+    public function delete(string ...$indexes): void
     {
         foreach ($indexes as $index) {
             unset($this->elements[$index]);
         }
     }
 
-    public function set(string $index, Item|InnerList $element): void
+    public function append(string $key, Item|InnerList $element): void
     {
-        if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $index)) {
-            throw new SyntaxError('Invalid characters in key: `'.$index.'`');
-        }
+        $this->filterKey($key);
 
-        $this->elements[$index] = $element;
+        unset($this->elements[$key]);
+
+        $this->elements[$key] = $element;
+    }
+
+    public function prepend(string $key, Item|InnerList $element): void
+    {
+        $this->filterKey($key);
+
+        unset($this->elements[$key]);
+
+        $this->elements = [...[$key => $element], ...$this->elements];
     }
 
     private function filterIndex(int $index): int|null
@@ -154,5 +182,12 @@ final class Dictionary implements StructuredFieldContainer
             0 > $index => $max + $index,
             default => $index,
         };
+    }
+
+    private function filterKey(string $key): void
+    {
+        if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
+            throw new SyntaxError('Invalid characters in key: `'.$key.'`');
+        }
     }
 }

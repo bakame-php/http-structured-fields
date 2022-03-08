@@ -140,21 +140,24 @@ use Bakame\Http\StructuredField\Item;
 use Bakame\Http\StructuredField\Parameters;
 
 $parameters = new Parameters();
-$parameters->set('a', Item::fromInteger(1));
-$parameters->set('b', Item::fromInteger(2));
+$parameters->append('a', Item::fromInteger(1));
+$parameters->append('b', Item::fromInteger(2));
 count($parameters); // return 2
 $parameters->getByKey('b'); // return 2
 $parameters->getByIndex(1); // return 2
-$parameters->hasKey(42);     // return false because the key does not exist.
-$parameters->canonical();    // return ";a=1;b=2"
+$parameters->hasKey(42);    // return false because the key does not exist.
+$parameters->canonical();   // return ";a=1;b=2"
 ```
 
 #### Ordered Maps
 
-The `Parameters` and the `Dictionary` classes allow associating a string key to its members as such they expose
+The `Parameters` and the `Dictionary` classes allow associating a string key to its members as such they expose the 
+following methods:
 
-- the `set` method expect a key and a structured type;
-- the `unset` method expect a list of keys to remove it and its associated type;
+- `set` add an element at the end of the container, if already present the value is updated;
+- `append` always add an element at the end of the container, if already present the previous value is removed;
+- `prepend` always add an element at the beginning of the container, if already present the previous value is removed;
+- `delete` to remove elements based on their associated keys;
 
 ```php
 use Bakame\Http\StructuredField\Dictionary;
@@ -162,19 +165,20 @@ use Bakame\Http\StructuredField\Item;
 use Bakame\Http\StructuredField\Parameters;
 
 $dictionary = new Dictionary();
-$dictionary->set('a', Item::fromBoolean(false));
 $dictionary->set('b', Item::fromBoolean(true));
 
 $parameters = new Parameters(['foo' => Item::fromToken(new Token('bar'))]);
-$dictionary->set('c', Item::fromBoolean(true, $parameters));
+$dictionary->append('c', Item::fromBoolean(true, $parameters));
+
+$dictionary->prepend('a', Item::fromBoolean(false));
 
 $dictionary->canonical();   //returns "a=?0, b, c;foo=bar"
 
 $dictionary->hasKey('a');   //return true
 $dictionary->hasKey('foo'); //return false
 $dictionary->getByIndex(1); //return Item::fromBoolean(true)
-$dictionary->set('z', Item::fromDecimal(42));
-$dictionary->unset('b', 'c');
+$dictionary->append('z', Item::fromDecimal(42));
+$dictionary->delete('b', 'c');
 echo $dictionary->canonical(); //returns "a=?0, z=42.0"
 ```
 
@@ -183,7 +187,15 @@ echo $dictionary->canonical(); //returns "a=?0, z=42.0"
 #### Lists
 
 The `OrderedList` and the `InnerList` classes are list of members that act as containers and also expose 
-the following methods `push`, `unshift`, `insert`, `replace`, `remove` methods to enable manipulation their content.
+the following methods
+
+- `push` to add elements at the end of the list;
+- `unshift` to add elements at the beginning of the list;
+- `insert` to add elements at a given position in the list; 
+- `replace` to replace an element at a given position in the list;
+- `remove` to remove elements based on their position;
+
+to enable manipulation their content.
 
 **EVERY CHANGE IN THE LIST WILL RE-INDEX THE LIST AS TO NOT EXPOSE MISSING INDEXES**
 

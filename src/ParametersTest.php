@@ -62,13 +62,13 @@ final class ParametersTest extends StructuredFieldTest
 
         self::assertCount(2, $instance);
 
-        $instance->unset('boolean');
+        $instance->delete('boolean');
 
         self::assertCount(1, $instance);
         self::assertFalse($instance->hasKey('boolean'));
         self::assertFalse($instance->hasIndex(1));
 
-        $instance->set('foobar', Item::fromString('BarBaz'));
+        $instance->append('foobar', Item::fromString('BarBaz'));
         $foundItem =  $instance->getByIndex(1);
 
         self::assertCount(2, $instance);
@@ -76,7 +76,7 @@ final class ParametersTest extends StructuredFieldTest
         self::assertIsString($foundItem->value());
         self::assertStringContainsString('BarBaz', $foundItem->value());
 
-        $instance->unset('foobar', 'string');
+        $instance->delete('foobar', 'string');
         self::assertCount(0, $instance);
         self::assertTrue($instance->isEmpty());
     }
@@ -115,5 +115,17 @@ final class ParametersTest extends StructuredFieldTest
         self::assertFalse($instance->hasIndex(3));
 
         $instance->getByIndex(3);
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_prepend_an_element(): void
+    {
+        $instance = new Parameters();
+        $instance->append('a', Item::fromBoolean(false));
+        $instance->prepend('b', Item::fromBoolean(true));
+
+        self::assertSame(';b;a=?0', $instance->canonical());
     }
 }

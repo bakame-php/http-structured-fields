@@ -21,7 +21,7 @@ final class Parameters implements StructuredFieldContainer
     {
         $this->elements = [];
         foreach ($elements as $key => $value) {
-            $this->set($key, $value);
+            $this->append($key, $value);
         }
     }
 
@@ -104,24 +104,37 @@ final class Parameters implements StructuredFieldContainer
         return $returnValue;
     }
 
-    public function unset(string ...$indexes): void
+    public function set(string $key, Item $element): void
+    {
+        $this->filterKey($key);
+        $this->filterItem($element);
+
+        $this->elements[$key] = $element;
+    }
+
+    public function delete(string ...$indexes): void
     {
         foreach ($indexes as $index) {
             unset($this->elements[$index]);
         }
     }
 
-    public function set(string $index, Item $value): void
+    public function append(string $key, Item $element): void
     {
-        if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $index)) {
-            throw new SyntaxError("Invalid characters in key: $index");
-        }
+        $this->filterKey($key);
+        $this->filterItem($element);
+        unset($this->elements[$key]);
 
-        if (!$value->parameters()->isEmpty()) {
-            throw new SyntaxError('the Item cannot be parameterized.');
-        }
+        $this->elements[$key] = $element;
+    }
 
-        $this->elements[$index] = $value;
+    public function prepend(string $key, Item $element): void
+    {
+        $this->filterKey($key);
+        $this->filterItem($element);
+        unset($this->elements[$key]);
+
+        $this->elements = [...[$key => $element], ...$this->elements];
     }
 
     private function filterIndex(int $index): int|null
@@ -133,5 +146,19 @@ final class Parameters implements StructuredFieldContainer
             0 > $index => $max + $index,
             default => $index,
         };
+    }
+
+    private function filterKey(string $key): void
+    {
+        if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
+            throw new SyntaxError('Invalid characters in key: `'.$key.'`');
+        }
+    }
+
+    private function filterItem(Item $item): void
+    {
+        if (!$item->parameters()->isEmpty()) {
+            throw new SyntaxError('the Item cannot be parameterized.');
+        }
     }
 }
