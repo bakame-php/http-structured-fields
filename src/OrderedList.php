@@ -63,7 +63,7 @@ final class OrderedList implements StructuredFieldContainer
 
     public function getByKey(string $key): Item|InnerList|null
     {
-        throw new InvalidIndex('No element exists with the key `'.$key.'`.');
+        throw InvalidOffset::dueToKeyNotFound($key);
     }
 
     public function hasKey(string $key): bool
@@ -75,7 +75,7 @@ final class OrderedList implements StructuredFieldContainer
     {
         $offset = $this->filterIndex($index);
         if (null === $offset) {
-            throw new InvalidIndex('No element exists with the index `'.$index.'`.');
+            throw InvalidOffset::dueToIndexNotFound($index);
         }
 
         return $this->elements[$offset];
@@ -101,7 +101,7 @@ final class OrderedList implements StructuredFieldContainer
         array_unshift($elements, $element);
         $offset = $this->filterIndex($index);
         match (true) {
-            null === $offset => throw new InvalidIndex('Invalid index `'.$index.'`'),
+            null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
             0 === $offset => $this->unshift(...$elements),
             count($this->elements) === $offset => $this->push(...$elements),
             default => array_splice($this->elements, $offset, 0, $elements),
@@ -112,7 +112,7 @@ final class OrderedList implements StructuredFieldContainer
     {
         $offset = $this->filterIndex($index);
         if (null === $offset || !$this->hasIndex($offset)) {
-            throw new InvalidIndex('The index does not exist for this instance.');
+            throw InvalidOffset::dueToIndexNotFound($index);
         }
 
         $this->elements[$offset] = $element;

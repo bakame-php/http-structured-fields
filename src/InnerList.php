@@ -94,7 +94,7 @@ final class InnerList implements StructuredFieldContainer, SupportsParameters
     {
         $offset = $this->filterIndex($index);
         match (true) {
-            null === $offset => throw new InvalidIndex('Invalid index `'.$index.'`'),
+            null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
             0 === $offset => $this->unshift(...$elements),
             count($this->elements) === $offset => $this->push(...$elements),
             default => array_splice($this->elements, $offset, 0, $elements),
@@ -105,7 +105,7 @@ final class InnerList implements StructuredFieldContainer, SupportsParameters
     {
         $offset = $this->filterIndex($index);
         if (null === $offset || !$this->hasIndex($offset)) {
-            throw new InvalidIndex('The index does not exist for this instance.');
+            throw InvalidOffset::dueToIndexNotFound($index);
         }
 
         $this->elements[$offset] = $element;
@@ -134,7 +134,7 @@ final class InnerList implements StructuredFieldContainer, SupportsParameters
 
     public function getByKey(string $key): Item|null
     {
-        throw new InvalidIndex('No element exists with the key `'.$key.'`.');
+        throw InvalidOffset::dueToKeyNotFound($key);
     }
 
     public function hasKey(string $key): bool
@@ -146,7 +146,7 @@ final class InnerList implements StructuredFieldContainer, SupportsParameters
     {
         $offset = $this->filterIndex($index);
         if (null === $offset) {
-            throw new InvalidIndex('No element exists with the index `'.$index.'`.');
+            throw InvalidOffset::dueToIndexNotFound($index);
         }
 
         return $this->elements[$offset];
@@ -188,13 +188,8 @@ final class InnerList implements StructuredFieldContainer, SupportsParameters
     public function canonical(): string
     {
         $returnArray = array_map(fn (Item|null $value): string|null => $value?->canonical(), $this->elements);
-        $returnValue = '('.implode(' ', $returnArray).')';
-        $serializedParameter = $this->parameters->canonical();
-        if ('' !== $serializedParameter) {
-            $returnValue .= $serializedParameter;
-        }
 
-        return $returnValue;
+        return '('.implode(' ', $returnArray).')'.$this->parameters->canonical();
     }
 
     private function filterIndex(int $index): int|null

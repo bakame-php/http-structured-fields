@@ -93,7 +93,7 @@ final class InnerListTest extends TestCase
      */
     public function it_fails_to_replace_invalid_index(): void
     {
-        $this->expectException(InvalidIndex::class);
+        $this->expectException(InvalidOffset::class);
 
         $container = new InnerList();
         $container->replace(0, Item::fromByteSequence(ByteSequence::fromDecoded('Hello World')));
@@ -104,7 +104,7 @@ final class InnerListTest extends TestCase
      */
     public function it_fails_to_insert_at_an_invalid_index(): void
     {
-        $this->expectException(InvalidIndex::class);
+        $this->expectException(InvalidOffset::class);
 
         $container = new InnerList();
         $container->insert(3, Item::fromByteSequence(ByteSequence::fromDecoded('Hello World')));
@@ -115,7 +115,7 @@ final class InnerListTest extends TestCase
      */
     public function it_fails_to_return_an_member_with_invalid_key(): void
     {
-        $this->expectException(InvalidIndex::class);
+        $this->expectException(InvalidOffset::class);
 
         $instance = new InnerList();
         self::assertFalse($instance->hasKey('foobar'));
@@ -128,7 +128,7 @@ final class InnerListTest extends TestCase
      */
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
-        $this->expectException(InvalidIndex::class);
+        $this->expectException(InvalidOffset::class);
 
         $instance = new InnerList();
         self::assertFalse($instance->hasIndex(3));

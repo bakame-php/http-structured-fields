@@ -24,14 +24,14 @@ interface StructuredFieldContainer extends Countable, IteratorAggregate, Structu
     public function keys(): array;
 
     /**
-     * @throws InvalidIndex If the key does not exist in the container
+     * @throws InvalidOffset If the key does not exist in the container
      */
     public function getByKey(string $key): Item|InnerList|null;
 
     public function hasKey(string $key): bool;
 
     /**
-     * @throws InvalidIndex If the index does not exist in the container
+     * @throws InvalidOffset If the index does not exist in the container
      */
     public function getByIndex(int $index): Item|InnerList|null;
 

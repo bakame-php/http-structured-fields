@@ -96,7 +96,7 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_fails_to_return_an_member_with_invalid_key(): void
     {
-        $this->expectException(InvalidIndex::class);
+        $this->expectException(InvalidOffset::class);
 
         $instance = new Dictionary();
         self::assertFalse($instance->hasKey('foobar'));
@@ -109,7 +109,7 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
-        $this->expectException(InvalidIndex::class);
+        $this->expectException(InvalidOffset::class);
 
         $instance = new Dictionary();
         self::assertFalse($instance->hasIndex(3));

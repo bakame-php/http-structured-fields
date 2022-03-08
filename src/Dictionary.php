@@ -112,7 +112,7 @@ final class Dictionary implements StructuredFieldContainer
     public function getByKey(string $key): Item|InnerList|null
     {
         if (!array_key_exists($key, $this->elements)) {
-            throw new InvalidIndex('No element exists with the key `'.$key.'`.');
+            throw InvalidOffset::dueToKeyNotFound($key);
         }
 
         return $this->elements[$key];
@@ -127,7 +127,7 @@ final class Dictionary implements StructuredFieldContainer
     {
         $offset = $this->filterIndex($index);
         if (null === $offset) {
-            throw new InvalidIndex('No element exists with the index `'.$index.'`.');
+            throw InvalidOffset::dueToIndexNotFound($index);
         }
 
         return array_values($this->elements)[$offset];
