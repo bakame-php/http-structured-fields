@@ -114,4 +114,51 @@ final class ItemTest extends StructuredFieldTest
 
         Item::fromString("\0foobar");
     }
+
+    /**
+     * @dataProvider itemTypeProvider
+     * @test
+     */
+    public function it_can_tell_the_item_type(Item $item, string $expectedType): void
+    {
+        self::assertSame($expectedType === 'boolean', $item->isBoolean());
+        self::assertSame($expectedType === 'integer', $item->isInteger());
+        self::assertSame($expectedType === 'decimal', $item->isDecimal());
+        self::assertSame($expectedType === 'string', $item->isString());
+        self::assertSame($expectedType === 'token', $item->isToken());
+        self::assertSame($expectedType === 'byte', $item->isByteSequence());
+    }
+
+    /**
+     * @return iterable<string, array{item:Item, expectedType:string}>
+     */
+    public function itemTypeProvider(): iterable
+    {
+        return [
+            'boolean' => [
+                'item' => Item::fromBoolean(false),
+                'expectedType' => 'boolean',
+            ],
+            'integer' => [
+                'item' => Item::fromInteger(42),
+                'expectedType' => 'integer',
+            ],
+            'decimal' => [
+                'item' => Item::fromDecimal(42),
+                'expectedType' => 'decimal',
+            ],
+            'string' => [
+                'item' => Item::fromString('42'),
+                'expectedType' => 'string',
+            ],
+            'token' => [
+                'item' => Item::fromToken(new Token('forty-two')),
+                'expectedType' => 'token',
+            ],
+            'byte' => [
+                'item' => Item::fromByteSequence(ByteSequence::fromDecoded('😊')),
+                'expectedType' => 'byte',
+            ],
+        ];
+    }
 }

@@ -81,6 +81,8 @@ use Bakame\Http\StructuredField\Item;
 
 $item = Item::fromField("\"foo\";a=1;b=2");
 $item->value(); //returns "foo"
+$item->isString(); //return true
+$item->isToken(); //return false
 $item->parameters()->getByKey("a")->value(); //returns 1
 ```
 
@@ -92,16 +94,19 @@ and allow initiating the `Item` object based on them.
 
 The information is represented in the table below:
 
-| HTTP DataType definition | Package Type representation                | Named constructor        |
-|--------------------------|--------------------------------------------|--------------------------|
-| Integer                  | `int`                                      | `Item::fromInteger`      |
-| Decimal                  | `float`                                    | `Item::fromDecimal`      |
-| String                   | `string`                                   | `Item::fromString`       |
-| Boolean                  | `bool`                                     | `Item::fromBoolean`      |
-| Token                    | `Bakame\Http\StructuredField\Token`        | `Item::fromToken`        |
-| Byte Sequence            | `Bakame\Http\StructuredField\ByteSequence` | `Item::fromByteSequence` |
+| HTTP DataType | Returned value       | named constructor        | validation method      |
+|---------------|----------------------|--------------------------|------------------------|
+| Integer       | `int`                | `Item::fromInteger`      | `Item::isInteger`      |
+| Decimal       | `float`              | `Item::fromDecimal`      | `Item::isDecimal`      |
+| String        | `string`             | `Item::fromString`       | `Item::isString`       |
+| Boolean       | `bool`               | `Item::fromBoolean`      | `Item::isBoolean`      |
+| Token         | class `Token`        | `Item::fromToken`        | `Item::isToken`        |
+| Byte Sequence | class `ByteSequence` | `Item::fromByteSequence` | `Item::isByteSequence` |
 
-Two additional classes `Token` and `ByteSequence` are used to represent non-native types.
+Two additional classes:
+- `Bakame\Http\StructuredField\Token` and 
+- `Bakame\Http\StructuredField\ByteSequence` 
+- are used to represent non-native types.
 
 #### Item parameters
 

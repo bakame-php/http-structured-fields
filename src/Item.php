@@ -187,6 +187,36 @@ final class Item implements StructuredField, SupportsParameters
         return $this->serializeValue($this->value).$this->parameters->canonical();
     }
 
+    public function isInteger(): bool
+    {
+        return is_int($this->value);
+    }
+
+    public function isDecimal(): bool
+    {
+        return is_float($this->value);
+    }
+
+    public function isBoolean(): bool
+    {
+        return is_bool($this->value);
+    }
+
+    public function isString(): bool
+    {
+        return is_string($this->value);
+    }
+
+    public function isToken(): bool
+    {
+        return $this->value instanceof Token;
+    }
+
+    public function isByteSequence(): bool
+    {
+        return $this->value instanceof ByteSequence;
+    }
+
     private function serializeValue(Token|ByteSequence|int|float|string|bool $value): string
     {
         return match (true) {
