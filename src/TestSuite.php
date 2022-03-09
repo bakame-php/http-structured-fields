@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-use Closure;
 use Iterator;
 use IteratorAggregate;
 use JsonException;
@@ -29,8 +28,7 @@ final class TestSuite implements IteratorAggregate
     public function add(TestUnit $test): void
     {
         if (isset($this->elements[$test->name])) {
-            //throw new RuntimeException('Already existing test name `'.$test->name.'`');
-            return;
+            throw new RuntimeException('Already existing test name `'.$test->name.'`');
         }
 
         $this->elements[$test->name] = $test;
@@ -65,11 +63,12 @@ final class TestSuite implements IteratorAggregate
          *     canonical?: array<string>,
          *     must_fail?: bool,
          *     can_fail?: bool
-         * }> $data */
-        $data = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+         * }> $records */
+        $records = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
         $suite = new self();
-        foreach ($data as $testUnit) {
-            $suite->add(TestUnit::fromDecoded($testUnit));
+        foreach ($records as $offset => $record) {
+            $record['name'] = '#'.($offset + 1).': '.$record['name'];
+            $suite->add(TestUnit::fromDecoded($record));
         }
 
         return $suite;
@@ -83,15 +82,5 @@ final class TestSuite implements IteratorAggregate
         foreach ($this->elements as $element) {
             yield $element->name => $element;
         }
-    }
-
-    public function filter(Closure $predicate): self
-    {
-        $elements = array_filter($this->elements, $predicate, ARRAY_FILTER_USE_BOTH);
-        if ($this->elements === $elements) {
-            return $this;
-        }
-
-        return new self(...$elements);
     }
 }

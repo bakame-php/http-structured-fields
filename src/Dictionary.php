@@ -34,7 +34,7 @@ final class Dictionary implements StructuredFieldContainer
         }
 
         if (1 === preg_match("/[^\x20-\x7E\t]/", $field) || str_starts_with($field, "\t")) {
-            throw new SyntaxError("Invalid dictionary field: `$field`.");
+            throw new SyntaxError("Dictionary field `$field` contains invalid characters.");
         }
 
         $parser = fn (string $element): Item|InnerList => str_starts_with($element, '(')
@@ -60,15 +60,15 @@ final class Dictionary implements StructuredFieldContainer
         $element = trim($element);
 
         if ('' === $element) {
-            throw new SyntaxError("dictionary pair can not be empty: `$element`.");
+            throw new SyntaxError('Dictionary pair can not be empty.');
         }
 
         if (1 !== preg_match('/^(?<key>[a-z*][a-z0-9.*_-]*)(=)?(?<value>.*)/', $element, $found)) {
-            throw new SyntaxError("Invalid dictionary pair: `$element`.");
+            throw new SyntaxError("Dictionary pair `$element` contains invalid characters.");
         }
 
         if (rtrim($found['key']) !== $found['key'] || ltrim($found['value']) !== $found['value']) {
-            throw new SyntaxError("Invalid dictionary pair: `$element`.");
+            throw new SyntaxError("Dictionary pair `$element` contains invalid characters.");
         }
 
         $found['value'] = trim($found['value']);
@@ -192,7 +192,7 @@ final class Dictionary implements StructuredFieldContainer
     private function filterKey(string $key): void
     {
         if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
-            throw new SyntaxError('Invalid characters in key: `'.$key.'`');
+            throw new SyntaxError("Key `$key` contains invalid characters.");
         }
     }
 }

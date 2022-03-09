@@ -33,11 +33,11 @@ final class InnerList implements StructuredFieldContainer, SupportsParameters
         $field = trim($field);
 
         if (1 !== preg_match("/^\((?<content>.*)\)(?<parameters>[^,]*)/", $field, $found)) {
-            throw new SyntaxError('Invalid inner list string.');
+            throw new SyntaxError("InnerList field `$field` contains invalid characters.");
         }
 
         if ('' !== $found['parameters'] && !str_starts_with($found['parameters'], ';')) {
-            throw new SyntaxError('Invalid inner list string.');
+            throw new SyntaxError("InnerList field `$field` contains invalid characters.");
         }
 
         /** @var string $content */

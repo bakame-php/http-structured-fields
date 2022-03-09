@@ -90,9 +90,7 @@ final class Parameters implements StructuredFieldContainer
 
     public function hasIndex(int $index): bool
     {
-        $offset = $this->filterIndex($index);
-
-        return null !== $offset && array_key_exists($offset, array_values($this->elements));
+        return null !== $this->filterIndex($index);
     }
 
     public function canonical(): string

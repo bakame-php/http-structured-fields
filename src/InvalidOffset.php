@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use OutOfBoundsException;
-use Throwable;
 
 final class InvalidOffset extends OutOfBoundsException implements StructuredFieldError
 {
-    private function __construct(string $message = '', int $code = 0, ?Throwable $previous = null)
+    private function __construct(string $message)
     {
-        parent::__construct($message, $code, $previous);
+        parent::__construct($message);
     }
 
     public static function dueToIndexNotFound(int $index): self

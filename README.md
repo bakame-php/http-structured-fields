@@ -5,12 +5,12 @@ Structured Field Values for PHP
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
 [![Build](https://github.com/bakame-php/http-structured-fields/workflows/build/badge.svg)](https://github.com/bakame-php/http-structured-fields/actions?query=workflow%3A%22build%22)
 
-The package provides pragmatic classes to manage [HTTP Structured Fields][1] in PHP.
+The package uses pragmatic value objects to parse and serialize [HTTP Structured Fields][1] in PHP.
 
-You will be able to
+You will be able to:
 
-- parse, serialize HTTP Structured Fields
-- create, update HTTP Structured Fields from different type and sources;
+- parse and serialize HTTP Structured Fields
+- create and update HTTP Structured Fields in a predicable way;
 - infer fields and data from HTTP Structured Fields;
 
 ```php
@@ -40,7 +40,7 @@ composer require bakame/http-structured-fields
 Documentation
 ---
 
-## Parsing Structured Fields
+## Parsing and Serializing Structured Fields
 
 There are three top-level types that an HTTP field can be defined as:
 
@@ -48,24 +48,28 @@ There are three top-level types that an HTTP field can be defined as:
 - Dictionaries, 
 - and Items.
 
-Depending on the field to parse the package provides a specific entry point via a common named constructor `:fromField`.
+For each of those top-level types, the package provide a dedicated value object to parse the textual representation of the field
+and to serialize the value object back to the textual representation. 
+
+- Parsing is done via a common named constructor `fromField`.
+- Serializing is done via a common `canonical` public method.
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\OrderedList;
 
-$dictionary = Dictionary::fromField("a=?0,   b,   c; foo=bar");
+$dictionary = Dictionary::fromField("a=?0,   b,   c=?1; foo=bar");
 echo $dictionary->canonical(); // "a=?0, b, c;foo=bar"
 
-$list = OrderedList::fromField("(\"foo\"; a=1;b=2);lvl=5, (\"bar\" \"baz\");lvl=1");
+$list = OrderedList::fromField('("foo"; a=1;b=2);lvl=5, ("bar" "baz");lvl=1');
 echo $list->canonical(); // "("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1"
 
-$item = Item::fromField("\"foo\";a=1;b=2");
+$item = Item::fromField('"foo";a=1;b=2"');
 echo $item->canonical(); // "foo";a=1;b=2
 ```
 
-The `canonical()` method exposed by all the items type returns the string representation suited for HTTP headers.
+The `canonical()` method returns the normalized string representation suited for HTTP headers.
 
 ## Structured Data Types
 
@@ -104,6 +108,7 @@ The information is represented in the table below:
 | Byte Sequence | class `ByteSequence` | `Item::fromByteSequence` | `Item::isByteSequence` |
 
 Two additional classes:
+
 - `Bakame\Http\StructuredFields\Token` and 
 - `Bakame\Http\StructuredFields\ByteSequence` 
 - are used to represent non-native types.
