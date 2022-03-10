@@ -13,19 +13,16 @@ final class InnerList implements StructuredFieldContainer, SupportsParameters
 {
     /** @var array<Item|null>  */
     private array $elements;
-    private Parameters $parameters;
 
     /**
      * @param iterable<Item|null> $elements
      */
-    public function __construct(iterable $elements = [], Parameters|null $parameters = null)
+    public function __construct(iterable $elements = [], private Parameters $parameters = new Parameters())
     {
         $this->elements = [];
         foreach ($elements as $element) {
             $this->push($element);
         }
-
-        $this->parameters = $parameters ?? new Parameters();
     }
 
     public static function fromField(string $field): self

@@ -27,19 +27,18 @@ final class OrderedList implements StructuredFieldContainer
 
     public static function fromField(string $field): self
     {
-        $instance = new self();
-
         $field = trim($field, ' ');
         if ('' === $field) {
-            return $instance;
+            return new self();
         }
 
-        foreach (explode(',', $field) as $element) {
-            $element = trim($element, " \t");
-            $instance->push(self::parseItemOrInnerList($element));
-        }
+        $reducer = function (self $carry, string $element): self {
+            $carry->push(self::parseItemOrInnerList(trim($element, " \t")));
 
-        return $instance;
+            return $carry;
+        };
+
+        return array_reduce(explode(',', $field), $reducer, new self());
     }
 
     private static function parseItemOrInnerList(string $element): Item|InnerList

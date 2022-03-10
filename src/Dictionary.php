@@ -153,10 +153,10 @@ final class Dictionary implements StructuredFieldContainer
         $this->elements[$key] = $element;
     }
 
-    public function delete(string ...$indexes): void
+    public function delete(string ...$keys): void
     {
-        foreach ($indexes as $index) {
-            unset($this->elements[$index]);
+        foreach ($keys as $key) {
+            unset($this->elements[$key]);
         }
     }
 
