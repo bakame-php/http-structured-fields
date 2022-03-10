@@ -136,10 +136,10 @@ final class Dictionary implements StructuredFieldContainer
     public function canonical(): string
     {
         $returnValue = [];
-        foreach ($this->elements as $index => $element) {
+        foreach ($this->elements as $key => $element) {
             $returnValue[] = match (true) {
-                $element->value() === true => $index.$element->parameters()->canonical(),
-                default => $index.'='.$element->canonical(),
+                $element instanceof Item && true === $element->value() => $key.$element->parameters()->canonical(),
+                default => $key.'='.$element->canonical(),
             };
         }
 

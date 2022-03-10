@@ -147,10 +147,10 @@ final class OrderedList implements StructuredFieldContainer
     public function canonical(): string
     {
         $returnValue = [];
-        foreach ($this->elements as $index => $element) {
+        foreach ($this->elements as $key => $element) {
             $returnValue[] = match (true) {
-                $element->value() === true => $index.$element->parameters()->canonical(),
-                default => !is_int($index) ? $index.'='.$element->canonical() : $element->canonical(),
+                $element instanceof Item && true === $element->value() => $key.$element->parameters()->canonical(),
+                default => !is_int($key) ? $key.'='.$element->canonical() : $element->canonical(),
             };
         }
 
