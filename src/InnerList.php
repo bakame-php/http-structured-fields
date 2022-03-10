@@ -154,14 +154,6 @@ final class InnerList implements StructuredFieldContainer, SupportsParameters
         return null !== $this->filterIndex($index);
     }
 
-    /**
-     * @return array<Item|null>
-     */
-    public function value(): array
-    {
-        return $this->elements;
-    }
-
     public function parameters(): Parameters
     {
         return $this->parameters;
