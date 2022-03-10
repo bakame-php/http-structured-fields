@@ -37,7 +37,7 @@ final class ByteSequence implements StructuredField
         return  base64_encode($this->value);
     }
 
-    public function canonical(): string
+    public function toField(): string
     {
         return ':'.$this->encoded().':';
     }

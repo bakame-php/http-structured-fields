@@ -185,11 +185,11 @@ final class InnerList implements StructuredFieldContainer, SupportsParameters
         }
     }
 
-    public function canonical(): string
+    public function toField(): string
     {
-        $returnArray = array_map(fn (Item|null $value): string|null => $value?->canonical(), $this->elements);
+        $returnArray = array_map(fn (Item|null $value): string|null => $value?->toField(), $this->elements);
 
-        return '('.implode(' ', $returnArray).')'.$this->parameters->canonical();
+        return '('.implode(' ', $returnArray).')'.$this->parameters->toField();
     }
 
     private function filterIndex(int $index): int|null

@@ -13,7 +13,7 @@ final class Token implements StructuredField
         }
     }
 
-    public function canonical(): string
+    public function toField(): string
     {
         return $this->toString();
     }

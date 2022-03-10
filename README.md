@@ -18,7 +18,7 @@ use Bakame\Http\StructuredFields\Dictionary;
 
 $dictionary = Dictionary::fromField("a=?0, b, c; foo=bar");
 count($dictionary); // returns 3 members
-$dictionary->getByKey('c')->canonical(); // returns "c; foo=bar"
+$dictionary->getByKey('c')->toField(); // returns "c; foo=bar"
 $dictionary->getByIndex(2)->parameters()->getByKey('foo')->value(); // returns "bar"
 $dictionary->getByIndex(0)->value(); // returns false
 ```
@@ -52,7 +52,7 @@ For each of those top-level types, the package provide a dedicated value object 
 and to serialize the value object back to the textual representation. 
 
 - Parsing is done via a common named constructor `fromField`.
-- Serializing is done via a common `canonical` public method.
+- Serializing is done via a common `toField` public method.
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
@@ -60,16 +60,16 @@ use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\OrderedList;
 
 $dictionary = Dictionary::fromField("a=?0,   b,   c=?1; foo=bar");
-echo $dictionary->canonical(); // "a=?0, b, c;foo=bar"
+echo $dictionary->toField(); // "a=?0, b, c;foo=bar"
 
 $list = OrderedList::fromField('("foo"; a=1;b=2);lvl=5, ("bar" "baz");lvl=1');
-echo $list->canonical(); // "("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1"
+echo $list->toField(); // "("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1"
 
 $item = Item::fromField('"foo";a=1;b=2"');
-echo $item->canonical(); // "foo";a=1;b=2
+echo $item->toField(); // "foo";a=1;b=2
 ```
 
-The `canonical()` method returns the normalized string representation suited for HTTP headers.
+The `toField()` method returns the normalized string representation suited for HTTP headers.
 
 ## Structured Data Types
 
@@ -157,7 +157,7 @@ count($parameters);         // return 2
 $parameters->getByKey('b'); // return 2
 $parameters->getByIndex(1); // return 2
 $parameters->hasKey(42);    // return false because the key does not exist.
-$parameters->canonical();   // return ";a=1;b=2"
+$parameters->toField();   // return ";a=1;b=2"
 $parameters->keys();        // return ["a", "b"]
 
 ```
@@ -185,14 +185,14 @@ $dictionary->append('c', Item::fromBoolean(true, $parameters));
 
 $dictionary->prepend('a', Item::fromBoolean(false));
 
-$dictionary->canonical();   //returns "a=?0, b, c;foo=bar"
+$dictionary->toField();   //returns "a=?0, b, c;foo=bar"
 
 $dictionary->hasKey('a');   //return true
 $dictionary->hasKey('foo'); //return false
 $dictionary->getByIndex(1); //return Item::fromBoolean(true)
 $dictionary->append('z', Item::fromDecimal(42));
 $dictionary->delete('b', 'c');
-echo $dictionary->canonical(); //returns "a=?0, z=42.0"
+echo $dictionary->toField(); //returns "a=?0, z=42.0"
 ```
 
 `Parameters` can only contains `Item` instances whereas `Dictionary` instance can also contain lists.
@@ -220,7 +220,7 @@ $list->hasIndex(2); //return true
 $list->hasIndex(42); //return false
 $list->push(Item::fromDecimal(42));
 $list->remove(0, 2);
-echo $list->canonical(); //returns "("baz"), (), 42.0"
+echo $list->toField(); //returns "("baz"), (), 42.0"
 ```
 
 The distinction between `InnerList` and `OrderedList` is well explained in the RFC but the main ones are:

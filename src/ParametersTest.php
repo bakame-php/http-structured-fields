@@ -126,7 +126,7 @@ final class ParametersTest extends StructuredFieldTest
         $instance->append('a', Item::fromBoolean(false));
         $instance->prepend('b', Item::fromBoolean(true));
 
-        self::assertSame(';b;a=?0', $instance->canonical());
+        self::assertSame(';b;a=?0', $instance->toField());
     }
 
     /**

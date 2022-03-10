@@ -182,9 +182,9 @@ final class Item implements StructuredField, SupportsParameters
         return $this->parameters;
     }
 
-    public function canonical(): string
+    public function toField(): string
     {
-        return $this->serializeValue($this->value).$this->parameters->canonical();
+        return $this->serializeValue($this->value).$this->parameters->toField();
     }
 
     public function isInteger(): bool
@@ -220,8 +220,8 @@ final class Item implements StructuredField, SupportsParameters
     private function serializeValue(Token|ByteSequence|int|float|string|bool $value): string
     {
         return match (true) {
-            $value instanceof Token => $value->canonical(),
-            $value instanceof ByteSequence => $value->canonical(),
+            $value instanceof Token => $value->toField(),
+            $value instanceof ByteSequence => $value->toField(),
             is_string($value) => '"'.preg_replace('/(["\\\])/', '\\\$1', $value).'"',
             is_int($value) => (string) $value,
             is_float($value) => $this->serializeDecimal($value),

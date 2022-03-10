@@ -34,7 +34,7 @@ final class ByteSequenceTest extends StructuredFieldTest
 
         self::assertSame('pretend this is binary content.', $item->decoded());
         self::assertSame($source, $item->encoded());
-        self::assertSame(":$source:", $item->canonical());
+        self::assertSame(":$source:", $item->toField());
     }
 
     /**
@@ -48,6 +48,6 @@ final class ByteSequenceTest extends StructuredFieldTest
 
         self::assertSame('pretend this is binary content.', $item->decoded());
         self::assertSame($source, $item->encoded());
-        self::assertSame(":$source:", $item->canonical());
+        self::assertSame(":$source:", $item->toField());
     }
 }

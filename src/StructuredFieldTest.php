@@ -31,7 +31,7 @@ abstract class StructuredFieldTest extends TestCase
 
         if (!$test->mustFail) {
             $expected = implode(',', $test->canonical);
-            self::assertSame($expected, $item->canonical());
+            self::assertSame($expected, $item->toField());
         }
     }
 

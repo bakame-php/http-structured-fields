@@ -93,14 +93,14 @@ final class Parameters implements StructuredFieldContainer
         return null !== $this->filterIndex($index);
     }
 
-    public function canonical(): string
+    public function toField(): string
     {
         $returnValue = '';
 
         foreach ($this->elements as $key => $val) {
             $returnValue .= ';'.$key;
             if ($val->value() !== true) {
-                $returnValue .= '='.$val->canonical();
+                $returnValue .= '='.$val->toField();
             }
         }
 

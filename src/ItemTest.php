@@ -41,7 +41,7 @@ final class ItemTest extends StructuredFieldTest
      */
     public function it_instantiate_a_decimal(): void
     {
-        self::assertSame('42.0', Item::fromDecimal(42)->canonical());
+        self::assertSame('42.0', Item::fromDecimal(42)->toField());
     }
 
     /**
@@ -69,7 +69,7 @@ final class ItemTest extends StructuredFieldTest
      */
     public function it_instantiates_an_integer(): void
     {
-        self::assertSame('42', Item::fromInteger(42)->canonical());
+        self::assertSame('42', Item::fromInteger(42)->toField());
     }
 
     /**
@@ -77,8 +77,8 @@ final class ItemTest extends StructuredFieldTest
      */
     public function it_instantiates_a_boolean(): void
     {
-        self::assertSame('?1', Item::fromBoolean(true)->canonical());
-        self::assertSame('?0', Item::fromBoolean(false)->canonical());
+        self::assertSame('?1', Item::fromBoolean(true)->toField());
+        self::assertSame('?0', Item::fromBoolean(false)->toField());
     }
 
     /**
@@ -86,7 +86,7 @@ final class ItemTest extends StructuredFieldTest
      */
     public function it_instantiates_a_token(): void
     {
-        self::assertSame('helloworld', Item::fromToken(new Token('helloworld'))->canonical());
+        self::assertSame('helloworld', Item::fromToken(new Token('helloworld'))->toField());
     }
 
     /**
@@ -102,7 +102,7 @@ final class ItemTest extends StructuredFieldTest
      */
     public function it_instantiates_a_string(): void
     {
-        self::assertSame('"foobar"', Item::fromString('foobar')->canonical());
+        self::assertSame('"foobar"', Item::fromString('foobar')->toField());
     }
 
     /**

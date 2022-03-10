@@ -76,7 +76,7 @@ final class OrderedListTest extends StructuredFieldTest
         self::assertFalse($container->hasKey('42'));
         self::assertCount(3, $container);
         self::assertFalse($container->isEmpty());
-        self::assertSame(':SGVsbG8gV29ybGQ=:, 42.0, 42', $container->canonical());
+        self::assertSame(':SGVsbG8gV29ybGQ=:, 42.0, 42', $container->toField());
     }
 
     /**
