@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use Countable;
 use Iterator;
+use IteratorAggregate;
 
 /**
- * @implements StructuredFieldContainer<int, Item|InnerList>
+ * @implements IteratorAggregate<array-key, Item|InnerList>
  */
-final class OrderedList implements StructuredFieldContainer
+final class OrderedList implements Countable, IteratorAggregate, StructuredField
 {
     /** @var array<Item|InnerList>  */
     private array $elements;
@@ -55,12 +57,15 @@ final class OrderedList implements StructuredFieldContainer
         return [] === $this->elements;
     }
 
+    /**
+     * @return array<string>
+     */
     public function keys(): array
     {
         return [];
     }
 
-    public function getByKey(string $key): Item|InnerList|null
+    public function getByKey(string $key): Item|InnerList
     {
         throw InvalidOffset::dueToKeyNotFound($key);
     }
@@ -70,7 +75,7 @@ final class OrderedList implements StructuredFieldContainer
         return false;
     }
 
-    public function getByIndex(int $index): Item|InnerList|null
+    public function getByIndex(int $index): Item|InnerList
     {
         $offset = $this->filterIndex($index);
         if (null === $offset) {
@@ -93,6 +98,13 @@ final class OrderedList implements StructuredFieldContainer
     public function push(Item|InnerList ...$elements): void
     {
         $this->elements = [...$this->elements, ...$elements];
+    }
+
+    public function merge(self ...$others): void
+    {
+        foreach ($others as $other) {
+            $this->elements = [...$this->elements, ...$other->elements];
+        }
     }
 
     public function insert(int $index, Item|InnerList $element, Item|InnerList ...$elements): void

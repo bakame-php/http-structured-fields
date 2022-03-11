@@ -118,4 +118,46 @@ final class DictionaryTest extends StructuredFieldTest
 
         self::assertSame(['b', 'a'], $instance->keys());
     }
+
+    /**
+     * @test
+     */
+    public function it_can_merge_one_or_more_instances(): void
+    {
+        $instance1 = new Dictionary(['a' => Item::fromBoolean(false)]);
+        $instance2 = new Dictionary(['b' => Item::fromBoolean(true)]);
+        $instance3 = new Dictionary(['a' => Item::fromInteger(42)]);
+
+        $instance1->merge($instance2, $instance3);
+        self::assertCount(2, $instance1);
+
+        self::assertEquals(Item::fromInteger(42), $instance1->getByKey('a'));
+        self::assertEquals(Item::fromBoolean(true), $instance1->getByKey('b'));
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_merge_two_or_more_instances_to_yield_different_result(): void
+    {
+        $instance1 = new Dictionary(['a' => Item::fromBoolean(false)]);
+        $instance2 = new Dictionary(['b' => Item::fromBoolean(true)]);
+        $instance3 = new Dictionary(['a' => Item::fromInteger(42)]);
+
+        $instance3->merge($instance2, $instance1);
+        self::assertCount(2, $instance3);
+
+        self::assertEquals(Item::fromBoolean(false), $instance3->getByKey('a'));
+        self::assertEquals(Item::fromBoolean(true), $instance3->getByKey('b'));
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_merge_without_argument_and_not_throw(): void
+    {
+        $instance = new Dictionary(['a' => Item::fromBoolean(false)]);
+        $instance->merge();
+        self::assertCount(1, $instance);
+    }
 }

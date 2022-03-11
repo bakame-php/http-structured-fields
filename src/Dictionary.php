@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use Countable;
 use Iterator;
+use IteratorAggregate;
 
 /**
- * @implements StructuredFieldContainer<array-key, Item|InnerList>
+ * @implements IteratorAggregate<array-key, Item|InnerList>
  */
-final class Dictionary implements StructuredFieldContainer
+final class Dictionary implements Countable, IteratorAggregate, StructuredField
 {
     /** @var array<string, Item|InnerList>  */
     private array $elements;
@@ -99,6 +101,9 @@ final class Dictionary implements StructuredFieldContainer
         }
     }
 
+    /**
+     * @return array<string>
+     */
     public function keys(): array
     {
         return array_keys($this->elements);
@@ -176,6 +181,13 @@ final class Dictionary implements StructuredFieldContainer
         unset($this->elements[$key]);
 
         $this->elements = [...[$key => $element], ...$this->elements];
+    }
+
+    public function merge(self ...$others): void
+    {
+        foreach ($others as $other) {
+            $this->elements = [...$this->elements, ...$other->elements];
+        }
     }
 
     private function filterIndex(int $index): int|null

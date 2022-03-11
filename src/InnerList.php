@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use Countable;
 use Iterator;
+use IteratorAggregate;
 
 /**
- * @implements StructuredFieldContainer<array-key, Item|null>
+ * @implements IteratorAggregate<array-key, Item|null>
  */
-final class InnerList implements StructuredFieldContainer, SupportsParameters
+final class InnerList implements Countable, IteratorAggregate, StructuredField, SupportsParameters
 {
     /** @var array<Item|null>  */
     private array $elements;
@@ -119,11 +121,21 @@ final class InnerList implements StructuredFieldContainer, SupportsParameters
         $this->elements = array_values($this->elements);
     }
 
+    public function merge(self ...$others): void
+    {
+        foreach ($others as $other) {
+            $this->elements = [...$this->elements, ...$other->elements];
+        }
+    }
+
     public function isEmpty(): bool
     {
         return [] === $this->elements;
     }
 
+    /**
+     * @return array<string>
+     */
     public function keys(): array
     {
         return [];

@@ -147,4 +147,46 @@ final class InnerListTest extends TestCase
         $instance->push(Item::fromBoolean(false), Item::fromBoolean(true));
         self::assertSame([], $instance->keys());
     }
+
+    /**
+     * @test
+     */
+    public function it_can_merge_one_or_more_instances(): void
+    {
+        $instance1 = new InnerList([Item::fromBoolean(false)]);
+        $instance2 = new InnerList([Item::fromBoolean(true)]);
+        $instance3 = new InnerList([Item::fromInteger(42)]);
+        $expected = new InnerList([Item::fromBoolean(false), Item::fromBoolean(true), Item::fromInteger(42)]);
+
+        $instance1->merge($instance2, $instance3);
+
+        self::assertCount(3, $instance1);
+        self::assertSame($expected->toField(), $instance1->toField());
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_merge_without_argument_and_not_throw(): void
+    {
+        $instance = new InnerList([Item::fromBoolean(false)]);
+        $instance->merge();
+        self::assertCount(1, $instance);
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_merge_two_or_more_instances_to_yield_different_result(): void
+    {
+        $instance1 = new InnerList([Item::fromBoolean(false)]);
+        $instance2 = new InnerList([Item::fromBoolean(true)]);
+        $instance3 = new InnerList([Item::fromInteger(42)]);
+        $expected = new InnerList([Item::fromInteger(42), Item::fromBoolean(true), Item::fromBoolean(false)]);
+
+        $instance3->merge($instance2, $instance1);
+
+        self::assertCount(3, $instance3);
+        self::assertSame($expected->toField(), $instance3->toField());
+    }
 }
