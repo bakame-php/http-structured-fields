@@ -15,16 +15,20 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
 {
     /** @var array<Item|null>  */
     private array $elements;
+    private Parameters $parameters;
 
     /**
-     * @param iterable<Item|null> $elements
+     * @param iterable<Item|ByteSequence|Token|bool|int|float|string|null>   $elements
+     * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
      */
-    public function __construct(iterable $elements = [], private Parameters $parameters = new Parameters())
+    public function __construct(iterable $elements = [], iterable $parameters = [])
     {
         $this->elements = [];
         foreach ($elements as $element) {
             $this->push($element);
         }
+
+        $this->parameters = $parameters instanceof Parameters ? $parameters : Parameters::fromItems($parameters);
     }
 
     public static function fromField(string $field): self
@@ -77,37 +81,45 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         );
     }
 
-    public function unshift(Item|null ...$elements): void
+    private static function convertItem(Item|ByteSequence|Token|bool|int|float|string|null $item): Item|null
     {
-        $this->elements = [...$elements, ...$this->elements];
+        return match (true) {
+            $item instanceof Item, null === $item => $item,
+            default => Item::fromType($item),
+        };
     }
 
-    public function push(Item|null ...$elements): void
+    public function unshift(Item|ByteSequence|Token|bool|int|float|string|null ...$elements): void
     {
-        foreach ($elements as $element) {
+        $this->elements = [...array_map(self::convertItem(...), $elements), ...$this->elements];
+    }
+
+    public function push(Item|ByteSequence|Token|bool|int|float|string|null ...$elements): void
+    {
+        foreach (array_map(self::convertItem(...), $elements) as $element) {
             $this->elements[] = $element;
         }
     }
 
-    public function insert(int $index, Item|null ...$elements): void
+    public function insert(int $index, Item|ByteSequence|Token|bool|int|float|string|null ...$elements): void
     {
         $offset = $this->filterIndex($index);
         match (true) {
             null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
             0 === $offset => $this->unshift(...$elements),
             count($this->elements) === $offset => $this->push(...$elements),
-            default => array_splice($this->elements, $offset, 0, $elements),
+            default => array_splice($this->elements, $offset, 0, array_map(self::convertItem(...), $elements)),
         };
     }
 
-    public function replace(int $index, Item|null $element): void
+    public function replace(int $index, Item|ByteSequence|Token|bool|int|float|string|null $element): void
     {
         $offset = $this->filterIndex($index);
         if (null === $offset || !$this->hasIndex($offset)) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        $this->elements[$offset] = $element;
+        $this->elements[$offset] = self::convertItem($element);
     }
 
     public function remove(int ...$indexes): void

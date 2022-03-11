@@ -17,7 +17,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     private array $elements;
 
     /**
-     * @param iterable<Item|InnerList> $elements
+     * @param iterable<InnerList|Item|ByteSequence|Token|bool|int|float|string> $elements
      */
     public function __construct(iterable $elements = [])
     {
@@ -90,14 +90,14 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         return null !== $this->filterIndex($index);
     }
 
-    public function unshift(Item|InnerList ...$elements): void
+    public function unshift(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$elements): void
     {
-        $this->elements = [...$elements, ...$this->elements];
+        $this->elements = [...array_map(self::filterElement(...), $elements), ...$this->elements];
     }
 
-    public function push(Item|InnerList ...$elements): void
+    public function push(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$elements): void
     {
-        $this->elements = [...$this->elements, ...$elements];
+        $this->elements = [...$this->elements, ...array_map(self::filterElement(...), $elements)];
     }
 
     public function merge(self ...$others): void
@@ -107,26 +107,29 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         }
     }
 
-    public function insert(int $index, Item|InnerList $element, Item|InnerList ...$elements): void
-    {
+    public function insert(
+        int $index,
+        InnerList|Item|ByteSequence|Token|bool|int|float|string $element,
+        InnerList|Item|ByteSequence|Token|bool|int|float|string ...$elements
+    ): void {
         array_unshift($elements, $element);
         $offset = $this->filterIndex($index);
         match (true) {
             null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
             0 === $offset => $this->unshift(...$elements),
             count($this->elements) === $offset => $this->push(...$elements),
-            default => array_splice($this->elements, $offset, 0, $elements),
+            default => array_splice($this->elements, $offset, 0, array_map(self::filterElement(...), $elements)),
         };
     }
 
-    public function replace(int $index, Item|InnerList $element): void
+    public function replace(int $index, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
     {
         $offset = $this->filterIndex($index);
         if (null === $offset || !$this->hasIndex($offset)) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        $this->elements[$offset] = $element;
+        $this->elements[$offset] = self::filterElement($element);
     }
 
     public function remove(int ...$indexes): void
@@ -166,6 +169,14 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         }
 
         return implode(', ', $returnValue);
+    }
+
+    private static function filterElement(InnerList|Item|ByteSequence|Token|bool|int|float|string $element): InnerList|Item
+    {
+        return match (true) {
+            $element instanceof InnerList, $element instanceof Item => $element,
+            default => Item::fromType($element),
+        };
     }
 
     private function filterIndex(int $index): int|null

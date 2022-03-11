@@ -14,13 +14,10 @@ You will be able to:
 - infer fields and data from HTTP Structured Fields;
 
 ```php
-use Bakame\Http\StructuredFields\Dictionary;
+use Bakame\Http\StructuredFields\Item;
 
-$dictionary = Dictionary::fromField("a=?0, b, c; foo=bar");
-count($dictionary); // returns 3 members
-$dictionary->getByKey('c')->toField(); // returns "c; foo=bar"
-$dictionary->getByIndex(2)->parameters()->getByKey('foo')->value(); // returns "bar"
-$dictionary->getByIndex(0)->value(); // returns false
+$container = Item::fromType("/terms", ['rel' => "copyright", 'anchor' => '#foo']));
+echo $container->toFields(); //display "/terms";rel="copyright";anchor="#foo"
 ```
 
 System Requirements
@@ -98,20 +95,46 @@ and allow initiating the `Item` object based on them.
 
 The information is represented in the table below:
 
-| HTTP DataType | Returned value       | named constructor        | validation method      |
-|---------------|----------------------|--------------------------|------------------------|
-| Integer       | `int`                | `Item::fromInteger`      | `Item::isInteger`      |
-| Decimal       | `float`              | `Item::fromDecimal`      | `Item::isDecimal`      |
-| String        | `string`             | `Item::fromString`       | `Item::isString`       |
-| Boolean       | `bool`               | `Item::fromBoolean`      | `Item::isBoolean`      |
-| Token         | class `Token`        | `Item::fromToken`        | `Item::isToken`        |
-| Byte Sequence | class `ByteSequence` | `Item::fromByteSequence` | `Item::isByteSequence` |
+| HTTP DataType | Returned value       | validation method      |
+|---------------|----------------------|------------------------|
+| Integer       | `int`                | `Item::isInteger`      |
+| Decimal       | `float`              | `Item::isDecimal`      |
+| String        | `string`             | `Item::isString`       |
+| Boolean       | `bool`               | `Item::isBoolean`      |
+| Token         | class `Token`        | `Item::isToken`        |
+| Byte Sequence | class `ByteSequence` | `Item::isByteSequence` |
 
 Two additional classes:
 
 - `Bakame\Http\StructuredFields\Token` and 
 - `Bakame\Http\StructuredFields\ByteSequence` 
 - are used to represent non-native types.
+
+Instantiation via type recognition is done using the `Item::fromType` named constructor.
+
+```php
+use Bakame\Http\StructuredFields\Item;
+
+$item = Item::fromType("hello world", ["a" => 1]);
+$item->value(); //returns "hello world"
+$item->isString(); //return true
+$item->isToken();  //return false
+$item->parameters()->getByKey("a")->value(); //returns 1
+```
+
+**To return a decimal number a dot MUST be present in the input.**
+
+```php
+use Bakame\Http\StructuredFields\Item;
+
+$decimal = Item::fromType(42.0);
+$decimal->isDecimal(); //return true
+$decimal->isInteger(); //return false
+
+$item = Item::fromType(42);
+$item->isDecimal(); //return false
+$item->isInteger(); //return true
+```
 
 #### Item parameters
 
@@ -127,12 +150,12 @@ such `Parameters`, `Dictionary`, `InnerList` and `OrderedList` expose the same b
 ```php
 namespace Bakame\Http\StructuredFields;
 
-interface StructuredFieldContainer extends \Countable, \IteratorAggregate, StructuredField
+interface Container extends \Countable, \IteratorAggregate, StructuredField
 {
     public function isEmpty(): bool;
-    public function getByIndex(int $index): Item|InnerList|null;
+    public function getByIndex(int $index): Item|InnerList|null; //depending on the container
     public function hasIndex(int $index): bool
-    public function getByKey(string $key): Item|InnerList|null;
+    public function getByKey(string $key): Item|InnerList|null; //depending on the container
     public function hasKey(string $key): bool
     public function keys(): array
 }
@@ -140,27 +163,26 @@ interface StructuredFieldContainer extends \Countable, \IteratorAggregate, Struc
 
 This means that at any given time it is possible to know:
 
-- If the container is empty via the `isEmpty` method;
-- The number of elements contained in the container via the `count` method;
-- get any element by its string `key` or by its position integer `index` via `getByIndex` and `getByKey` methods;
-- if an element is attached to the container using `index` or  `key` via `hasIndex` and `hasKey` methods;
+- if the container is empty via the `isEmpty` method;
+- the number of elements contained in the container via the `count` method;
+- get any element by its string `key` or by its integer `index` via `getByKey` and `getByIndex` methods;
+- if an element is attached to the container using  its `index` or  `key` via `hasIndex` and `hasKey` methods;
 - and to iterate over each contained members via the `IteratorAggregate` interface;
 
 ```php
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Parameters;
 
-$parameters = new Parameters();
-$parameters->append('a', Item::fromInteger(1));
-$parameters->append('b', Item::fromInteger(2));
+$parameters = new Parameters(['a' => 1, 'b' => 2, 'c' => Item::fromType("hello world")]);
 count($parameters);         // return 2
-$parameters->getByKey('b'); // return 2
-$parameters->getByIndex(1); // return 2
+$parameters->getByKey('b'); // return Item::fromType(2);
+$parameters->getByIndex(1); // return Item::fromType(2);
 $parameters->hasKey(42);    // return false because the key does not exist.
-$parameters->toField();   // return ";a=1;b=2"
-$parameters->keys();        // return ["a", "b"]
-
+$parameters->toField();     // return ";a=1;b=2"
+$parameters->keys();        // return ["a", "b", "c"]
 ```
+
+*Item types are inferred using `Item::fromType` if a `Item` object is not submitted.* 
 
 #### Ordered Maps
 
@@ -175,22 +197,17 @@ following methods:
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
 use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\Parameters;
 
 $dictionary = new Dictionary();
-$dictionary->set('b', Item::fromBoolean(true));
-
-$parameters = new Parameters(['foo' => Item::fromToken(new Token('bar'))]);
-$dictionary->append('c', Item::fromBoolean(true, $parameters));
-
-$dictionary->prepend('a', Item::fromBoolean(false));
-
+$dictionary->set('b', true);
+$dictionary->append('c', Item::fromType(true, ['foo' => new Token('bar')]));
+$dictionary->prepend('a', false);
 $dictionary->toField();   //returns "a=?0, b, c;foo=bar"
 
 $dictionary->hasKey('a');   //return true
 $dictionary->hasKey('foo'); //return false
 $dictionary->getByIndex(1); //return Item::fromBoolean(true)
-$dictionary->append('z', Item::fromDecimal(42));
+$dictionary->append('z', 42.0);
 $dictionary->delete('b', 'c');
 echo $dictionary->toField(); //returns "a=?0, z=42.0"
 ```
@@ -218,7 +235,7 @@ use Bakame\Http\StructuredFields\OrderedList;
 $list = OrderedList::fromField("(\"foo\" \"bar\"), (\"baz\"), (\"bat\" \"one\"), ()");
 $list->hasIndex(2); //return true
 $list->hasIndex(42); //return false
-$list->push(Item::fromDecimal(42));
+$list->push(42);
 $list->remove(0, 2);
 echo $list->toField(); //returns "("baz"), (), 42.0"
 ```

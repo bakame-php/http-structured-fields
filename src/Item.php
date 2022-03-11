@@ -6,10 +6,52 @@ namespace Bakame\Http\StructuredFields;
 
 final class Item implements StructuredField, SupportsParameters
 {
-    public function __construct(
+    private function __construct(
         private Token|ByteSequence|int|float|string|bool $value,
         private Parameters $parameters = new Parameters(),
     ) {
+    }
+
+    /**
+     * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
+     */
+    public static function fromType(
+        Token|ByteSequence|int|float|string|bool $value,
+        iterable $parameters = [],
+    ): self {
+        return new self(match (true) {
+            is_integer($value) => self::filterInteger($value),
+            is_float($value) => self::filterDecimal($value),
+            is_string($value) => self::filterString($value),
+            default => $value,
+        }, $parameters instanceof Parameters ? $parameters : Parameters::fromItems($parameters));
+    }
+
+    public static function filterDecimal(float $value): float
+    {
+        if (abs(floor($value)) > 999_999_999_999) {
+            throw new SyntaxError('Integer portion of decimals is limited to 12 digits');
+        }
+
+        return $value;
+    }
+
+    public static function filterString(string $value): string
+    {
+        if (1 === preg_match('/[^\x20-\x7E]/i', $value)) {
+            throw new SyntaxError('The string `'.$value.'` contains invalid characters.');
+        }
+
+        return $value;
+    }
+
+    private static function filterInteger(int $value): int
+    {
+        if ($value > 999_999_999_999_999 || $value < -999_999_999_999_999) {
+            throw new SyntaxError('Integers are limited to 15 digits');
+        }
+
+        return $value;
     }
 
     public static function fromField(string $field): self
@@ -128,48 +170,6 @@ final class Item implements StructuredField, SupportsParameters
         }
 
         throw new SyntaxError('Invalid end of string');
-    }
-
-    public static function fromDecimal(float $value, Parameters $parameters = new Parameters()): self
-    {
-        if (abs(floor($value)) > 999_999_999_999) {
-            throw new SyntaxError('Integer portion of decimals is limited to 12 digits');
-        }
-
-        return new self($value, $parameters);
-    }
-
-    public static function fromString(string $value, Parameters $parameters = new Parameters()): self
-    {
-        if (1 === preg_match('/[^\x20-\x7E]/i', $value)) {
-            throw new SyntaxError('The string `'.$value.'` contains invalid characters.');
-        }
-
-        return new self($value, $parameters);
-    }
-
-    public static function fromToken(Token $value, Parameters $parameters = new Parameters()): self
-    {
-        return new self($value, $parameters);
-    }
-
-    public static function fromByteSequence(ByteSequence $value, Parameters $parameters = new Parameters()): self
-    {
-        return new self($value, $parameters);
-    }
-
-    public static function fromBoolean(bool $value, Parameters $parameters = new Parameters()): self
-    {
-        return new self($value, $parameters);
-    }
-
-    public static function fromInteger(int $value, Parameters $parameters = new Parameters()): self
-    {
-        if ($value > 999_999_999_999_999 || $value < -999_999_999_999_999) {
-            throw new SyntaxError('Integers are limited to 15 digits');
-        }
-
-        return new self($value, $parameters);
     }
 
     public function value(): Token|ByteSequence|int|float|string|bool

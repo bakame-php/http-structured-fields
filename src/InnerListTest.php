@@ -16,10 +16,10 @@ final class InnerListTest extends TestCase
      */
     public function it_can_be_instantiated_with_an_collection_of_item(): void
     {
-        $stringItem = Item::fromString('helloWorld');
-        $booleanItem = Item::fromBoolean(true);
+        $stringItem = Item::fromType('helloWorld');
+        $booleanItem = Item::fromType(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = new InnerList($arrayParams, new Parameters(['test' => Item::fromInteger(42)]));
+        $instance = new InnerList($arrayParams, new Parameters(['test' => Item::fromType(42)]));
         self::assertFalse($instance->parameters()->isEmpty());
 
         self::assertSame($stringItem, $instance->getByIndex(0));
@@ -33,8 +33,8 @@ final class InnerListTest extends TestCase
      */
     public function it_can_add_or_remove_elements(): void
     {
-        $stringItem = Item::fromString('helloWorld');
-        $booleanItem = Item::fromBoolean(true);
+        $stringItem = Item::fromType('helloWorld');
+        $booleanItem = Item::fromType(true);
         $arrayParams = [$stringItem, $booleanItem];
         $instance = new InnerList($arrayParams);
 
@@ -48,7 +48,7 @@ final class InnerListTest extends TestCase
         self::assertCount(1, $instance);
         self::assertFalse($instance->hasIndex(1));
 
-        $instance->push(Item::fromString('BarBaz'));
+        $instance->push(Item::fromType('BarBaz'));
         $instance->insert(1, );
         $element = $instance->getByIndex(1);
         self::assertCount(2, $instance);
@@ -77,10 +77,10 @@ final class InnerListTest extends TestCase
     public function it_can_unshift_insert_and_replace(): void
     {
         $container = new InnerList();
-        $container->unshift(Item::fromString('42'));
-        $container->push(Item::fromInteger(42));
-        $container->insert(1, Item::fromDecimal(42));
-        $container->replace(0, Item::fromByteSequence(ByteSequence::fromDecoded('Hello World')));
+        $container->unshift(Item::fromType('42'));
+        $container->push(Item::fromType(42));
+        $container->insert(1, Item::fromType(42.0));
+        $container->replace(0, Item::fromType(ByteSequence::fromDecoded('Hello World')));
 
         self::assertFalse($container->hasKey('42'));
         self::assertCount(3, $container);
@@ -96,7 +96,7 @@ final class InnerListTest extends TestCase
         $this->expectException(InvalidOffset::class);
 
         $container = new InnerList();
-        $container->replace(0, Item::fromByteSequence(ByteSequence::fromDecoded('Hello World')));
+        $container->replace(0, Item::fromType(ByteSequence::fromDecoded('Hello World')));
     }
 
     /**
@@ -107,7 +107,7 @@ final class InnerListTest extends TestCase
         $this->expectException(InvalidOffset::class);
 
         $container = new InnerList();
-        $container->insert(3, Item::fromByteSequence(ByteSequence::fromDecoded('Hello World')));
+        $container->insert(3, Item::fromType(ByteSequence::fromDecoded('Hello World')));
     }
 
     /**
@@ -144,7 +144,7 @@ final class InnerListTest extends TestCase
         $instance = new InnerList();
         self::assertSame([], $instance->keys());
 
-        $instance->push(Item::fromBoolean(false), Item::fromBoolean(true));
+        $instance->push(Item::fromType(false), Item::fromType(true));
         self::assertSame([], $instance->keys());
     }
 
@@ -153,10 +153,10 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_one_or_more_instances(): void
     {
-        $instance1 = new InnerList([Item::fromBoolean(false)]);
-        $instance2 = new InnerList([Item::fromBoolean(true)]);
-        $instance3 = new InnerList([Item::fromInteger(42)]);
-        $expected = new InnerList([Item::fromBoolean(false), Item::fromBoolean(true), Item::fromInteger(42)]);
+        $instance1 = new InnerList([Item::fromType(false)]);
+        $instance2 = new InnerList([Item::fromType(true)]);
+        $instance3 = new InnerList([Item::fromType(42)]);
+        $expected = new InnerList([Item::fromType(false), Item::fromType(true), Item::fromType(42)]);
 
         $instance1->merge($instance2, $instance3);
 
@@ -169,7 +169,7 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_without_argument_and_not_throw(): void
     {
-        $instance = new InnerList([Item::fromBoolean(false)]);
+        $instance = new InnerList([Item::fromType(false)]);
         $instance->merge();
         self::assertCount(1, $instance);
     }
@@ -179,10 +179,10 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_two_or_more_instances_to_yield_different_result(): void
     {
-        $instance1 = new InnerList([Item::fromBoolean(false)]);
-        $instance2 = new InnerList([Item::fromBoolean(true)]);
-        $instance3 = new InnerList([Item::fromInteger(42)]);
-        $expected = new InnerList([Item::fromInteger(42), Item::fromBoolean(true), Item::fromBoolean(false)]);
+        $instance1 = new InnerList([Item::fromType(false)]);
+        $instance2 = new InnerList([Item::fromType(true)]);
+        $instance3 = new InnerList([Item::fromType(42)]);
+        $expected = new InnerList([Item::fromType(42), Item::fromType(true), Item::fromType(false)]);
 
         $instance3->merge($instance2, $instance1);
 

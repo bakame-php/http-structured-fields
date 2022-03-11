@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use ArrayObject;
+
 final class ItemTest extends StructuredFieldTest
 {
     /** @var array|string[] */
@@ -23,7 +25,7 @@ final class ItemTest extends StructuredFieldTest
     {
         $this->expectException(SyntaxError::class);
 
-        Item::fromDecimal(1_000_000_000_000);
+        Item::fromType(1_000_000_000_000.0);
     }
 
     /**
@@ -33,7 +35,7 @@ final class ItemTest extends StructuredFieldTest
     {
         $this->expectException(SyntaxError::class);
 
-        Item::fromDecimal(-1_000_000_000_000);
+        Item::fromType(-1_000_000_000_000.0);
     }
 
     /**
@@ -41,7 +43,7 @@ final class ItemTest extends StructuredFieldTest
      */
     public function it_instantiate_a_decimal(): void
     {
-        self::assertSame('42.0', Item::fromDecimal(42)->toField());
+        self::assertSame('42.0', Item::fromType(42.0)->toField());
     }
 
     /**
@@ -51,7 +53,7 @@ final class ItemTest extends StructuredFieldTest
     {
         $this->expectException(SyntaxError::class);
 
-        Item::fromInteger(1_000_000_000_000_000);
+        Item::fromType(1_000_000_000_000_000);
     }
 
     /**
@@ -61,7 +63,7 @@ final class ItemTest extends StructuredFieldTest
     {
         $this->expectException(SyntaxError::class);
 
-        Item::fromInteger(-1_000_000_000_000_000);
+        Item::fromType(-1_000_000_000_000_000);
     }
 
     /**
@@ -69,7 +71,7 @@ final class ItemTest extends StructuredFieldTest
      */
     public function it_instantiates_an_integer(): void
     {
-        self::assertSame('42', Item::fromInteger(42)->toField());
+        self::assertSame('42', Item::fromType(42)->toField());
     }
 
     /**
@@ -77,8 +79,8 @@ final class ItemTest extends StructuredFieldTest
      */
     public function it_instantiates_a_boolean(): void
     {
-        self::assertSame('?1', Item::fromBoolean(true)->toField());
-        self::assertSame('?0', Item::fromBoolean(false)->toField());
+        self::assertSame('?1', Item::fromType(true)->toField());
+        self::assertSame('?0', Item::fromType(false)->toField());
     }
 
     /**
@@ -86,7 +88,7 @@ final class ItemTest extends StructuredFieldTest
      */
     public function it_instantiates_a_token(): void
     {
-        self::assertSame('helloworld', Item::fromToken(new Token('helloworld'))->toField());
+        self::assertSame('helloworld', Item::fromType(new Token('helloworld'))->toField());
     }
 
     /**
@@ -94,7 +96,7 @@ final class ItemTest extends StructuredFieldTest
      */
     public function it_instantiates_a_binary(): void
     {
-        self::assertInstanceOf(ByteSequence::class, Item::fromByteSequence(ByteSequence::fromDecoded('foobar'))->value());
+        self::assertInstanceOf(ByteSequence::class, Item::fromType(ByteSequence::fromDecoded('foobar'))->value());
     }
 
     /**
@@ -102,7 +104,7 @@ final class ItemTest extends StructuredFieldTest
      */
     public function it_instantiates_a_string(): void
     {
-        self::assertSame('"foobar"', Item::fromString('foobar')->toField());
+        self::assertSame('"foobar"', Item::fromType('foobar')->toField());
     }
 
     /**
@@ -112,7 +114,7 @@ final class ItemTest extends StructuredFieldTest
     {
         $this->expectException(SyntaxError::class);
 
-        Item::fromString("\0foobar");
+        Item::fromType("\0foobar");
     }
 
     /**
@@ -136,29 +138,55 @@ final class ItemTest extends StructuredFieldTest
     {
         return [
             'boolean' => [
-                'item' => Item::fromBoolean(false),
+                'item' => Item::fromType(false),
                 'expectedType' => 'boolean',
             ],
             'integer' => [
-                'item' => Item::fromInteger(42),
+                'item' => Item::fromType(42),
                 'expectedType' => 'integer',
             ],
             'decimal' => [
-                'item' => Item::fromDecimal(42),
+                'item' => Item::fromType(42.0),
                 'expectedType' => 'decimal',
             ],
             'string' => [
-                'item' => Item::fromString('42'),
+                'item' => Item::fromType('42'),
                 'expectedType' => 'string',
             ],
             'token' => [
-                'item' => Item::fromToken(new Token('forty-two')),
+                'item' => Item::fromType(new Token('forty-two')),
                 'expectedType' => 'token',
             ],
             'byte' => [
-                'item' => Item::fromByteSequence(ByteSequence::fromDecoded('😊')),
+                'item' => Item::fromType(ByteSequence::fromDecoded('😊')),
                 'expectedType' => 'byte',
             ],
         ];
+    }
+
+    /**
+     * @test
+     */
+    public function test_in_can_be_instantiated_using_bare_items(): void
+    {
+        $item1 = Item::fromType('/terms', [
+            'string' => '42',
+            'integer' => 42,
+            'float' => 4.2,
+            'boolean' => true,
+            'token' => new Token('forty-two'),
+            'byte-sequence' => ByteSequence::fromDecoded('a42'),
+        ]);
+
+        $item2 = Item::fromType('/terms', new ArrayObject([
+            'string' => Item::fromType('42'),
+            'integer' => Item::fromType(42),
+            'float' => Item::fromType(4.2),
+            'boolean' => Item::fromType(true),
+            'token' => Item::fromType(new Token('forty-two')),
+            'byte-sequence' => Item::fromType(ByteSequence::fromDecoded('a42')),
+        ]));
+
+        self::assertEquals($item2, $item1);
     }
 }

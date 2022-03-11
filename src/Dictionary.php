@@ -17,7 +17,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     private array $elements;
 
     /**
-     * @param iterable<string, Item|InnerList> $elements
+     * @param iterable<string, InnerList|Item|ByteSequence|Token|bool|int|float|string> $elements
      */
     public function __construct(iterable $elements = [])
     {
@@ -151,11 +151,19 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return implode(', ', $returnValue);
     }
 
-    public function set(string $key, Item|InnerList $element): void
+    public function set(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
     {
         $this->filterKey($key);
 
-        $this->elements[$key] = $element;
+        $this->elements[$key] = self::filterElement($element);
+    }
+
+    private static function filterElement(InnerList|Item|ByteSequence|Token|bool|int|float|string $element): InnerList|Item
+    {
+        return match (true) {
+            $element instanceof InnerList, $element instanceof Item => $element,
+            default => Item::fromType($element),
+        };
     }
 
     public function delete(string ...$keys): void
@@ -165,22 +173,22 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         }
     }
 
-    public function append(string $key, Item|InnerList $element): void
+    public function append(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
     {
         $this->filterKey($key);
 
         unset($this->elements[$key]);
 
-        $this->elements[$key] = $element;
+        $this->elements[$key] = self::filterElement($element);
     }
 
-    public function prepend(string $key, Item|InnerList $element): void
+    public function prepend(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
     {
         $this->filterKey($key);
 
         unset($this->elements[$key]);
 
-        $this->elements = [...[$key => $element], ...$this->elements];
+        $this->elements = [...[$key => self::filterElement($element)], ...$this->elements];
     }
 
     public function merge(self ...$others): void

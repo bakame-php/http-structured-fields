@@ -23,8 +23,21 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     {
         $this->elements = [];
         foreach ($elements as $key => $value) {
-            $this->append($key, $value);
+            $this->set($key, $value);
         }
+    }
+
+    /**
+     * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $items
+     */
+    public static function fromItems(iterable $items): self
+    {
+        $instance = new self();
+        foreach ($items as $key => $item) {
+            $instance->set($key, $item instanceof Item ? $item : Item::fromType($item));
+        }
+
+        return $instance;
     }
 
     public static function fromField(string $field): self
