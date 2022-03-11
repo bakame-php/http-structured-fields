@@ -85,6 +85,17 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         return $this->elements[$offset];
     }
 
+    private function filterIndex(int $index): int|null
+    {
+        $max = count($this->elements);
+
+        return match (true) {
+            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            0 > $index => $max + $index,
+            default => $index,
+        };
+    }
+
     public function hasIndex(int $index): bool
     {
         return null !== $this->filterIndex($index);
@@ -93,6 +104,14 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     public function unshift(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$elements): void
     {
         $this->elements = [...array_map(self::filterElement(...), $elements), ...$this->elements];
+    }
+
+    private static function filterElement(InnerList|Item|ByteSequence|Token|bool|int|float|string $element): InnerList|Item
+    {
+        return match (true) {
+            $element instanceof InnerList, $element instanceof Item => $element,
+            default => Item::fromType($element),
+        };
     }
 
     public function push(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$elements): void
@@ -169,24 +188,5 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         }
 
         return implode(', ', $returnValue);
-    }
-
-    private static function filterElement(InnerList|Item|ByteSequence|Token|bool|int|float|string $element): InnerList|Item
-    {
-        return match (true) {
-            $element instanceof InnerList, $element instanceof Item => $element,
-            default => Item::fromType($element),
-        };
-    }
-
-    private function filterIndex(int $index): int|null
-    {
-        $max = count($this->elements);
-
-        return match (true) {
-            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
-            0 > $index => $max + $index,
-            default => $index,
-        };
     }
 }

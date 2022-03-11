@@ -112,6 +112,17 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         };
     }
 
+    private function filterIndex(int $index): int|null
+    {
+        $max = count($this->elements);
+
+        return match (true) {
+            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            0 > $index => $max + $index,
+            default => $index,
+        };
+    }
+
     public function replace(int $index, Item|ByteSequence|Token|bool|int|float|string|null $element): void
     {
         $offset = $this->filterIndex($index);
@@ -203,16 +214,5 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         $returnArray = array_map(fn (Item|null $value): string|null => $value?->toField(), $this->elements);
 
         return '('.implode(' ', $returnArray).')'.$this->parameters->toField();
-    }
-
-    private function filterIndex(int $index): int|null
-    {
-        $max = count($this->elements);
-
-        return match (true) {
-            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
-            0 > $index => $max + $index,
-            default => $index,
-        };
     }
 }

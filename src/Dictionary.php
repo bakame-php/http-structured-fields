@@ -153,9 +153,16 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
 
     public function set(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
     {
-        $this->filterKey($key);
+        self::validateKey($key);
 
         $this->elements[$key] = self::filterElement($element);
+    }
+
+    private static function validateKey(string $key): void
+    {
+        if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
+            throw new SyntaxError("Key `$key` contains invalid characters.");
+        }
     }
 
     private static function filterElement(InnerList|Item|ByteSequence|Token|bool|int|float|string $element): InnerList|Item
@@ -164,38 +171,6 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
             $element instanceof InnerList, $element instanceof Item => $element,
             default => Item::fromType($element),
         };
-    }
-
-    public function delete(string ...$keys): void
-    {
-        foreach ($keys as $key) {
-            unset($this->elements[$key]);
-        }
-    }
-
-    public function append(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
-    {
-        $this->filterKey($key);
-
-        unset($this->elements[$key]);
-
-        $this->elements[$key] = self::filterElement($element);
-    }
-
-    public function prepend(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
-    {
-        $this->filterKey($key);
-
-        unset($this->elements[$key]);
-
-        $this->elements = [...[$key => self::filterElement($element)], ...$this->elements];
-    }
-
-    public function merge(self ...$others): void
-    {
-        foreach ($others as $other) {
-            $this->elements = [...$this->elements, ...$other->elements];
-        }
     }
 
     private function filterIndex(int $index): int|null
@@ -209,10 +184,35 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         };
     }
 
-    private function filterKey(string $key): void
+    public function delete(string ...$keys): void
     {
-        if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
-            throw new SyntaxError("Key `$key` contains invalid characters.");
+        foreach ($keys as $key) {
+            unset($this->elements[$key]);
+        }
+    }
+
+    public function append(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
+    {
+        self::validateKey($key);
+
+        unset($this->elements[$key]);
+
+        $this->elements[$key] = self::filterElement($element);
+    }
+
+    public function prepend(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
+    {
+        self::validateKey($key);
+
+        unset($this->elements[$key]);
+
+        $this->elements = [...[$key => self::filterElement($element)], ...$this->elements];
+    }
+
+    public function merge(self ...$others): void
+    {
+        foreach ($others as $other) {
+            $this->elements = [...$this->elements, ...$other->elements];
         }
     }
 }

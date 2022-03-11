@@ -34,10 +34,18 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     {
         $instance = new self();
         foreach ($items as $key => $item) {
-            $instance->set($key, $item instanceof Item ? $item : Item::fromType($item));
+            $instance->set($key, self::filterElement($item));
         }
 
         return $instance;
+    }
+
+    private static function filterElement(Item|ByteSequence|Token|bool|int|float|string $element): Item
+    {
+        return match (true) {
+            $element instanceof Item => $element,
+            default => Item::fromType($element),
+        };
     }
 
     public static function fromField(string $field): self
@@ -106,6 +114,17 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return array_values($this->elements)[$this->filterIndex($index)] ?? null;
     }
 
+    private function filterIndex(int $index): int|null
+    {
+        $max = count($this->elements);
+
+        return match (true) {
+            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            0 > $index => $max + $index,
+            default => $index,
+        };
+    }
+
     public function hasIndex(int $index): bool
     {
         return null !== $this->filterIndex($index);
@@ -127,10 +146,20 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
     public function set(string $key, Item $element): void
     {
-        $this->filterKey($key);
-        $this->filterItem($element);
+        self::validate($key, $element);
 
         $this->elements[$key] = $element;
+    }
+
+    private static function validate(string $key, Item $item): void
+    {
+        if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
+            throw new SyntaxError('Invalid characters in key: `'.$key.'`');
+        }
+
+        if (!$item->parameters()->isEmpty()) {
+            throw new SyntaxError('the Item cannot be parameterized.');
+        }
     }
 
     public function delete(string ...$indexes): void
@@ -142,8 +171,8 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
     public function append(string $key, Item $element): void
     {
-        $this->filterKey($key);
-        $this->filterItem($element);
+        self::validate($key, $element);
+
         unset($this->elements[$key]);
 
         $this->elements[$key] = $element;
@@ -151,8 +180,8 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
     public function prepend(string $key, Item $element): void
     {
-        $this->filterKey($key);
-        $this->filterItem($element);
+        self::validate($key, $element);
+
         unset($this->elements[$key]);
 
         $this->elements = [...[$key => $element], ...$this->elements];
@@ -162,31 +191,6 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     {
         foreach ($others as $other) {
             $this->elements = [...$this->elements, ...$other->elements];
-        }
-    }
-
-    private function filterIndex(int $index): int|null
-    {
-        $max = count($this->elements);
-
-        return match (true) {
-            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
-            0 > $index => $max + $index,
-            default => $index,
-        };
-    }
-
-    private function filterKey(string $key): void
-    {
-        if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
-            throw new SyntaxError('Invalid characters in key: `'.$key.'`');
-        }
-    }
-
-    private function filterItem(Item $item): void
-    {
-        if (!$item->parameters()->isEmpty()) {
-            throw new SyntaxError('the Item cannot be parameterized.');
         }
     }
 }
