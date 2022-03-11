@@ -28,8 +28,6 @@ final class ParametersTest extends StructuredFieldTest
 
         self::assertSame($stringItem, $instance->getByIndex(0));
         self::assertSame($stringItem, $instance->getByKey('string'));
-        self::assertNull($instance->getByKey('foobar'));
-        self::assertNull($instance->getByIndex(42));
         self::assertTrue($instance->hasKey('string'));
 
         self::assertEquals($arrayParams, iterator_to_array($instance, true));
@@ -72,7 +70,6 @@ final class ParametersTest extends StructuredFieldTest
         $foundItem =  $instance->getByIndex(1);
 
         self::assertCount(2, $instance);
-        self::assertInstanceOf(Item::class, $foundItem);
         self::assertIsString($foundItem->value());
         self::assertStringContainsString('BarBaz', $foundItem->value());
 
@@ -98,7 +95,7 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = new Dictionary();
+        $instance = new Parameters();
         self::assertFalse($instance->hasKey('foobar'));
 
         $instance->getByKey('foobar');
@@ -111,7 +108,7 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = new Dictionary();
+        $instance = new Parameters();
         self::assertFalse($instance->hasIndex(3));
 
         $instance->getByIndex(3);

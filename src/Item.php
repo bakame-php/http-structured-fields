@@ -8,7 +8,7 @@ final class Item implements StructuredField, SupportsParameters
 {
     private function __construct(
         private Token|ByteSequence|int|float|string|bool $value,
-        private Parameters $parameters = new Parameters(),
+        private Parameters $parameters,
     ) {
     }
 

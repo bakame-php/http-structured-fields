@@ -101,7 +101,11 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
     public function getByKey(string $key): Item|InnerList|null
     {
-        return $this->elements[$key] ?? null;
+        if (!array_key_exists($key, $this->elements)) {
+            throw InvalidOffset::dueToKeyNotFound($key);
+        }
+
+        return $this->elements[$key];
     }
 
     public function hasKey(string $key): bool
@@ -109,9 +113,14 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return array_key_exists($key, $this->elements);
     }
 
-    public function getByIndex(int $index): Item|InnerList|null
+    public function getByIndex(int $index): Item
     {
-        return array_values($this->elements)[$this->filterIndex($index)] ?? null;
+        $offset = $this->filterIndex($index);
+        if (null === $offset) {
+            throw InvalidOffset::dueToIndexNotFound($index);
+        }
+
+        return array_values($this->elements)[$offset];
     }
 
     private function filterIndex(int $index): int|null
