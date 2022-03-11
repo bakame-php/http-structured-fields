@@ -22,16 +22,10 @@ abstract class StructuredFieldTest extends TestCase
             $this->expectException(SyntaxError::class);
         }
 
-        $input = implode(',', $test->raw);
-        $item = match ($test->headerType) {
-            'dictionary' => Dictionary::fromField($input),
-            'list' => OrderedList::fromField($input),
-            default => Item::fromField($input),
-        };
+        $item = TestHeaderType::from($test->headerType)->fromField(implode(',', $test->raw));
 
         if (!$test->mustFail) {
-            $expected = implode(',', $test->canonical);
-            self::assertSame($expected, $item->toField());
+            self::assertSame(implode(',', $test->canonical), $item->toField());
         }
     }
 
@@ -42,9 +36,8 @@ abstract class StructuredFieldTest extends TestCase
     public function httpWgDataProvider(): iterable
     {
         foreach ($this->paths as $path) {
-            $prefix = basename($path, '.json');
             foreach (TestSuite::fromPath($path) as $test) {
-                yield $prefix.': '.$test->name => [$test];
+                yield $test->name => [$test];
             }
         }
     }
