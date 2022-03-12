@@ -6,6 +6,8 @@ Structured Field Values for PHP
 [![Build](https://github.com/bakame-php/http-structured-fields/workflows/build/badge.svg)](https://github.com/bakame-php/http-structured-fields/actions?query=workflow%3A%22build%22)
 
 The package uses pragmatic value objects to parse and serialize [HTTP Structured Fields][1] in PHP.
+Structured fields are intended for use by specifications of new HTTP fields that wish to use a 
+common syntax that is more restrictive than traditional HTTP field values.
 
 You will be able to:
 
@@ -96,7 +98,7 @@ to an `Item` instance or other container types  **BUT** the items it contains ca
 themselves contain `Parameters` instance. More on parameters public API 
 will be cover in subsequent paragraphs.
 
-#### Examples
+#### Usage
 
 Instantiation via type recognition is done using the `Item::from` named constructor.
 
@@ -132,13 +134,13 @@ $item->isInteger(); //return true
 ### Containers
 
 Apart from the `Item`, the RFC defines different containers with different requirements. The
-package exposes those containers via the following methods `Parameters`, `Dictionary`, 
+package exposes those containers via the following value objects `Parameters`, `Dictionary`, 
 `InnerList` and `OrderedList` with the same basic public API. At any given time it 
 is possible to:
 
+- iterate over each contained element and its optional associated key via the `IteratorAggregate` interface;
 - tell whether the container is empty via an `isEmpty` method;
 - know the number of elements contained in the container via the `Countable` interface;
-- iterate over each contained elements and its optional associated key via the `IteratorAggregate` interface;
 - tell whether an element is attached to the container using its `index` or  `key` via `hasIndex` and `hasKey` methods;
 - get any element by its string `key` or by its integer `index` via `getByKey` and `getByIndex` methods when applicable;
 - merge multiple instance of the same container using the `merge` method;

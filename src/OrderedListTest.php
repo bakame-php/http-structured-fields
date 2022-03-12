@@ -73,7 +73,6 @@ final class OrderedListTest extends StructuredFieldTest
         $container->insert(1, Item::from(42.0));
         $container->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
 
-        self::assertFalse($container->hasKey('42'));
         self::assertCount(3, $container);
         self::assertFalse($container->isEmpty());
         self::assertSame(':SGVsbG8gV29ybGQ=:, 42.0, 42', $container->toHttpValue());
@@ -104,19 +103,6 @@ final class OrderedListTest extends StructuredFieldTest
     /**
      * @test
      */
-    public function it_fails_to_return_an_member_with_invalid_key(): void
-    {
-        $this->expectException(InvalidOffset::class);
-
-        $instance = new OrderedList();
-        self::assertFalse($instance->hasKey('foobar'));
-
-        $instance->getByKey('foobar');
-    }
-
-    /**
-     * @test
-     */
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
         $this->expectException(InvalidOffset::class);
@@ -125,18 +111,6 @@ final class OrderedListTest extends StructuredFieldTest
         self::assertFalse($instance->hasIndex(3));
 
         $instance->getByIndex(3);
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_returns_the_container_element_keys(): void
-    {
-        $instance = new OrderedList();
-        self::assertSame([], $instance->keys());
-
-        $instance->push(Item::from(false), Item::from(true));
-        self::assertSame([], $instance->keys());
     }
 
     /**

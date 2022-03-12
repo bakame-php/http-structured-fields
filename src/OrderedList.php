@@ -57,32 +57,9 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         return [] === $this->elements;
     }
 
-    /**
-     * @return array<string>
-     */
-    public function keys(): array
+    public function hasIndex(int $index): bool
     {
-        return [];
-    }
-
-    public function getByKey(string $key): Item|InnerList
-    {
-        throw InvalidOffset::dueToKeyNotFound($key);
-    }
-
-    public function hasKey(string $key): bool
-    {
-        return false;
-    }
-
-    public function getByIndex(int $index): Item|InnerList
-    {
-        $offset = $this->filterIndex($index);
-        if (null === $offset) {
-            throw InvalidOffset::dueToIndexNotFound($index);
-        }
-
-        return $this->elements[$offset];
+        return null !== $this->filterIndex($index);
     }
 
     private function filterIndex(int $index): int|null
@@ -96,9 +73,14 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         };
     }
 
-    public function hasIndex(int $index): bool
+    public function getByIndex(int $index): Item|InnerList
     {
-        return null !== $this->filterIndex($index);
+        $offset = $this->filterIndex($index);
+        if (null === $offset) {
+            throw InvalidOffset::dueToIndexNotFound($index);
+        }
+
+        return $this->elements[$offset];
     }
 
     public function unshift(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$elements): void

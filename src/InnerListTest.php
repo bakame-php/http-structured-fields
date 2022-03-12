@@ -48,7 +48,7 @@ final class InnerListTest extends TestCase
         self::assertCount(1, $instance);
         self::assertFalse($instance->hasIndex(1));
 
-        $instance->push(Item::from('BarBaz'));
+        $instance->push('BarBaz');
         $instance->insert(1, );
         $element = $instance->getByIndex(1);
         self::assertCount(2, $instance);
@@ -77,12 +77,11 @@ final class InnerListTest extends TestCase
     public function it_can_unshift_insert_and_replace(): void
     {
         $container = new InnerList();
-        $container->unshift(Item::from('42'));
-        $container->push(Item::from(42));
-        $container->insert(1, Item::from(42.0));
-        $container->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
+        $container->unshift('42');
+        $container->push(42);
+        $container->insert(1, 42.0);
+        $container->replace(0, ByteSequence::fromDecoded('Hello World'));
 
-        self::assertFalse($container->hasKey('42'));
         self::assertCount(3, $container);
         self::assertFalse($container->isEmpty());
         self::assertSame('(:SGVsbG8gV29ybGQ=: 42.0 42)', $container->toHttpValue());
@@ -96,7 +95,7 @@ final class InnerListTest extends TestCase
         $this->expectException(InvalidOffset::class);
 
         $container = new InnerList();
-        $container->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
+        $container->replace(0, ByteSequence::fromDecoded('Hello World'));
     }
 
     /**
@@ -107,20 +106,7 @@ final class InnerListTest extends TestCase
         $this->expectException(InvalidOffset::class);
 
         $container = new InnerList();
-        $container->insert(3, Item::from(ByteSequence::fromDecoded('Hello World')));
-    }
-
-    /**
-     * @test
-     */
-    public function it_fails_to_return_an_member_with_invalid_key(): void
-    {
-        $this->expectException(InvalidOffset::class);
-
-        $instance = new InnerList();
-        self::assertFalse($instance->hasKey('foobar'));
-
-        $instance->getByKey('foobar');
+        $container->insert(3, ByteSequence::fromDecoded('Hello World'));
     }
 
     /**
@@ -134,18 +120,6 @@ final class InnerListTest extends TestCase
         self::assertFalse($instance->hasIndex(3));
 
         $instance->getByIndex(3);
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_returns_the_container_element_keys(): void
-    {
-        $instance = new InnerList();
-        self::assertSame([], $instance->keys());
-
-        $instance->push(Item::from(false), Item::from(true));
-        self::assertSame([], $instance->keys());
     }
 
     /**

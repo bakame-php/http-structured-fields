@@ -159,24 +159,6 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         return [] === $this->elements;
     }
 
-    /**
-     * @return array<string>
-     */
-    public function keys(): array
-    {
-        return [];
-    }
-
-    public function getByKey(string $key): Item|null
-    {
-        throw InvalidOffset::dueToKeyNotFound($key);
-    }
-
-    public function hasKey(string $key): bool
-    {
-        return false;
-    }
-
     public function getByIndex(int $index): Item|null
     {
         $offset = $this->filterIndex($index);
