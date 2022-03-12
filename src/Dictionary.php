@@ -13,18 +13,36 @@ use IteratorAggregate;
  */
 final class Dictionary implements Countable, IteratorAggregate, StructuredField
 {
-    /** @var array<string, Item|InnerList>  */
-    private array $elements;
+    private function __construct(
+        /** @var array<string, Item|InnerList>  */
+        private array $elements = []
+    ) {
+    }
 
     /**
      * @param iterable<string, InnerList|Item|ByteSequence|Token|bool|int|float|string> $elements
      */
-    public function __construct(iterable $elements = [])
+    public static function fromAssociative(iterable $elements = []): self
     {
-        $this->elements = [];
+        $instance = new self();
         foreach ($elements as $index => $element) {
-            $this->set($index, $element);
+            $instance->set($index, $element);
         }
+
+        return $instance;
+    }
+
+    /**
+     * @param iterable<array{0:string, 1:InnerList|Item|ByteSequence|Token|bool|int|float|string}> $pairs
+     */
+    public static function fromPairs(iterable $pairs = []): self
+    {
+        $instance = new self();
+        foreach ($pairs as [$key, $element]) {
+            $instance->set($key, $element);
+        }
+
+        return $instance;
     }
 
     public static function fromHttpValue(string $httpValue): self
@@ -115,6 +133,16 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * @return Iterator<array{0:string, 1:Item|InnerList}>
+     */
+    public function toPairs(): Iterator
+    {
+        foreach ($this->elements as $index => $element) {
+            yield [$index, $element];
+        }
+    }
+
+    /**
      * @return array<string>
      */
     public function keys(): array
@@ -122,12 +150,12 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return array_keys($this->elements);
     }
 
-    public function hasKey(string $key): bool
+    public function has(string $key): bool
     {
         return array_key_exists($key, $this->elements);
     }
 
-    public function getByKey(string $key): Item|InnerList|null
+    public function get(string $key): Item|InnerList
     {
         if (!array_key_exists($key, $this->elements)) {
             throw InvalidOffset::dueToKeyNotFound($key);
@@ -136,7 +164,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return $this->elements[$key];
     }
 
-    public function hasIndex(int $index): bool
+    public function hasPair(int $index): bool
     {
         return null !== $this->filterIndex($index);
     }
@@ -152,14 +180,20 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         };
     }
 
-    public function getByIndex(int $index): Item|InnerList|null
+    /**
+     * @return array{0:string, 1:Item|InnerList}
+     */
+    public function pair(int $index): array
     {
         $offset = $this->filterIndex($index);
         if (null === $offset) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        return array_values($this->elements)[$offset];
+        return [
+            array_keys($this->elements)[$offset],
+            array_values($this->elements)[$offset],
+        ];
     }
 
     public function set(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void

@@ -13,33 +13,43 @@ use IteratorAggregate;
  */
 final class Parameters implements Countable, IteratorAggregate, StructuredField
 {
-    /** @var array<array-key, Item> */
-    private array $elements;
+    private function __construct(
+        /** @var array<array-key, Item> */
+        private array $elements = []
+    ) {
+    }
 
     /**
      * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $elements
      */
-    public function __construct(iterable $elements = [])
+    public static function fromAssociative(iterable $elements = []): self
     {
-        $this->elements = [];
+        $instance = new self();
         foreach ($elements as $key => $element) {
-            $this->set($key, self::filterElement($element));
+            $instance->set($key, $element);
         }
+
+        return $instance;
     }
 
-    private static function filterElement(Item|ByteSequence|Token|bool|int|float|string $element): Item
+    /**
+     * @param iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> $pairs
+     */
+    public static function fromPairs(iterable $pairs = []): self
     {
-        return match (true) {
-            $element instanceof Item => $element,
-            default => Item::from($element),
-        };
+        $instance = new self();
+        foreach ($pairs as [$key, $element]) {
+            $instance->set($key, $element);
+        }
+
+        return $instance;
     }
 
     public static function fromHttpValue(string $httpValue): self
     {
-        $parameters = new self();
+        $instance = new self();
         if ('' === $httpValue) {
-            return $parameters;
+            return $instance;
         }
 
         foreach (explode(';', $httpValue) as $pair) {
@@ -50,11 +60,11 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
             $key = trim($key);
             if ('' !== $key) {
-                $parameters->set($key, Item::fromHttpValue($value));
+                $instance->set($key, Item::fromHttpValue($value));
             }
         }
 
-        return $parameters;
+        return $instance;
     }
 
     public function toHttpValue(): string
@@ -98,6 +108,16 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * @return Iterator<array{0:string, 1:Item}>
+     */
+    public function toPairs(): Iterator
+    {
+        foreach ($this->elements as $index => $element) {
+            yield [$index, $element];
+        }
+    }
+
+    /**
      * @return array<string>
      */
     public function keys(): array
@@ -105,12 +125,12 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return array_keys($this->elements);
     }
 
-    public function hasKey(string $key): bool
+    public function has(string $key): bool
     {
         return array_key_exists($key, $this->elements);
     }
 
-    public function getByKey(string $key): Item
+    public function get(string $key): Item
     {
         if (!array_key_exists($key, $this->elements)) {
             throw InvalidOffset::dueToKeyNotFound($key);
@@ -119,7 +139,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return $this->elements[$key];
     }
 
-    public function hasIndex(int $index): bool
+    public function hasPair(int $index): bool
     {
         return null !== $this->filterIndex($index);
     }
@@ -135,14 +155,20 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         };
     }
 
-    public function getByIndex(int $index): Item
+    /**
+     * @return array{0:string, 1:Item}
+     */
+    public function pair(int $index): array
     {
         $offset = $this->filterIndex($index);
         if (null === $offset) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        return array_values($this->elements)[$offset];
+        return [
+            array_keys($this->elements)[$offset],
+            array_values($this->elements)[$offset],
+        ];
     }
 
     public function set(string $key, Item|ByteSequence|Token|bool|int|float|string $element): void
@@ -151,6 +177,14 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         self::validate($key, $element);
 
         $this->elements[$key] = $element;
+    }
+
+    private static function filterElement(Item|ByteSequence|Token|bool|int|float|string $element): Item
+    {
+        return match (true) {
+            $element instanceof Item => $element,
+            default => Item::from($element),
+        };
     }
 
     private static function validate(string $key, Item $item): void
@@ -164,10 +198,10 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         }
     }
 
-    public function delete(string ...$indexes): void
+    public function delete(string ...$keys): void
     {
-        foreach ($indexes as $index) {
-            unset($this->elements[$index]);
+        foreach ($keys as $key) {
+            unset($this->elements[$key]);
         }
     }
 

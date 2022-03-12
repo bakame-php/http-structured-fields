@@ -24,7 +24,7 @@ final class Item implements StructuredField, SupportsParameters
             is_float($value) => self::filterDecimal($value),
             is_string($value) => self::filterString($value),
             default => $value,
-        }, $parameters instanceof Parameters ? $parameters : new Parameters($parameters));
+        }, $parameters instanceof Parameters ? $parameters : Parameters::fromAssociative($parameters));
     }
 
     public static function filterDecimal(float $value): float

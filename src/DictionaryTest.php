@@ -19,13 +19,36 @@ final class DictionaryTest extends StructuredFieldTest
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = ['string' => $stringItem, 'boolean' => $booleanItem];
-        $instance = new Dictionary($arrayParams);
+        $instance = Dictionary::fromAssociative($arrayParams);
 
-        self::assertSame($stringItem, $instance->getByIndex(0));
-        self::assertSame($stringItem, $instance->getByKey('string'));
-        self::assertTrue($instance->hasKey('string'));
+        self::assertSame(['string', $stringItem], $instance->pair(0));
+        self::assertSame($stringItem, $instance->get('string'));
+        self::assertTrue($instance->has('string'));
+        self::assertEquals(
+            [['string', $stringItem], ['boolean', $booleanItem]],
+            iterator_to_array($instance->toPairs(), false)
+        );
 
         self::assertEquals($arrayParams, iterator_to_array($instance, true));
+    }
+
+    /**
+     * @test
+     */
+    public function test_it_can_be_instantiated_with_key_value_pairs(): void
+    {
+        $stringItem = Item::from('helloWorld');
+        $booleanItem = Item::from(true);
+        $arrayParams = [['string', $stringItem], ['boolean', $booleanItem]];
+        $instance = Dictionary::fromPairs($arrayParams);
+
+        self::assertSame(['string', $stringItem], $instance->pair(0));
+        self::assertSame($stringItem, $instance->get('string'));
+        self::assertTrue($instance->has('string'));
+        self::assertEquals(
+            [['string', $stringItem], ['boolean', $booleanItem]],
+            iterator_to_array($instance->toPairs(), false)
+        );
     }
 
     /**
@@ -36,22 +59,22 @@ final class DictionaryTest extends StructuredFieldTest
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = ['string' => $stringItem, 'boolean' => $booleanItem];
-        $instance = new Dictionary($arrayParams);
+        $instance = Dictionary::fromAssociative($arrayParams);
 
         self::assertCount(2, $instance);
         self::assertFalse($instance->isEmpty());
         $instance->delete('boolean');
 
         self::assertCount(1, $instance);
-        self::assertFalse($instance->hasKey('boolean'));
-        self::assertFalse($instance->hasIndex(1));
+        self::assertFalse($instance->has('boolean'));
+        self::assertFalse($instance->hasPair(1));
 
         $instance->append('foobar', Item::from('BarBaz'));
-        $foundItem =  $instance->getByIndex(1);
+        /** @var array{0:string, 1:Item} $foundItem */
+        $foundItem = $instance->pair(1);
 
-        self::assertInstanceOf(Item::class, $foundItem);
-        self::assertIsString($foundItem->value());
-        self::assertStringContainsString('BarBaz', $foundItem->value());
+        self::assertIsString($foundItem[1]->value());
+        self::assertStringContainsString('BarBaz', $foundItem[1]->value());
 
         $instance->delete('foobar', 'string');
         self::assertCount(0, $instance);
@@ -65,10 +88,10 @@ final class DictionaryTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = new Dictionary();
-        self::assertFalse($instance->hasKey('foobar'));
+        $instance = Dictionary::fromAssociative();
+        self::assertFalse($instance->has('foobar'));
 
-        $instance->getByKey('foobar');
+        $instance->get('foobar');
     }
 
     /**
@@ -78,10 +101,10 @@ final class DictionaryTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = new Dictionary();
-        self::assertFalse($instance->hasIndex(3));
+        $instance = Dictionary::fromAssociative();
+        self::assertFalse($instance->hasPair(3));
 
-        $instance->getByIndex(3);
+        $instance->pair(3);
     }
 
     /**
@@ -91,7 +114,7 @@ final class DictionaryTest extends StructuredFieldTest
     {
         $this->expectException(SyntaxError::class);
 
-        new Dictionary(['bébé'=> Item::from(false)]);
+        Dictionary::fromAssociative(['bébé'=> Item::from(false)]);
     }
 
     /**
@@ -99,7 +122,7 @@ final class DictionaryTest extends StructuredFieldTest
      */
     public function it_can_prepend_an_element(): void
     {
-        $instance = new Dictionary();
+        $instance = Dictionary::fromAssociative();
         $instance->append('a', Item::from(false));
         $instance->prepend('b', Item::from(true));
 
@@ -111,7 +134,7 @@ final class DictionaryTest extends StructuredFieldTest
      */
     public function it_can_returns_the_container_element_keys(): void
     {
-        $instance = new Dictionary();
+        $instance = Dictionary::fromAssociative();
         self::assertSame([], $instance->keys());
         $instance->append('a', Item::from(false));
         $instance->prepend('b', Item::from(true));
@@ -124,15 +147,15 @@ final class DictionaryTest extends StructuredFieldTest
      */
     public function it_can_merge_one_or_more_instances(): void
     {
-        $instance1 = new Dictionary(['a' => Item::from(false)]);
-        $instance2 = new Dictionary(['b' => Item::from(true)]);
-        $instance3 = new Dictionary(['a' => Item::from(42)]);
+        $instance1 = Dictionary::fromAssociative(['a' => Item::from(false)]);
+        $instance2 = Dictionary::fromAssociative(['b' => Item::from(true)]);
+        $instance3 = Dictionary::fromAssociative(['a' => Item::from(42)]);
 
         $instance1->merge($instance2, $instance3);
         self::assertCount(2, $instance1);
 
-        self::assertEquals(Item::from(42), $instance1->getByKey('a'));
-        self::assertEquals(Item::from(true), $instance1->getByKey('b'));
+        self::assertEquals(Item::from(42), $instance1->get('a'));
+        self::assertEquals(Item::from(true), $instance1->get('b'));
     }
 
     /**
@@ -140,15 +163,15 @@ final class DictionaryTest extends StructuredFieldTest
      */
     public function it_can_merge_two_or_more_instances_to_yield_different_result(): void
     {
-        $instance1 = new Dictionary(['a' => Item::from(false)]);
-        $instance2 = new Dictionary(['b' => Item::from(true)]);
-        $instance3 = new Dictionary(['a' => Item::from(42)]);
+        $instance1 = Dictionary::fromAssociative(['a' => Item::from(false)]);
+        $instance2 = Dictionary::fromAssociative(['b' => Item::from(true)]);
+        $instance3 = Dictionary::fromAssociative(['a' => Item::from(42)]);
 
         $instance3->merge($instance2, $instance1);
         self::assertCount(2, $instance3);
 
-        self::assertEquals(Item::from(false), $instance3->getByKey('a'));
-        self::assertEquals(Item::from(true), $instance3->getByKey('b'));
+        self::assertEquals(Item::from(false), $instance3->get('a'));
+        self::assertEquals(Item::from(true), $instance3->get('b'));
     }
 
     /**
@@ -156,7 +179,7 @@ final class DictionaryTest extends StructuredFieldTest
      */
     public function it_can_merge_without_argument_and_not_throw(): void
     {
-        $instance = new Dictionary(['a' => Item::from(false)]);
+        $instance = Dictionary::fromAssociative(['a' => Item::from(false)]);
         $instance->merge();
         self::assertCount(1, $instance);
     }

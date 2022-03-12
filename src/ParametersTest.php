@@ -24,13 +24,32 @@ final class ParametersTest extends StructuredFieldTest
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = ['string' => $stringItem, 'boolean' => $booleanItem];
-        $instance = new Parameters($arrayParams);
+        $instance = Parameters::fromAssociative($arrayParams);
 
-        self::assertSame($stringItem, $instance->getByIndex(0));
-        self::assertSame($stringItem, $instance->getByKey('string'));
-        self::assertTrue($instance->hasKey('string'));
+        self::assertSame(['string', $stringItem], $instance->pair(0));
+        self::assertSame($stringItem, $instance->get('string'));
+        self::assertTrue($instance->has('string'));
 
         self::assertEquals($arrayParams, iterator_to_array($instance, true));
+    }
+
+    /**
+     * @test
+     */
+    public function test_it_can_be_instantiated_with_key_value_pairs(): void
+    {
+        $stringItem = Item::from('helloWorld');
+        $booleanItem = Item::from(true);
+        $arrayParams = [['string', $stringItem], ['boolean', $booleanItem]];
+        $instance = Parameters::fromPairs($arrayParams);
+
+        self::assertSame(['string', $stringItem], $instance->pair(0));
+        self::assertSame($stringItem, $instance->get('string'));
+        self::assertTrue($instance->has('string'));
+        self::assertEquals(
+            [['string', $stringItem], ['boolean', $booleanItem]],
+            iterator_to_array($instance->toPairs(), false)
+        );
     }
 
     /**
@@ -40,10 +59,10 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(SyntaxError::class);
 
-        new Parameters([
+        Parameters::fromAssociative([
             'foo' => Item::from(
                 true,
-                new Parameters(['bar' => Item::from(false)])
+                Parameters::fromAssociative(['bar' => Item::from(false)])
             ),
         ]);
     }
@@ -56,22 +75,27 @@ final class ParametersTest extends StructuredFieldTest
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = ['string' => $stringItem, 'boolean' => $booleanItem];
-        $instance = new Parameters($arrayParams);
+        $instance = Parameters::fromAssociative($arrayParams);
 
         self::assertCount(2, $instance);
+        self::assertEquals(
+            [['string', $stringItem], ['boolean', $booleanItem]],
+            iterator_to_array($instance->toPairs(), false)
+        );
+
 
         $instance->delete('boolean');
 
         self::assertCount(1, $instance);
-        self::assertFalse($instance->hasKey('boolean'));
-        self::assertFalse($instance->hasIndex(1));
+        self::assertFalse($instance->has('boolean'));
+        self::assertFalse($instance->hasPair(1));
 
         $instance->append('foobar', Item::from('BarBaz'));
-        $foundItem =  $instance->getByIndex(1);
+        $foundItem = $instance->pair(1);
 
         self::assertCount(2, $instance);
-        self::assertIsString($foundItem->value());
-        self::assertStringContainsString('BarBaz', $foundItem->value());
+        self::assertIsString($foundItem[1]->value());
+        self::assertStringContainsString('BarBaz', $foundItem[1]->value());
 
         $instance->delete('foobar', 'string');
         self::assertCount(0, $instance);
@@ -85,7 +109,7 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(SyntaxError::class);
 
-        new Parameters(['bébé'=> Item::from(false)]);
+        Parameters::fromAssociative(['bébé'=> Item::from(false)]);
     }
 
     /**
@@ -95,10 +119,10 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = new Parameters();
-        self::assertFalse($instance->hasKey('foobar'));
+        $instance = Parameters::fromAssociative();
+        self::assertFalse($instance->has('foobar'));
 
-        $instance->getByKey('foobar');
+        $instance->get('foobar');
     }
 
     /**
@@ -108,10 +132,10 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = new Parameters();
-        self::assertFalse($instance->hasIndex(3));
+        $instance = Parameters::fromAssociative();
+        self::assertFalse($instance->hasPair(3));
 
-        $instance->getByIndex(3);
+        $instance->pair(3);
     }
 
     /**
@@ -119,7 +143,7 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_can_prepend_an_element(): void
     {
-        $instance = new Parameters();
+        $instance = Parameters::fromAssociative();
         $instance->append('a', Item::from(false));
         $instance->prepend('b', Item::from(true));
 
@@ -131,7 +155,7 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_can_returns_the_container_element_keys(): void
     {
-        $instance = new Parameters();
+        $instance = Parameters::fromAssociative();
         self::assertSame([], $instance->keys());
         $instance->append('a', Item::from(false));
         $instance->prepend('b', Item::from(true));
@@ -144,14 +168,14 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_can_merge_one_or_more_instances(): void
     {
-        $instance1 = new Parameters(['a' =>false]);
-        $instance2 = new Parameters(['b' => true]);
-        $instance3 = new Parameters(['a' => 42]);
+        $instance1 = Parameters::fromAssociative(['a' =>false]);
+        $instance2 = Parameters::fromAssociative(['b' => true]);
+        $instance3 = Parameters::fromAssociative(['a' => 42]);
 
         $instance1->merge($instance2, $instance3);
 
-        self::assertEquals(Item::from(42), $instance1->getByKey('a'));
-        self::assertEquals(Item::from(true), $instance1->getByKey('b'));
+        self::assertEquals(Item::from(42), $instance1->get('a'));
+        self::assertEquals(Item::from(true), $instance1->get('b'));
     }
 
     /**
@@ -159,14 +183,14 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_can_merge_two_or_more_dictionaries_different_result(): void
     {
-        $instance1 = new Parameters(['a' => Item::from(false)]);
-        $instance2 = new Parameters(['b' => Item::from(true)]);
-        $instance3 = new Parameters(['a' => Item::from(42)]);
+        $instance1 = Parameters::fromAssociative(['a' => Item::from(false)]);
+        $instance2 = Parameters::fromAssociative(['b' => Item::from(true)]);
+        $instance3 = Parameters::fromAssociative(['a' => Item::from(42)]);
 
         $instance3->merge($instance2, $instance1);
 
-        self::assertEquals(Item::from(false), $instance3->getByKey('a'));
-        self::assertEquals(Item::from(true), $instance3->getByKey('b'));
+        self::assertEquals(Item::from(false), $instance3->get('a'));
+        self::assertEquals(Item::from(true), $instance3->get('b'));
     }
 
     /**
@@ -174,7 +198,7 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_can_merge_without_argument_and_not_throw(): void
     {
-        $instance = new Parameters(['a' => Item::from(false)]);
+        $instance = Parameters::fromAssociative(['a' => Item::from(false)]);
         $instance->merge();
         self::assertCount(1, $instance);
     }
@@ -187,7 +211,7 @@ final class ParametersTest extends StructuredFieldTest
         $this->expectException(SerializationError::class);
 
         $fields = Item::from('/terms', ['rel' => 'copyright', 'anchor' => '#foo']);
-        $fields->parameters()->getByKey('anchor')->parameters()->set('yolo', 42);
+        $fields->parameters()->get('anchor')->parameters()->set('yolo', 42);
         $fields->toHttpValue();
     }
 }

@@ -19,7 +19,7 @@ final class InnerListTest extends TestCase
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = new InnerList($arrayParams, new Parameters(['test' => Item::from(42)]));
+        $instance = new InnerList($arrayParams, Parameters::fromAssociative(['test' => Item::from(42)]));
         self::assertFalse($instance->parameters()->isEmpty());
 
         self::assertSame($stringItem, $instance->get(0));

@@ -28,7 +28,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
             $this->push($element);
         }
 
-        $this->parameters = $parameters instanceof Parameters ? $parameters : new Parameters($parameters);
+        $this->parameters = $parameters instanceof Parameters ? $parameters : Parameters::fromAssociative($parameters);
     }
 
     public static function fromHttpValue(string $httpValue): self
