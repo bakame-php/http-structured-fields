@@ -138,27 +138,27 @@ $item->isInteger(); //return true
 Apart from the `Item`, the RFC defines different containers with different requirements. The
 package exposes those containers via the following methods `Parameters`, `Dictionary`, 
 `InnerList` and `OrderedList` with the same basic public API. At any given time it 
-is possible to know:
+is possible to:
 
-- if the container is empty via an `isEmpty` method;
-- the number of elements contained in the container via the `Countable` interface;
-- get any element by its string `key` or by its integer `index` via `getByKey` and `getByIndex` methods;
-- if an element is attached to the container using its `index` or  `key` via `hasIndex` and `hasKey` methods;
-- iterate over each contained members via the `IteratorAggregate` interface;
+- tell whether the container is empty via an `isEmpty` method;
+- know the number of elements contained in the container via the `Countable` interface;
+- iterate over each contained elements and its optional associated key via the `IteratorAggregate` interface;
+- tell whether an element is attached to the container using its `index` or  `key` via `hasIndex` and `hasKey` methods;
+- get any element by its string `key` or by its integer `index` via `getByKey` and `getByIndex` methods when applicable;
 - merge multiple instance of the same container using the `merge` method;
 
 ```php
 use Bakame\Http\StructuredFields\Parameters;
 
 $parameters = new Parameters(['a' => 1, 'b' => 2, 'c' => Item::from("hello world")]);
-count($parameters);         // return 2
-$parameters->getByKey('b'); // return Item::fromType(2);
-$parameters->getByIndex(1); // return Item::fromType(2);
-$parameters->hasKey(42);    // return false because the key does not exist.
-$parameters->toHttpValue(); // return ";a=1;b=2"
-$parameters->keys();        // return ["a", "b", "c"]
+count($parameters);          // return 2
+$parameters->getByKey('b');  // return Item::from(2);
+$parameters->getByIndex(-1); // return Item::from("hello world");
+$parameters->hasKey(42);     // return false because the key does not exist.
+$parameters->toHttpValue();  // return ";a=1;b=2"
+$parameters->keys();         // return ["a", "b", "c"]
 ```
-
+*`getByIndex` supports use negative index*
 *Item types are inferred using `Item::from` if a `Item` object is not submitted.* 
 
 #### Ordered Maps
@@ -166,7 +166,7 @@ $parameters->keys();        // return ["a", "b", "c"]
 The `Parameters` and the `Dictionary` classes allow associating a string key to its members as such they expose the 
 following methods:
 
-- `set` add an element at the end of the container, if already present the value is updated;
+- `set` add an element at the end of the container if the key is new otherwise only the value is updated;
 - `append` always add an element at the end of the container, if already present the previous value is removed;
 - `prepend` always add an element at the beginning of the container, if already present the previous value is removed;
 - `delete` to remove elements based on their associated keys;
