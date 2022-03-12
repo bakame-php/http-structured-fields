@@ -57,7 +57,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         return [] === $this->elements;
     }
 
-    public function hasIndex(int $index): bool
+    public function has(int $index): bool
     {
         return null !== $this->filterIndex($index);
     }
@@ -73,7 +73,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         };
     }
 
-    public function getByIndex(int $index): Item|InnerList
+    public function get(int $index): Item|InnerList
     {
         $offset = $this->filterIndex($index);
         if (null === $offset) {
@@ -125,7 +125,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
 
     public function replace(int $index, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
     {
-        if (!$this->hasIndex($index)) {
+        if (!$this->has($index)) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 

@@ -22,7 +22,7 @@ final class InnerListTest extends TestCase
         $instance = new InnerList($arrayParams, new Parameters(['test' => Item::from(42)]));
         self::assertFalse($instance->parameters()->isEmpty());
 
-        self::assertSame($stringItem, $instance->getByIndex(0));
+        self::assertSame($stringItem, $instance->get(0));
         self::assertFalse($instance->isEmpty());
 
         self::assertEquals($arrayParams, iterator_to_array($instance, true));
@@ -39,18 +39,18 @@ final class InnerListTest extends TestCase
         $instance = new InnerList($arrayParams);
 
         self::assertCount(2, $instance);
-        self::assertNotNull($instance->getByIndex(1));
-        self::assertTrue($instance->hasIndex(1));
+        self::assertNotNull($instance->get(1));
+        self::assertTrue($instance->has(1));
         self::assertTrue($instance->parameters()->isEmpty());
 
         $instance->remove(1);
 
         self::assertCount(1, $instance);
-        self::assertFalse($instance->hasIndex(1));
+        self::assertFalse($instance->has(1));
 
         $instance->push('BarBaz');
         $instance->insert(1, );
-        $element = $instance->getByIndex(1);
+        $element = $instance->get(1);
         self::assertCount(2, $instance);
         self::assertInstanceOf(Item::class, $element);
         self::assertIsString($element->value());
@@ -117,9 +117,9 @@ final class InnerListTest extends TestCase
         $this->expectException(InvalidOffset::class);
 
         $instance = new InnerList();
-        self::assertFalse($instance->hasIndex(3));
+        self::assertFalse($instance->has(3));
 
-        $instance->getByIndex(3);
+        $instance->get(3);
     }
 
     /**

@@ -125,7 +125,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
 
     public function replace(int $index, Item|ByteSequence|Token|bool|int|float|string|null $element): void
     {
-        if (!$this->hasIndex($index)) {
+        if (!$this->has($index)) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
@@ -158,7 +158,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         return [] === $this->elements;
     }
 
-    public function getByIndex(int $index): Item|null
+    public function get(int $index): Item|null
     {
         $offset = $this->filterIndex($index);
         if (null === $offset) {
@@ -168,7 +168,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         return $this->elements[$offset];
     }
 
-    public function hasIndex(int $index): bool
+    public function has(int $index): bool
     {
         return null !== $this->filterIndex($index);
     }

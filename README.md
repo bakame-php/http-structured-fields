@@ -141,8 +141,6 @@ is possible to:
 - iterate over each contained element and its optional associated key via the `IteratorAggregate` interface;
 - tell whether the container is empty via an `isEmpty` method;
 - know the number of elements contained in the container via the `Countable` interface;
-- tell whether an element is attached to the container using its `index` or  `key` via `hasIndex` and `hasKey` methods;
-- get any element by its string `key` or by its integer `index` via `getByKey` and `getByIndex` methods when applicable;
 - merge multiple instance of the same container using the `merge` method;
 
 ```php
@@ -150,14 +148,9 @@ use Bakame\Http\StructuredFields\Parameters;
 
 $parameters = new Parameters(['a' => 1, 'b' => 2, 'c' => Item::from("hello world")]);
 count($parameters);          // return 2
-$parameters->getByKey('b');  // return Item::from(2);
-$parameters->getByIndex(-1); // return Item::from("hello world");
-$parameters->hasKey(42);     // return false because the key does not exist.
+$parameters->isEmpty();      // returns false
 $parameters->toHttpValue();  // return ";a=1;b=2"
-$parameters->keys();         // return ["a", "b", "c"]
 ```
-- *`getByIndex` supports negative index*
-- *Item types are inferred using `Item::from` if a `Item` object is not submitted.* 
 
 #### Ordered Maps
 
@@ -168,6 +161,8 @@ key to its members as such they expose the following methods:
 - `append` always add an element at the end of the container, if already present the previous value is removed;
 - `prepend` always add an element at the beginning of the container, if already present the previous value is removed;
 - `delete` to remove elements based on their associated keys;
+- tell whether an element is attached to the container using its `index` or  `key` via `hasIndex` and `hasKey` methods;
+- get any element by its string `key` or by its integer `index` via `getByKey` and `getByIndex` methods when applicable;
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
@@ -181,11 +176,15 @@ $dictionary->toHttpValue(); //returns "a=?0, b, c;foo=bar"
 $dictionary->hasKey('a');   //return true
 $dictionary->hasKey('foo'); //return false
 $dictionary->getByIndex(1); //return Item::fromBoolean(true)
+$dictionary->hasIndex(-1);  //return Item::fromBoolean(true)
 $dictionary->append('z', 42.0);
 $dictionary->delete('b', 'c');
 echo $dictionary->toHttpValue(); //returns "a=?0, z=42.0"
 ```
 
+**Item types are inferred using `Item::from` if a `Item` object is not submitted.**
+
+- `getByIndex` supports negative index
 - `Parameters` can only contains `Item` instances 
 - `Dictionary` instance can contain `Item` and `InnerList` instances.
 
@@ -194,6 +193,8 @@ echo $dictionary->toHttpValue(); //returns "a=?0, z=42.0"
 The `OrderedList` and the `InnerList` classes are list of members 
 that act as containers and also expose the following methods
 
+- `get` to access an element at a given index (negative indexes are supported)
+- `has` tell whether an element is attached to the container using its `index`;
 - `push` to add elements at the end of the list;
 - `unshift` to add elements at the beginning of the list;
 - `insert` to add elements at a given position in the list; 
@@ -202,14 +203,16 @@ that act as containers and also expose the following methods
 
 to enable manipulation their content.
 
+**Item types are inferred using `Item::from` if a `Item` object is not submitted.**
+
 **EVERY CHANGE IN THE LIST WILL RE-INDEX THE LIST AS TO NOT EXPOSE MISSING INDEXES**
 
 ```php
 use Bakame\Http\StructuredFields\OrderedList;
 
-$list = OrderedList::fromHttpValue("(\"foo\" \"bar\"), (\"baz\"), (\"bat\" \"one\"), ()");
-$list->hasIndex(2); //return true
-$list->hasIndex(42); //return false
+$list = OrderedList::fromHttpValue('("foo" "bar"), ("baz"), ("bat" "one"), ()');
+$list->has(2); //return true
+$list->has(42); //return false
 $list->push(42);
 $list->remove(0, 2);
 echo $list->toHttpValue(); //returns "("baz"), (), 42.0"

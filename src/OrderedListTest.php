@@ -25,7 +25,7 @@ final class OrderedListTest extends StructuredFieldTest
         $arrayParams = [$stringItem, $booleanItem];
         $instance = new OrderedList($arrayParams);
 
-        self::assertSame($stringItem, $instance->getByIndex(0));
+        self::assertSame($stringItem, $instance->get(0));
         self::assertFalse($instance->isEmpty());
 
         self::assertEquals($arrayParams, iterator_to_array($instance, true));
@@ -42,15 +42,15 @@ final class OrderedListTest extends StructuredFieldTest
         $instance = new OrderedList($arrayParams);
 
         self::assertCount(2, $instance);
-        self::assertSame($booleanItem, $instance->getByIndex(1));
+        self::assertSame($booleanItem, $instance->get(1));
 
         $instance->remove(1);
 
         self::assertCount(1, $instance);
-        self::assertFalse($instance->hasIndex(1));
+        self::assertFalse($instance->has(1));
 
         $instance->push(Item::from('BarBaz'));
-        $element = $instance->getByIndex(1);
+        $element = $instance->get(1);
 
         self::assertCount(2, $instance);
         self::assertInstanceOf(Item::class, $element);
@@ -108,9 +108,9 @@ final class OrderedListTest extends StructuredFieldTest
         $this->expectException(InvalidOffset::class);
 
         $instance = new OrderedList();
-        self::assertFalse($instance->hasIndex(3));
+        self::assertFalse($instance->has(3));
 
-        $instance->getByIndex(3);
+        $instance->get(3);
     }
 
     /**
