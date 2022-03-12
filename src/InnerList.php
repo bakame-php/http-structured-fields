@@ -36,11 +36,11 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         $field = trim($httpValue);
 
         if (1 !== preg_match("/^\((?<content>.*)\)(?<parameters>[^,]*)/", $field, $found)) {
-            throw new SyntaxError("InnerList field `$httpValue` contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list contains invalid characters.");
         }
 
         if ('' !== $found['parameters'] && !str_starts_with($found['parameters'], ';')) {
-            throw new SyntaxError("InnerList field `$httpValue` contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list contains invalid characters.");
         }
 
         /** @var string $content */
