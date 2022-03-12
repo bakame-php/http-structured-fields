@@ -17,27 +17,14 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     private array $elements;
 
     /**
-     * @param iterable<string, Item> $elements
+     * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $elements
      */
     public function __construct(iterable $elements = [])
     {
         $this->elements = [];
-        foreach ($elements as $key => $value) {
-            $this->set($key, $value);
+        foreach ($elements as $key => $element) {
+            $this->set($key, self::filterElement($element));
         }
-    }
-
-    /**
-     * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $items
-     */
-    public static function fromItems(iterable $items): self
-    {
-        $instance = new self();
-        foreach ($items as $key => $item) {
-            $instance->set($key, self::filterElement($item));
-        }
-
-        return $instance;
     }
 
     private static function filterElement(Item|ByteSequence|Token|bool|int|float|string $element): Item

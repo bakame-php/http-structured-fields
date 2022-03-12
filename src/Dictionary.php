@@ -57,20 +57,20 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      *
      * @return array{0:string, 1:string}
      */
-    private static function extractPair(string $element): array
+    private static function extractPair(string $pair): array
     {
-        $element = trim($element);
+        $pair = trim($pair);
 
-        if ('' === $element) {
-            throw new SyntaxError('Dictionary pair can not be empty.');
+        if ('' === $pair) {
+            throw new SyntaxError('The HTTP textual representation for a dictionary pair can not be empty.');
         }
 
-        if (1 !== preg_match('/^(?<key>[a-z*][a-z0-9.*_-]*)(=)?(?<value>.*)/', $element, $found)) {
-            throw new SyntaxError("The HTTP textual representation `$element` for a dictionary pair contains invalid characters.");
+        if (1 !== preg_match('/^(?<key>[a-z*][a-z0-9.*_-]*)(=)?(?<value>.*)/', $pair, $found)) {
+            throw new SyntaxError("The HTTP textual representation `$pair` for a dictionary pair contains invalid characters.");
         }
 
         if (rtrim($found['key']) !== $found['key'] || ltrim($found['value']) !== $found['value']) {
-            throw new SyntaxError("The HTTP textual representation `$element` for a dictionary pair contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation `$pair` for a dictionary pair contains invalid characters.");
         }
 
         $found['value'] = trim($found['value']);
