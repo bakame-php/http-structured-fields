@@ -131,7 +131,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
         foreach ($this->elements as $key => $val) {
             if (!$val->parameters()->isEmpty()) {
-                throw new SyntaxError('Parameters instances can not contain parameterized Items.');
+                throw new SerializationError('Parameters instances can not contain parameterized Items.');
             }
 
             $value = ';'.$key;

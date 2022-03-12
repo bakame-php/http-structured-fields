@@ -184,7 +184,7 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_fails_if_internal_parameters_are_changed_illegally(): void
     {
-        $this->expectException(SyntaxError::class);
+        $this->expectException(SerializationError::class);
 
         $fields = Item::from('/terms', ['rel' => 'copyright', 'anchor' => '#foo']);
         $fields->parameters()->getByKey('anchor')->parameters()->set('yolo', 42);
