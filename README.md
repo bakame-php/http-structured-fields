@@ -74,9 +74,12 @@ The `toHttpValue` method returns the normalized string representation suited for
 
 #### Types
 
-Defined in the RFC, this package translates them to PHP native type when possible.
+Defined in the RFC, bare type are translated to PHP native type when possible. Two additional classes:
 
-The information is represented in the table below:
+- `Bakame\Http\StructuredFields\Token` and
+- `Bakame\Http\StructuredFields\ByteSequence`
+
+are used to represent non-native types as shown in the table below: 
 
 | HTTP DataType | Returned value       | validation method      |
 |---------------|----------------------|------------------------|
@@ -87,17 +90,10 @@ The information is represented in the table below:
 | Token         | class `Token`        | `Item::isToken`        |
 | Byte Sequence | class `ByteSequence` | `Item::isByteSequence` |
 
-Two additional classes:
-
-- `Bakame\Http\StructuredFields\Token` and
-- `Bakame\Http\StructuredFields\ByteSequence`
-
-are used to represent non-native types.
-
 #### Parameters
 
 As explain in the RFC, `Parameters` are containers of `Item` instances. It can be associated
-to other structure **BUT** the items it contains can not themselves contain `Parameters`
+to other structures **BUT** the items it contains can not themselves contain `Parameters`
 instance. More on parameters public API will be cover in subsequent paragraphs.
 
 #### Examples

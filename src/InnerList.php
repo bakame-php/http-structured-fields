@@ -147,7 +147,10 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
     public function merge(self ...$others): void
     {
         foreach ($others as $other) {
-            $this->elements = [...$this->elements, ...$other->elements];
+            foreach ($other as $value) {
+                $this->push($value);
+                $this->parameters->merge($other->parameters());
+            }
         }
     }
 

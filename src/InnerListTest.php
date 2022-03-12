@@ -153,10 +153,10 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_one_or_more_instances(): void
     {
-        $instance1 = new InnerList([Item::from(false)]);
-        $instance2 = new InnerList([Item::from(true)]);
-        $instance3 = new InnerList([Item::from(42)]);
-        $expected = new InnerList([Item::from(false), Item::from(true), Item::from(42)]);
+        $instance1 = new InnerList([false], ['foo' => 'bar']);
+        $instance2 = new InnerList([true]);
+        $instance3 = new InnerList([42], ['foo' => 'baz']);
+        $expected = new InnerList([false, true, 42], ['foo' => 'baz']);
 
         $instance1->merge($instance2, $instance3);
 
@@ -169,7 +169,7 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_without_argument_and_not_throw(): void
     {
-        $instance = new InnerList([Item::from(false)]);
+        $instance = new InnerList([false]);
         $instance->merge();
         self::assertCount(1, $instance);
     }
@@ -179,10 +179,10 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_two_or_more_instances_to_yield_different_result(): void
     {
-        $instance1 = new InnerList([Item::from(false)]);
-        $instance2 = new InnerList([Item::from(true)]);
-        $instance3 = new InnerList([Item::from(42)]);
-        $expected = new InnerList([Item::from(42), Item::from(true), Item::from(false)]);
+        $instance1 = new InnerList([false], ['foo' => 'bar']);
+        $instance2 = new InnerList([true]);
+        $instance3 = new InnerList([42], ['foo' => 'baz']);
+        $expected = new InnerList([42, true, false], ['foo' => 'bar']);
 
         $instance3->merge($instance2, $instance1);
 
