@@ -172,6 +172,34 @@ final class Item implements StructuredField, SupportsParameters
         throw new SyntaxError("The HTTP textual representation `$originalString` for a string contains an invalid end string.");
     }
 
+    public function toHttpValue(): string
+    {
+        return $this->serializeValue($this->value).$this->parameters->toHttpValue();
+    }
+
+    private function serializeValue(Token|ByteSequence|int|float|string|bool $value): string
+    {
+        return match (true) {
+            $value instanceof Token => $value->toHttpValue(),
+            $value instanceof ByteSequence => $value->toHttpValue(),
+            is_string($value) => '"'.preg_replace('/(["\\\])/', '\\\$1', $value).'"',
+            is_int($value) => (string) $value,
+            is_float($value) => $this->serializeDecimal($value),
+            default => '?'.($value ? '1' : '0'),
+        };
+    }
+
+    private function serializeDecimal(float $value): string
+    {
+        /** @var string $result */
+        $result = json_encode(round($value, 3, PHP_ROUND_HALF_EVEN));
+        if (str_contains($result, '.')) {
+            return $result;
+        }
+
+        return $result.'.0';
+    }
+
     public function value(): Token|ByteSequence|int|float|string|bool
     {
         return $this->value;
@@ -180,11 +208,6 @@ final class Item implements StructuredField, SupportsParameters
     public function parameters(): Parameters
     {
         return $this->parameters;
-    }
-
-    public function toHttpValue(): string
-    {
-        return $this->serializeValue($this->value).$this->parameters->toHttpValue();
     }
 
     public function isInteger(): bool
@@ -215,28 +238,5 @@ final class Item implements StructuredField, SupportsParameters
     public function isByteSequence(): bool
     {
         return $this->value instanceof ByteSequence;
-    }
-
-    private function serializeValue(Token|ByteSequence|int|float|string|bool $value): string
-    {
-        return match (true) {
-            $value instanceof Token => $value->toHttpValue(),
-            $value instanceof ByteSequence => $value->toHttpValue(),
-            is_string($value) => '"'.preg_replace('/(["\\\])/', '\\\$1', $value).'"',
-            is_int($value) => (string) $value,
-            is_float($value) => $this->serializeDecimal($value),
-            default => '?'.($value ? '1' : '0'),
-        };
-    }
-
-    private function serializeDecimal(float $value): string
-    {
-        /** @var string $result */
-        $result = json_encode(round($value, 3, PHP_ROUND_HALF_EVEN));
-        if (str_contains($result, '.')) {
-            return $result;
-        }
-
-        return $result.'.0';
     }
 }

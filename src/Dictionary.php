@@ -81,14 +81,27 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return [$found['key'], $found['value']];
     }
 
-    public function isEmpty(): bool
+    public function toHttpValue(): string
     {
-        return [] === $this->elements;
+        $returnValue = [];
+        foreach ($this->elements as $key => $element) {
+            $returnValue[] = match (true) {
+                $element instanceof Item && true === $element->value() => $key.$element->parameters()->toHttpValue(),
+                default => $key.'='.$element->toHttpValue(),
+            };
+        }
+
+        return implode(', ', $returnValue);
     }
 
     public function count(): int
     {
         return count($this->elements);
+    }
+
+    public function isEmpty(): bool
+    {
+        return [] === $this->elements;
     }
 
     /**
@@ -128,6 +141,17 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return null !== $this->filterIndex($index);
     }
 
+    private function filterIndex(int $index): int|null
+    {
+        $max = count($this->elements);
+
+        return match (true) {
+            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            0 > $index => $max + $index,
+            default => $index,
+        };
+    }
+
     public function getByIndex(int $index): Item|InnerList|null
     {
         $offset = $this->filterIndex($index);
@@ -136,19 +160,6 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         }
 
         return array_values($this->elements)[$offset];
-    }
-
-    public function toHttpValue(): string
-    {
-        $returnValue = [];
-        foreach ($this->elements as $key => $element) {
-            $returnValue[] = match (true) {
-                $element instanceof Item && true === $element->value() => $key.$element->parameters()->toHttpValue(),
-                default => $key.'='.$element->toHttpValue(),
-            };
-        }
-
-        return implode(', ', $returnValue);
     }
 
     public function set(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
@@ -170,17 +181,6 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return match (true) {
             $element instanceof InnerList, $element instanceof Item => $element,
             default => Item::from($element),
-        };
-    }
-
-    private function filterIndex(int $index): int|null
-    {
-        $max = count($this->elements);
-
-        return match (true) {
-            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
-            0 > $index => $max + $index,
-            default => $index,
         };
     }
 

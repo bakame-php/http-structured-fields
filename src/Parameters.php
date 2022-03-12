@@ -57,6 +57,26 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return $parameters;
     }
 
+    public function toHttpValue(): string
+    {
+        $returnValue = [];
+
+        foreach ($this->elements as $key => $val) {
+            if (!$val->parameters()->isEmpty()) {
+                throw new SerializationError('Parameters instances can not contain parameterized Items.');
+            }
+
+            $value = ';'.$key;
+            if ($val->value() !== true) {
+                $value .= '='.$val->toHttpValue();
+            }
+
+            $returnValue[] = $value;
+        }
+
+        return implode('', $returnValue);
+    }
+
     public function count(): int
     {
         return count($this->elements);
@@ -85,6 +105,11 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return array_keys($this->elements);
     }
 
+    public function hasKey(string $key): bool
+    {
+        return array_key_exists($key, $this->elements);
+    }
+
     public function getByKey(string $key): Item
     {
         if (!array_key_exists($key, $this->elements)) {
@@ -94,19 +119,9 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return $this->elements[$key];
     }
 
-    public function hasKey(string $key): bool
+    public function hasIndex(int $index): bool
     {
-        return array_key_exists($key, $this->elements);
-    }
-
-    public function getByIndex(int $index): Item
-    {
-        $offset = $this->filterIndex($index);
-        if (null === $offset) {
-            throw InvalidOffset::dueToIndexNotFound($index);
-        }
-
-        return array_values($this->elements)[$offset];
+        return null !== $this->filterIndex($index);
     }
 
     private function filterIndex(int $index): int|null
@@ -120,29 +135,14 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         };
     }
 
-    public function hasIndex(int $index): bool
+    public function getByIndex(int $index): Item
     {
-        return null !== $this->filterIndex($index);
-    }
-
-    public function toHttpValue(): string
-    {
-        $returnValue = [];
-
-        foreach ($this->elements as $key => $val) {
-            if (!$val->parameters()->isEmpty()) {
-                throw new SerializationError('Parameters instances can not contain parameterized Items.');
-            }
-
-            $value = ';'.$key;
-            if ($val->value() !== true) {
-                $value .= '='.$val->toHttpValue();
-            }
-
-            $returnValue[] = $value;
+        $offset = $this->filterIndex($index);
+        if (null === $offset) {
+            throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        return implode('', $returnValue);
+        return array_values($this->elements)[$offset];
     }
 
     public function set(string $key, Item|ByteSequence|Token|bool|int|float|string $element): void

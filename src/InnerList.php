@@ -81,17 +81,75 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         );
     }
 
+    public function toHttpValue(): string
+    {
+        $returnArray = array_map(fn (Item|null $value): string|null => $value?->toHttpValue(), $this->elements);
+
+        return '('.implode(' ', $returnArray).')'.$this->parameters->toHttpValue();
+    }
+
+    public function parameters(): Parameters
+    {
+        return $this->parameters;
+    }
+
+    public function count(): int
+    {
+        return count($this->elements);
+    }
+
+    public function isEmpty(): bool
+    {
+        return [] === $this->elements;
+    }
+
+    /**
+     * @return Iterator<Item|null>
+     */
+    public function getIterator(): Iterator
+    {
+        foreach ($this->elements as $item) {
+            yield $item;
+        }
+    }
+
+    public function has(int $index): bool
+    {
+        return null !== $this->filterIndex($index);
+    }
+
+    private function filterIndex(int $index): int|null
+    {
+        $max = count($this->elements);
+
+        return match (true) {
+            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            0 > $index => $max + $index,
+            default => $index,
+        };
+    }
+
+    public function get(int $index): Item|null
+    {
+        $offset = $this->filterIndex($index);
+        if (null === $offset) {
+            throw InvalidOffset::dueToIndexNotFound($index);
+        }
+
+        return $this->elements[$offset];
+    }
+
+    public function unshift(Item|ByteSequence|Token|bool|int|float|string|null ...$elements): void
+    {
+        $this->elements = [...array_map(self::convertItem(...), $elements), ...$this->elements];
+    }
+
     private static function convertItem(Item|ByteSequence|Token|bool|int|float|string|null $item): Item|null
     {
         return match (true) {
             $item instanceof Item, null === $item => $item,
             default => Item::from($item),
         };
-    }
-
-    public function unshift(Item|ByteSequence|Token|bool|int|float|string|null ...$elements): void
-    {
-        $this->elements = [...array_map(self::convertItem(...), $elements), ...$this->elements];
     }
 
     public function push(Item|ByteSequence|Token|bool|int|float|string|null ...$elements): void
@@ -109,17 +167,6 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
             0 === $offset => $this->unshift(...$elements),
             count($this->elements) === $offset => $this->push(...$elements),
             default => array_splice($this->elements, $offset, 0, array_map(self::convertItem(...), $elements)),
-        };
-    }
-
-    private function filterIndex(int $index): int|null
-    {
-        $max = count($this->elements);
-
-        return match (true) {
-            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
-            0 > $index => $max + $index,
-            default => $index,
         };
     }
 
@@ -151,52 +198,5 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
                 $this->parameters->merge($other->parameters());
             }
         }
-    }
-
-    public function isEmpty(): bool
-    {
-        return [] === $this->elements;
-    }
-
-    public function get(int $index): Item|null
-    {
-        $offset = $this->filterIndex($index);
-        if (null === $offset) {
-            throw InvalidOffset::dueToIndexNotFound($index);
-        }
-
-        return $this->elements[$offset];
-    }
-
-    public function has(int $index): bool
-    {
-        return null !== $this->filterIndex($index);
-    }
-
-    public function parameters(): Parameters
-    {
-        return $this->parameters;
-    }
-
-    public function count(): int
-    {
-        return count($this->elements);
-    }
-
-    /**
-     * @return Iterator<Item|null>
-     */
-    public function getIterator(): Iterator
-    {
-        foreach ($this->elements as $item) {
-            yield $item;
-        }
-    }
-
-    public function toHttpValue(): string
-    {
-        $returnArray = array_map(fn (Item|null $value): string|null => $value?->toHttpValue(), $this->elements);
-
-        return '('.implode(' ', $returnArray).')'.$this->parameters->toHttpValue();
     }
 }

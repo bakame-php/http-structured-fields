@@ -34,8 +34,12 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
             return new self();
         }
 
-        $reducer = function (self $carry, string $element): self {
-            $carry->push(self::parseItemOrInnerList(trim($element, " \t")));
+        $parser = fn (string $element): Item|InnerList => str_starts_with($element, '(')
+            ? InnerList::fromHttpValue($element)
+            : Item::fromHttpValue($element);
+
+        $reducer = function (self $carry, string $element) use ($parser): self {
+            $carry->push($parser(trim($element, " \t")));
 
             return $carry;
         };
@@ -43,18 +47,37 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         return array_reduce(explode(',', $httpValue), $reducer, new self());
     }
 
-    private static function parseItemOrInnerList(string $element): Item|InnerList
+    public function toHttpValue(): string
     {
-        if (str_starts_with($element, '(')) {
-            return InnerList::fromHttpValue($element);
+        $returnValue = [];
+        foreach ($this->elements as $key => $element) {
+            $returnValue[] = match (true) {
+                $element instanceof Item && true === $element->value() => $key.$element->parameters()->toHttpValue(),
+                default => !is_int($key) ? $key.'='.$element->toHttpValue() : $element->toHttpValue(),
+            };
         }
 
-        return Item::fromHttpValue($element);
+        return implode(', ', $returnValue);
+    }
+
+    public function count(): int
+    {
+        return count($this->elements);
     }
 
     public function isEmpty(): bool
     {
         return [] === $this->elements;
+    }
+
+    /**
+     * @return Iterator<Item|InnerList>
+     */
+    public function getIterator(): Iterator
+    {
+        foreach ($this->elements as $item) {
+            yield $item;
+        }
     }
 
     public function has(int $index): bool
@@ -101,13 +124,6 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         $this->elements = [...$this->elements, ...array_map(self::filterElement(...), $elements)];
     }
 
-    public function merge(self ...$others): void
-    {
-        foreach ($others as $other) {
-            $this->elements = [...$this->elements, ...$other->elements];
-        }
-    }
-
     public function insert(
         int $index,
         InnerList|Item|ByteSequence|Token|bool|int|float|string ...$elements
@@ -141,31 +157,10 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         $this->elements = array_values($this->elements);
     }
 
-    public function count(): int
+    public function merge(self ...$others): void
     {
-        return count($this->elements);
-    }
-
-    /**
-     * @return Iterator<Item|InnerList>
-     */
-    public function getIterator(): Iterator
-    {
-        foreach ($this->elements as $item) {
-            yield $item;
+        foreach ($others as $other) {
+            $this->elements = [...$this->elements, ...$other->elements];
         }
-    }
-
-    public function toHttpValue(): string
-    {
-        $returnValue = [];
-        foreach ($this->elements as $key => $element) {
-            $returnValue[] = match (true) {
-                $element instanceof Item && true === $element->value() => $key.$element->parameters()->toHttpValue(),
-                default => !is_int($key) ? $key.'='.$element->toHttpValue() : $element->toHttpValue(),
-            };
-        }
-
-        return implode(', ', $returnValue);
     }
 }
