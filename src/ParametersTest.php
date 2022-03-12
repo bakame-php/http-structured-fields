@@ -144,9 +144,9 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_can_merge_one_or_more_instances(): void
     {
-        $instance1 = new Parameters(['a' => Item::from(false)]);
-        $instance2 = new Parameters(['b' => Item::from(true)]);
-        $instance3 = new Parameters(['a' => Item::from(42)]);
+        $instance1 = new Parameters(['a' =>false]);
+        $instance2 = new Parameters(['b' => true]);
+        $instance3 = new Parameters(['a' => 42]);
 
         $instance1->merge($instance2, $instance3);
 

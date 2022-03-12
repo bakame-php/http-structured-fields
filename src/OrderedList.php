@@ -110,10 +110,8 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
 
     public function insert(
         int $index,
-        InnerList|Item|ByteSequence|Token|bool|int|float|string $element,
         InnerList|Item|ByteSequence|Token|bool|int|float|string ...$elements
     ): void {
-        array_unshift($elements, $element);
         $offset = $this->filterIndex($index);
         match (true) {
             null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
