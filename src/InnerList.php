@@ -31,16 +31,16 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         $this->parameters = $parameters instanceof Parameters ? $parameters : Parameters::fromItems($parameters);
     }
 
-    public static function fromHttpValue(string $field): self
+    public static function fromHttpValue(string $httpValue): self
     {
-        $field = trim($field);
+        $field = trim($httpValue);
 
         if (1 !== preg_match("/^\((?<content>.*)\)(?<parameters>[^,]*)/", $field, $found)) {
-            throw new SyntaxError("InnerList field `$field` contains invalid characters.");
+            throw new SyntaxError("InnerList field `$httpValue` contains invalid characters.");
         }
 
         if ('' !== $found['parameters'] && !str_starts_with($found['parameters'], ';')) {
-            throw new SyntaxError("InnerList field `$field` contains invalid characters.");
+            throw new SyntaxError("InnerList field `$httpValue` contains invalid characters.");
         }
 
         /** @var string $content */

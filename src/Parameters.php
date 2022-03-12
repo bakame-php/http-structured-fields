@@ -48,18 +48,17 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         };
     }
 
-    public static function fromHttpValue(string $field): self
+    public static function fromHttpValue(string $httpValue): self
     {
-        $instance = new self();
-        if ('' === $field) {
-            return $instance;
+        $parameters = new self();
+        if ('' === $httpValue) {
+            return $parameters;
         }
 
-        $parameters = new self();
-        foreach (explode(';', $field) as $pair) {
+        foreach (explode(';', $httpValue) as $pair) {
             [$key, $value] = explode('=', $pair, 2) + [1 => '?1'];
             if (rtrim($key) !== $key || ltrim($value) !== $value) {
-                throw new SyntaxError("Invalid parameter pair: `$field`.");
+                throw new SyntaxError("The HTTP textual representation `$pair` for a parameter pair contains invalid characters.");
             }
 
             $key = trim($key);
@@ -145,7 +144,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
         foreach ($this->elements as $key => $val) {
             if (!$val->parameters()->isEmpty()) {
-                throw new SyntaxError('the Item cannot be parameterized.');
+                throw new SyntaxError('Parameters instances can not contain parameterized Items.');
             }
 
             $value = ';'.$key;
@@ -170,11 +169,11 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     private static function validate(string $key, Item $item): void
     {
         if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
-            throw new SyntaxError('Invalid characters in key: `'.$key.'`');
+            throw new SyntaxError("The Parameters key `$key` contains invalid characters.");
         }
 
         if (!$item->parameters()->isEmpty()) {
-            throw new SyntaxError('the Item cannot be parameterized.');
+            throw new SyntaxError('Parameters instances can not contain parameterized Items.');
         }
     }
 

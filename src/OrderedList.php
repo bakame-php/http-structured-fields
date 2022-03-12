@@ -27,10 +27,10 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         }
     }
 
-    public static function fromHttpValue(string $field): self
+    public static function fromHttpValue(string $httpValue): self
     {
-        $field = trim($field, ' ');
-        if ('' === $field) {
+        $httpValue = trim($httpValue, ' ');
+        if ('' === $httpValue) {
             return new self();
         }
 
@@ -40,7 +40,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
             return $carry;
         };
 
-        return array_reduce(explode(',', $field), $reducer, new self());
+        return array_reduce(explode(',', $httpValue), $reducer, new self());
     }
 
     private static function parseItemOrInnerList(string $element): Item|InnerList

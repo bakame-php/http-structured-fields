@@ -27,23 +27,23 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         }
     }
 
-    public static function fromHttpValue(string $field): self
+    public static function fromHttpValue(string $httpValue): self
     {
         $instance = new self();
-        $field = trim($field, ' ');
-        if ('' === $field) {
+        $httpValue = trim($httpValue, ' ');
+        if ('' === $httpValue) {
             return $instance;
         }
 
-        if (1 === preg_match("/[^\x20-\x7E\t]/", $field) || str_starts_with($field, "\t")) {
-            throw new SyntaxError("Dictionary field `$field` contains invalid characters.");
+        if (1 === preg_match("/[^\x20-\x7E\t]/", $httpValue) || str_starts_with($httpValue, "\t")) {
+            throw new SyntaxError("The HTTP textual representation `$httpValue` for dictionary contains invalid characters.");
         }
 
         $parser = fn (string $element): Item|InnerList => str_starts_with($element, '(')
             ? InnerList::fromHttpValue($element)
             : Item::fromHttpValue($element);
 
-        return array_reduce(explode(',', $field), function (self $instance, string $element) use ($parser): self {
+        return array_reduce(explode(',', $httpValue), function (self $instance, string $element) use ($parser): self {
             [$key, $value] = self::extractPair($element);
 
             $instance->set($key, $parser($value));
@@ -66,11 +66,11 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         }
 
         if (1 !== preg_match('/^(?<key>[a-z*][a-z0-9.*_-]*)(=)?(?<value>.*)/', $element, $found)) {
-            throw new SyntaxError("Dictionary pair `$element` contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation `$element` for a dictionary pair contains invalid characters.");
         }
 
         if (rtrim($found['key']) !== $found['key'] || ltrim($found['value']) !== $found['value']) {
-            throw new SyntaxError("Dictionary pair `$element` contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation `$element` for a dictionary pair contains invalid characters.");
         }
 
         $found['value'] = trim($found['value']);
@@ -161,7 +161,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     private static function validateKey(string $key): void
     {
         if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
-            throw new SyntaxError("Key `$key` contains invalid characters.");
+            throw new SyntaxError("The dictionary key `$key` contains invalid characters.");
         }
     }
 

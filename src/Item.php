@@ -54,19 +54,19 @@ final class Item implements StructuredField, SupportsParameters
         return $value;
     }
 
-    public static function fromHttpValue(string $field): self
+    public static function fromHttpValue(string $httpValue): self
     {
-        $field = trim($field, ' ');
+        $httpValue = trim($httpValue, ' ');
         [$value, $parameters] = match (true) {
-            $field === '',
-            1 === preg_match("/[\r\t\n]/", $field),
-            1 === preg_match("/[^\x20-\x7E]/", $field) => throw new SyntaxError("Item field `$field` contains invalid characters."),
-            1 === preg_match('/^(-?[0-9])/', $field) => self::parseNumber($field),
-            $field[0] == '"' => self::parseString($field),
-            $field[0] == ':' => self::parseBytesSequence($field),
-            $field[0] == '?' => self::parseBoolean($field),
-            1 === preg_match('/^([a-z*])/i', $field) => self::parseToken($field),
-            default => throw new SyntaxError("Item field `$field` is unknown or unsupported."),
+            $httpValue === '',
+            1 === preg_match("/[\r\t\n]/", $httpValue),
+            1 === preg_match("/[^\x20-\x7E]/", $httpValue) => throw new SyntaxError("Item field `$httpValue` contains invalid characters."),
+            1 === preg_match('/^(-?[0-9])/', $httpValue) => self::parseNumber($httpValue),
+            $httpValue[0] == '"' => self::parseString($httpValue),
+            $httpValue[0] == ':' => self::parseBytesSequence($httpValue),
+            $httpValue[0] == '?' => self::parseBoolean($httpValue),
+            1 === preg_match('/^([a-z*])/i', $httpValue) => self::parseToken($httpValue),
+            default => throw new SyntaxError("Item field `$httpValue` is unknown or unsupported."),
         };
 
         return new self($value, Parameters::fromHttpValue($parameters));
