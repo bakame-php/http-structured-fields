@@ -9,5 +9,5 @@ interface StructuredField
     /**
      * Returns the serialize-representation of the Structured Field in textual HTTP field values.
      */
-    public function toField(): string;
+    public function toHttpValue(): string;
 }

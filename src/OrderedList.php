@@ -27,7 +27,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         }
     }
 
-    public static function fromField(string $field): self
+    public static function fromHttpValue(string $field): self
     {
         $field = trim($field, ' ');
         if ('' === $field) {
@@ -46,10 +46,10 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     private static function parseItemOrInnerList(string $element): Item|InnerList
     {
         if (str_starts_with($element, '(')) {
-            return InnerList::fromField($element);
+            return InnerList::fromHttpValue($element);
         }
 
-        return Item::fromField($element);
+        return Item::fromHttpValue($element);
     }
 
     public function isEmpty(): bool
@@ -110,7 +110,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     {
         return match (true) {
             $element instanceof InnerList, $element instanceof Item => $element,
-            default => Item::fromType($element),
+            default => Item::from($element),
         };
     }
 
@@ -177,13 +177,13 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         }
     }
 
-    public function toField(): string
+    public function toHttpValue(): string
     {
         $returnValue = [];
         foreach ($this->elements as $key => $element) {
             $returnValue[] = match (true) {
-                $element instanceof Item && true === $element->value() => $key.$element->parameters()->toField(),
-                default => !is_int($key) ? $key.'='.$element->toField() : $element->toField(),
+                $element instanceof Item && true === $element->value() => $key.$element->parameters()->toHttpValue(),
+                default => !is_int($key) ? $key.'='.$element->toHttpValue() : $element->toHttpValue(),
             };
         }
 

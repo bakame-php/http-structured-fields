@@ -31,7 +31,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         $this->parameters = $parameters instanceof Parameters ? $parameters : Parameters::fromItems($parameters);
     }
 
-    public static function fromField(string $field): self
+    public static function fromHttpValue(string $field): self
     {
         $field = trim($field);
 
@@ -74,10 +74,10 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
 
         return new self(
             array_map(
-                fn (string $field): Item|null => '' === $field ? null : Item::fromField($field),
+                fn (string $field): Item|null => '' === $field ? null : Item::fromHttpValue($field),
                 $components
             ),
-            Parameters::fromField($found['parameters'])
+            Parameters::fromHttpValue($found['parameters'])
         );
     }
 
@@ -85,7 +85,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
     {
         return match (true) {
             $item instanceof Item, null === $item => $item,
-            default => Item::fromType($item),
+            default => Item::from($item),
         };
     }
 
@@ -209,10 +209,10 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         }
     }
 
-    public function toField(): string
+    public function toHttpValue(): string
     {
-        $returnArray = array_map(fn (Item|null $value): string|null => $value?->toField(), $this->elements);
+        $returnArray = array_map(fn (Item|null $value): string|null => $value?->toHttpValue(), $this->elements);
 
-        return '('.implode(' ', $returnArray).')'.$this->parameters->toField();
+        return '('.implode(' ', $returnArray).')'.$this->parameters->toHttpValue();
     }
 }

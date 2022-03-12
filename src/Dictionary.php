@@ -27,7 +27,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         }
     }
 
-    public static function fromField(string $field): self
+    public static function fromHttpValue(string $field): self
     {
         $instance = new self();
         $field = trim($field, ' ');
@@ -40,8 +40,8 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         }
 
         $parser = fn (string $element): Item|InnerList => str_starts_with($element, '(')
-            ? InnerList::fromField($element)
-            : Item::fromField($element);
+            ? InnerList::fromHttpValue($element)
+            : Item::fromHttpValue($element);
 
         return array_reduce(explode(',', $field), function (self $instance, string $element) use ($parser): self {
             [$key, $value] = self::extractPair($element);
@@ -138,13 +138,13 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return array_values($this->elements)[$offset];
     }
 
-    public function toField(): string
+    public function toHttpValue(): string
     {
         $returnValue = [];
         foreach ($this->elements as $key => $element) {
             $returnValue[] = match (true) {
-                $element instanceof Item && true === $element->value() => $key.$element->parameters()->toField(),
-                default => $key.'='.$element->toField(),
+                $element instanceof Item && true === $element->value() => $key.$element->parameters()->toHttpValue(),
+                default => $key.'='.$element->toHttpValue(),
             };
         }
 
@@ -169,7 +169,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     {
         return match (true) {
             $element instanceof InnerList, $element instanceof Item => $element,
-            default => Item::fromType($element),
+            default => Item::from($element),
         };
     }
 

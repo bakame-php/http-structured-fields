@@ -16,10 +16,10 @@ final class InnerListTest extends TestCase
      */
     public function it_can_be_instantiated_with_an_collection_of_item(): void
     {
-        $stringItem = Item::fromType('helloWorld');
-        $booleanItem = Item::fromType(true);
+        $stringItem = Item::from('helloWorld');
+        $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = new InnerList($arrayParams, new Parameters(['test' => Item::fromType(42)]));
+        $instance = new InnerList($arrayParams, new Parameters(['test' => Item::from(42)]));
         self::assertFalse($instance->parameters()->isEmpty());
 
         self::assertSame($stringItem, $instance->getByIndex(0));
@@ -33,8 +33,8 @@ final class InnerListTest extends TestCase
      */
     public function it_can_add_or_remove_elements(): void
     {
-        $stringItem = Item::fromType('helloWorld');
-        $booleanItem = Item::fromType(true);
+        $stringItem = Item::from('helloWorld');
+        $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
         $instance = new InnerList($arrayParams);
 
@@ -48,7 +48,7 @@ final class InnerListTest extends TestCase
         self::assertCount(1, $instance);
         self::assertFalse($instance->hasIndex(1));
 
-        $instance->push(Item::fromType('BarBaz'));
+        $instance->push(Item::from('BarBaz'));
         $instance->insert(1, );
         $element = $instance->getByIndex(1);
         self::assertCount(2, $instance);
@@ -68,7 +68,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(SyntaxError::class);
 
-        InnerList::fromField('(1 42)foobar');
+        InnerList::fromHttpValue('(1 42)foobar');
     }
 
     /**
@@ -77,15 +77,15 @@ final class InnerListTest extends TestCase
     public function it_can_unshift_insert_and_replace(): void
     {
         $container = new InnerList();
-        $container->unshift(Item::fromType('42'));
-        $container->push(Item::fromType(42));
-        $container->insert(1, Item::fromType(42.0));
-        $container->replace(0, Item::fromType(ByteSequence::fromDecoded('Hello World')));
+        $container->unshift(Item::from('42'));
+        $container->push(Item::from(42));
+        $container->insert(1, Item::from(42.0));
+        $container->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
 
         self::assertFalse($container->hasKey('42'));
         self::assertCount(3, $container);
         self::assertFalse($container->isEmpty());
-        self::assertSame('(:SGVsbG8gV29ybGQ=: 42.0 42)', $container->toField());
+        self::assertSame('(:SGVsbG8gV29ybGQ=: 42.0 42)', $container->toHttpValue());
     }
 
     /**
@@ -96,7 +96,7 @@ final class InnerListTest extends TestCase
         $this->expectException(InvalidOffset::class);
 
         $container = new InnerList();
-        $container->replace(0, Item::fromType(ByteSequence::fromDecoded('Hello World')));
+        $container->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
     }
 
     /**
@@ -107,7 +107,7 @@ final class InnerListTest extends TestCase
         $this->expectException(InvalidOffset::class);
 
         $container = new InnerList();
-        $container->insert(3, Item::fromType(ByteSequence::fromDecoded('Hello World')));
+        $container->insert(3, Item::from(ByteSequence::fromDecoded('Hello World')));
     }
 
     /**
@@ -144,7 +144,7 @@ final class InnerListTest extends TestCase
         $instance = new InnerList();
         self::assertSame([], $instance->keys());
 
-        $instance->push(Item::fromType(false), Item::fromType(true));
+        $instance->push(Item::from(false), Item::from(true));
         self::assertSame([], $instance->keys());
     }
 
@@ -153,15 +153,15 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_one_or_more_instances(): void
     {
-        $instance1 = new InnerList([Item::fromType(false)]);
-        $instance2 = new InnerList([Item::fromType(true)]);
-        $instance3 = new InnerList([Item::fromType(42)]);
-        $expected = new InnerList([Item::fromType(false), Item::fromType(true), Item::fromType(42)]);
+        $instance1 = new InnerList([Item::from(false)]);
+        $instance2 = new InnerList([Item::from(true)]);
+        $instance3 = new InnerList([Item::from(42)]);
+        $expected = new InnerList([Item::from(false), Item::from(true), Item::from(42)]);
 
         $instance1->merge($instance2, $instance3);
 
         self::assertCount(3, $instance1);
-        self::assertSame($expected->toField(), $instance1->toField());
+        self::assertSame($expected->toHttpValue(), $instance1->toHttpValue());
     }
 
     /**
@@ -169,7 +169,7 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_without_argument_and_not_throw(): void
     {
-        $instance = new InnerList([Item::fromType(false)]);
+        $instance = new InnerList([Item::from(false)]);
         $instance->merge();
         self::assertCount(1, $instance);
     }
@@ -179,14 +179,14 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_two_or_more_instances_to_yield_different_result(): void
     {
-        $instance1 = new InnerList([Item::fromType(false)]);
-        $instance2 = new InnerList([Item::fromType(true)]);
-        $instance3 = new InnerList([Item::fromType(42)]);
-        $expected = new InnerList([Item::fromType(42), Item::fromType(true), Item::fromType(false)]);
+        $instance1 = new InnerList([Item::from(false)]);
+        $instance2 = new InnerList([Item::from(true)]);
+        $instance3 = new InnerList([Item::from(42)]);
+        $expected = new InnerList([Item::from(42), Item::from(true), Item::from(false)]);
 
         $instance3->merge($instance2, $instance1);
 
         self::assertCount(3, $instance3);
-        self::assertSame($expected->toField(), $instance3->toField());
+        self::assertSame($expected->toHttpValue(), $instance3->toHttpValue());
     }
 }

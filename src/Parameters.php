@@ -44,11 +44,11 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     {
         return match (true) {
             $element instanceof Item => $element,
-            default => Item::fromType($element),
+            default => Item::from($element),
         };
     }
 
-    public static function fromField(string $field): self
+    public static function fromHttpValue(string $field): self
     {
         $instance = new self();
         if ('' === $field) {
@@ -64,7 +64,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
             $key = trim($key);
             if ('' !== $key) {
-                $parameters->set($key, Item::fromField($value));
+                $parameters->set($key, Item::fromHttpValue($value));
             }
         }
 
@@ -139,14 +139,14 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return null !== $this->filterIndex($index);
     }
 
-    public function toField(): string
+    public function toHttpValue(): string
     {
         $returnValue = '';
 
         foreach ($this->elements as $key => $val) {
             $returnValue .= ';'.$key;
             if ($val->value() !== true) {
-                $returnValue .= '='.$val->toField();
+                $returnValue .= '='.$val->toHttpValue();
             }
         }
 

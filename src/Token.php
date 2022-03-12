@@ -13,7 +13,7 @@ final class Token implements StructuredField
         }
     }
 
-    public function toField(): string
+    public function toHttpValue(): string
     {
         return $this->toString();
     }

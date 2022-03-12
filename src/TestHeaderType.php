@@ -10,12 +10,12 @@ enum TestHeaderType: string
     case List = 'list';
     case Item = 'item';
 
-    public function fromField(string $input): StructuredField
+    public function fromHttpValue(string $input): StructuredField
     {
         return match ($this) {
-            self::Dictionary => Dictionary::fromField($input),
-            self::List => OrderedList::fromField($input),
-            self::Item => Item::fromField($input),
+            self::Dictionary => Dictionary::fromHttpValue($input),
+            self::List => OrderedList::fromHttpValue($input),
+            self::Item => Item::fromHttpValue($input),
         };
     }
 }

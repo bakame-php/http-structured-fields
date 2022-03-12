@@ -15,7 +15,7 @@ final class Item implements StructuredField, SupportsParameters
     /**
      * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
      */
-    public static function fromType(
+    public static function from(
         Token|ByteSequence|int|float|string|bool $value,
         iterable $parameters = [],
     ): self {
@@ -54,7 +54,7 @@ final class Item implements StructuredField, SupportsParameters
         return $value;
     }
 
-    public static function fromField(string $field): self
+    public static function fromHttpValue(string $field): self
     {
         $field = trim($field, ' ');
         [$value, $parameters] = match (true) {
@@ -69,7 +69,7 @@ final class Item implements StructuredField, SupportsParameters
             default => throw new SyntaxError("Item field `$field` is unknown or unsupported."),
         };
 
-        return new self($value, Parameters::fromField($parameters));
+        return new self($value, Parameters::fromHttpValue($parameters));
     }
 
     /**
@@ -182,9 +182,9 @@ final class Item implements StructuredField, SupportsParameters
         return $this->parameters;
     }
 
-    public function toField(): string
+    public function toHttpValue(): string
     {
-        return $this->serializeValue($this->value).$this->parameters->toField();
+        return $this->serializeValue($this->value).$this->parameters->toHttpValue();
     }
 
     public function isInteger(): bool
@@ -220,8 +220,8 @@ final class Item implements StructuredField, SupportsParameters
     private function serializeValue(Token|ByteSequence|int|float|string|bool $value): string
     {
         return match (true) {
-            $value instanceof Token => $value->toField(),
-            $value instanceof ByteSequence => $value->toField(),
+            $value instanceof Token => $value->toHttpValue(),
+            $value instanceof ByteSequence => $value->toHttpValue(),
             is_string($value) => '"'.preg_replace('/(["\\\])/', '\\\$1', $value).'"',
             is_int($value) => (string) $value,
             is_float($value) => $this->serializeDecimal($value),

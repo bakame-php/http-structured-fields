@@ -11,13 +11,13 @@ You will be able to:
 
 - parse and serialize HTTP Structured Fields
 - create and update HTTP Structured Fields in a predicable way;
-- infer fields and data from HTTP Structured Fields;
+- infer fields and data types from HTTP Structured Fields;
 
 ```php
 use Bakame\Http\StructuredFields\Item;
 
-$container = Item::fromType("/terms", ['rel' => "copyright", 'anchor' => '#foo']));
-echo $container->toFields(); //display "/terms";rel="copyright";anchor="#foo"
+$fields = Item::from("/terms", ['rel' => "copyright", 'anchor' => '#foo']));
+echo $fields->toHttpValue(); //display "/terms";rel="copyright";anchor="#foo"
 ```
 
 System Requirements
@@ -48,7 +48,7 @@ There are three top-level types that an HTTP field can be defined as:
 For each of those top-level types, the package provide a dedicated value object to parse the textual representation of the field
 and to serialize the value object back to the textual representation. 
 
-- Parsing is done via a common named constructor `fromField`.
+- Parsing is done via a common named constructor `fromHttpValue`.
 - Serializing is done via a common `toField` public method.
 
 ```php
@@ -56,42 +56,25 @@ use Bakame\Http\StructuredFields\Dictionary;
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\OrderedList;
 
-$dictionary = Dictionary::fromField("a=?0,   b,   c=?1; foo=bar");
-echo $dictionary->toField(); // "a=?0, b, c;foo=bar"
+$dictionary = Dictionary::fromHttpValue("a=?0,   b,   c=?1; foo=bar");
+echo $dictionary->toHttpValue(); // "a=?0, b, c;foo=bar"
 
-$list = OrderedList::fromField('("foo"; a=1;b=2);lvl=5, ("bar" "baz");lvl=1');
-echo $list->toField(); // "("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1"
+$list = OrderedList::fromHttpValue('("foo"; a=1;b=2);lvl=5, ("bar" "baz");lvl=1');
+echo $list->toHttpValue(); // "("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1"
 
-$item = Item::fromField('"foo";a=1;b=2"');
-echo $item->toField(); // "foo";a=1;b=2
+$item = Item::fromHttpValue('"foo";a=1;b=2"');
+echo $item->toHttpValue(); // "foo";a=1;b=2
 ```
 
-The `toField()` method returns the normalized string representation suited for HTTP headers.
+The `toHttpValue` method returns the normalized string representation suited for HTTP textual representation.
 
 ## Structured Data Types
 
 ### Items
 
-Accessing `Item` properties is done via two methods:
+#### Types
 
-- `Item::value()` which returns the field underlying value
-- `Item::parameters()` which returns the field associated parameters as a distinct `Parameters` object
-
-```php
-use Bakame\Http\StructuredFields\Item;
-
-$item = Item::fromField("\"foo\";a=1;b=2");
-$item->value(); //returns "foo"
-$item->isString(); //return true
-$item->isToken(); //return false
-$item->parameters()->getByKey("a")->value(); //returns 1
-```
-
-#### Item value
-
-The returned value of `Item::value` depends on its type. They are defined
-in the RFC and this package translate them to PHP native type when possible 
-and allow initiating the `Item` object based on them. 
+Defined in the RFC, this package translates them to PHP native type when possible.
 
 The information is represented in the table below:
 
@@ -106,83 +89,77 @@ The information is represented in the table below:
 
 Two additional classes:
 
-- `Bakame\Http\StructuredFields\Token` and 
-- `Bakame\Http\StructuredFields\ByteSequence` 
-- are used to represent non-native types.
+- `Bakame\Http\StructuredFields\Token` and
+- `Bakame\Http\StructuredFields\ByteSequence`
 
-Instantiation via type recognition is done using the `Item::fromType` named constructor.
+are used to represent non-native types.
+
+#### Parameters
+
+As explain in the RFC, `Parameters` are containers of `Item` instances. It can be associated
+to other structure **BUT** the items it contains can not themselves contain `Parameters`
+instance. More on parameters public API will be cover in subsequent paragraphs.
+
+#### Examples
+
+Instantiation via type recognition is done using the `Item::from` named constructor.
 
 ```php
 use Bakame\Http\StructuredFields\Item;
 
-$item = Item::fromType("hello world", ["a" => 1]);
+$item = Item::from("hello world", ["a" => 1]);
 $item->value(); //returns "hello world"
 $item->isString(); //return true
 $item->isToken();  //return false
 $item->parameters()->getByKey("a")->value(); //returns 1
 ```
 
-**To return a decimal number a dot MUST be present in the input.**
+Once instantiated, accessing `Item` properties is done via two methods:
+
+- `Item::value()` which returns the instance underlying value
+- `Item::parameters()` which returns the item associated parameters as a distinct `Parameters` object
+
+**To instantiate a decimal number a float MUST be used as the first argument input.**
 
 ```php
 use Bakame\Http\StructuredFields\Item;
 
-$decimal = Item::fromType(42.0);
+$decimal = Item::from(42.0);
 $decimal->isDecimal(); //return true
 $decimal->isInteger(); //return false
 
-$item = Item::fromType(42);
+$item = Item::from(42);
 $item->isDecimal(); //return false
 $item->isInteger(); //return true
 ```
 
-#### Item parameters
-
-As explain in the RFC, `Parameters` are containers of `Item` instances. It can be associated to other structure **BUT** 
-the items it contains can not themselves contain `Parameters` instance. More on parameters public API will be cover
-in subsequent paragraphs.
-
 ### Containers
 
-Apart from the `Item`, the RFC defines different items containers with different requirements. As
-such `Parameters`, `Dictionary`, `InnerList` and `OrderedList` expose the same basic public API.
+Apart from the `Item`, the RFC defines different containers with different requirements. The
+package exposes those containers via the following methods `Parameters`, `Dictionary`, 
+`InnerList` and `OrderedList` with the same basic public API. At any given time it 
+is possible to know:
 
-```php
-namespace Bakame\Http\StructuredFields;
-
-interface Container extends \Countable, \IteratorAggregate, StructuredField
-{
-    public function isEmpty(): bool;
-    public function getByIndex(int $index): Item|InnerList|null; //depending on the container
-    public function hasIndex(int $index): bool
-    public function getByKey(string $key): Item|InnerList|null; //depending on the container
-    public function hasKey(string $key): bool
-    public function keys(): array
-}
-```
-
-This means that at any given time it is possible to know:
-
-- if the container is empty via the `isEmpty` method;
-- the number of elements contained in the container via the `count` method;
+- if the container is empty via an `isEmpty` method;
+- the number of elements contained in the container via the `Countable` interface;
 - get any element by its string `key` or by its integer `index` via `getByKey` and `getByIndex` methods;
-- if an element is attached to the container using  its `index` or  `key` via `hasIndex` and `hasKey` methods;
-- and to iterate over each contained members via the `IteratorAggregate` interface;
+- if an element is attached to the container using its `index` or  `key` via `hasIndex` and `hasKey` methods;
+- iterate over each contained members via the `IteratorAggregate` interface;
+- merge multiple instance of the same container using the `merge` method;
 
 ```php
-use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Parameters;
 
-$parameters = new Parameters(['a' => 1, 'b' => 2, 'c' => Item::fromType("hello world")]);
+$parameters = new Parameters(['a' => 1, 'b' => 2, 'c' => Item::from("hello world")]);
 count($parameters);         // return 2
 $parameters->getByKey('b'); // return Item::fromType(2);
 $parameters->getByIndex(1); // return Item::fromType(2);
 $parameters->hasKey(42);    // return false because the key does not exist.
-$parameters->toField();     // return ";a=1;b=2"
+$parameters->toHttpValue(); // return ";a=1;b=2"
 $parameters->keys();        // return ["a", "b", "c"]
 ```
 
-*Item types are inferred using `Item::fromType` if a `Item` object is not submitted.* 
+*Item types are inferred using `Item::from` if a `Item` object is not submitted.* 
 
 #### Ordered Maps
 
@@ -200,19 +177,18 @@ use Bakame\Http\StructuredFields\Item;
 
 $dictionary = new Dictionary();
 $dictionary->set('b', true);
-$dictionary->append('c', Item::fromType(true, ['foo' => new Token('bar')]));
+$dictionary->append('c', Item::from(true, ['foo' => new Token('bar')]));
 $dictionary->prepend('a', false);
-$dictionary->toField();   //returns "a=?0, b, c;foo=bar"
-
+$dictionary->toHttpValue(); //returns "a=?0, b, c;foo=bar"
 $dictionary->hasKey('a');   //return true
 $dictionary->hasKey('foo'); //return false
 $dictionary->getByIndex(1); //return Item::fromBoolean(true)
 $dictionary->append('z', 42.0);
 $dictionary->delete('b', 'c');
-echo $dictionary->toField(); //returns "a=?0, z=42.0"
+echo $dictionary->toHttpValue(); //returns "a=?0, z=42.0"
 ```
 
-`Parameters` can only contains `Item` instances whereas `Dictionary` instance can also contain lists.
+- `Parameters` can only contains `Item` instances whereas `Dictionary` instance can also contain lists.
 
 #### Lists
 
@@ -232,12 +208,12 @@ to enable manipulation their content.
 ```php
 use Bakame\Http\StructuredFields\OrderedList;
 
-$list = OrderedList::fromField("(\"foo\" \"bar\"), (\"baz\"), (\"bat\" \"one\"), ()");
+$list = OrderedList::fromHttpValue("(\"foo\" \"bar\"), (\"baz\"), (\"bat\" \"one\"), ()");
 $list->hasIndex(2); //return true
 $list->hasIndex(42); //return false
 $list->push(42);
 $list->remove(0, 2);
-echo $list->toField(); //returns "("baz"), (), 42.0"
+echo $list->toHttpValue(); //returns "("baz"), (), 42.0"
 ```
 
 The distinction between `InnerList` and `OrderedList` is well explained in the RFC but the main ones are:

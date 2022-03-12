@@ -21,8 +21,8 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_can_be_instantiated_with_an_collection_of_item(): void
     {
-        $stringItem = Item::fromType('helloWorld');
-        $booleanItem = Item::fromType(true);
+        $stringItem = Item::from('helloWorld');
+        $booleanItem = Item::from(true);
         $arrayParams = ['string' => $stringItem, 'boolean' => $booleanItem];
         $instance = new Parameters($arrayParams);
 
@@ -41,9 +41,9 @@ final class ParametersTest extends StructuredFieldTest
         $this->expectException(SyntaxError::class);
 
         new Parameters([
-            'foo' => Item::fromType(
+            'foo' => Item::from(
                 true,
-                new Parameters(['bar' => Item::fromType(false)])
+                new Parameters(['bar' => Item::from(false)])
             ),
         ]);
     }
@@ -53,8 +53,8 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_can_add_or_remove_elements(): void
     {
-        $stringItem = Item::fromType('helloWorld');
-        $booleanItem = Item::fromType(true);
+        $stringItem = Item::from('helloWorld');
+        $booleanItem = Item::from(true);
         $arrayParams = ['string' => $stringItem, 'boolean' => $booleanItem];
         $instance = new Parameters($arrayParams);
 
@@ -66,7 +66,7 @@ final class ParametersTest extends StructuredFieldTest
         self::assertFalse($instance->hasKey('boolean'));
         self::assertFalse($instance->hasIndex(1));
 
-        $instance->append('foobar', Item::fromType('BarBaz'));
+        $instance->append('foobar', Item::from('BarBaz'));
         $foundItem =  $instance->getByIndex(1);
 
         self::assertCount(2, $instance);
@@ -85,7 +85,7 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(SyntaxError::class);
 
-        new Parameters(['bébé'=> Item::fromType(false)]);
+        new Parameters(['bébé'=> Item::from(false)]);
     }
 
     /**
@@ -120,10 +120,10 @@ final class ParametersTest extends StructuredFieldTest
     public function it_can_prepend_an_element(): void
     {
         $instance = new Parameters();
-        $instance->append('a', Item::fromType(false));
-        $instance->prepend('b', Item::fromType(true));
+        $instance->append('a', Item::from(false));
+        $instance->prepend('b', Item::from(true));
 
-        self::assertSame(';b;a=?0', $instance->toField());
+        self::assertSame(';b;a=?0', $instance->toHttpValue());
     }
 
     /**
@@ -133,8 +133,8 @@ final class ParametersTest extends StructuredFieldTest
     {
         $instance = new Parameters();
         self::assertSame([], $instance->keys());
-        $instance->append('a', Item::fromType(false));
-        $instance->prepend('b', Item::fromType(true));
+        $instance->append('a', Item::from(false));
+        $instance->prepend('b', Item::from(true));
 
         self::assertSame(['b', 'a'], $instance->keys());
     }
@@ -144,14 +144,14 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_can_merge_one_or_more_instances(): void
     {
-        $instance1 = new Parameters(['a' => Item::fromType(false)]);
-        $instance2 = new Parameters(['b' => Item::fromType(true)]);
-        $instance3 = new Parameters(['a' => Item::fromType(42)]);
+        $instance1 = new Parameters(['a' => Item::from(false)]);
+        $instance2 = new Parameters(['b' => Item::from(true)]);
+        $instance3 = new Parameters(['a' => Item::from(42)]);
 
         $instance1->merge($instance2, $instance3);
 
-        self::assertEquals(Item::fromType(42), $instance1->getByKey('a'));
-        self::assertEquals(Item::fromType(true), $instance1->getByKey('b'));
+        self::assertEquals(Item::from(42), $instance1->getByKey('a'));
+        self::assertEquals(Item::from(true), $instance1->getByKey('b'));
     }
 
     /**
@@ -159,14 +159,14 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_can_merge_two_or_more_dictionaries_different_result(): void
     {
-        $instance1 = new Parameters(['a' => Item::fromType(false)]);
-        $instance2 = new Parameters(['b' => Item::fromType(true)]);
-        $instance3 = new Parameters(['a' => Item::fromType(42)]);
+        $instance1 = new Parameters(['a' => Item::from(false)]);
+        $instance2 = new Parameters(['b' => Item::from(true)]);
+        $instance3 = new Parameters(['a' => Item::from(42)]);
 
         $instance3->merge($instance2, $instance1);
 
-        self::assertEquals(Item::fromType(false), $instance3->getByKey('a'));
-        self::assertEquals(Item::fromType(true), $instance3->getByKey('b'));
+        self::assertEquals(Item::from(false), $instance3->getByKey('a'));
+        self::assertEquals(Item::from(true), $instance3->getByKey('b'));
     }
 
     /**
@@ -174,7 +174,7 @@ final class ParametersTest extends StructuredFieldTest
      */
     public function it_can_merge_without_argument_and_not_throw(): void
     {
-        $instance = new Parameters(['a' => Item::fromType(false)]);
+        $instance = new Parameters(['a' => Item::from(false)]);
         $instance->merge();
         self::assertCount(1, $instance);
     }
