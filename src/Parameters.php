@@ -99,7 +99,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return array_keys($this->elements);
     }
 
-    public function getByKey(string $key): Item|InnerList|null
+    public function getByKey(string $key): Item
     {
         if (!array_key_exists($key, $this->elements)) {
             throw InvalidOffset::dueToKeyNotFound($key);
@@ -141,16 +141,22 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
     public function toHttpValue(): string
     {
-        $returnValue = '';
+        $returnValue = [];
 
         foreach ($this->elements as $key => $val) {
-            $returnValue .= ';'.$key;
-            if ($val->value() !== true) {
-                $returnValue .= '='.$val->toHttpValue();
+            if (!$val->parameters()->isEmpty()) {
+                throw new SyntaxError('the Item cannot be parameterized.');
             }
+
+            $value = ';'.$key;
+            if ($val->value() !== true) {
+                $value .= '='.$val->toHttpValue();
+            }
+
+            $returnValue[] = $value;
         }
 
-        return $returnValue;
+        return implode('', $returnValue);
     }
 
     public function set(string $key, Item|ByteSequence|Token|bool|int|float|string $element): void

@@ -178,4 +178,16 @@ final class ParametersTest extends StructuredFieldTest
         $instance->merge();
         self::assertCount(1, $instance);
     }
+
+    /**
+     * @test
+     */
+    public function it_fails_if_internal_parameters_are_changed_illegally(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        $fields = Item::from('/terms', ['rel' => 'copyright', 'anchor' => '#foo']);
+        $fields->parameters()->getByKey('anchor')->parameters()->set('yolo', 42);
+        $fields->toHttpValue();
+    }
 }
