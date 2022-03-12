@@ -125,12 +125,11 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
 
     public function replace(int $index, Item|ByteSequence|Token|bool|int|float|string|null $element): void
     {
-        $offset = $this->filterIndex($index);
-        if (null === $offset || !$this->hasIndex($offset)) {
+        if (!$this->hasIndex($index)) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        $this->elements[$offset] = self::convertItem($element);
+        $this->elements[$this->filterIndex($index)] = self::convertItem($element);
     }
 
     public function remove(int ...$indexes): void

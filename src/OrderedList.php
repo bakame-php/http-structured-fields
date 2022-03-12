@@ -125,12 +125,11 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
 
     public function replace(int $index, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
     {
-        $offset = $this->filterIndex($index);
-        if (null === $offset || !$this->hasIndex($offset)) {
+        if (!$this->hasIndex($index)) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        $this->elements[$offset] = self::filterElement($element);
+        $this->elements[$this->filterIndex($index)] = self::filterElement($element);
     }
 
     public function remove(int ...$indexes): void
