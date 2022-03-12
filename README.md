@@ -48,8 +48,8 @@ There are three top-level types that an HTTP field can be defined as:
 For each of those top-level types, the package provide a dedicated value object to parse the textual representation of the field
 and to serialize the value object back to the textual representation. 
 
-- Parsing is done via a common named constructor `fromHttpValue`.
-- Serializing is done via a common `toField` public method.
+- Parsing is done via a common named constructor `fromHttpValue` which expects the Header or Trailer string value.
+- Serializing is done via a common `toHttpValue` public method. The method returns the normalized string representation suited for HTTP textual representation
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
@@ -66,15 +66,14 @@ $item = Item::fromHttpValue('"foo";a=1;b=2"');
 echo $item->toHttpValue(); // "foo";a=1;b=2
 ```
 
-The `toHttpValue` method returns the normalized string representation suited for HTTP textual representation.
-
 ## Structured Data Types
 
 ### Items
 
 #### Types
 
-Defined in the RFC, bare type are translated to PHP native type when possible. Two additional classes:
+Bare types defined in the RFC are translated to PHP 
+native type when possible. Two additional classes:
 
 - `Bakame\Http\StructuredFields\Token` and
 - `Bakame\Http\StructuredFields\ByteSequence`
@@ -92,9 +91,10 @@ are used to represent non-native types as shown in the table below:
 
 #### Parameters
 
-As explain in the RFC, `Parameters` are containers of `Item` instances. It can be associated
-to other structures **BUT** the items it contains can not themselves contain `Parameters`
-instance. More on parameters public API will be cover in subsequent paragraphs.
+As explain in the RFC, `Parameters` are containers of `Item` instances. They can be associated
+to an `Item` instance or other container types  **BUT** the items it contains can not 
+themselves contain `Parameters` instance. More on parameters public API 
+will be cover in subsequent paragraphs.
 
 #### Examples
 
@@ -154,13 +154,13 @@ $parameters->hasKey(42);     // return false because the key does not exist.
 $parameters->toHttpValue();  // return ";a=1;b=2"
 $parameters->keys();         // return ["a", "b", "c"]
 ```
-*`getByIndex` supports use negative index*
-*Item types are inferred using `Item::from` if a `Item` object is not submitted.* 
+- *`getByIndex` supports negative index*
+- *Item types are inferred using `Item::from` if a `Item` object is not submitted.* 
 
 #### Ordered Maps
 
-The `Parameters` and the `Dictionary` classes allow associating a string key to its members as such they expose the 
-following methods:
+The `Parameters` and the `Dictionary` classes allow associating a string 
+key to its members as such they expose the following methods:
 
 - `set` add an element at the end of the container if the key is new otherwise only the value is updated;
 - `append` always add an element at the end of the container, if already present the previous value is removed;
@@ -184,12 +184,13 @@ $dictionary->delete('b', 'c');
 echo $dictionary->toHttpValue(); //returns "a=?0, z=42.0"
 ```
 
-- `Parameters` can only contains `Item` instances whereas `Dictionary` instance can also contain lists.
+- `Parameters` can only contains `Item` instances 
+- `Dictionary` instance can contain `Item` and `InnerList` instances.
 
 #### Lists
 
-The `OrderedList` and the `InnerList` classes are list of members that act as containers and also expose 
-the following methods
+The `OrderedList` and the `InnerList` classes are list of members 
+that act as containers and also expose the following methods
 
 - `push` to add elements at the end of the list;
 - `unshift` to add elements at the beginning of the list;
@@ -212,7 +213,8 @@ $list->remove(0, 2);
 echo $list->toHttpValue(); //returns "("baz"), (), 42.0"
 ```
 
-The distinction between `InnerList` and `OrderedList` is well explained in the RFC but the main ones are:
+The distinction between `InnerList` and `OrderedList` is well explained in the 
+RFC but the main ones are:
 
 - `InnerList` members can be `Items` or `null`;
 - `OrderedList` members can be `InnerList`, `Items`;
