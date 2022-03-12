@@ -153,8 +153,9 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return $returnValue;
     }
 
-    public function set(string $key, Item $element): void
+    public function set(string $key, Item|ByteSequence|Token|bool|int|float|string $element): void
     {
+        $element = self::filterElement($element);
         self::validate($key, $element);
 
         $this->elements[$key] = $element;
@@ -178,8 +179,9 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         }
     }
 
-    public function append(string $key, Item $element): void
+    public function append(string $key, Item|ByteSequence|Token|bool|int|float|string $element): void
     {
+        $element = self::filterElement($element);
         self::validate($key, $element);
 
         unset($this->elements[$key]);
@@ -187,8 +189,9 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         $this->elements[$key] = $element;
     }
 
-    public function prepend(string $key, Item $element): void
+    public function prepend(string $key, Item|ByteSequence|Token|bool|int|float|string $element): void
     {
+        $element = self::filterElement($element);
         self::validate($key, $element);
 
         unset($this->elements[$key]);
