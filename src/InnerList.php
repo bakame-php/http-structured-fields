@@ -9,26 +9,30 @@ use Iterator;
 use IteratorAggregate;
 
 /**
- * @implements IteratorAggregate<array-key, Item|null>
+ * @implements IteratorAggregate<array-key, Item>
  */
 final class InnerList implements Countable, IteratorAggregate, StructuredField, SupportsParameters
 {
-    /** @var array<Item|null>  */
+    /** @var array<Item>  */
     private array $elements;
-    private Parameters $parameters;
+
+    public function __construct(private Parameters $parameters, Item ...$elements)
+    {
+        $this->elements = $elements;
+    }
 
     /**
-     * @param iterable<Item|ByteSequence|Token|bool|int|float|string|null>   $elements
+     * @param iterable<Item|ByteSequence|Token|bool|int|float|string>        $elements
      * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
      */
-    public function __construct(iterable $elements = [], iterable $parameters = [])
+    public static function fromElements(iterable $elements = [], iterable $parameters = []): self
     {
-        $this->elements = [];
+        $newElements = [];
         foreach ($elements as $element) {
-            $this->push($element);
+            $newElements[] = self::convertItem($element);
         }
 
-        $this->parameters = $parameters instanceof Parameters ? $parameters : Parameters::fromAssociative($parameters);
+        return new self(Parameters::fromAssociative($parameters), ...$newElements);
     }
 
     public static function fromHttpValue(string $httpValue): self
@@ -73,17 +77,17 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         }, []);
 
         return new self(
-            array_map(
+            Parameters::fromHttpValue($found['parameters']),
+            ...array_filter(array_map(
                 fn (string $field): Item|null => '' === $field ? null : Item::fromHttpValue($field),
                 $components
-            ),
-            Parameters::fromHttpValue($found['parameters'])
+            ))
         );
     }
 
     public function toHttpValue(): string
     {
-        $returnArray = array_map(fn (Item|null $value): string|null => $value?->toHttpValue(), $this->elements);
+        $returnArray = array_map(fn (Item $value): string => $value->toHttpValue(), $this->elements);
 
         return '('.implode(' ', $returnArray).')'.$this->parameters->toHttpValue();
     }
@@ -104,7 +108,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
     }
 
     /**
-     * @return Iterator<Item|null>
+     * @return Iterator<Item>
      */
     public function getIterator(): Iterator
     {
@@ -129,7 +133,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         };
     }
 
-    public function get(int $index): Item|null
+    public function get(int $index): Item
     {
         $offset = $this->filterIndex($index);
         if (null === $offset) {
@@ -139,27 +143,27 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         return $this->elements[$offset];
     }
 
-    public function unshift(Item|ByteSequence|Token|bool|int|float|string|null ...$elements): void
+    public function unshift(Item|ByteSequence|Token|bool|int|float|string ...$elements): void
     {
         $this->elements = [...array_map(self::convertItem(...), $elements), ...$this->elements];
     }
 
-    private static function convertItem(Item|ByteSequence|Token|bool|int|float|string|null $item): Item|null
+    private static function convertItem(Item|ByteSequence|Token|bool|int|float|string $item): Item
     {
         return match (true) {
-            $item instanceof Item, null === $item => $item,
+            $item instanceof Item => $item,
             default => Item::from($item),
         };
     }
 
-    public function push(Item|ByteSequence|Token|bool|int|float|string|null ...$elements): void
+    public function push(Item|ByteSequence|Token|bool|int|float|string ...$elements): void
     {
         foreach (array_map(self::convertItem(...), $elements) as $element) {
             $this->elements[] = $element;
         }
     }
 
-    public function insert(int $index, Item|ByteSequence|Token|bool|int|float|string|null ...$elements): void
+    public function insert(int $index, Item|ByteSequence|Token|bool|int|float|string ...$elements): void
     {
         $offset = $this->filterIndex($index);
         match (true) {
@@ -170,7 +174,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         };
     }
 
-    public function replace(int $index, Item|ByteSequence|Token|bool|int|float|string|null $element): void
+    public function replace(int $index, Item|ByteSequence|Token|bool|int|float|string $element): void
     {
         if (!$this->has($index)) {
             throw InvalidOffset::dueToIndexNotFound($index);

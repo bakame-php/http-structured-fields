@@ -8,7 +8,7 @@ final class Item implements StructuredField, SupportsParameters
 {
     private function __construct(
         private Token|ByteSequence|int|float|string|bool $value,
-        private Parameters $parameters,
+        private Parameters $parameters
     ) {
     }
 
@@ -17,14 +17,14 @@ final class Item implements StructuredField, SupportsParameters
      */
     public static function from(
         Token|ByteSequence|int|float|string|bool $value,
-        iterable $parameters = [],
+        iterable $parameters = []
     ): self {
         return new self(match (true) {
             is_integer($value) => self::filterInteger($value),
             is_float($value) => self::filterDecimal($value),
             is_string($value) => self::filterString($value),
             default => $value,
-        }, $parameters instanceof Parameters ? $parameters : Parameters::fromAssociative($parameters));
+        }, Parameters::fromAssociative($parameters));
     }
 
     public static function filterDecimal(float $value): float

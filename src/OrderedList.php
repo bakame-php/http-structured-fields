@@ -16,15 +16,22 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     /** @var array<Item|InnerList>  */
     private array $elements;
 
+    public function __construct(Item|InnerList ...$elements)
+    {
+        $this->elements = $elements;
+    }
+
     /**
      * @param iterable<InnerList|Item|ByteSequence|Token|bool|int|float|string> $elements
      */
-    public function __construct(iterable $elements = [])
+    public static function fromElements(iterable $elements = []): self
     {
-        $this->elements = [];
+        $newElements = [];
         foreach ($elements as $element) {
-            $this->push($element);
+            $newElements[] = self::filterElement($element);
         }
+
+        return new self(...$newElements);
     }
 
     public static function fromHttpValue(string $httpValue): self

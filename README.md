@@ -219,14 +219,19 @@ to enable manipulation their content.
 **EVERY CHANGE IN THE LIST WILL RE-INDEX THE LIST AS TO NOT EXPOSE MISSING INDEXES**
 
 ```php
+use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\OrderedList;
+use Bakame\Http\StructuredFields\Token;
 
-$list = OrderedList::fromHttpValue('("foo" "bar"), ("baz"), ("bat" "one"), ()');
-$list->has(2); //return true
-$list->has(42); //return false
-$list->push(42);
-$list->remove(0, 2);
-echo $list->toHttpValue(); //returns "("baz"), (), 42.0"
+$innerList = InnerList::fromElements([42, 42.0, "42"], ["a" => true]);
+$innerList->has(2); //return true
+$innerList->has(42); //return false
+$innerList->push(new Token('forty-two'));
+$innerList->remove(0, 2);
+echo $innerList->toHttpValue(); //returns '(42.0 forty-two);a'
+
+$orderedList = new OrderedList(Item::from("42", ["foo" => "bar"]), $innerList);
+echo $orderedList->toHttpValue(); //returns '"42";foo="bar", (42.0 forty-two);a'
 ```
 
 The distinction between `InnerList` and `OrderedList` is well explained in the 
