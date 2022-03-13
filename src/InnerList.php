@@ -35,6 +35,11 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         return new self(Parameters::fromAssociative($parameters), ...$newElements);
     }
 
+    /**
+     * Returns an instance from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.1
+     */
     public static function fromHttpValue(string $httpValue): self
     {
         $field = trim($httpValue);
@@ -143,6 +148,9 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         return $this->elements[$offset];
     }
 
+    /**
+     * Insert elements at the beginning of the list.
+     */
     public function unshift(Item|ByteSequence|Token|bool|int|float|string ...$elements): void
     {
         $this->elements = [...array_map(self::convertItem(...), $elements), ...$this->elements];
@@ -156,6 +164,9 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         };
     }
 
+    /**
+     * Insert elements at the end of the list.
+     */
     public function push(Item|ByteSequence|Token|bool|int|float|string ...$elements): void
     {
         foreach (array_map(self::convertItem(...), $elements) as $element) {
@@ -163,6 +174,11 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         }
     }
 
+    /**
+     * Replace the element associated with the index.
+     *
+     * @throws InvalidOffset If the index does not exist
+     */
     public function insert(int $index, Item|ByteSequence|Token|bool|int|float|string ...$elements): void
     {
         $offset = $this->filterIndex($index);
@@ -183,6 +199,9 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         $this->elements[$this->filterIndex($index)] = self::convertItem($element);
     }
 
+    /**
+     * Delete elements associated with the list of instance indexes.
+     */
     public function remove(int ...$indexes): void
     {
         foreach (array_map(fn (int $index): int|null => $this->filterIndex($index), $indexes) as $index) {
@@ -194,11 +213,17 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         $this->elements = array_values($this->elements);
     }
 
+    /**
+     * Remove all elements from the instance.
+     */
     public function clear(): void
     {
         $this->elements = [];
     }
 
+    /**
+     * Merge multiple instances.
+     */
     public function merge(self ...$others): void
     {
         foreach ($others as $other) {

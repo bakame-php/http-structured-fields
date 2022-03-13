@@ -20,6 +20,11 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * Returns a new instance from an associative iterable construct.
+     *
+     * its keys represent the dictionary entry key
+     * its values represent the dictionary entry value
+     *
      * @param iterable<string, InnerList|Item|ByteSequence|Token|bool|int|float|string> $elements
      */
     public static function fromAssociative(iterable $elements = []): self
@@ -33,6 +38,12 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * Returns a new instance from a pair iterable construct.
+     *
+     * Each element is composed of an array with two elements
+     * the first element represents the instance entry key
+     * the second element represents the instance entry value
+     *
      * @param iterable<array{0:string, 1:InnerList|Item|ByteSequence|Token|bool|int|float|string}> $pairs
      */
     public static function fromPairs(iterable $pairs = []): self
@@ -45,6 +56,11 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return $instance;
     }
 
+    /**
+     * Returns an instance from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
+     */
     public static function fromHttpValue(string $httpValue): self
     {
         $instance = new self();
@@ -71,6 +87,8 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * Extracts a dictionary pair from an HTTP textual representation.
+     *
      * @throws SyntaxError
      *
      * @return array{0:string, 1:string}
@@ -133,6 +151,8 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * Returns an iterable construct of dictionary pairs.
+     *
      * @return Iterator<array{0:string, 1:Item|InnerList}>
      */
     public function toPairs(): Iterator
@@ -196,6 +216,9 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         ];
     }
 
+    /**
+     * Add an element at the end of the instance if the key is new otherwise update the value associated with the key.
+     */
     public function set(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
     {
         self::validateKey($key);
@@ -203,6 +226,9 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         $this->elements[$key] = self::filterElement($element);
     }
 
+    /**
+     * Validate the instance key against RFC8941 rules.
+     */
     private static function validateKey(string $key): void
     {
         if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
@@ -218,6 +244,9 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         };
     }
 
+    /**
+     * Delete elements associated with the list of submitted keys.
+     */
     public function delete(string ...$keys): void
     {
         foreach ($keys as $key) {
@@ -225,11 +254,17 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         }
     }
 
+    /**
+     * Remove all elements from the instance.
+     */
     public function clear(): void
     {
         $this->elements = [];
     }
 
+    /**
+     * Add an element at the end of the instance if the key is new delete any previous reference to the key.
+     */
     public function append(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
     {
         self::validateKey($key);
@@ -239,6 +274,9 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         $this->elements[$key] = self::filterElement($element);
     }
 
+    /**
+     * Add an element at the beginning of the instance if the key is new delete any previous reference to the key.
+     */
     public function prepend(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
     {
         self::validateKey($key);
@@ -248,6 +286,9 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         $this->elements = [...[$key => self::filterElement($element)], ...$this->elements];
     }
 
+    /**
+     * Merge multiple instances.
+     */
     public function merge(self ...$others): void
     {
         foreach ($others as $other) {

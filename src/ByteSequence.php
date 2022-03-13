@@ -6,6 +6,9 @@ namespace Bakame\Http\StructuredFields;
 
 final class ByteSequence implements StructuredField
 {
+    /**
+     * Returns a new instance from a Base64 encoded string.
+     */
     public static function fromEncoded(string $encodedValue): self
     {
         if (1 !== preg_match('/^(?<bytes>[a-z0-9+\/=]*)$/i', $encodedValue, $matches)) {
@@ -18,6 +21,9 @@ final class ByteSequence implements StructuredField
         return new self($decoded);
     }
 
+    /**
+     * Returns a new instance from a raw decoded string.
+     */
     public static function fromDecoded(string $value): self
     {
         return new self($value);
@@ -27,11 +33,17 @@ final class ByteSequence implements StructuredField
     {
     }
 
+    /**
+     * Returns the decoded string.
+     */
     public function decoded(): string
     {
         return $this->value;
     }
 
+    /**
+     * Returns the base64 encoded string.
+     */
     public function encoded(): string
     {
         return  base64_encode($this->value);

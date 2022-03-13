@@ -13,6 +13,8 @@ final class Item implements StructuredField, SupportsParameters
     }
 
     /**
+     * Returns a new instance from a value type and an iterable of key-value parameters.
+     *
      * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
      */
     public static function from(
@@ -27,6 +29,11 @@ final class Item implements StructuredField, SupportsParameters
         }, Parameters::fromAssociative($parameters));
     }
 
+    /**
+     * Filter a decimal according to RFC8941.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.2
+     */
     public static function filterDecimal(float $value): float
     {
         if (abs(floor($value)) > 999_999_999_999) {
@@ -36,6 +43,11 @@ final class Item implements StructuredField, SupportsParameters
         return $value;
     }
 
+    /**
+     * Filter a decimal according to RFC8941.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.3
+     */
     public static function filterString(string $value): string
     {
         if (1 === preg_match('/[^\x20-\x7E]/i', $value)) {
@@ -45,6 +57,11 @@ final class Item implements StructuredField, SupportsParameters
         return $value;
     }
 
+    /**
+     * Filter a decimal according to RFC8941.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.1
+     */
     private static function filterInteger(int $value): int
     {
         if ($value > 999_999_999_999_999 || $value < -999_999_999_999_999) {
@@ -54,6 +71,12 @@ final class Item implements StructuredField, SupportsParameters
         return $value;
     }
 
+    /**
+     * Returns a new instance from an HTTP Header or Trailer value string
+     * in compliance with RFC8941.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
+     */
     public static function fromHttpValue(string $httpValue): self
     {
         $httpValue = trim($httpValue, ' ');
@@ -73,6 +96,8 @@ final class Item implements StructuredField, SupportsParameters
     }
 
     /**
+     * Parses an HTTP textual representation of an Item as a Token Data Type.
+     *
      * @return array{0:Token, 1:string}
      */
     private static function parseToken(string $string): array
@@ -93,6 +118,8 @@ final class Item implements StructuredField, SupportsParameters
     }
 
     /**
+     * Parses an HTTP textual representation of an Item as a Boolean Data Type.
+     *
      * @return array{0:bool, 1:string}
      */
     private static function parseBoolean(string $string): array
@@ -105,6 +132,8 @@ final class Item implements StructuredField, SupportsParameters
     }
 
     /**
+     * Parses an HTTP textual representation of an Item as a Byte Sequence Type.
+     *
      * @return array{0:ByteSequence, 1:string}
      */
     private static function parseBytesSequence(string $string): array
@@ -117,6 +146,8 @@ final class Item implements StructuredField, SupportsParameters
     }
 
     /**
+     * Parses an HTTP textual representation of an Item as a Number Data Type.
+     *
      * @return array{0:int|float, 1:string}
      */
     private static function parseNumber(string $string): array
@@ -135,6 +166,8 @@ final class Item implements StructuredField, SupportsParameters
     }
 
     /**
+     * Parses an HTTP textual representation of an Item as a String Data Type.
+     *
      * @return array{0:string, 1:string}
      */
     private static function parseString(string $string): array
@@ -177,6 +210,11 @@ final class Item implements StructuredField, SupportsParameters
         return $this->serializeValue($this->value).$this->parameters->toHttpValue();
     }
 
+    /**
+     * Serialize the Item value according to RFC8941.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.1
+     */
     private function serializeValue(Token|ByteSequence|int|float|string|bool $value): string
     {
         return match (true) {
@@ -189,6 +227,11 @@ final class Item implements StructuredField, SupportsParameters
         };
     }
 
+    /**
+     * Serialize the Item decimal value according to RFC8941.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.1.5
+     */
     private function serializeDecimal(float $value): string
     {
         /** @var string $result */
