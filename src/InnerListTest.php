@@ -26,6 +26,8 @@ final class InnerListTest extends TestCase
         self::assertFalse($instance->isEmpty());
 
         self::assertEquals($arrayParams, iterator_to_array($instance, true));
+        $instance->clear();
+        self::assertTrue($instance->isEmpty());
     }
 
     /**

@@ -31,6 +31,8 @@ final class ParametersTest extends StructuredFieldTest
         self::assertTrue($instance->has('string'));
 
         self::assertEquals($arrayParams, iterator_to_array($instance, true));
+        $instance->clear();
+        self::assertTrue($instance->isEmpty());
     }
 
     /**

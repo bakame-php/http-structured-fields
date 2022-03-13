@@ -205,6 +205,11 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         }
     }
 
+    public function clear(): void
+    {
+        $this->elements = [];
+    }
+
     public function append(string $key, Item|ByteSequence|Token|bool|int|float|string $element): void
     {
         $element = self::filterElement($element);

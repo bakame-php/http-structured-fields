@@ -148,6 +148,7 @@ At any given time it is possible with each of these objects to:
 - tell whether the container is empty via an `isEmpty` method;
 - know the number of elements contained in the container via the `Countable` interface;
 - merge multiple instance of **the same type** using the `merge` method;
+- clear the container using the `clear` method;
 
 ```php
 use Bakame\Http\StructuredFields\Parameters;

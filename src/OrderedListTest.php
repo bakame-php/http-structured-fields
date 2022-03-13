@@ -67,15 +67,17 @@ final class OrderedListTest extends StructuredFieldTest
      */
     public function it_can_unshift_insert_and_replace(): void
     {
-        $container = OrderedList::fromElements();
-        $container->unshift(Item::from('42'));
-        $container->push(Item::from(42));
-        $container->insert(1, Item::from(42.0));
-        $container->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
+        $instance = OrderedList::fromElements();
+        $instance->unshift(Item::from('42'));
+        $instance->push(Item::from(42));
+        $instance->insert(1, Item::from(42.0));
+        $instance->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
 
-        self::assertCount(3, $container);
-        self::assertFalse($container->isEmpty());
-        self::assertSame(':SGVsbG8gV29ybGQ=:, 42.0, 42', $container->toHttpValue());
+        self::assertCount(3, $instance);
+        self::assertFalse($instance->isEmpty());
+        self::assertSame(':SGVsbG8gV29ybGQ=:, 42.0, 42', $instance->toHttpValue());
+        $instance->clear();
+        self::assertTrue($instance->isEmpty());
     }
 
     /**
