@@ -15,7 +15,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 {
     private function __construct(
         /** @var array<array-key, Item> */
-        private array $elements = []
+        private array $members = []
     ) {
     }
 
@@ -25,13 +25,13 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $elements
+     * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $members
      */
-    public static function fromAssociative(iterable $elements = []): self
+    public static function fromAssociative(iterable $members = []): self
     {
         $instance = new self();
-        foreach ($elements as $key => $element) {
-            $instance->set($key, $element);
+        foreach ($members as $key => $member) {
+            $instance->set($key, $member);
         }
 
         return $instance;
@@ -40,17 +40,17 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     /**
      * Returns a new instance from a pair iterable construct.
      *
-     * Each element is composed of an array with two elements
-     * the first element represents the instance entry key
-     * the second element represents the instance entry value
+     * Each member is composed of an array with two elements
+     * the first member represents the instance entry key
+     * the second member represents the instance entry value
      *
      * @param iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> $pairs
      */
     public static function fromPairs(iterable $pairs = []): self
     {
         $instance = new self();
-        foreach ($pairs as [$key, $element]) {
-            $instance->set($key, $element);
+        foreach ($pairs as [$key, $member]) {
+            $instance->set($key, $member);
         }
 
         return $instance;
@@ -87,7 +87,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     {
         $returnValue = [];
 
-        foreach ($this->elements as $key => $val) {
+        foreach ($this->members as $key => $val) {
             if (!$val->parameters()->isEmpty()) {
                 throw new SerializationError('Parameters instances can not contain parameterized Items.');
             }
@@ -105,12 +105,12 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
     public function count(): int
     {
-        return count($this->elements);
+        return count($this->members);
     }
 
     public function isEmpty(): bool
     {
-        return [] === $this->elements;
+        return [] === $this->members;
     }
 
     /**
@@ -118,7 +118,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function getIterator(): Iterator
     {
-        foreach ($this->elements as $key => $value) {
+        foreach ($this->members as $key => $value) {
             yield $key => $value;
         }
     }
@@ -130,8 +130,8 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function toPairs(): Iterator
     {
-        foreach ($this->elements as $index => $element) {
-            yield [$index, $element];
+        foreach ($this->members as $index => $member) {
+            yield [$index, $member];
         }
     }
 
@@ -140,21 +140,21 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function keys(): array
     {
-        return array_keys($this->elements);
+        return array_keys($this->members);
     }
 
     public function has(string $key): bool
     {
-        return array_key_exists($key, $this->elements);
+        return array_key_exists($key, $this->members);
     }
 
     public function get(string $key): Item
     {
-        if (!array_key_exists($key, $this->elements)) {
+        if (!array_key_exists($key, $this->members)) {
             throw InvalidOffset::dueToKeyNotFound($key);
         }
 
-        return $this->elements[$key];
+        return $this->members[$key];
     }
 
     public function hasPair(int $index): bool
@@ -164,10 +164,10 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
     private function filterIndex(int $index): int|null
     {
-        $max = count($this->elements);
+        $max = count($this->members);
 
         return match (true) {
-            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            [] === $this->members, 0 > $max + $index, 0 > $max - $index - 1 => null,
             0 > $index => $max + $index,
             default => $index,
         };
@@ -184,27 +184,27 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         }
 
         return [
-            array_keys($this->elements)[$offset],
-            array_values($this->elements)[$offset],
+            array_keys($this->members)[$offset],
+            array_values($this->members)[$offset],
         ];
     }
 
     /**
-     * Add an element at the end of the instance if the key is new otherwise update the value associated with the key.
+     * Add a member at the end of the instance if the key is new otherwise update the value associated with the key.
      */
-    public function set(string $key, Item|ByteSequence|Token|bool|int|float|string $element): void
+    public function set(string $key, Item|ByteSequence|Token|bool|int|float|string $member): void
     {
-        $element = self::filterElement($element);
-        self::validate($key, $element);
+        $member = self::filterMember($member);
+        self::validate($key, $member);
 
-        $this->elements[$key] = $element;
+        $this->members[$key] = $member;
     }
 
-    private static function filterElement(Item|ByteSequence|Token|bool|int|float|string $element): Item
+    private static function filterMember(Item|ByteSequence|Token|bool|int|float|string $member): Item
     {
         return match (true) {
-            $element instanceof Item => $element,
-            default => Item::from($element),
+            $member instanceof Item => $member,
+            default => Item::from($member),
         };
     }
 
@@ -220,47 +220,47 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Delete elements associated with the list of submitted keys.
+     * Delete members associated with the list of submitted keys.
      */
     public function delete(string ...$keys): void
     {
         foreach ($keys as $key) {
-            unset($this->elements[$key]);
+            unset($this->members[$key]);
         }
     }
 
     /**
-     * Remove all elements from the instance.
+     * Remove all members from the instance.
      */
     public function clear(): void
     {
-        $this->elements = [];
+        $this->members = [];
     }
 
     /**
-     * Add an element at the end of the instance if the key is new delete any previous reference to the key.
+     * Add a member at the end of the instance if the key is new delete any previous reference to the key.
      */
-    public function append(string $key, Item|ByteSequence|Token|bool|int|float|string $element): void
+    public function append(string $key, Item|ByteSequence|Token|bool|int|float|string $member): void
     {
-        $element = self::filterElement($element);
-        self::validate($key, $element);
+        $member = self::filterMember($member);
+        self::validate($key, $member);
 
-        unset($this->elements[$key]);
+        unset($this->members[$key]);
 
-        $this->elements[$key] = $element;
+        $this->members[$key] = $member;
     }
 
     /**
-     * Add an element at the beginning of the instance if the key is new delete any previous reference to the key.
+     * Add a member at the beginning of the instance if the key is new delete any previous reference to the key.
      */
-    public function prepend(string $key, Item|ByteSequence|Token|bool|int|float|string $element): void
+    public function prepend(string $key, Item|ByteSequence|Token|bool|int|float|string $member): void
     {
-        $element = self::filterElement($element);
-        self::validate($key, $element);
+        $member = self::filterMember($member);
+        self::validate($key, $member);
 
-        unset($this->elements[$key]);
+        unset($this->members[$key]);
 
-        $this->elements = [...[$key => $element], ...$this->elements];
+        $this->members = [...[$key => $member], ...$this->members];
     }
 
     /**

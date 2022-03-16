@@ -20,10 +20,10 @@ final class Parser
      */
     public static function parseList(string $httpValue): OrderedList
     {
-        $elements = [];
+        $members = [];
         $remainder = ltrim($httpValue, ' ');
         while ('' !== $remainder) {
-            $elements[] = self::parseItemOrInnerList($remainder);
+            $members[] = self::parseItemOrInnerList($remainder);
             $remainder = ltrim($remainder, " \t");
 
             if ('' === $remainder) {
@@ -41,7 +41,7 @@ final class Parser
             }
         }
 
-        return OrderedList::fromElements($elements);
+        return OrderedList::fromMembers($members);
     }
 
     /**
@@ -51,15 +51,15 @@ final class Parser
      */
     public static function parseDictionary(string $httpValue): Dictionary
     {
-        $elements = [];
+        $members = [];
         $remainder = ltrim($httpValue, ' ');
         while ('' !== $remainder) {
             $key = self::parseKey($remainder);
             if ('' !== $remainder && $remainder[0] === '=') {
                 $remainder = substr($remainder, 1);
-                $elements[$key] = self::parseItemOrInnerList($remainder);
+                $members[$key] = self::parseItemOrInnerList($remainder);
             } else {
-                $elements[$key] = Item::from(true, self::parseParameters($remainder));
+                $members[$key] = Item::from(true, self::parseParameters($remainder));
             }
 
             $remainder = ltrim($remainder, " \t");
@@ -78,7 +78,7 @@ final class Parser
             }
         }
 
-        return Dictionary::fromAssociative($elements);
+        return Dictionary::fromAssociative($members);
     }
 
     /**
@@ -102,7 +102,7 @@ final class Parser
      */
     private static function parseInnerList(string &$httpValue): InnerList
     {
-        $elements = [];
+        $members = [];
         $httpValue = substr($httpValue, 1);
         while ('' !== $httpValue) {
             $httpValue = ltrim($httpValue, ' ');
@@ -110,10 +110,10 @@ final class Parser
             if ($httpValue[0] === ')') {
                 $httpValue = substr($httpValue, 1);
 
-                return InnerList::fromElements($elements, self::parseParameters($httpValue));
+                return InnerList::fromMembers($members, self::parseParameters($httpValue));
             }
 
-            $elements[] = Item::from(self::parseBareItem($httpValue), self::parseParameters($httpValue));
+            $members[] = Item::from(self::parseBareItem($httpValue), self::parseParameters($httpValue));
 
             if ('' !== $httpValue && !in_array($httpValue[0], [' ', ')'], true)) {
                 throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list is using invalid characters.");

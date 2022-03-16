@@ -224,7 +224,7 @@ use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\OrderedList;
 use Bakame\Http\StructuredFields\Token;
 
-$innerList = InnerList::fromElements([42, 42.0, "42"], ["a" => true]);
+$innerList = InnerList::fromMembers([42, 42.0, "42"], ["a" => true]);
 $innerList->has(2); //return true
 $innerList->has(42); //return false
 $innerList->push(new Token('forty-two'));

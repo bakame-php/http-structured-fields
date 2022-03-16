@@ -15,10 +15,10 @@ final class InvalidOffset extends OutOfBoundsException implements StructuredFiel
 
     public static function dueToIndexNotFound(int $index): self
     {
-        return new self('No element exists with the index `'.$index.'`.');
+        return new self('No member exists with the index `'.$index.'`.');
     }
     public static function dueToKeyNotFound(string $key): self
     {
-        return new self('No element exists with the key `'.$key.'`.');
+        return new self('No member exists with the key `'.$key.'`.');
     }
 }

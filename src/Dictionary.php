@@ -15,7 +15,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
 {
     private function __construct(
         /** @var array<string, Item|InnerList>  */
-        private array $elements = []
+        private array $members = []
     ) {
     }
 
@@ -25,13 +25,13 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<string, InnerList|Item|ByteSequence|Token|bool|int|float|string> $elements
+     * @param iterable<string, InnerList|Item|ByteSequence|Token|bool|int|float|string> $members
      */
-    public static function fromAssociative(iterable $elements = []): self
+    public static function fromAssociative(iterable $members = []): self
     {
         $instance = new self();
-        foreach ($elements as $index => $element) {
-            $instance->set($index, $element);
+        foreach ($members as $index => $member) {
+            $instance->set($index, $member);
         }
 
         return $instance;
@@ -40,17 +40,17 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     /**
      * Returns a new instance from a pair iterable construct.
      *
-     * Each element is composed of an array with two elements
-     * the first element represents the instance entry key
-     * the second element represents the instance entry value
+     * Each member is composed of an array with two elements
+     * the first member represents the instance entry key
+     * the second member represents the instance entry value
      *
      * @param iterable<array{0:string, 1:InnerList|Item|ByteSequence|Token|bool|int|float|string}> $pairs
      */
     public static function fromPairs(iterable $pairs = []): self
     {
         $instance = new self();
-        foreach ($pairs as [$key, $element]) {
-            $instance->set($key, $element);
+        foreach ($pairs as [$key, $member]) {
+            $instance->set($key, $member);
         }
 
         return $instance;
@@ -69,10 +69,10 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     public function toHttpValue(): string
     {
         $returnValue = [];
-        foreach ($this->elements as $key => $element) {
+        foreach ($this->members as $key => $member) {
             $returnValue[] = match (true) {
-                $element instanceof Item && true === $element->value() => $key.$element->parameters()->toHttpValue(),
-                default => $key.'='.$element->toHttpValue(),
+                $member instanceof Item && true === $member->value() => $key.$member->parameters()->toHttpValue(),
+                default => $key.'='.$member->toHttpValue(),
             };
         }
 
@@ -81,12 +81,12 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
 
     public function count(): int
     {
-        return count($this->elements);
+        return count($this->members);
     }
 
     public function isEmpty(): bool
     {
-        return [] === $this->elements;
+        return [] === $this->members;
     }
 
     /**
@@ -94,8 +94,8 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public function getIterator(): Iterator
     {
-        foreach ($this->elements as $index => $element) {
-            yield $index => $element;
+        foreach ($this->members as $index => $member) {
+            yield $index => $member;
         }
     }
 
@@ -106,8 +106,8 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public function toPairs(): Iterator
     {
-        foreach ($this->elements as $index => $element) {
-            yield [$index, $element];
+        foreach ($this->members as $index => $member) {
+            yield [$index, $member];
         }
     }
 
@@ -116,21 +116,21 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public function keys(): array
     {
-        return array_keys($this->elements);
+        return array_keys($this->members);
     }
 
     public function has(string $key): bool
     {
-        return array_key_exists($key, $this->elements);
+        return array_key_exists($key, $this->members);
     }
 
     public function get(string $key): Item|InnerList
     {
-        if (!array_key_exists($key, $this->elements)) {
+        if (!array_key_exists($key, $this->members)) {
             throw InvalidOffset::dueToKeyNotFound($key);
         }
 
-        return $this->elements[$key];
+        return $this->members[$key];
     }
 
     public function hasPair(int $index): bool
@@ -140,10 +140,10 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
 
     private function filterIndex(int $index): int|null
     {
-        $max = count($this->elements);
+        $max = count($this->members);
 
         return match (true) {
-            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            [] === $this->members, 0 > $max + $index, 0 > $max - $index - 1 => null,
             0 > $index => $max + $index,
             default => $index,
         };
@@ -160,19 +160,19 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         }
 
         return [
-            array_keys($this->elements)[$offset],
-            array_values($this->elements)[$offset],
+            array_keys($this->members)[$offset],
+            array_values($this->members)[$offset],
         ];
     }
 
     /**
-     * Add an element at the end of the instance if the key is new otherwise update the value associated with the key.
+     * Add a member at the end of the instance if the key is new otherwise update the value associated with the key.
      */
-    public function set(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
+    public function set(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): void
     {
         self::validateKey($key);
 
-        $this->elements[$key] = self::filterElement($element);
+        $this->members[$key] = self::filterMember($member);
     }
 
     /**
@@ -185,54 +185,54 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         }
     }
 
-    private static function filterElement(InnerList|Item|ByteSequence|Token|bool|int|float|string $element): InnerList|Item
+    private static function filterMember(InnerList|Item|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
     {
         return match (true) {
-            $element instanceof InnerList, $element instanceof Item => $element,
-            default => Item::from($element),
+            $member instanceof InnerList, $member instanceof Item => $member,
+            default => Item::from($member),
         };
     }
 
     /**
-     * Delete elements associated with the list of submitted keys.
+     * Delete members associated with the list of submitted keys.
      */
     public function delete(string ...$keys): void
     {
         foreach ($keys as $key) {
-            unset($this->elements[$key]);
+            unset($this->members[$key]);
         }
     }
 
     /**
-     * Remove all elements from the instance.
+     * Remove all members from the instance.
      */
     public function clear(): void
     {
-        $this->elements = [];
+        $this->members = [];
     }
 
     /**
-     * Add an element at the end of the instance if the key is new delete any previous reference to the key.
+     * Add a member at the end of the instance if the key is new delete any previous reference to the key.
      */
-    public function append(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
+    public function append(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): void
     {
         self::validateKey($key);
 
-        unset($this->elements[$key]);
+        unset($this->members[$key]);
 
-        $this->elements[$key] = self::filterElement($element);
+        $this->members[$key] = self::filterMember($member);
     }
 
     /**
-     * Add an element at the beginning of the instance if the key is new delete any previous reference to the key.
+     * Add a member at the beginning of the instance if the key is new delete any previous reference to the key.
      */
-    public function prepend(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $element): void
+    public function prepend(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): void
     {
         self::validateKey($key);
 
-        unset($this->elements[$key]);
+        unset($this->members[$key]);
 
-        $this->elements = [...[$key => self::filterElement($element)], ...$this->elements];
+        $this->members = [...[$key => self::filterMember($member)], ...$this->members];
     }
 
     /**
@@ -241,7 +241,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     public function merge(self ...$others): void
     {
         foreach ($others as $other) {
-            $this->elements = [...$this->elements, ...$other->elements];
+            $this->members = [...$this->members, ...$other->members];
         }
     }
 }

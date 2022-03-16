@@ -19,7 +19,7 @@ final class InnerListTest extends TestCase
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = InnerList::fromElements($arrayParams, Parameters::fromAssociative(['test' => Item::from(42)]));
+        $instance = InnerList::fromMembers($arrayParams, Parameters::fromAssociative(['test' => Item::from(42)]));
         self::assertFalse($instance->parameters()->isEmpty());
 
         self::assertSame($stringItem, $instance->get(0));
@@ -33,12 +33,12 @@ final class InnerListTest extends TestCase
     /**
      * @test
      */
-    public function it_can_add_or_remove_elements(): void
+    public function it_can_add_or_remove_members(): void
     {
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = InnerList::fromElements($arrayParams);
+        $instance = InnerList::fromMembers($arrayParams);
 
         self::assertCount(2, $instance);
         self::assertTrue($instance->has(1));
@@ -51,10 +51,10 @@ final class InnerListTest extends TestCase
 
         $instance->push('BarBaz');
         $instance->insert(1, );
-        $element = $instance->get(1);
+        $member = $instance->get(1);
         self::assertCount(2, $instance);
-        self::assertIsString($element->value());
-        self::assertStringContainsString('BarBaz', $element->value());
+        self::assertIsString($member->value());
+        self::assertStringContainsString('BarBaz', $member->value());
 
         $instance->remove(0, 1);
         self::assertCount(0, $instance);
@@ -66,7 +66,7 @@ final class InnerListTest extends TestCase
      */
     public function it_can_unshift_insert_and_replace(): void
     {
-        $container = InnerList::fromElements();
+        $container = InnerList::fromMembers();
         $container->unshift('42');
         $container->push(42);
         $container->insert(1, 42.0);
@@ -84,7 +84,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        $container = InnerList::fromElements();
+        $container = InnerList::fromMembers();
         $container->replace(0, ByteSequence::fromDecoded('Hello World'));
     }
 
@@ -95,7 +95,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        $container = InnerList::fromElements();
+        $container = InnerList::fromMembers();
         $container->insert(3, ByteSequence::fromDecoded('Hello World'));
     }
 
@@ -106,7 +106,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = InnerList::fromElements();
+        $instance = InnerList::fromMembers();
         self::assertFalse($instance->has(3));
 
         $instance->get(3);
@@ -117,10 +117,10 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_one_or_more_instances(): void
     {
-        $instance1 = InnerList::fromElements([false], ['foo' => 'bar']);
-        $instance2 = InnerList::fromElements([true]);
-        $instance3 = InnerList::fromElements([42], ['foo' => 'baz']);
-        $expected = InnerList::fromElements([false, true, 42], ['foo' => 'baz']);
+        $instance1 = InnerList::fromMembers([false], ['foo' => 'bar']);
+        $instance2 = InnerList::fromMembers([true]);
+        $instance3 = InnerList::fromMembers([42], ['foo' => 'baz']);
+        $expected = InnerList::fromMembers([false, true, 42], ['foo' => 'baz']);
 
         $instance1->merge($instance2, $instance3);
 
@@ -133,7 +133,7 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_without_argument_and_not_throw(): void
     {
-        $instance = InnerList::fromElements([false]);
+        $instance = InnerList::fromMembers([false]);
         $instance->merge();
         self::assertCount(1, $instance);
     }
@@ -143,10 +143,10 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_two_or_more_instances_to_yield_different_result(): void
     {
-        $instance1 = InnerList::fromElements([false], ['foo' => 'bar']);
-        $instance2 = InnerList::fromElements([true]);
-        $instance3 = InnerList::fromElements([42], ['foo' => 'baz']);
-        $expected = InnerList::fromElements([42, true, false], ['foo' => 'bar']);
+        $instance1 = InnerList::fromMembers([false], ['foo' => 'bar']);
+        $instance2 = InnerList::fromMembers([true]);
+        $instance3 = InnerList::fromMembers([42], ['foo' => 'baz']);
+        $expected = InnerList::fromMembers([42, true, false], ['foo' => 'bar']);
 
         $instance3->merge($instance2, $instance1);
 
