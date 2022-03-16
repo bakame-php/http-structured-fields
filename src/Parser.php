@@ -4,8 +4,20 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+/**
+ * A parser to create HTTP Structured Fields value objects from HTTP textual representation.
+ *
+ * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2
+ *
+ * @internal Use OrderedList::fromHttpValue() or Dictionary::fromHttpValue() instead
+ */
 final class Parser
 {
+    /**
+     * Returns an OrderedList value object from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1
+     */
     public static function parseList(string $httpValue): OrderedList
     {
         $elements = [];
@@ -32,6 +44,11 @@ final class Parser
         return OrderedList::fromElements($elements);
     }
 
+    /**
+     * Returns a Dictionary value object from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.2
+     */
     public static function parseDictionary(string $httpValue): Dictionary
     {
         $elements = [];
@@ -64,6 +81,11 @@ final class Parser
         return Dictionary::fromAssociative($elements);
     }
 
+    /**
+     * Returns an Item or an InnerList value object from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
+     */
     private static function parseItemOrInnerList(string &$httpValue): InnerList|Item
     {
         if ($httpValue[0] === '(') {
@@ -73,6 +95,11 @@ final class Parser
         return Item::from(self::parseBareItem($httpValue), self::parseParameters($httpValue));
     }
 
+    /**
+     * Returns an InnerList value object from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
+     */
     private static function parseInnerList(string &$httpValue): InnerList
     {
         $elements = [];
@@ -96,6 +123,11 @@ final class Parser
         throw new SyntaxError("Unexpected end of line for The HTTP textual representation `$httpValue` for a inner list.");
     }
 
+    /**
+     * Returns a Item or an InnerList value object from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.1
+     */
     private static function parseBareItem(string &$httpValue): bool|float|int|string|ByteSequence|Token
     {
         return match (true) {
@@ -109,6 +141,11 @@ final class Parser
         };
     }
 
+    /**
+     * Returns a Parameters value object from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.2
+     */
     private static function parseParameters(string &$httpValue): Parameters
     {
         $parameters = [];
@@ -128,6 +165,11 @@ final class Parser
         return Parameters::fromAssociative($parameters);
     }
 
+    /**
+     * Returns a Dictionary or a Parameter string key from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.3
+     */
     private static function parseKey(string &$httpValue): string
     {
         if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*/', $httpValue, $matches)) {
@@ -139,6 +181,11 @@ final class Parser
         return $matches[0];
     }
 
+    /**
+     * Returns a boolean from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.8
+     */
     private static function parseBoolean(string &$httpValue): bool
     {
         if (1 !== preg_match('/^\?[01]/', $httpValue)) {
@@ -152,6 +199,11 @@ final class Parser
         return $value;
     }
 
+    /**
+     * Returns a int or a float from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.4
+     */
     private static function parseNumber(string &$httpValue): int|float
     {
         if (1 !== preg_match('/^(-?\d+(?:\.\d+)?)(?:[^\d.]|$)/', $httpValue, $number_matches)) {
@@ -168,6 +220,11 @@ final class Parser
         };
     }
 
+    /**
+     * Returns a string from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.5
+     */
     private static function parseString(string &$httpValue): string
     {
         // parseString is only called if first character is a double quote, so
@@ -209,6 +266,11 @@ final class Parser
         throw new SyntaxError('Invalid end of string');
     }
 
+    /**
+     * Returns a Token from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.6
+     */
     private static function parseToken(string &$httpValue): Token
     {
         preg_match('/^([a-z*][a-z0-9:\/'.preg_quote("!#$%&'*+-.^_`|~").']*)/i', $httpValue, $matches);
@@ -218,6 +280,11 @@ final class Parser
         return new Token($matches[1]);
     }
 
+    /**
+     * Returns a Byte Sequence from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.7
+     */
     private static function parseByteSequence(string &$httpValue): ByteSequence
     {
         if (1 !== preg_match('/^:([a-z0-9+\/=]*):/i', $httpValue, $matches)) {
