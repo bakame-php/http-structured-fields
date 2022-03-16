@@ -185,4 +185,16 @@ final class DictionaryTest extends StructuredFieldTest
         $instance->merge();
         self::assertCount(1, $instance);
     }
+
+    /**
+     * @test
+     */
+    public function it_can_handle_string_with_comma(): void
+    {
+        $expected = 'a=foobar;test="bar, baz", b=toto';
+        $instance = Dictionary::fromHttpValue($expected);
+
+        self::assertSame($expected, $instance->toHttpValue());
+        self::assertCount(2, $instance);
+    }
 }

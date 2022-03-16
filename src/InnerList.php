@@ -35,61 +35,6 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         return new self(Parameters::fromAssociative($parameters), ...$newElements);
     }
 
-    /**
-     * Returns an instance from an HTTP textual representation.
-     *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.1
-     */
-    public static function fromHttpValue(string $httpValue): self
-    {
-        $field = trim($httpValue);
-
-        if (1 !== preg_match("/^\((?<content>.*)\)(?<parameters>[^,]*)/", $field, $found)) {
-            throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list contains invalid characters.");
-        }
-
-        if ('' !== $found['parameters'] && !str_starts_with($found['parameters'], ';')) {
-            throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list contains invalid characters.");
-        }
-
-        /** @var string $content */
-        $content = preg_replace('/[ ]+/', ' ', $found['content']);
-        $content = trim($content);
-
-        $components = array_reduce(explode(' ', $content), function (array $components, string $component): array {
-            if ([] === $components) {
-                return [$component];
-            }
-
-            $lastIndex = count($components) - 1;
-
-            if (str_starts_with($component, ';')) {
-                $components[$lastIndex] .= $component;
-
-                return $components;
-            }
-
-            $lastAddition = $components[$lastIndex];
-            if (str_ends_with($lastAddition, ';')) {
-                $components[$lastIndex] .= $component;
-
-                return $components;
-            }
-
-            $components[] = $component;
-
-            return $components;
-        }, []);
-
-        return new self(
-            Parameters::fromHttpValue($found['parameters']),
-            ...array_filter(array_map(
-                fn (string $field): Item|null => '' === $field ? null : Item::fromHttpValue($field),
-                $components
-            ))
-        );
-    }
-
     public function toHttpValue(): string
     {
         $returnArray = array_map(fn (Item $value): string => $value->toHttpValue(), $this->elements);

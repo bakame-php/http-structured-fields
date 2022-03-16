@@ -63,58 +63,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public static function fromHttpValue(string $httpValue): self
     {
-        $instance = new self();
-        $httpValue = trim($httpValue, ' ');
-        if ('' === $httpValue) {
-            return $instance;
-        }
-
-        if (1 === preg_match("/[^\x20-\x7E\t]/", $httpValue) || str_starts_with($httpValue, "\t")) {
-            throw new SyntaxError("The HTTP textual representation `$httpValue` for dictionary contains invalid characters.");
-        }
-
-        $parser = fn (string $element): Item|InnerList => str_starts_with($element, '(')
-            ? InnerList::fromHttpValue($element)
-            : Item::fromHttpValue($element);
-
-        return array_reduce(explode(',', $httpValue), function (self $instance, string $element) use ($parser): self {
-            [$key, $value] = self::extractPair($element);
-
-            $instance->set($key, $parser($value));
-
-            return $instance;
-        }, $instance);
-    }
-
-    /**
-     * Extracts a dictionary pair from an HTTP textual representation.
-     *
-     * @throws SyntaxError
-     *
-     * @return array{0:string, 1:string}
-     */
-    private static function extractPair(string $pair): array
-    {
-        $pair = trim($pair);
-
-        if ('' === $pair) {
-            throw new SyntaxError('The HTTP textual representation for a dictionary pair can not be empty.');
-        }
-
-        if (1 !== preg_match('/^(?<key>[a-z*][a-z0-9.*_-]*)(=)?(?<value>.*)/', $pair, $found)) {
-            throw new SyntaxError("The HTTP textual representation `$pair` for a dictionary pair contains invalid characters.");
-        }
-
-        if (rtrim($found['key']) !== $found['key'] || ltrim($found['value']) !== $found['value']) {
-            throw new SyntaxError("The HTTP textual representation `$pair` for a dictionary pair contains invalid characters.");
-        }
-
-        $found['value'] = trim($found['value']);
-        if ('' === $found['value'] || str_starts_with($found['value'], ';')) {
-            $found['value'] = '?1'.$found['value'];
-        }
-
-        return [$found['key'], $found['value']];
+        return Parser::parseDictionary($httpValue);
     }
 
     public function toHttpValue(): string

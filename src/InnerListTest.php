@@ -64,16 +64,6 @@ final class InnerListTest extends TestCase
     /**
      * @test
      */
-    public function it_fails_to_instantiate_with_wrong_parameters_in_field(): void
-    {
-        $this->expectException(SyntaxError::class);
-
-        InnerList::fromHttpValue('(1 42)foobar');
-    }
-
-    /**
-     * @test
-     */
     public function it_can_unshift_insert_and_replace(): void
     {
         $container = InnerList::fromElements();
