@@ -10,7 +10,7 @@ enum TestHeaderType: string
     case List = 'list';
     case Item = 'item';
 
-    public function fromHttpValue(string $input): StructuredField
+    public function newStructuredField(string $input): StructuredField
     {
         return match ($this) {
             self::Dictionary => Dictionary::fromHttpValue($input),

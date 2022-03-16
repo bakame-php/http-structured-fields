@@ -56,7 +56,7 @@ final class DictionaryTest extends StructuredFieldTest
     /**
      * @test
      */
-    public function it_can_add_or_remove_elements(): void
+    public function it_can_add_or_remove_members(): void
     {
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
@@ -122,7 +122,7 @@ final class DictionaryTest extends StructuredFieldTest
     /**
      * @test
      */
-    public function it_can_prepend_an_element(): void
+    public function it_can_prepend_a_new_member(): void
     {
         $instance = Dictionary::fromAssociative();
         $instance->append('a', Item::from(false));
@@ -134,7 +134,7 @@ final class DictionaryTest extends StructuredFieldTest
     /**
      * @test
      */
-    public function it_can_returns_the_container_element_keys(): void
+    public function it_can_returns_the_container_member_keys(): void
     {
         $instance = Dictionary::fromAssociative();
         self::assertSame([], $instance->keys());
@@ -184,5 +184,17 @@ final class DictionaryTest extends StructuredFieldTest
         $instance = Dictionary::fromAssociative(['a' => Item::from(false)]);
         $instance->merge();
         self::assertCount(1, $instance);
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_handle_string_with_comma(): void
+    {
+        $expected = 'a=foobar;test="bar, baz", b=toto';
+        $instance = Dictionary::fromHttpValue($expected);
+
+        self::assertSame($expected, $instance->toHttpValue());
+        self::assertCount(2, $instance);
     }
 }

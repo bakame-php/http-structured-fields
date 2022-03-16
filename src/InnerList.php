@@ -14,85 +14,30 @@ use IteratorAggregate;
 final class InnerList implements Countable, IteratorAggregate, StructuredField, SupportsParameters
 {
     /** @var array<Item>  */
-    private array $elements;
+    private array $members;
 
-    public function __construct(private Parameters $parameters, Item ...$elements)
+    public function __construct(private Parameters $parameters, Item ...$members)
     {
-        $this->elements = $elements;
+        $this->members = $members;
     }
 
     /**
-     * @param iterable<Item|ByteSequence|Token|bool|int|float|string>        $elements
+     * @param iterable<Item|ByteSequence|Token|bool|int|float|string>        $members
      * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
      */
-    public static function fromElements(iterable $elements = [], iterable $parameters = []): self
+    public static function fromMembers(iterable $members = [], iterable $parameters = []): self
     {
-        $newElements = [];
-        foreach ($elements as $element) {
-            $newElements[] = self::convertItem($element);
+        $newMembers = [];
+        foreach ($members as $member) {
+            $newMembers[] = self::convertItem($member);
         }
 
-        return new self(Parameters::fromAssociative($parameters), ...$newElements);
-    }
-
-    /**
-     * Returns an instance from an HTTP textual representation.
-     *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.1
-     */
-    public static function fromHttpValue(string $httpValue): self
-    {
-        $field = trim($httpValue);
-
-        if (1 !== preg_match("/^\((?<content>.*)\)(?<parameters>[^,]*)/", $field, $found)) {
-            throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list contains invalid characters.");
-        }
-
-        if ('' !== $found['parameters'] && !str_starts_with($found['parameters'], ';')) {
-            throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list contains invalid characters.");
-        }
-
-        /** @var string $content */
-        $content = preg_replace('/[ ]+/', ' ', $found['content']);
-        $content = trim($content);
-
-        $components = array_reduce(explode(' ', $content), function (array $components, string $component): array {
-            if ([] === $components) {
-                return [$component];
-            }
-
-            $lastIndex = count($components) - 1;
-
-            if (str_starts_with($component, ';')) {
-                $components[$lastIndex] .= $component;
-
-                return $components;
-            }
-
-            $lastAddition = $components[$lastIndex];
-            if (str_ends_with($lastAddition, ';')) {
-                $components[$lastIndex] .= $component;
-
-                return $components;
-            }
-
-            $components[] = $component;
-
-            return $components;
-        }, []);
-
-        return new self(
-            Parameters::fromHttpValue($found['parameters']),
-            ...array_filter(array_map(
-                fn (string $field): Item|null => '' === $field ? null : Item::fromHttpValue($field),
-                $components
-            ))
-        );
+        return new self(Parameters::fromAssociative($parameters), ...$newMembers);
     }
 
     public function toHttpValue(): string
     {
-        $returnArray = array_map(fn (Item $value): string => $value->toHttpValue(), $this->elements);
+        $returnArray = array_map(fn (Item $value): string => $value->toHttpValue(), $this->members);
 
         return '('.implode(' ', $returnArray).')'.$this->parameters->toHttpValue();
     }
@@ -104,12 +49,12 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
 
     public function count(): int
     {
-        return count($this->elements);
+        return count($this->members);
     }
 
     public function isEmpty(): bool
     {
-        return [] === $this->elements;
+        return [] === $this->members;
     }
 
     /**
@@ -117,8 +62,8 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
      */
     public function getIterator(): Iterator
     {
-        foreach ($this->elements as $item) {
-            yield $item;
+        foreach ($this->members as $member) {
+            yield $member;
         }
     }
 
@@ -129,10 +74,10 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
 
     private function filterIndex(int $index): int|null
     {
-        $max = count($this->elements);
+        $max = count($this->members);
 
         return match (true) {
-            [] === $this->elements, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            [] === $this->members, 0 > $max + $index, 0 > $max - $index - 1 => null,
             0 > $index => $max + $index,
             default => $index,
         };
@@ -145,80 +90,80 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        return $this->elements[$offset];
+        return $this->members[$offset];
     }
 
     /**
-     * Insert elements at the beginning of the list.
+     * Insert members at the beginning of the list.
      */
-    public function unshift(Item|ByteSequence|Token|bool|int|float|string ...$elements): void
+    public function unshift(Item|ByteSequence|Token|bool|int|float|string ...$members): void
     {
-        $this->elements = [...array_map(self::convertItem(...), $elements), ...$this->elements];
+        $this->members = [...array_map(self::convertItem(...), $members), ...$this->members];
     }
 
-    private static function convertItem(Item|ByteSequence|Token|bool|int|float|string $item): Item
+    private static function convertItem(Item|ByteSequence|Token|bool|int|float|string $member): Item
     {
         return match (true) {
-            $item instanceof Item => $item,
-            default => Item::from($item),
+            $member instanceof Item => $member,
+            default => Item::from($member),
         };
     }
 
     /**
-     * Insert elements at the end of the list.
+     * Insert members at the end of the list.
      */
-    public function push(Item|ByteSequence|Token|bool|int|float|string ...$elements): void
+    public function push(Item|ByteSequence|Token|bool|int|float|string ...$members): void
     {
-        foreach (array_map(self::convertItem(...), $elements) as $element) {
-            $this->elements[] = $element;
+        foreach (array_map(self::convertItem(...), $members) as $member) {
+            $this->members[] = $member;
         }
     }
 
     /**
-     * Replace the element associated with the index.
+     * Replace the member associated with the index.
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $index, Item|ByteSequence|Token|bool|int|float|string ...$elements): void
+    public function insert(int $index, Item|ByteSequence|Token|bool|int|float|string ...$members): void
     {
         $offset = $this->filterIndex($index);
         match (true) {
             null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
-            0 === $offset => $this->unshift(...$elements),
-            count($this->elements) === $offset => $this->push(...$elements),
-            default => array_splice($this->elements, $offset, 0, array_map(self::convertItem(...), $elements)),
+            0 === $offset => $this->unshift(...$members),
+            count($this->members) === $offset => $this->push(...$members),
+            default => array_splice($this->members, $offset, 0, array_map(self::convertItem(...), $members)),
         };
     }
 
-    public function replace(int $index, Item|ByteSequence|Token|bool|int|float|string $element): void
+    public function replace(int $index, Item|ByteSequence|Token|bool|int|float|string $member): void
     {
         if (!$this->has($index)) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        $this->elements[$this->filterIndex($index)] = self::convertItem($element);
+        $this->members[$this->filterIndex($index)] = self::convertItem($member);
     }
 
     /**
-     * Delete elements associated with the list of instance indexes.
+     * Delete members associated with the list of instance indexes.
      */
     public function remove(int ...$indexes): void
     {
         foreach (array_map(fn (int $index): int|null => $this->filterIndex($index), $indexes) as $index) {
             if (null !== $index) {
-                unset($this->elements[$index]);
+                unset($this->members[$index]);
             }
         }
 
-        $this->elements = array_values($this->elements);
+        $this->members = array_values($this->members);
     }
 
     /**
-     * Remove all elements from the instance.
+     * Remove all members from the instance.
      */
     public function clear(): void
     {
-        $this->elements = [];
+        $this->members = [];
     }
 
     /**
@@ -227,10 +172,8 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
     public function merge(self ...$others): void
     {
         foreach ($others as $other) {
-            foreach ($other as $value) {
-                $this->push($value);
-                $this->parameters->merge($other->parameters());
-            }
+            $this->members = [...$this->members, ...$other->members];
+            $this->parameters->merge($other->parameters());
         }
     }
 }
