@@ -28,9 +28,9 @@ final class Parser
         $members = [];
         $remainder = ltrim($httpValue, ' ');
         while ('' !== $remainder) {
-            $members[] = self::parseItemOrInnerList($remainder);
-            $remainder = ltrim($remainder, " \t");
-
+            [$member, $offset] = self::parseItemOrInnerList($remainder);
+            $members[] = $member;
+            $remainder = ltrim(substr($remainder, $offset), " \t");
             if ('' === $remainder) {
                 break;
             }
@@ -40,7 +40,6 @@ final class Parser
             }
 
             $remainder = substr($remainder, strlen($found[1]));
-
             if ('' === $remainder) {
                 throw new SyntaxError("Unexpected end of line for The HTTP textual representation `$httpValue` for a list.");
             }
@@ -61,12 +60,17 @@ final class Parser
         $members = [];
         $remainder = ltrim($httpValue, ' ');
         while ('' !== $remainder) {
-            $key = self::parseKey($remainder);
+            [$key, $offset] = self::parseKey($remainder);
+            $remainder = substr($remainder, $offset);
             if ('' !== $remainder && $remainder[0] === '=') {
                 $remainder = substr($remainder, 1);
-                $members[$key] = self::parseItemOrInnerList($remainder);
+                [$member, $offset] = self::parseItemOrInnerList($remainder);
+                $members[$key] = $member;
+                $remainder = substr($remainder, $offset);
             } else {
-                $members[$key] = Item::from(true, self::parseParameters($remainder));
+                [$parameters, $offset] = self::parseParameters($remainder);
+                $members[$key] = Item::from(true, $parameters);
+                $remainder = substr($remainder, $offset);
             }
 
             $remainder = ltrim($remainder, " \t");
@@ -79,7 +83,6 @@ final class Parser
             }
 
             $remainder = substr($remainder, strlen($found[1]));
-
             if ('' === $remainder) {
                 throw new SyntaxError("Unexpected end of line for The HTTP textual representation `$httpValue` for a dictionary.");
             }
@@ -92,50 +95,70 @@ final class Parser
      * Returns an Item or an InnerList value object from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
+     *
+     * @return array{0: InnerList|Item, 1:int}
      */
-    private static function parseItemOrInnerList(string &$httpValue): InnerList|Item
+    private static function parseItemOrInnerList(string $httpValue): array
     {
         if ($httpValue[0] === '(') {
             return self::parseInnerList($httpValue);
         }
 
-        return Item::from(self::parseBareItem($httpValue), self::parseParameters($httpValue));
+        [$value, $offset] = self::parseBareItem($httpValue);
+        $remainder = substr($httpValue, $offset);
+
+        [$parameters, $offset] = self::parseParameters($remainder);
+        $remainder = substr($remainder, $offset);
+
+        return [Item::from($value, $parameters), strlen($httpValue) - strlen($remainder)];
     }
 
     /**
      * Returns an InnerList value object from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
+     *
+     * @return array{0:InnerList, 1:int}
      */
-    private static function parseInnerList(string &$httpValue): InnerList
+    private static function parseInnerList(string $httpValue): array
     {
         $members = [];
-        $httpValue = substr($httpValue, 1);
-        while ('' !== $httpValue) {
-            $httpValue = ltrim($httpValue, ' ');
+        $remainder = substr($httpValue, 1);
+        while ('' !== $remainder) {
+            $remainder = ltrim($remainder, ' ');
 
-            if ($httpValue[0] === ')') {
-                $httpValue = substr($httpValue, 1);
+            if ($remainder[0] === ')') {
+                $remainder = substr($remainder, 1);
+                [$parameters, $offset] = self::parseParameters($remainder);
+                $remainder = substr($remainder, $offset);
 
-                return InnerList::fromMembers($members, self::parseParameters($httpValue));
+                return [InnerList::fromMembers($members, $parameters), strlen($httpValue) - strlen($remainder)];
             }
 
-            $members[] = Item::from(self::parseBareItem($httpValue), self::parseParameters($httpValue));
+            [$value, $offset] = self::parseBareItem($remainder);
+            $remainder = substr($remainder, $offset);
 
-            if ('' !== $httpValue && !in_array($httpValue[0], [' ', ')'], true)) {
-                throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list is using invalid characters.");
+            [$parameters, $offset] = self::parseParameters($remainder);
+            $remainder = substr($remainder, $offset);
+
+            $members[] = Item::from($value, $parameters);
+
+            if ('' !== $remainder && !in_array($remainder[0], [' ', ')'], true)) {
+                throw new SyntaxError("The HTTP textual representation `$remainder` for a inner list is using invalid characters.");
             }
         }
 
-        throw new SyntaxError("Unexpected end of line for The HTTP textual representation `$httpValue` for a inner list.");
+        throw new SyntaxError("Unexpected end of line for The HTTP textual representation `$remainder` for a inner list.");
     }
 
     /**
      * Returns a Item or an InnerList value object from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.1
+     *
+     * @return array{0:bool|float|int|string|ByteSequence|Token, 1:int}
      */
-    private static function parseBareItem(string &$httpValue): bool|float|int|string|ByteSequence|Token
+    private static function parseBareItem(string $httpValue): array
     {
         return match (true) {
             $httpValue === '' => throw new SyntaxError('Unexpected empty string for The HTTP textual representation of an item.'),
@@ -153,79 +176,81 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.2
      *
-     * @return array<array-key, Item|Token|ByteSequence|float|int|bool|string>
+     * @return array{0:array<array-key, Item|Token|ByteSequence|float|int|bool|string>, 1:int}
      */
-    private static function parseParameters(string &$httpValue): array
+    private static function parseParameters(string $httpValue): array
     {
         $parameters = [];
+        $remainder = $httpValue;
+        while ('' !== $remainder && ';' === $remainder[0]) {
+            $remainder = ltrim(substr($remainder, 1), ' ');
 
-        while ('' !== $httpValue && ';' === $httpValue[0]) {
-            $httpValue = ltrim(substr($httpValue, 1), ' ');
-
-            $key = self::parseKey($httpValue);
+            [$key, $keyOffset] = self::parseKey($remainder);
             $parameters[$key] = true;
 
-            if ('' !== $httpValue && '=' === $httpValue[0]) {
-                $httpValue = substr($httpValue, 1);
-                $parameters[$key] = self::parseBareItem($httpValue);
+            $remainder = substr($remainder, $keyOffset);
+            if ('' !== $remainder && '=' === $remainder[0]) {
+                $remainder = substr($remainder, 1);
+
+                [$parameters[$key], $offset] = self::parseBareItem($remainder);
+                $remainder = substr($remainder, $offset);
             }
         }
 
-        return $parameters;
+        return [$parameters, strlen($httpValue) - strlen($remainder)];
     }
 
     /**
      * Returns a Dictionary or a Parameter string key from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.3
+     *
+     * @return array{0:string, 1:int}
      */
-    private static function parseKey(string &$httpValue): string
+    private static function parseKey(string $httpValue): array
     {
         if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*/', $httpValue, $matches)) {
-            throw new SyntaxError('Invalid character in key');
+            throw new SyntaxError("Invalid character in the HTTP textual representation of a key `$httpValue`.");
         }
 
-        $httpValue = substr($httpValue, strlen($matches[0]));
-
-        return $matches[0];
+        return [$matches[0], strlen($matches[0])];
     }
 
     /**
      * Returns a boolean from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.8
+     *
+     * @return array{0:bool, 1:int}
      */
-    private static function parseBoolean(string &$httpValue): bool
+    private static function parseBoolean(string $httpValue): array
     {
         if (1 !== preg_match('/^\?[01]/', $httpValue)) {
-            throw new SyntaxError('Invalid character in boolean');
+            throw new SyntaxError("Invalid character in the HTTP textual representation of a boolean value `$httpValue`.");
         }
 
-        $value = $httpValue[1] === '1';
-
-        $httpValue = substr($httpValue, 2);
-
-        return $value;
+        return [$httpValue[1] === '1', 2];
     }
 
     /**
      * Returns a int or a float from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.4
+     *
+     * @return array{0:int|float, 1:int}
      */
-    private static function parseNumber(string &$httpValue): int|float
+    private static function parseNumber(string $httpValue): array
     {
-        if (1 !== preg_match('/^(-?\d+(?:\.\d+)?)(?:[^\d.]|$)/', $httpValue, $number_matches)) {
-            throw new SyntaxError('Invalid number format');
+        if (1 !== preg_match('/^(?<number>-?\d+(?:\.\d+)?)(?:[^\d.]|$)/', $httpValue, $found)) {
+            throw new SyntaxError("Invalid number format in the HTTP textual representation of a number value `$httpValue`.");
         }
 
-        $input_number = $number_matches[1];
-        $httpValue = substr($httpValue, strlen($input_number));
+        $offset = strlen($found['number']);
 
         return match (true) {
-            1 === preg_match('/^-?\d{1,12}\.\d{1,3}$/', $input_number) => (float) $input_number,
-            1 === preg_match('/^-?\d{1,15}$/', $input_number) => (int) $input_number,
-            default => throw new SyntaxError('Number contains too many digits'),
+            1 === preg_match('/^-?\d{1,12}\.\d{1,3}$/', $found['number']) => [(float) $found['number'], $offset],
+            1 === preg_match('/^-?\d{1,15}$/', $found['number']) => [(int) $found['number'], $offset],
+            default => throw new SyntaxError("The number format in the HTTP textual representation `$httpValue` contains too much digit."),
         };
     }
 
@@ -233,75 +258,77 @@ final class Parser
      * Returns a string from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.5
+     *
+     * @return array{0:string, 1:int}
      */
-    private static function parseString(string &$httpValue): string
+    private static function parseString(string $httpValue): array
     {
-        // parseString is only called if first character is a double quote, so
-        // don't need to validate it here.
-        $httpValue = substr($httpValue, 1);
-
-        $output_string = '';
+        $offset = 1;
+        $httpValue = substr($httpValue, $offset);
+        $output = '';
 
         while (strlen($httpValue)) {
             $char = $httpValue[0];
+            $offset += 1;
             $httpValue = substr($httpValue, 1);
 
-            if ($char === '"') {
-                return $output_string;
+            if ('"' === $char) {
+                return [$output, $offset];
             }
 
             if (ord($char) <= 0x1f || ord($char) >= 0x7f) {
-                throw new SyntaxError('Invalid character in string');
+                throw new SyntaxError("Invalid character in the HTTP textual representation of a string `$httpValue`.");
             }
 
             if ($char !== '\\') {
-                $output_string .= $char;
+                $output .= $char;
                 continue;
             }
 
-            if ($httpValue === '') {
-                throw new SyntaxError('Invalid end of string');
+            if ('' === $httpValue) {
+                throw new SyntaxError("Invalid end of string in the HTTP textual representation of a string `$httpValue`.");
             }
 
             $char = $httpValue[0];
+            $offset += 1;
             $httpValue = substr($httpValue, 1);
             if (!in_array($char, ['"', '\\'], true)) {
-                throw new SyntaxError('Invalid escaped character in string');
+                throw new SyntaxError("Invalid characters in the HTTP textual representation of a string `$httpValue`.");
             }
 
-            $output_string .= $char;
+            $output .= $char;
         }
 
-        throw new SyntaxError('Invalid end of string');
+        throw new SyntaxError("Invalid end of string in the HTTP textual representation of a string `$httpValue`.");
     }
 
     /**
      * Returns a Token from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.6
+     *
+     * @return array{0:Token, 1:int}
      */
-    private static function parseToken(string &$httpValue): Token
+    private static function parseToken(string $httpValue): array
     {
-        preg_match('/^([a-z*][a-z0-9:\/'.preg_quote("!#$%&'*+-.^_`|~").']*)/i', $httpValue, $matches);
+        preg_match('/^(?<token>[a-z*][a-z0-9:\/'.preg_quote("!#$%&'*+-.^_`|~").']*)/i', $httpValue, $found);
 
-        $httpValue = substr($httpValue, strlen($matches[1]));
-
-        return new Token($matches[1]);
+        return [new Token($found['token']), strlen($found['token'])];
     }
 
     /**
      * Returns a Byte Sequence from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.7
+     *
+     * @return array{0:ByteSequence, 1:int}
      */
-    private static function parseByteSequence(string &$httpValue): ByteSequence
+    private static function parseByteSequence(string $httpValue): array
     {
         if (1 !== preg_match('/^:([a-z0-9+\/=]*):/i', $httpValue, $matches)) {
-            throw new SyntaxError('Invalid character in byte sequence');
+            throw new SyntaxError("Invalid characters in the HTTP textual representation of a Byte Sequence `$httpValue`.");
         }
 
-        $httpValue = substr($httpValue, strlen($matches[0]));
-
-        return ByteSequence::fromEncoded($matches[1]);
+        return [ByteSequence::fromEncoded($matches[1]), strlen($matches[0])];
     }
 }
