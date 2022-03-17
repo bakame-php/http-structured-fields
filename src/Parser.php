@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use function in_array;
+use function ltrim;
+use function ord;
+use function preg_match;
+use function preg_quote;
+use function strlen;
+use function substr;
+
 /**
  * A parser to create HTTP Structured Fields value objects from HTTP textual representation.
  *

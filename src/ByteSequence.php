@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use function base64_decode;
+use function base64_encode;
+use function preg_match;
+
 final class ByteSequence implements StructuredField
 {
     private function __construct(private string $value)

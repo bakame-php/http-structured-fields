@@ -7,6 +7,12 @@ namespace Bakame\Http\StructuredFields;
 use Countable;
 use Iterator;
 use IteratorAggregate;
+use function array_key_exists;
+use function array_keys;
+use function array_values;
+use function count;
+use function implode;
+use function preg_match;
 
 /**
  * @implements IteratorAggregate<array-key, Item|InnerList>

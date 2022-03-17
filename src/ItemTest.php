@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayObject;
+use function var_export;
 
 final class ItemTest extends StructuredFieldTest
 {

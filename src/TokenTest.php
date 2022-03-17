@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use PHPUnit\Framework\TestCase;
+use function var_export;
 
 /**
  * @coversDefaultClass \Bakame\Http\StructuredFields\Token

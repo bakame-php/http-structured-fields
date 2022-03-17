@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use function iterator_to_array;
+use function var_export;
+
 final class DictionaryTest extends StructuredFieldTest
 {
     /** @var array|string[] */

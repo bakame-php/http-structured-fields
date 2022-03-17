@@ -4,6 +4,20 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use function in_array;
+use function is_bool;
+use function is_float;
+use function is_int;
+use function is_string;
+use function json_encode;
+use function preg_match;
+use function preg_replace;
+use function round;
+use function str_contains;
+use function strlen;
+use function substr;
+use function trim;
+
 final class Item implements StructuredField, SupportsParameters
 {
     private function __construct(
@@ -30,7 +44,7 @@ final class Item implements StructuredField, SupportsParameters
         iterable $parameters = []
     ): self {
         return new self(match (true) {
-            is_integer($value) => self::filterInteger($value),
+            is_int($value) => self::filterInteger($value),
             is_float($value) => self::filterDecimal($value),
             is_string($value) => self::filterString($value),
             default => $value,
@@ -182,7 +196,7 @@ final class Item implements StructuredField, SupportsParameters
         $string = substr($string, 1);
         $returnValue = '';
 
-        while (strlen($string)) {
+        while ('' !== $string) {
             $char = $string[0];
             $string = substr($string, 1);
 

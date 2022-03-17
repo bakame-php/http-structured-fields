@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use JsonException;
+use function json_decode;
 
 final class TestUnit
 {

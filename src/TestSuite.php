@@ -8,6 +8,11 @@ use Iterator;
 use IteratorAggregate;
 use JsonException;
 use RuntimeException;
+use function fclose;
+use function fopen;
+use function is_resource;
+use function json_decode;
+use function stream_get_contents;
 
 /**
  * @implements IteratorAggregate<string, TestUnit>
