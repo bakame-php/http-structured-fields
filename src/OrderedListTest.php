@@ -169,4 +169,21 @@ final class OrderedListTest extends StructuredFieldTest
 
         self::assertEquals($instance, $generatedInstance);
     }
+
+    /**
+     * @test
+     */
+    public function test_it_can_generate_the_same_value(): void
+    {
+        $res = OrderedList::fromHttpValue('token, "string", ?1; parameter, (42 42.0)');
+
+        $list = OrderedList::fromMembers([
+            new Token('token'),
+            'string',
+            Item::from(true, ['parameter' => true]),
+            InnerList::fromMembers([42, 42.0]),
+        ]);
+
+        self::assertSame($res->toHttpValue(), $list->toHttpValue());
+    }
 }

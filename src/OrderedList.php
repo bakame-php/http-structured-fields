@@ -12,7 +12,6 @@ use function array_splice;
 use function array_values;
 use function count;
 use function implode;
-use function is_int;
 
 /**
  * @implements IteratorAggregate<array-key, Item|InnerList>
@@ -60,15 +59,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
 
     public function toHttpValue(): string
     {
-        $returnValue = [];
-        foreach ($this->members as $key => $member) {
-            $returnValue[] = match (true) {
-                $member instanceof Item && true === $member->value() => $key.$member->parameters()->toHttpValue(),
-                default => !is_int($key) ? $key.'='.$member->toHttpValue() : $member->toHttpValue(),
-            };
-        }
-
-        return implode(', ', $returnValue);
+        return implode(', ', array_map(fn (InnerList|Item $member): string => $member->toHttpValue(), $this->members));
     }
 
     public function count(): int
