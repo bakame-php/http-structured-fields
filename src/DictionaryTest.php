@@ -197,4 +197,18 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertSame($expected, $instance->toHttpValue());
         self::assertCount(2, $instance);
     }
+
+    /**
+     * @test
+     */
+    public function it_can_be_regenerated_with_eval(): void
+    {
+        $expected = 'a=foobar;test="bar, baz", b=toto';
+        $instance = Dictionary::fromHttpValue($expected);
+
+        /** @var Dictionary $generatedInstance */
+        $generatedInstance = eval('return '.var_export($instance, true).';');
+
+        self::assertEquals($instance, $generatedInstance);
+    }
 }

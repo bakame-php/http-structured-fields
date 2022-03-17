@@ -153,4 +153,17 @@ final class InnerListTest extends TestCase
         self::assertCount(3, $instance3);
         self::assertSame($expected->toHttpValue(), $instance3->toHttpValue());
     }
+
+    /**
+     * @test
+     */
+    public function it_can_be_regenerated_with_eval(): void
+    {
+        $instance = InnerList::fromMembers([false], ['foo' => 'bar']);
+
+        /** @var InnerList $generatedInstance */
+        $generatedInstance = eval('return '.var_export($instance, true).';');
+
+        self::assertEquals($instance, $generatedInstance);
+    }
 }

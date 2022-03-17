@@ -13,6 +13,14 @@ final class Token implements StructuredField
         }
     }
 
+    /**
+     * @param array{value:string} $properties
+     */
+    public static function __set_state(array $properties): self
+    {
+        return new self($properties['value']);
+    }
+
     public function toHttpValue(): string
     {
         return $this->toString();

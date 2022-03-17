@@ -50,4 +50,18 @@ final class ByteSequenceTest extends StructuredFieldTest
         self::assertSame($source, $item->encoded());
         self::assertSame(":$source:", $item->toHttpValue());
     }
+
+    /**
+     * @test
+     */
+    public function it_can_be_regenerated_with_eval(): void
+    {
+        $decoded = 'pretend this is binary content.';
+        $item = ByteSequence::fromDecoded($decoded);
+
+        /** @var ByteSequence $generatedItem */
+        $generatedItem = eval('return '.var_export($item, true).';');
+
+        self::assertEquals($item, $generatedItem);
+    }
 }

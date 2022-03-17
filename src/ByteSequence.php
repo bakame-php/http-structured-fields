@@ -6,6 +6,18 @@ namespace Bakame\Http\StructuredFields;
 
 final class ByteSequence implements StructuredField
 {
+    private function __construct(private string $value)
+    {
+    }
+
+    /**
+     * @param array{value:string} $properties
+     */
+    public static function __set_state(array $properties): self
+    {
+        return new self($properties['value']);
+    }
+
     /**
      * Returns a new instance from a Base64 encoded string.
      */
@@ -27,10 +39,6 @@ final class ByteSequence implements StructuredField
     public static function fromDecoded(string $value): self
     {
         return new self($value);
-    }
-
-    private function __construct(private string $value)
-    {
     }
 
     /**

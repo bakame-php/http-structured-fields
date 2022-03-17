@@ -156,4 +156,17 @@ final class OrderedListTest extends StructuredFieldTest
         $instance->merge();
         self::assertCount(1, $instance);
     }
+
+    /**
+     * @test
+     */
+    public function it_can_be_regenerated_with_eval(): void
+    {
+        $instance = OrderedList::fromMembers([Item::from(false)]);
+
+        /** @var OrderedList $generatedInstance */
+        $generatedInstance = eval('return '.var_export($instance, true).';');
+
+        self::assertEquals($instance, $generatedInstance);
+    }
 }

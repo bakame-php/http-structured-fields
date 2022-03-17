@@ -30,6 +30,36 @@ final class ParserTest extends StructuredFieldTest
     {
         $this->expectException(SyntaxError::class);
 
-        Parser::parseDictionary('a=-1abc, b;foo=9, c=3');
+        Parser::parseDictionary('key=-1ab');
+    }
+
+    /**
+     * @test
+     */
+    public function it_will_fail_with_wrong_sequence(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Parser::parseDictionary('a=:toto89é:');
+    }
+
+    /**
+     * @test
+     */
+    public function it_will_fail_with_wrong_string(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Parser::parseDictionary('a="foo \O bar"');
+    }
+
+    /**
+     * @test
+     */
+    public function it_will_fail_with_wrong_string_utf8(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Parser::parseDictionary('a="foébar"');
     }
 }

@@ -22,6 +22,14 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * @param array{members:array<Item|InnerList>} $properties
+     */
+    public static function __set_state(array $properties): self
+    {
+        return new self(...$properties['members']);
+    }
+
+    /**
      * @param iterable<InnerList|Item|ByteSequence|Token|bool|int|float|string> $members
      */
     public static function fromMembers(iterable $members = []): self

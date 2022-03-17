@@ -26,4 +26,17 @@ final class TokenTest extends TestCase
 
         new Token('a a');
     }
+
+    /**
+     * @test
+     */
+    public function it_can_be_regenerated_with_eval(): void
+    {
+        $instance = new Token('helloworld');
+
+        /** @var Token $generatedInstance */
+        $generatedInstance = eval('return '.var_export($instance, true).';');
+
+        self::assertEquals($instance, $generatedInstance);
+    }
 }

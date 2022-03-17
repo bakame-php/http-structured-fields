@@ -13,6 +13,14 @@ final class Item implements StructuredField, SupportsParameters
     }
 
     /**
+     * @param array{value:Token|ByteSequence|int|float|string|bool, parameters:Parameters} $properties
+     */
+    public static function __set_state(array $properties): self
+    {
+        return new self($properties['value'], $properties['parameters']);
+    }
+
+    /**
      * Returns a new instance from a value type and an iterable of key-value parameters.
      *
      * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
@@ -107,13 +115,11 @@ final class Item implements StructuredField, SupportsParameters
             $regexp .= '$';
         }
 
-        if (1 !== preg_match('/'.$regexp.'/i', $string, $matches)) {
-            throw new SyntaxError("The HTTP textual representation `$string` for a token contains invalid characters.");
-        }
+        preg_match('/'.$regexp.'/i', $string, $found);
 
         return [
-            new Token($matches['token']),
-            substr($string, strlen($matches['token'])),
+            new Token($found['token']),
+            substr($string, strlen($found['token'])),
         ];
     }
 

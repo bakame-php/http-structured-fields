@@ -216,4 +216,17 @@ final class ParametersTest extends StructuredFieldTest
         $fields->parameters()->get('anchor')->parameters()->set('yolo', 42);
         $fields->toHttpValue();
     }
+
+    /**
+     * @test
+     */
+    public function it_can_be_regenerated_with_eval(): void
+    {
+        $instance = Parameters::fromAssociative(['a' => Item::from(false)]);
+
+        /** @var Parameters $generatedInstance */
+        $generatedInstance = eval('return '.var_export($instance, true).';');
+
+        self::assertEquals($instance, $generatedInstance);
+    }
 }

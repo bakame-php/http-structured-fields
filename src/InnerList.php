@@ -22,6 +22,14 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
     }
 
     /**
+     * @param array{members:array<Item>, parameters:Parameters} $properties
+     */
+    public static function __set_state(array $properties): self
+    {
+        return new self($properties['parameters'], ...$properties['members']);
+    }
+
+    /**
      * @param iterable<Item|ByteSequence|Token|bool|int|float|string>        $members
      * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
      */

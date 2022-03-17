@@ -189,4 +189,34 @@ final class ItemTest extends StructuredFieldTest
 
         self::assertEquals($item2, $item1);
     }
+
+    /**
+     * @test
+     */
+    public function it_will_fail_with_wrong_token(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::fromHttpValue('foo,bar;a=3');
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_be_regenerated_with_eval(): void
+    {
+        $instance = Item::from('/terms', [
+            'string' => '42',
+            'integer' => 42,
+            'float' => 4.2,
+            'boolean' => true,
+            'token' => new Token('forty-two'),
+            'byte-sequence' => ByteSequence::fromDecoded('a42'),
+        ]);
+
+        /** @var Item $generatedInstance */
+        $generatedInstance = eval('return '.var_export($instance, true).';');
+
+        self::assertEquals($instance, $generatedInstance);
+    }
 }
