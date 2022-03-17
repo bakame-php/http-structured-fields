@@ -63,7 +63,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public static function fromHttpValue(string $httpValue): self
     {
-        return Parser::parseDictionary($httpValue);
+        return self::fromAssociative(Parser::parseDictionary($httpValue));
     }
 
     public function toHttpValue(): string

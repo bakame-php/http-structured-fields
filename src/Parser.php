@@ -17,8 +17,10 @@ final class Parser
      * Returns an OrderedList value object from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1
+     *
+     * @return array<InnerList|Item|ByteSequence|Token|bool|int|float|string>
      */
-    public static function parseList(string $httpValue): OrderedList
+    public static function parseList(string $httpValue): array
     {
         $members = [];
         $remainder = ltrim($httpValue, ' ');
@@ -41,15 +43,17 @@ final class Parser
             }
         }
 
-        return OrderedList::fromMembers($members);
+        return $members;
     }
 
     /**
      * Returns a Dictionary value object from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.2
+     *
+     * @return array<string, InnerList|Item|ByteSequence|Token|bool|int|float|string>
      */
-    public static function parseDictionary(string $httpValue): Dictionary
+    public static function parseDictionary(string $httpValue): array
     {
         $members = [];
         $remainder = ltrim($httpValue, ' ');
@@ -78,7 +82,7 @@ final class Parser
             }
         }
 
-        return Dictionary::fromAssociative($members);
+        return $members;
     }
 
     /**
@@ -145,8 +149,10 @@ final class Parser
      * Returns a Parameters value object from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.2
+     *
+     * @return array<array-key, Item|Token|ByteSequence|float|int|bool|string>
      */
-    private static function parseParameters(string &$httpValue): Parameters
+    private static function parseParameters(string &$httpValue): array
     {
         $parameters = [];
 
@@ -162,7 +168,7 @@ final class Parser
             }
         }
 
-        return Parameters::fromAssociative($parameters);
+        return $parameters;
     }
 
     /**

@@ -41,7 +41,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
      */
     public static function fromHttpValue(string $httpValue): self
     {
-        return Parser::parseList($httpValue);
+        return self::fromMembers(Parser::parseList($httpValue));
     }
 
     public function toHttpValue(): string
