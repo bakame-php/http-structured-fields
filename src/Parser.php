@@ -7,6 +7,9 @@ namespace Bakame\Http\StructuredFields;
 /**
  * A parser to create HTTP Structured Fields value objects from HTTP textual representation.
  *
+ * Based on gapple\StructuredFields\Parser class in Structured Field Values for PHP v1.0.0.
+ * @link https://github.com/gapple/structured-fields/blob/v1.0.0/src/Parser.php
+ *
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2
  *
  * @internal Use OrderedList::fromHttpValue() or Dictionary::fromHttpValue() instead

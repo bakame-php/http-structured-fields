@@ -6,6 +6,7 @@ Structured Field Values for PHP
 [![Build](https://github.com/bakame-php/http-structured-fields/workflows/build/badge.svg)](https://github.com/bakame-php/http-structured-fields/actions?query=workflow%3A%22build%22)
 
 The package uses pragmatic value objects to parse and serialize [HTTP Structured Fields][1] in PHP.
+
 HTTP Structured fields are intended for use by specifications of new HTTP fields that wish to 
 use a common syntax that is more restrictive than traditional HTTP field values or could be
 used to [retrofit current headers](https://www.ietf.org/id/draft-ietf-httpbis-retrofit-00.html) to have them compliant with the new syntax.
@@ -44,12 +45,12 @@ Documentation
 
 There are three top-level types that an HTTP field can be defined as:
 
+- Dictionaries,
 - Lists,
-- Dictionaries, 
 - and Items.
 
-For each of those top-level types, the package provide a dedicated value object to parse the textual representation of the field
-and to serialize the value object back to the textual representation. 
+For each of those top-level types, the package provide a dedicated value object to parse the textual 
+representation of the field and to serialize the value object back to the textual representation. 
 
 - Parsing is done via a common named constructor `fromHttpValue` which expects the Header or Trailer string value.
 - Serializing is done via a common `toHttpValue` public method. The method returns the normalized string representation suited for HTTP textual representation.
@@ -69,14 +70,19 @@ $item = Item::fromHttpValue('"foo";a=1;b=2"');
 echo $item->toHttpValue(); // "foo";a=1;b=2
 ```
 
-## Manipulating Structured Fields Value Objects
+## Manipulating Structured Fields Data Types
+
+The RFC defines different data types to handle structured fields values.
 
 ### Items
 
+The Item may be considered the minimal building block for structired fields the following explains how to build 
+and interact with them.
+
 #### Types
 
-Item types [defined in the RFC](https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3) are translated to PHP native type when possible. 
-Two additional classes
+Item have different types [defined in the RFC](https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3). They are 
+translated to PHP native type when possible. Two additional classes
 
 - `Bakame\Http\StructuredFields\Token` and
 - `Bakame\Http\StructuredFields\ByteSequence`
@@ -137,16 +143,16 @@ $item->isInteger(); //return true
 Apart from the `Item`, the RFC defines different containers with different requirements. The
 package exposes those containers via the following value objects:
 
-- `Parameters`, 
 - `Dictionary`,
-- `InnerList`,
-- and `OrderedList` to represent a generic list,
- 
+- `Parameters`,
+- `OrderedList`,
+- and `InnerList`
+
 At any given time it is possible with each of these objects to:
 
-- iterate over each contained element and its optional associated key via the `IteratorAggregate` interface;
+- iterate over each contained member and its optional associated key via the `IteratorAggregate` interface;
 - tell whether the container is empty via an `isEmpty` method;
-- know the number of elements contained in the container via the `Countable` interface;
+- know the number of members contained in the container via the `Countable` interface;
 - merge multiple instance of **the same type** using the `merge` method;
 - clear the container using the `clear` method;
 
@@ -250,7 +256,7 @@ Contributions are welcome and will be fully credited. Please see [CONTRIBUTING](
 Testing
 -------
 
-The library  :
+The library:
 
 - has a [PHPUnit](https://phpunit.de) test suite
 - has a coding style compliance test suite using [PHP CS Fixer](https://cs.sensiolabs.org/).
