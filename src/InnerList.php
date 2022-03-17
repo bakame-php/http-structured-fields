@@ -41,7 +41,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
     {
         $newMembers = [];
         foreach ($members as $member) {
-            $newMembers[] = self::convertItem($member);
+            $newMembers[] = self::filterMember($member);
         }
 
         return new self(Parameters::fromAssociative($parameters), ...$newMembers);
@@ -110,10 +110,10 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
      */
     public function unshift(Item|ByteSequence|Token|bool|int|float|string ...$members): void
     {
-        $this->members = [...array_map(self::convertItem(...), $members), ...$this->members];
+        $this->members = [...array_map(self::filterMember(...), $members), ...$this->members];
     }
 
-    private static function convertItem(Item|ByteSequence|Token|bool|int|float|string $member): Item
+    private static function filterMember(Item|ByteSequence|Token|bool|int|float|string $member): Item
     {
         return match (true) {
             $member instanceof Item => $member,
@@ -126,9 +126,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
      */
     public function push(Item|ByteSequence|Token|bool|int|float|string ...$members): void
     {
-        foreach (array_map(self::convertItem(...), $members) as $member) {
-            $this->members[] = $member;
-        }
+        $this->members = [...$this->members, ...array_map(self::filterMember(...), $members)];
     }
 
     /**
@@ -143,7 +141,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
             null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
             0 === $offset => $this->unshift(...$members),
             count($this->members) === $offset => $this->push(...$members),
-            default => array_splice($this->members, $offset, 0, array_map(self::convertItem(...), $members)),
+            default => array_splice($this->members, $offset, 0, array_map(self::filterMember(...), $members)),
         };
     }
 
@@ -153,7 +151,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        $this->members[$this->filterIndex($index)] = self::convertItem($member);
+        $this->members[$this->filterIndex($index)] = self::filterMember($member);
     }
 
     /**
