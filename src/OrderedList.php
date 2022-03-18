@@ -47,6 +47,14 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         return new self(...$newMembers);
     }
 
+    private static function filterMember(InnerList|Item|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
+    {
+        return match (true) {
+            $member instanceof InnerList, $member instanceof Item => $member,
+            default => Item::from($member),
+        };
+    }
+
     /**
      * Returns an instance from an HTTP textual representation.
      *
@@ -116,14 +124,6 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         $this->members = [...array_map(self::filterMember(...), $members), ...$this->members];
     }
 
-    private static function filterMember(InnerList|Item|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
-    {
-        return match (true) {
-            $member instanceof InnerList, $member instanceof Item => $member,
-            default => Item::from($member),
-        };
-    }
-
     /**
      * Insert members at the end of the list.
      */
@@ -157,11 +157,11 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
      */
     public function replace(int $index, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): void
     {
-        if (!$this->has($index)) {
+        if (null === ($offset = $this->filterIndex($index))) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        $this->members[$this->filterIndex($index)] = self::filterMember($member);
+        $this->members[$offset] = self::filterMember($member);
     }
 
     /**
@@ -169,13 +169,18 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
      */
     public function remove(int ...$indexes): void
     {
-        foreach (array_map(fn (int $index): int|null => $this->filterIndex($index), $indexes) as $index) {
-            if (null !== $index) {
-                unset($this->members[$index]);
-            }
+        $offsets = array_filter(
+            array_map(fn (int $index): int|null => $this->filterIndex($index), $indexes),
+            fn (int|null $index): bool => null !== $index
+        );
+
+        foreach ($offsets as $offset) {
+            unset($this->members[$offset]);
         }
 
-        $this->members = array_values($this->members);
+        if ([] !== $offsets) {
+            $this->members = array_values($this->members);
+        }
     }
 
     /**

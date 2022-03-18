@@ -167,6 +167,8 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
     public function get(string $key): Item
     {
+        self::validateKey($key);
+
         if (!array_key_exists($key, $this->members)) {
             throw InvalidOffset::dueToKeyNotFound($key);
         }
@@ -225,11 +227,16 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         };
     }
 
-    private static function validate(string $key, Item $item): void
+    private static function validateKey(string $key): void
     {
         if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
             throw new SyntaxError("The Parameters key `$key` contains invalid characters.");
         }
+    }
+
+    private static function validate(string $key, Item $item): void
+    {
+        self::validateKey($key);
 
         if (!$item->parameters()->isEmpty()) {
             throw new SyntaxError('Parameters instances can not contain parameterized Items.');

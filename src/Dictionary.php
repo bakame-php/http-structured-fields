@@ -140,6 +140,8 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
 
     public function get(string $key): Item|InnerList
     {
+        self::validateKey($key);
+
         if (!array_key_exists($key, $this->members)) {
             throw InvalidOffset::dueToKeyNotFound($key);
         }
