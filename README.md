@@ -76,13 +76,13 @@ The RFC defines different data types to handle structured fields values.
 
 ### Items
 
-The Item may be considered the minimal building block for structired fields the following explains how to build 
+The Item is the minimal building block for structured fields the following explains how to build 
 and interact with them.
 
-#### Types
+#### Bare Items
 
-Item have different types [defined in the RFC](https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3). They are 
-translated to PHP native type when possible. Two additional classes
+Item have different types [defined in the RFC](https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3).
+They are translated to PHP native type when possible. Two additional classes
 
 - `Bakame\Http\StructuredFields\Token` and
 - `Bakame\Http\StructuredFields\ByteSequence`
@@ -98,12 +98,10 @@ are used to represent non-native types as shown in the table below:
 | Token         | class `Token`        | `Item::isToken`        |
 | Byte Sequence | class `ByteSequence` | `Item::isByteSequence` |
 
-#### Parameters
+#### Complex Items
 
-As explain in the RFC, `Parameters` are an ordered map of key-value pairs that can be 
-associated with an `Item`. They can be associated **BUT** the items they contain 
-can not themselves contain `Parameters` instance. More on parameters 
-public API will be cover in subsequent paragraphs.
+As explain in the RFC, Item can be associated with `Parameters` that are ordered maps of key-value pairs, where the 
+keys are string and the value are bare items. Their public API will be cover in subsequent paragraphs.
 
 #### Usage
 
@@ -116,15 +114,19 @@ $item = Item::from("hello world", ["a" => 1]);
 $item->value(); //returns "hello world"
 $item->isString(); //return true
 $item->isToken();  //return false
-$item->parameters()->get("a")->value(); //returns 1
+$item->parameter("a")->value(); //returns 1
 ```
 
-Once instantiated, accessing `Item` properties is done via two methods:
+- The first argument represents one of the six (6) item type value;
+- The second argument MUST be an iterable construct where its index represents the parameter key and its value an item or a item type value;
+
+Once instantiated, accessing `Item` properties is done via three (3) methods:
 
 - `Item::value()` which returns the instance underlying value
 - `Item::parameters()` which returns the parameters associated to the `Item` as a distinct `Parameters` object
+- `Item::parameter(string $key)` which returns the HTTP data type attached to the parameter `$key`.
 
-**To instantiate a decimal number a float MUST be used as the first argument input.**
+**Of note: to instantiate a decimal number type a float MUST be used as the first argument input.**
 
 ```php
 use Bakame\Http\StructuredFields\Item;
@@ -140,7 +142,7 @@ $item->isInteger(); //return true
 
 ### Containers
 
-Apart from the `Item`, the RFC defines different containers with different requirements. The
+Apart from the `Item`, the RFC defines different items containers with different requirements. The
 package exposes those containers via the following value objects:
 
 - `Dictionary`,
@@ -244,9 +246,18 @@ echo $orderedList->toHttpValue(); //returns '"42";foo="bar", (42.0 forty-two);a'
 The distinction between `InnerList` and `OrderedList` is well explained in the 
 RFC but the main ones are:
 
-- `InnerList` members can be `Items` or `null`;
-- `OrderedList` members can be `InnerList`, `Items`;
+- `InnerList` members must be `Items`;
+- `OrderedList` members must be `InnerList` or `Items`;
 - `InnerList` can have a `Parameters` instance attached to it, not `OrderedList`;
+
+```php
+use Bakame\Http\StructuredFields\InnerList;
+use Bakame\Http\StructuredFields\Parameters;
+
+$innerList = InnerList::fromMembers([42, 42.0, "42"], ["a" => true]);
+$innerList->parameter('a'); //returns true
+$innerList->parameters();   //returns a Parameters object
+```
 
 Contributing
 -------
