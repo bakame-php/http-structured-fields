@@ -20,8 +20,10 @@ The package can be used to:
 ```php
 use Bakame\Http\StructuredFields\Item;
 
-$fields = Item::from("/terms", ['rel' => "copyright", 'anchor' => '#foo']));
-echo $fields->toHttpValue(); //display "/terms";rel="copyright";anchor="#foo"
+$field = Item::from("/terms", ['rel' => "copyright", 'anchor' => '#foo']);
+echo $field->toHttpValue();    //display "/terms";rel="copyright";anchor="#foo"
+echo $field->value();          //display "/terms"
+echo $field->parameter('rel'); //display "copyright"
 ```
 
 System Requirements
@@ -107,6 +109,9 @@ keys are string and the value are bare items. Their public API will be cover in 
 
 Instantiation via type recognition is done using the `Item::from` named constructor.
 
+- The first argument represents one of the six (6) item type value;
+- The second argument, which is optional, MUST be an iterable construct where its index represents the parameter key and its value an item or a item type value;
+
 ```php
 use Bakame\Http\StructuredFields\Item;
 
@@ -114,11 +119,9 @@ $item = Item::from("hello world", ["a" => 1]);
 $item->value(); //returns "hello world"
 $item->isString(); //return true
 $item->isToken();  //return false
-$item->parameter("a")->value(); //returns 1
+$item->parameter("a"); //returns 1
 ```
 
-- The first argument represents one of the six (6) item type value;
-- The second argument MUST be an iterable construct where its index represents the parameter key and its value an item or a item type value;
 
 Once instantiated, accessing `Item` properties is done via three (3) methods:
 
