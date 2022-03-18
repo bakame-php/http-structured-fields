@@ -168,4 +168,25 @@ final class InnerListTest extends TestCase
 
         self::assertEquals($instance, $generatedInstance);
     }
+
+    /**
+     * @test
+     */
+    public function it_can_access_its_parameter_values(): void
+    {
+        $instance = InnerList::fromMembers([false], ['foo' => 'bar']);
+
+        self::assertSame('bar', $instance->parameter('foo'));
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_access_unknown_parameter_values(): void
+    {
+        $this->expectException(InvalidOffset::class);
+
+        $instance = InnerList::fromMembers([false], ['foo' => 'bar']);
+        $instance->parameter('bar');
+    }
 }

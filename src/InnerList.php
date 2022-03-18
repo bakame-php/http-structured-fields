@@ -7,6 +7,7 @@ namespace Bakame\Http\StructuredFields;
 use Countable;
 use Iterator;
 use IteratorAggregate;
+use function array_filter;
 use function array_map;
 use function array_splice;
 use function array_values;
@@ -47,16 +48,30 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         return new self(Parameters::fromAssociative($parameters), ...$newMembers);
     }
 
+    private static function filterMember(Item|ByteSequence|Token|bool|int|float|string $member): Item
+    {
+        return match (true) {
+            $member instanceof Item => $member,
+            default => Item::from($member),
+        };
+    }
+
     public function toHttpValue(): string
     {
-        $returnArray = array_map(fn (Item $value): string => $value->toHttpValue(), $this->members);
-
-        return '('.implode(' ', $returnArray).')'.$this->parameters->toHttpValue();
+        return '('
+            .implode(' ', array_map(fn (Item $value): string => $value->toHttpValue(), $this->members))
+            .')'
+            .$this->parameters->toHttpValue();
     }
 
     public function parameters(): Parameters
     {
         return $this->parameters;
+    }
+
+    public function parameter(string $key): Item|Token|ByteSequence|float|int|bool|string
+    {
+        return $this->parameters->get($key)->value();
     }
 
     public function count(): int
@@ -113,14 +128,6 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         $this->members = [...array_map(self::filterMember(...), $members), ...$this->members];
     }
 
-    private static function filterMember(Item|ByteSequence|Token|bool|int|float|string $member): Item
-    {
-        return match (true) {
-            $member instanceof Item => $member,
-            default => Item::from($member),
-        };
-    }
-
     /**
      * Insert members at the end of the list.
      */
@@ -147,11 +154,11 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
 
     public function replace(int $index, Item|ByteSequence|Token|bool|int|float|string $member): void
     {
-        if (!$this->has($index)) {
+        if (null === ($offset = $this->filterIndex($index))) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        $this->members[$this->filterIndex($index)] = self::filterMember($member);
+        $this->members[$offset] = self::filterMember($member);
     }
 
     /**
@@ -159,13 +166,18 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
      */
     public function remove(int ...$indexes): void
     {
-        foreach (array_map(fn (int $index): int|null => $this->filterIndex($index), $indexes) as $index) {
-            if (null !== $index) {
-                unset($this->members[$index]);
-            }
+        $offsets = array_filter(
+            array_map(fn (int $index): int|null => $this->filterIndex($index), $indexes),
+            fn (int|null $index): bool => null !== $index
+        );
+
+        foreach ($offsets as $offset) {
+            unset($this->members[$offset]);
         }
 
-        $this->members = array_values($this->members);
+        if ([] !== $offsets) {
+            $this->members = array_values($this->members);
+        }
     }
 
     /**

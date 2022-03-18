@@ -220,4 +220,25 @@ final class ItemTest extends StructuredFieldTest
 
         self::assertEquals($instance, $generatedInstance);
     }
+
+    /**
+     * @test
+     */
+    public function it_can_access_its_parameter_values(): void
+    {
+        $instance = Item::fromHttpValue('1; a; b=?0');
+
+        self::assertTrue($instance->parameter('a'));
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_access_unknown_parameter_values(): void
+    {
+        $this->expectException(InvalidOffset::class);
+
+        $instance = Item::fromHttpValue('1; a; b=?0');
+        $instance->parameter('bar');
+    }
 }
