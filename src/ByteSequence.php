@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use Stringable;
 use function base64_decode;
 use function base64_encode;
 use function preg_match;
@@ -25,9 +26,9 @@ final class ByteSequence implements StructuredField
     /**
      * Returns a new instance from a Base64 encoded string.
      */
-    public static function fromEncoded(string $encodedValue): self
+    public static function fromEncoded(Stringable|string $encodedValue): self
     {
-        if (1 !== preg_match('/^(?<bytes>[a-z0-9+\/=]*)$/i', $encodedValue, $matches)) {
+        if (1 !== preg_match('/^(?<bytes>[a-z0-9+\/=]*)$/i', (string) $encodedValue, $matches)) {
             throw new SyntaxError('Invalid character in byte sequence');
         }
 
@@ -40,9 +41,9 @@ final class ByteSequence implements StructuredField
     /**
      * Returns a new instance from a raw decoded string.
      */
-    public static function fromDecoded(string $value): self
+    public static function fromDecoded(Stringable|string $value): self
     {
-        return new self($value);
+        return new self((string) $value);
     }
 
     /**

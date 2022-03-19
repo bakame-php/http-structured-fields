@@ -11,6 +11,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Fixed
 
+- `ByteSequence::fromDecoded` named constructor also accepts a `Stringable` object
+- `ByteSequence::fromEncoded` named constructor also accepts a `Stringable` object
 - [BC Break] `OrderedList::__construct` is made privateuse `OrderedList::from` instead
 - [BC Break] `InnerList::__construct` is made private use `InnerList::fromMembers` instead
 - [BC Break] `Token::__construct` is made private use `Token::fromString` instead
