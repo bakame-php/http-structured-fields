@@ -136,7 +136,7 @@ final class Parser
                 [$parameters, $offset] = self::parseParameters($remainder);
                 $remainder = substr($remainder, $offset);
 
-                return [InnerList::fromMembers($members, $parameters), strlen($httpValue) - strlen($remainder)];
+                return [InnerList::fromList($members, $parameters), strlen($httpValue) - strlen($remainder)];
             }
 
             [$value, $offset] = self::parseBareItem($remainder);

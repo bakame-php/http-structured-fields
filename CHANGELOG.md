@@ -6,8 +6,11 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
-- `Token::fromString` named constructor which accepts `string` and `Stringable` object
+- `InnerList::from` named constructor which accepts a variadic list of members items
 - `OrderedList::from` named constructor which accepts a variadic list of members items
+- `Token::fromString` named constructor which accepts `string` and `Stringable` object
+- [BC Break] `InnerList::fromList` to replace `InnerList::fromMembers`
+- [BC Break] `OrderedList::fromList` to replace `OrderedList::fromMembers`
 
 ### Fixed
 
@@ -23,7 +26,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- None
+- [BC Break] `InnerList::fromMembers` to replace `InnerList::fromList`
+- [BC Break] `OrderedList::fromMembers` to replace `OrderedList::fromList`
 
 ## [0.1.0] - 2022-03-18
 

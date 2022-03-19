@@ -34,11 +34,16 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         return new self($properties['parameters'], ...$properties['members']);
     }
 
+    public static function from(Item|ByteSequence|Token|bool|int|float|string ...$members): self
+    {
+        return self::fromList($members);
+    }
+
     /**
      * @param iterable<Item|ByteSequence|Token|bool|int|float|string>        $members
      * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
      */
-    public static function fromMembers(iterable $members = [], iterable $parameters = []): self
+    public static function fromList(iterable $members = [], iterable $parameters = []): self
     {
         $newMembers = [];
         foreach ($members as $member) {

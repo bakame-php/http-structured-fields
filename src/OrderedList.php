@@ -36,13 +36,13 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
 
     public static function from(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members): self
     {
-        return self::fromMembers($members);
+        return self::fromList($members);
     }
 
     /**
      * @param iterable<InnerList|Item|ByteSequence|Token|bool|int|float|string> $members
      */
-    public static function fromMembers(iterable $members = []): self
+    public static function fromList(iterable $members = []): self
     {
         $newMembers = [];
         foreach ($members as $member) {
@@ -67,7 +67,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
      */
     public static function fromHttpValue(string $httpValue): self
     {
-        return self::fromMembers(Parser::parseList($httpValue));
+        return self::fromList(Parser::parseList($httpValue));
     }
 
     public function toHttpValue(): string

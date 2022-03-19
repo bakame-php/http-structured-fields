@@ -23,7 +23,7 @@ final class OrderedListTest extends StructuredFieldTest
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = OrderedList::fromMembers($arrayParams);
+        $instance = OrderedList::fromList($arrayParams);
 
         self::assertSame($stringItem, $instance->get(0));
         self::assertFalse($instance->isEmpty());
@@ -39,7 +39,7 @@ final class OrderedListTest extends StructuredFieldTest
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = OrderedList::fromMembers($arrayParams);
+        $instance = OrderedList::fromList($arrayParams);
 
         self::assertCount(2, $instance);
         self::assertSame($booleanItem, $instance->get(1));
@@ -67,7 +67,7 @@ final class OrderedListTest extends StructuredFieldTest
      */
     public function it_can_unshift_insert_and_replace(): void
     {
-        $instance = OrderedList::fromMembers();
+        $instance = OrderedList::fromList();
         $instance->unshift(Item::from('42'));
         $instance->push(Item::from(42));
         $instance->insert(1, Item::from(42.0));
@@ -87,7 +87,7 @@ final class OrderedListTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $container = OrderedList::fromMembers();
+        $container = OrderedList::fromList();
         $container->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
     }
 
@@ -98,7 +98,7 @@ final class OrderedListTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $container = OrderedList::fromMembers();
+        $container = OrderedList::fromList();
         $container->insert(3, Item::from(ByteSequence::fromDecoded('Hello World')));
     }
 
@@ -109,7 +109,7 @@ final class OrderedListTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = OrderedList::fromMembers();
+        $instance = OrderedList::fromList();
         self::assertFalse($instance->has(3));
 
         $instance->get(3);
@@ -120,10 +120,10 @@ final class OrderedListTest extends StructuredFieldTest
      */
     public function it_can_merge_one_or_more_instances(): void
     {
-        $instance1 = OrderedList::fromMembers([Item::from(false)]);
-        $instance2 = OrderedList::fromMembers([Item::from(true)]);
-        $instance3 = OrderedList::fromMembers([Item::from(42)]);
-        $expected = OrderedList::fromMembers([Item::from(false), Item::from(true), Item::from(42)]);
+        $instance1 = OrderedList::fromList([Item::from(false)]);
+        $instance2 = OrderedList::fromList([Item::from(true)]);
+        $instance3 = OrderedList::fromList([Item::from(42)]);
+        $expected = OrderedList::fromList([Item::from(false), Item::from(true), Item::from(42)]);
 
         $instance1->merge($instance2, $instance3);
 
@@ -136,10 +136,10 @@ final class OrderedListTest extends StructuredFieldTest
      */
     public function it_can_merge_two_or_more_instances_to_yield_different_result(): void
     {
-        $instance1 = OrderedList::fromMembers([Item::from(false)]);
-        $instance2 = OrderedList::fromMembers([Item::from(true)]);
-        $instance3 = OrderedList::fromMembers([Item::from(42)]);
-        $expected = OrderedList::fromMembers([Item::from(42), Item::from(true), Item::from(false)]);
+        $instance1 = OrderedList::fromList([Item::from(false)]);
+        $instance2 = OrderedList::fromList([Item::from(true)]);
+        $instance3 = OrderedList::fromList([Item::from(42)]);
+        $expected = OrderedList::fromList([Item::from(42), Item::from(true), Item::from(false)]);
 
         $instance3->merge($instance2, $instance1);
 
@@ -152,7 +152,7 @@ final class OrderedListTest extends StructuredFieldTest
      */
     public function it_can_merge_without_argument_and_not_throw(): void
     {
-        $instance = OrderedList::fromMembers([Item::from(false)]);
+        $instance = OrderedList::fromList([Item::from(false)]);
         $instance->merge();
         self::assertCount(1, $instance);
     }
@@ -177,11 +177,11 @@ final class OrderedListTest extends StructuredFieldTest
     {
         $res = OrderedList::fromHttpValue('token, "string", ?1; parameter, (42 42.0)');
 
-        $list = OrderedList::fromMembers([
+        $list = OrderedList::fromList([
             Token::fromString('token'),
             'string',
             Item::from(true, ['parameter' => true]),
-            InnerList::fromMembers([42, 42.0]),
+            InnerList::fromList([42, 42.0]),
         ]);
 
         self::assertSame($res->toHttpValue(), $list->toHttpValue());

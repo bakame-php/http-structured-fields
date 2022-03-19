@@ -220,6 +220,8 @@ echo $dictionary->toHttpValue(); //returns "a=?0, z=42.0"
 The `OrderedList` and the `InnerList` classes are list of members 
 that act as containers and also expose the following methods
 
+- `fromList` a named constructor to instantiate the container with a list of members in an iterable construct;
+- `from` a named constructor to instantiate the container with a list of members as variadic;
 - `get` to access an element at a given index (negative indexes are supported)
 - `has` tell whether an element is attached to the container using its `index`;
 - `push` to add elements at the end of the list;
@@ -239,7 +241,7 @@ use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\OrderedList;
 use Bakame\Http\StructuredFields\Token;
 
-$innerList = InnerList::fromMembers([42, 42.0, "42"], ["a" => true]);
+$innerList = InnerList::fromList([42, 42.0, "42"], ["a" => true]);
 $innerList->has(2); //return true
 $innerList->has(42); //return false
 $innerList->push(Token::fromString('forty-two'));
@@ -261,7 +263,7 @@ RFC but the main ones are:
 use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Parameters;
 
-$innerList = InnerList::fromMembers([42, 42.0, "42"], ["a" => true]);
+$innerList = InnerList::fromList([42, 42.0, "42"], ["a" => true]);
 $innerList->parameter('a'); //returns true
 $innerList->parameters();   //returns a Parameters object
 ```

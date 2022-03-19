@@ -21,7 +21,7 @@ final class InnerListTest extends TestCase
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = InnerList::fromMembers($arrayParams, Parameters::fromAssociative(['test' => Item::from(42)]));
+        $instance = InnerList::fromList($arrayParams, Parameters::fromAssociative(['test' => Item::from(42)]));
         self::assertFalse($instance->parameters()->isEmpty());
 
         self::assertSame($stringItem, $instance->get(0));
@@ -40,7 +40,7 @@ final class InnerListTest extends TestCase
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = InnerList::fromMembers($arrayParams);
+        $instance = InnerList::fromList($arrayParams);
 
         self::assertCount(2, $instance);
         self::assertTrue($instance->has(1));
@@ -68,7 +68,7 @@ final class InnerListTest extends TestCase
      */
     public function it_can_unshift_insert_and_replace(): void
     {
-        $container = InnerList::fromMembers();
+        $container = InnerList::fromList();
         $container->unshift('42');
         $container->push(42);
         $container->insert(1, 42.0);
@@ -86,7 +86,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        $container = InnerList::fromMembers();
+        $container = InnerList::from();
         $container->replace(0, ByteSequence::fromDecoded('Hello World'));
     }
 
@@ -97,7 +97,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        $container = InnerList::fromMembers();
+        $container = InnerList::from();
         $container->insert(3, ByteSequence::fromDecoded('Hello World'));
     }
 
@@ -108,7 +108,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = InnerList::fromMembers();
+        $instance = InnerList::fromList();
         self::assertFalse($instance->has(3));
 
         $instance->get(3);
@@ -119,10 +119,10 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_one_or_more_instances(): void
     {
-        $instance1 = InnerList::fromMembers([false], ['foo' => 'bar']);
-        $instance2 = InnerList::fromMembers([true]);
-        $instance3 = InnerList::fromMembers([42], ['foo' => 'baz']);
-        $expected = InnerList::fromMembers([false, true, 42], ['foo' => 'baz']);
+        $instance1 = InnerList::fromList([false], ['foo' => 'bar']);
+        $instance2 = InnerList::from(true);
+        $instance3 = InnerList::fromList([42], ['foo' => 'baz']);
+        $expected = InnerList::fromList([false, true, 42], ['foo' => 'baz']);
 
         $instance1->merge($instance2, $instance3);
 
@@ -135,7 +135,7 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_without_argument_and_not_throw(): void
     {
-        $instance = InnerList::fromMembers([false]);
+        $instance = InnerList::from(false);
         $instance->merge();
         self::assertCount(1, $instance);
     }
@@ -145,10 +145,10 @@ final class InnerListTest extends TestCase
      */
     public function it_can_merge_two_or_more_instances_to_yield_different_result(): void
     {
-        $instance1 = InnerList::fromMembers([false], ['foo' => 'bar']);
-        $instance2 = InnerList::fromMembers([true]);
-        $instance3 = InnerList::fromMembers([42], ['foo' => 'baz']);
-        $expected = InnerList::fromMembers([42, true, false], ['foo' => 'bar']);
+        $instance1 = InnerList::fromList([false], ['foo' => 'bar']);
+        $instance2 = InnerList::from(true);
+        $instance3 = InnerList::fromList([42], ['foo' => 'baz']);
+        $expected = InnerList::fromList([42, true, false], ['foo' => 'bar']);
 
         $instance3->merge($instance2, $instance1);
 
@@ -161,7 +161,7 @@ final class InnerListTest extends TestCase
      */
     public function it_can_be_regenerated_with_eval(): void
     {
-        $instance = InnerList::fromMembers([false], ['foo' => 'bar']);
+        $instance = InnerList::fromList([false], ['foo' => 'bar']);
 
         /** @var InnerList $generatedInstance */
         $generatedInstance = eval('return '.var_export($instance, true).';');
@@ -174,7 +174,7 @@ final class InnerListTest extends TestCase
      */
     public function it_can_access_its_parameter_values(): void
     {
-        $instance = InnerList::fromMembers([false], ['foo' => 'bar']);
+        $instance = InnerList::fromList([false], ['foo' => 'bar']);
 
         self::assertSame('bar', $instance->parameter('foo'));
     }
@@ -186,7 +186,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = InnerList::fromMembers([false], ['foo' => 'bar']);
+        $instance = InnerList::fromList([false], ['foo' => 'bar']);
         $instance->parameter('bar');
     }
 }
