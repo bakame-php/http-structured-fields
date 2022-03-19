@@ -11,8 +11,10 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `InnerList::from` named constructor which accepts a variadic list of members items
 - `OrderedList::from` named constructor which accepts a variadic list of members items
 - `Token::fromString` named constructor which accepts `string` and `Stringable` object
+- `Parameter::values` returns an array of all the values contained inside the `Parameters` instance
 - [BC Break] `InnerList::fromList` to replace `InnerList::fromMembers`
 - [BC Break] `OrderedList::fromList` to replace `OrderedList::fromMembers`
+- [BC Break] `Parameter::value` to replace `InnerList::parameter` and `Item::parameter`
 
 ### Fixed
 
@@ -28,8 +30,10 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- [BC Break] `InnerList::fromMembers` to replace `InnerList::fromList`
-- [BC Break] `OrderedList::fromMembers` to replace `OrderedList::fromList`
+- [BC Break] `InnerList::fromMembers` replaced by `InnerList::fromList`
+- [BC Break] `OrderedList::fromMembers` replaced by `OrderedList::fromList`
+- [BC Break] `Item::parameter` replaced by `Parameter::value`
+- [BC Break] `InnerList::parameter` replaced by `Parameter::value`
 
 ## [0.1.0] - 2022-03-18
 

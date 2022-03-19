@@ -273,11 +273,6 @@ final class Item implements StructuredField, SupportsParameters
         return $this->parameters;
     }
 
-    public function parameter(string $key): Item|Token|ByteSequence|float|int|bool|string
-    {
-        return $this->parameters->get($key)->value();
-    }
-
     /**
      * @param Parameters|iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $parameters
      */

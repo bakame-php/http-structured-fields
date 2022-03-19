@@ -228,7 +228,7 @@ final class ItemTest extends StructuredFieldTest
     {
         $instance = Item::fromHttpValue('1; a; b=?0');
 
-        self::assertTrue($instance->parameter('a'));
+        self::assertTrue($instance->parameters()->value('a'));
     }
 
     /**
@@ -239,7 +239,7 @@ final class ItemTest extends StructuredFieldTest
         $this->expectException(InvalidOffset::class);
 
         $instance = Item::fromHttpValue('1; a; b=?0');
-        $instance->parameter('bar');
+        $instance->parameters()->value('bar');
     }
 
     /**
@@ -254,6 +254,6 @@ final class ItemTest extends StructuredFieldTest
         $instance->exchangeParameters(['foo' => 'bar']);
 
         self::assertCount(1, $instance->parameters());
-        self::assertSame('bar', $instance->parameter('foo'));
+        self::assertSame('bar', $instance->parameters()->value('foo'));
     }
 }

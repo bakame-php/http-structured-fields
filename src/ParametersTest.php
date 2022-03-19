@@ -232,4 +232,18 @@ final class ParametersTest extends StructuredFieldTest
 
         self::assertEquals($instance, $generatedInstance);
     }
+
+    /**
+     * @test
+     */
+    public function it_can_return_bare_items_values(): void
+    {
+        $instance = Parameters::fromAssociative([
+            'string' => Item::from('helloWorld'),
+            'boolean' => Item::from(true),
+        ]);
+
+        self::assertSame('helloWorld', $instance->value('string'));
+        self::assertSame(['string' => 'helloWorld', 'boolean' => true], $instance->values());
+    }
 }

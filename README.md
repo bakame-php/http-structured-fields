@@ -189,6 +189,7 @@ key to its members as such they expose the following methods:
 - `append` always add an element at the end of the container, if already present the previous value is removed;
 - `prepend` always add an element at the beginning of the container, if already present the previous value is removed;
 - `delete` to remove elements based on their associated keys;
+- `keys` to list all existing keys for the ordered maps as an array list;
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
@@ -214,6 +215,25 @@ echo $dictionary->toHttpValue(); //returns "a=?0, z=42.0"
 
 - `Parameters` can only contains `Item` instances 
 - `Dictionary` instance can contain `Item` and `InnerList` instances.
+
+The `Parameters` instance exposes the following methods:
+
+- `Parameters::values` to list all existing Bare Items value as an array list;
+- `Parameters::value($key)` to return the value of the Bare Item associated to the `$key` or throw if the key is unknown or invalid;
+
+```php
+use Bakame\Http\StructuredFields\Parameters;
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Token;
+
+$parameters = Parameters::fromAssociative(['b' => true, 'foo' => 'bar']);
+$parameters->keys(); // returns ['b', 'foo']
+$parameters->values(); // returns [true, 'bar']
+$parameters->value('b'); // returns true
+$parameters->get('b'); // returns Item::from(true)
+iterator_to_array($parameters->toPairs(), true); // returns [['b', Item::from(true)], ['foo', Item::from('bar')]]
+iterator_to_array($parameters, true); // returns ['b' => Item::from(true), 'foo' => Item::from('bar')]
+```
 
 #### Lists
 
@@ -264,8 +284,8 @@ use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Parameters;
 
 $innerList = InnerList::fromList([42, 42.0, "42"], ["a" => true]);
-$innerList->parameter('a'); //returns true
 $innerList->parameters();   //returns a Parameters object
+$innerList->parameters()->value('a'); // returns true
 ```
 
 Contributing

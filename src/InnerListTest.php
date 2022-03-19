@@ -176,7 +176,7 @@ final class InnerListTest extends TestCase
     {
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
 
-        self::assertSame('bar', $instance->parameter('foo'));
+        self::assertSame('bar', $instance->parameters()->value('foo'));
     }
 
     /**
@@ -187,7 +187,7 @@ final class InnerListTest extends TestCase
         $this->expectException(InvalidOffset::class);
 
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
-        $instance->parameter('bar');
+        $instance->parameters()->value('bar');
     }
 
     /**
@@ -202,6 +202,6 @@ final class InnerListTest extends TestCase
         $instance->exchangeParameters(['foo' => 'bar']);
 
         self::assertCount(1, $instance->parameters());
-        self::assertSame('bar', $instance->parameter('foo'));
+        self::assertSame('bar', $instance->parameters()->value('foo'));
     }
 }

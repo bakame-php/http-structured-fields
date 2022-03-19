@@ -160,6 +160,25 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return array_keys($this->members);
     }
 
+    /**
+     * @return array<string, Token|ByteSequence|float|int|bool|string>
+     */
+    public function values(): array
+    {
+        return array_map(fn (Item $item): Token|ByteSequence|float|int|bool|string => $item->value(), $this->members);
+    }
+
+    public function value(string $key): Token|ByteSequence|float|int|bool|string
+    {
+        self::validateKey($key);
+
+        if (!array_key_exists($key, $this->members)) {
+            throw InvalidOffset::dueToKeyNotFound($key);
+        }
+
+        return $this->members[$key]->value();
+    }
+
     public function has(string $key): bool
     {
         return array_key_exists($key, $this->members);
