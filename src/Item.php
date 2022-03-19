@@ -132,7 +132,7 @@ final class Item implements StructuredField, SupportsParameters
         preg_match('/'.$regexp.'/i', $string, $found);
 
         return [
-            new Token($found['token']),
+            Token::fromString($found['token']),
             substr($string, strlen($found['token'])),
         ];
     }

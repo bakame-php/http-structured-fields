@@ -315,7 +315,7 @@ final class Parser
     {
         preg_match('/^(?<token>[a-z*][a-z0-9:\/'.preg_quote("!#$%&'*+-.^_`|~").']*)/i', $httpValue, $found);
 
-        return [new Token($found['token']), strlen($found['token'])];
+        return [Token::fromString($found['token']), strlen($found['token'])];
     }
 
     /**

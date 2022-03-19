@@ -25,7 +25,7 @@ final class TokenTest extends TestCase
     {
         $this->expectException(SyntaxError::class);
 
-        new Token('a a');
+        Token::fromString('a a');
     }
 
     /**
@@ -33,7 +33,7 @@ final class TokenTest extends TestCase
      */
     public function it_can_be_regenerated_with_eval(): void
     {
-        $instance = new Token('helloworld');
+        $instance = Token::fromString('helloworld');
 
         /** @var Token $generatedInstance */
         $generatedInstance = eval('return '.var_export($instance, true).';');

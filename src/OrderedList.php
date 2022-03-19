@@ -21,7 +21,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     /** @var array<Item|InnerList>  */
     private array $members;
 
-    public function __construct(Item|InnerList ...$members)
+    private function __construct(Item|InnerList ...$members)
     {
         $this->members = $members;
     }
@@ -32,6 +32,11 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     public static function __set_state(array $properties): self
     {
         return new self(...$properties['members']);
+    }
+
+    public static function from(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members): self
+    {
+        return self::fromMembers($members);
     }
 
     /**

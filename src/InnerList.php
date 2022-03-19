@@ -21,7 +21,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
     /** @var array<Item> */
     private array $members;
 
-    public function __construct(private Parameters $parameters, Item ...$members)
+    private function __construct(private Parameters $parameters, Item ...$members)
     {
         $this->members = $members;
     }

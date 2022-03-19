@@ -193,9 +193,10 @@ key to its members as such they expose the following methods:
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
 use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Token;
 
 $dictionary = Dictionary::fromPairs([['b', true]]);
-$dictionary->append('c', Item::from(true, ['foo' => new Token('bar')]));
+$dictionary->append('c', Item::from(true, ['foo' => Token::fromString('bar')]));
 $dictionary->prepend('a', false);
 $dictionary->toHttpValue(); //returns "a=?0, b, c;foo=bar"
 $dictionary->has('a');   //return true
@@ -241,11 +242,11 @@ use Bakame\Http\StructuredFields\Token;
 $innerList = InnerList::fromMembers([42, 42.0, "42"], ["a" => true]);
 $innerList->has(2); //return true
 $innerList->has(42); //return false
-$innerList->push(new Token('forty-two'));
+$innerList->push(Token::fromString('forty-two'));
 $innerList->remove(0, 2);
 echo $innerList->toHttpValue(); //returns '(42.0 forty-two);a'
 
-$orderedList = new OrderedList(Item::from("42", ["foo" => "bar"]), $innerList);
+$orderedList = OrderedList::from(Item::from("42", ["foo" => "bar"]), $innerList);
 echo $orderedList->toHttpValue(); //returns '"42";foo="bar", (42.0 forty-two);a'
 ```
 
