@@ -103,7 +103,7 @@ are used to represent non-native types as shown in the table below:
 | Token         | class `Token`        | `Item::isToken`        |
 | Byte Sequence | class `ByteSequence` | `Item::isByteSequence` |
 
-#### Complex Items
+#### Extending Items
 
 As explain in the RFC, Item can be associated with `Parameters` that are ordered maps of key-value pairs, where the 
 keys are string and the value are bare items. Their public API will be cover in subsequent paragraphs.

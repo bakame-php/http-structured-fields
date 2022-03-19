@@ -6,6 +6,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
+- `Item::exchangeParameters` to fully replace the `Item` associated parameters
+- `InnerList::exchangeParameters` to fully replace the `InnerList` associated parameters
 - `InnerList::from` named constructor which accepts a variadic list of members items
 - `OrderedList::from` named constructor which accepts a variadic list of members items
 - `Token::fromString` named constructor which accepts `string` and `Stringable` object
@@ -16,8 +18,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - `ByteSequence::fromDecoded` named constructor also accepts a `Stringable` object
 - `ByteSequence::fromEncoded` named constructor also accepts a `Stringable` object
-- [BC Break] `OrderedList::__construct` is made privateuse `OrderedList::from` instead
-- [BC Break] `InnerList::__construct` is made private use `InnerList::fromMembers` instead
+- [BC Break] `OrderedList::__construct` is made private use `OrderedList::from` instead
+- [BC Break] `InnerList::__construct` is made private use `InnerList::fromList` instead
 - [BC Break] `Token::__construct` is made private use `Token::fromString` instead
 
 ### Deprecated

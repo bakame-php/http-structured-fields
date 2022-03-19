@@ -13,4 +13,6 @@ interface SupportsParameters
      * @throws InvalidOffset If no value is found for the given key
      */
     public function parameter(string $key): Item|Token|ByteSequence|float|int|bool|string;
+
+    public function exchangeParameters(Parameters $parameters): void;
 }

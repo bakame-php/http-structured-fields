@@ -241,4 +241,19 @@ final class ItemTest extends StructuredFieldTest
         $instance = Item::fromHttpValue('1; a; b=?0');
         $instance->parameter('bar');
     }
+
+    /**
+     * @test
+     */
+    public function it_can_exchange_parameters(): void
+    {
+        $instance = Item::from(Token::fromString('babayaga'));
+
+        self::assertCount(0, $instance->parameters());
+
+        $instance->exchangeParameters(['foo' => 'bar']);
+
+        self::assertCount(1, $instance->parameters());
+        self::assertSame('bar', $instance->parameter('foo'));
+    }
 }

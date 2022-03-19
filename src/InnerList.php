@@ -79,6 +79,14 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
         return $this->parameters->get($key)->value();
     }
 
+    /**
+     * @param Parameters|iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $parameters
+     */
+    public function exchangeParameters(Parameters|iterable $parameters): void
+    {
+        $this->parameters = Parameters::fromAssociative($parameters);
+    }
+
     public function count(): int
     {
         return count($this->members);

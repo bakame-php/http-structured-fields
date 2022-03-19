@@ -278,6 +278,14 @@ final class Item implements StructuredField, SupportsParameters
         return $this->parameters->get($key)->value();
     }
 
+    /**
+     * @param Parameters|iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $parameters
+     */
+    public function exchangeParameters(Parameters|iterable $parameters): void
+    {
+        $this->parameters = Parameters::fromAssociative($parameters);
+    }
+
     public function isInteger(): bool
     {
         return is_int($this->value);

@@ -189,4 +189,19 @@ final class InnerListTest extends TestCase
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
         $instance->parameter('bar');
     }
+
+    /**
+     * @test
+     */
+    public function it_can_exchange_parameters(): void
+    {
+        $instance = InnerList::from(false, true, 42, 'forty-two');
+
+        self::assertCount(0, $instance->parameters());
+
+        $instance->exchangeParameters(['foo' => 'bar']);
+
+        self::assertCount(1, $instance->parameters());
+        self::assertSame('bar', $instance->parameter('foo'));
+    }
 }
