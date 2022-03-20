@@ -117,48 +117,6 @@ final class InnerListTest extends TestCase
     /**
      * @test
      */
-    public function it_can_merge_one_or_more_instances(): void
-    {
-        $instance1 = InnerList::fromList([false], ['foo' => 'bar']);
-        $instance2 = InnerList::from(true);
-        $instance3 = InnerList::fromList([42], ['foo' => 'baz']);
-        $expected = InnerList::fromList([false, true, 42], ['foo' => 'baz']);
-
-        $instance1->merge($instance2, $instance3);
-
-        self::assertCount(3, $instance1);
-        self::assertSame($expected->toHttpValue(), $instance1->toHttpValue());
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_merge_without_argument_and_not_throw(): void
-    {
-        $instance = InnerList::from(false);
-        $instance->merge();
-        self::assertCount(1, $instance);
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_merge_two_or_more_instances_to_yield_different_result(): void
-    {
-        $instance1 = InnerList::fromList([false], ['foo' => 'bar']);
-        $instance2 = InnerList::from(true);
-        $instance3 = InnerList::fromList([42], ['foo' => 'baz']);
-        $expected = InnerList::fromList([42, true, false], ['foo' => 'bar']);
-
-        $instance3->merge($instance2, $instance1);
-
-        self::assertCount(3, $instance3);
-        self::assertSame($expected->toHttpValue(), $instance3->toHttpValue());
-    }
-
-    /**
-     * @test
-     */
     public function it_can_be_regenerated_with_eval(): void
     {
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
@@ -188,20 +146,5 @@ final class InnerListTest extends TestCase
 
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
         $instance->parameters->value('bar');
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_exchange_parameters(): void
-    {
-        $instance = InnerList::from(false, true, 42, 'forty-two');
-
-        self::assertCount(0, $instance->parameters);
-        $instance->parameters->clear();
-        $instance->parameters->merge(['foo' => 'bar']);
-
-        self::assertCount(1, $instance->parameters);
-        self::assertSame('bar', $instance->parameters->value('foo'));
     }
 }

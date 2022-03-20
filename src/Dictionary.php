@@ -253,11 +253,13 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
 
     /**
      * Merge multiple instances.
+     *
+     * iterable<array-key, InnerList|Item|Token|ByteSequence|float|int|bool|string> ...$others
      */
-    public function merge(self ...$others): void
+    public function merge(iterable ...$others): void
     {
         foreach ($others as $other) {
-            $this->members = [...$this->members, ...$other->members];
+            $this->members = [...$this->members, ...self::fromAssociative($other)->members];
         }
     }
 }

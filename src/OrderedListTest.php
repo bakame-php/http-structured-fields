@@ -118,48 +118,6 @@ final class OrderedListTest extends StructuredFieldTest
     /**
      * @test
      */
-    public function it_can_merge_one_or_more_instances(): void
-    {
-        $instance1 = OrderedList::fromList([Item::from(false)]);
-        $instance2 = OrderedList::fromList([Item::from(true)]);
-        $instance3 = OrderedList::fromList([Item::from(42)]);
-        $expected = OrderedList::fromList([Item::from(false), Item::from(true), Item::from(42)]);
-
-        $instance1->merge($instance2, $instance3);
-
-        self::assertCount(3, $instance1);
-        self::assertSame($expected->toHttpValue(), $instance1->toHttpValue());
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_merge_two_or_more_instances_to_yield_different_result(): void
-    {
-        $instance1 = OrderedList::fromList([Item::from(false)]);
-        $instance2 = OrderedList::fromList([Item::from(true)]);
-        $instance3 = OrderedList::fromList([Item::from(42)]);
-        $expected = OrderedList::fromList([Item::from(42), Item::from(true), Item::from(false)]);
-
-        $instance3->merge($instance2, $instance1);
-
-        self::assertCount(3, $instance3);
-        self::assertSame($expected->toHttpValue(), $instance3->toHttpValue());
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_merge_without_argument_and_not_throw(): void
-    {
-        $instance = OrderedList::fromList([Item::from(false)]);
-        $instance->merge();
-        self::assertCount(1, $instance);
-    }
-
-    /**
-     * @test
-     */
     public function it_can_be_regenerated_with_eval(): void
     {
         $instance = OrderedList::from(Item::from(false));

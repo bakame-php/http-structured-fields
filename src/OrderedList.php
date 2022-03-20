@@ -195,14 +195,4 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     {
         $this->members = [];
     }
-
-    /**
-     * Merge multiple instances.
-     */
-    public function merge(self ...$others): void
-    {
-        foreach ($others as $other) {
-            $this->members = [...$this->members, ...$other->members];
-        }
-    }
 }

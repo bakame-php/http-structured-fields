@@ -26,7 +26,7 @@ use Bakame\Http\StructuredFields\Item;
 $field = Item::from("/terms", ['rel' => "copyright", 'anchor' => '#foo']);
 echo $field->toHttpValue();           //display "/terms";rel="copyright";anchor="#foo"
 echo $field->value;                   //display "/terms"
-echo $field->parameter->value('rel'); //display "copyright"
+echo $field->parameters->value('rel'); //display "copyright"
 ```
 
 System Requirements
@@ -160,7 +160,6 @@ At any given time it is possible with each of these objects to:
 - iterate over each contained member and its optional associated key via the `IteratorAggregate` interface;
 - tell whether the container is empty via an `isEmpty` method;
 - know the number of members contained in the container via the `Countable` interface;
-- merge multiple instance of **the same type** using the `merge` method;
 - clear the container using the `clear` method;
 
 ```php
@@ -189,6 +188,7 @@ key to its members as such they expose the following methods:
 - `prepend` always add an element at the beginning of the container, if already present the previous value is removed;
 - `delete` to remove elements based on their associated keys;
 - `keys` to list all existing keys for the ordered maps as an array list;
+- `merge` merge multiple instances of iterable structure as associative constructs;
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;

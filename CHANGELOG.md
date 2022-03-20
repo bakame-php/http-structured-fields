@@ -12,7 +12,6 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `OrderedList::from` named constructor which accepts a variadic list of members items
 - `Token::fromString` named constructor which accepts `string` and `Stringable` object
 - `Parameter::values` returns an array of all the values contained inside the `Parameters` instance
-- `Parameter::merge` accepts any iterable that can be accepted by `Parameter::fromAssociative` as variadic parameter
 - **[BC Break]** `InnerList::fromList` to replace `InnerList::fromMembers`
 - **[BC Break]** `OrderedList::fromList` to replace `OrderedList::fromMembers`
 - **[BC Break]** `Parameter::value` to replace `InnerList::parameter` and `Item::parameter`
@@ -21,6 +20,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - `ByteSequence::fromDecoded` named constructor also accepts a `Stringable` object
 - `ByteSequence::fromEncoded` named constructor also accepts a `Stringable` object
+- `Dictionary::merge` accepts any iterable that can be accepted by `Dictionary::fromAssociative` as variadic parameter
+- `Parameter::merge` accepts any iterable that can be accepted by `Parameter::fromAssociative` as variadic parameter
 - **[BC Break]** `OrderedList::__construct` is made private use `OrderedList::from` instead
 - **[BC Break]** `InnerList::__construct` is made private use `InnerList::fromList` instead
 - **[BC Break]** `Token::__construct` is made private use `Token::fromString` instead
@@ -39,6 +40,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - **[BC Break]** `Item::value()` replaced by `Item::value` public readonly property
 - **[BC Break]** `Item::parameters()` replaced by `Item::parameters` public readonly property
 - **[BC Break]** `InnerList::parameters()` replaced by `InnerList::parameters` public readonly property
+- **[BC Break]** `InnerList::merge()` use `InnerList::push()` or `InnerList::unshift()` instead
+- **[BC Break]** `OrderedList::merge()` use `OrderedList::push()` or `OrderedList::unshift()` instead
 
 ## [0.1.0] - 2022-03-18
 
