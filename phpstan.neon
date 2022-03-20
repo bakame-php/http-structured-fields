@@ -7,4 +7,6 @@ parameters:
     paths:
         - src
     ignoreErrors:
+        - message: '#Method Bakame\\Http\\StructuredFields\\Parameters::merge\(\) has parameter \$others with no value type specified in iterable type iterable.#'
+          path: src/Parameters.php
     reportUnmatchedIgnoredErrors: true

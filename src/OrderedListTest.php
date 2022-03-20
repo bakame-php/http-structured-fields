@@ -54,8 +54,8 @@ final class OrderedListTest extends StructuredFieldTest
 
         self::assertCount(2, $instance);
         self::assertInstanceOf(Item::class, $member);
-        self::assertIsString($member->value());
-        self::assertStringContainsString('BarBaz', $member->value());
+        self::assertIsString($member->value);
+        self::assertStringContainsString('BarBaz', $member->value);
 
         $instance->remove(0, 1);
         self::assertCount(0, $instance);

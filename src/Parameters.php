@@ -105,12 +105,12 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         $returnValue = [];
 
         foreach ($this->members as $key => $val) {
-            if (!$val->parameters()->isEmpty()) {
+            if (!$val->parameters->isEmpty()) {
                 throw new SerializationError('Parameters instances can not contain parameterized Items.');
             }
 
             $value = ';'.$key;
-            if ($val->value() !== true) {
+            if ($val->value !== true) {
                 $value .= '='.$val->toHttpValue();
             }
 
@@ -165,7 +165,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function values(): array
     {
-        return array_map(fn (Item $item): Token|ByteSequence|float|int|bool|string => $item->value(), $this->members);
+        return array_map(fn (Item $item): Token|ByteSequence|float|int|bool|string => $item->value, $this->members);
     }
 
     public function value(string $key): Token|ByteSequence|float|int|bool|string
@@ -176,7 +176,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
             throw InvalidOffset::dueToKeyNotFound($key);
         }
 
-        return $this->members[$key]->value();
+        return $this->members[$key]->value;
     }
 
     public function has(string $key): bool
@@ -257,7 +257,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     {
         self::validateKey($key);
 
-        if (!$item->parameters()->isEmpty()) {
+        if (!$item->parameters->isEmpty()) {
             throw new SyntaxError('Parameters instances can not contain parameterized Items.');
         }
     }
@@ -308,8 +308,10 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
     /**
      * Merge multiple instances.
+     *
+     * iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> ...$others
      */
-    public function merge(self ...$others): void
+    public function merge(iterable ...$others): void
     {
         foreach ($others as $other) {
             foreach ($other as $key => $value) {

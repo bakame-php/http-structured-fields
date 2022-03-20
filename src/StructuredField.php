@@ -7,7 +7,7 @@ namespace Bakame\Http\StructuredFields;
 interface StructuredField
 {
     /**
-     * Returns the serialize-representation of the Structured Field in textual HTTP field values.
+     * Returns the serialize-representation of the Structured Field as a textual HTTP field value.
      */
     public function toHttpValue(): string;
 }

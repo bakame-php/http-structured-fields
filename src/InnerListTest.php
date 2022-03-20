@@ -22,7 +22,7 @@ final class InnerListTest extends TestCase
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
         $instance = InnerList::fromList($arrayParams, Parameters::fromAssociative(['test' => Item::from(42)]));
-        self::assertFalse($instance->parameters()->isEmpty());
+        self::assertFalse($instance->parameters->isEmpty());
 
         self::assertSame($stringItem, $instance->get(0));
         self::assertFalse($instance->isEmpty());
@@ -44,7 +44,7 @@ final class InnerListTest extends TestCase
 
         self::assertCount(2, $instance);
         self::assertTrue($instance->has(1));
-        self::assertTrue($instance->parameters()->isEmpty());
+        self::assertTrue($instance->parameters->isEmpty());
 
         $instance->remove(1);
 
@@ -55,8 +55,8 @@ final class InnerListTest extends TestCase
         $instance->insert(1, );
         $member = $instance->get(1);
         self::assertCount(2, $instance);
-        self::assertIsString($member->value());
-        self::assertStringContainsString('BarBaz', $member->value());
+        self::assertIsString($member->value);
+        self::assertStringContainsString('BarBaz', $member->value);
 
         $instance->remove(0, 1);
         self::assertCount(0, $instance);
@@ -176,7 +176,7 @@ final class InnerListTest extends TestCase
     {
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
 
-        self::assertSame('bar', $instance->parameters()->value('foo'));
+        self::assertSame('bar', $instance->parameters->value('foo'));
     }
 
     /**
@@ -187,7 +187,7 @@ final class InnerListTest extends TestCase
         $this->expectException(InvalidOffset::class);
 
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
-        $instance->parameters()->value('bar');
+        $instance->parameters->value('bar');
     }
 
     /**
@@ -197,11 +197,11 @@ final class InnerListTest extends TestCase
     {
         $instance = InnerList::from(false, true, 42, 'forty-two');
 
-        self::assertCount(0, $instance->parameters());
+        self::assertCount(0, $instance->parameters);
+        $instance->parameters->clear();
+        $instance->parameters->merge(['foo' => 'bar']);
 
-        $instance->exchangeParameters(['foo' => 'bar']);
-
-        self::assertCount(1, $instance->parameters());
-        self::assertSame('bar', $instance->parameters()->value('foo'));
+        self::assertCount(1, $instance->parameters);
+        self::assertSame('bar', $instance->parameters->value('foo'));
     }
 }

@@ -85,7 +85,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         $returnValue = [];
         foreach ($this->members as $key => $member) {
             $returnValue[] = match (true) {
-                $member instanceof Item && true === $member->value() => $key.$member->parameters()->toHttpValue(),
+                $member instanceof Item && true === $member->value => $key.$member->parameters->toHttpValue(),
                 default => $key.'='.$member->toHttpValue(),
             };
         }

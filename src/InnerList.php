@@ -16,13 +16,15 @@ use function count;
 /**
  * @implements IteratorAggregate<array-key, Item>
  */
-final class InnerList implements Countable, IteratorAggregate, StructuredField, SupportsParameters
+final class InnerList implements Countable, IteratorAggregate, StructuredField
 {
     /** @var array<Item> */
     private array $members;
 
-    private function __construct(private Parameters $parameters, Item ...$members)
-    {
+    private function __construct(
+        public readonly Parameters $parameters,
+        Item ...$members
+    ) {
         $this->members = $members;
     }
 
@@ -67,19 +69,6 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
             .implode(' ', array_map(fn (Item $value): string => $value->toHttpValue(), $this->members))
             .')'
             .$this->parameters->toHttpValue();
-    }
-
-    public function parameters(): Parameters
-    {
-        return $this->parameters;
-    }
-
-    /**
-     * @param Parameters|iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $parameters
-     */
-    public function exchangeParameters(Parameters|iterable $parameters): void
-    {
-        $this->parameters = Parameters::fromAssociative($parameters);
     }
 
     public function count(): int
@@ -203,7 +192,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField, 
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...$other->members];
-            $this->parameters->merge($other->parameters());
+            $this->parameters->merge($other->parameters);
         }
     }
 }

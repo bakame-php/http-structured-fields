@@ -24,9 +24,9 @@ The package can be used to:
 use Bakame\Http\StructuredFields\Item;
 
 $field = Item::from("/terms", ['rel' => "copyright", 'anchor' => '#foo']);
-echo $field->toHttpValue();    //display "/terms";rel="copyright";anchor="#foo"
-echo $field->value();          //display "/terms"
-echo $field->parameter('rel'); //display "copyright"
+echo $field->toHttpValue();           //display "/terms";rel="copyright";anchor="#foo"
+echo $field->value;                   //display "/terms"
+echo $field->parameter->value('rel'); //display "copyright"
 ```
 
 System Requirements
@@ -119,18 +119,17 @@ Instantiation via type recognition is done using the `Item::from` named construc
 use Bakame\Http\StructuredFields\Item;
 
 $item = Item::from("hello world", ["a" => 1]);
-$item->value(); //returns "hello world"
+$item->value; //returns "hello world"
 $item->isString(); //return true
 $item->isToken();  //return false
-$item->parameter("a"); //returns 1
+$item->parameters->value("a"); //returns 1
 ```
 
 
-Once instantiated, accessing `Item` properties is done via three (3) methods:
+Once instantiated, accessing `Item` properties is done via three (2) readonly properties:
 
-- `Item::value()` which returns the instance underlying value
-- `Item::parameters()` which returns the parameters associated to the `Item` as a distinct `Parameters` object
-- `Item::parameter(string $key)` which returns the HTTP data type attached to the parameter `$key`.
+- `Item::value` which returns the instance underlying value
+- `Item::parameters` which returns the parameters associated to the `Item` as a distinct `Parameters` object
 
 **Of note: to instantiate a decimal number type a float MUST be used as the first argument input.**
 
@@ -220,6 +219,7 @@ The `Parameters` instance exposes the following methods:
 
 - `Parameters::values` to list all existing Bare Items value as an array list;
 - `Parameters::value($key)` to return the value of the Bare Item associated to the `$key` or throw if the key is unknown or invalid;
+- `Parameters::merge` also accepts iterable as associative key-value as part of the variadic signature.
 
 ```php
 use Bakame\Http\StructuredFields\Parameters;
@@ -233,6 +233,12 @@ $parameters->value('b'); // returns true
 $parameters->get('b'); // returns Item::from(true)
 iterator_to_array($parameters->toPairs(), true); // returns [['b', Item::from(true)], ['foo', Item::from('bar')]]
 iterator_to_array($parameters, true); // returns ['b' => Item::from(true), 'foo' => Item::from('bar')]
+$parameters->merge(
+    Parameters::fromAssociative(['b' => true, 'foo' => 'foo']),
+    ['b' => 'false']
+);
+$parameters->toHttpValue(); // returns ;b="false";foo="foo"
+
 ```
 
 #### Lists
@@ -277,15 +283,15 @@ RFC but the main ones are:
 
 - `InnerList` members must be `Items`;
 - `OrderedList` members must be `InnerList` or `Items`;
-- `InnerList` can have a `Parameters` instance attached to it, not `OrderedList`;
+- `InnerList` has a `Parameters` instance attached to it that you can access via its readonly property `parameters`, not `OrderedList`;
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Parameters;
 
 $innerList = InnerList::fromList([42, 42.0, "42"], ["a" => true]);
-$innerList->parameters();   //returns a Parameters object
-$innerList->parameters()->value('a'); // returns true
+$innerList->parameters;             //returns a Parameters object
+$innerList->parameters->value('a'); // returns true
 ```
 
 Contributing

@@ -99,8 +99,8 @@ final class ParametersTest extends StructuredFieldTest
         $foundItem = $instance->pair(1);
 
         self::assertCount(2, $instance);
-        self::assertIsString($foundItem[1]->value());
-        self::assertStringContainsString('BarBaz', $foundItem[1]->value());
+        self::assertIsString($foundItem[1]->value);
+        self::assertStringContainsString('BarBaz', $foundItem[1]->value);
 
         $instance->delete('foobar', 'string');
         self::assertCount(0, $instance);
@@ -216,7 +216,7 @@ final class ParametersTest extends StructuredFieldTest
         $this->expectException(SerializationError::class);
 
         $fields = Item::from('/terms', ['rel' => 'copyright', 'anchor' => '#foo']);
-        $fields->parameters()->get('anchor')->parameters()->set('yolo', 42);
+        $fields->parameters->get('anchor')->parameters->set('yolo', 42);
         $fields->toHttpValue();
     }
 

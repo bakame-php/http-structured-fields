@@ -97,7 +97,7 @@ final class ItemTest extends StructuredFieldTest
      */
     public function it_instantiates_a_binary(): void
     {
-        self::assertInstanceOf(ByteSequence::class, Item::from(ByteSequence::fromDecoded('foobar'))->value());
+        self::assertInstanceOf(ByteSequence::class, Item::from(ByteSequence::fromDecoded('foobar'))->value);
     }
 
     /**
@@ -228,7 +228,7 @@ final class ItemTest extends StructuredFieldTest
     {
         $instance = Item::fromHttpValue('1; a; b=?0');
 
-        self::assertTrue($instance->parameters()->value('a'));
+        self::assertTrue($instance->parameters->value('a'));
     }
 
     /**
@@ -239,7 +239,7 @@ final class ItemTest extends StructuredFieldTest
         $this->expectException(InvalidOffset::class);
 
         $instance = Item::fromHttpValue('1; a; b=?0');
-        $instance->parameters()->value('bar');
+        $instance->parameters->value('bar');
     }
 
     /**
@@ -249,11 +249,12 @@ final class ItemTest extends StructuredFieldTest
     {
         $instance = Item::from(Token::fromString('babayaga'));
 
-        self::assertCount(0, $instance->parameters());
+        self::assertCount(0, $instance->parameters);
 
-        $instance->exchangeParameters(['foo' => 'bar']);
+        $instance->parameters->clear();
+        $instance->parameters->merge(['foo' => 'bar']);
 
-        self::assertCount(1, $instance->parameters());
-        self::assertSame('bar', $instance->parameters()->value('foo'));
+        self::assertCount(1, $instance->parameters);
+        self::assertSame('bar', $instance->parameters->value('foo'));
     }
 }

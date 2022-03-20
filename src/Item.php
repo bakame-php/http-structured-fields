@@ -18,11 +18,11 @@ use function strlen;
 use function substr;
 use function trim;
 
-final class Item implements StructuredField, SupportsParameters
+final class Item implements StructuredField
 {
     private function __construct(
-        private Token|ByteSequence|int|float|string|bool $value,
-        private Parameters $parameters
+        public readonly Token|ByteSequence|int|float|string|bool $value,
+        public readonly Parameters $parameters
     ) {
     }
 
@@ -261,24 +261,6 @@ final class Item implements StructuredField, SupportsParameters
         }
 
         return $result.'.0';
-    }
-
-    public function value(): Token|ByteSequence|int|float|string|bool
-    {
-        return $this->value;
-    }
-
-    public function parameters(): Parameters
-    {
-        return $this->parameters;
-    }
-
-    /**
-     * @param Parameters|iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $parameters
-     */
-    public function exchangeParameters(Parameters|iterable $parameters): void
-    {
-        $this->parameters = Parameters::fromAssociative($parameters);
     }
 
     public function isInteger(): bool
