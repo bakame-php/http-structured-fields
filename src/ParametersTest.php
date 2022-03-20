@@ -211,13 +211,37 @@ final class ParametersTest extends StructuredFieldTest
     /**
      * @test
      */
-    public function it_fails_if_internal_parameters_are_changed_illegally(): void
+    public function it_fails_if_internal_parameters_are_changed_illegally_1(): void
     {
-        $this->expectException(SerializationError::class);
+        $this->expectException(ForbiddenStateError::class);
 
         $fields = Item::from('/terms', ['rel' => 'copyright', 'anchor' => '#foo']);
         $fields->parameters->get('anchor')->parameters->set('yolo', 42);
         $fields->toHttpValue();
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_if_internal_parameters_are_changed_illegally_2(): void
+    {
+        $this->expectException(ForbiddenStateError::class);
+
+        $fields = Item::from('/terms', ['rel' => 'copyright', 'anchor' => '#foo']);
+        $fields->parameters->get('anchor')->parameters->set('yolo', 42);
+        $fields->parameters->get('anchor');
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_if_internal_parameters_are_changed_illegally_3(): void
+    {
+        $this->expectException(ForbiddenStateError::class);
+
+        $fields = Item::from('/terms', ['rel' => 'copyright', 'anchor' => '#foo']);
+        $fields->parameters->get('anchor')->parameters->set('yolo', 42);
+        $fields->parameters->value('anchor');
     }
 
     /**

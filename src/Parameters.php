@@ -106,7 +106,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
         foreach ($this->members as $key => $val) {
             if (!$val->parameters->isEmpty()) {
-                throw new SerializationError('Parameters instances can not contain parameterized Items.');
+                throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
             }
 
             $value = ';'.$key;
@@ -125,6 +125,9 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return count($this->members);
     }
 
+    /**
+     * Tells whether the container is empty or not.
+     */
     public function isEmpty(): bool
     {
         return [] === $this->members;
@@ -153,6 +156,8 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * Returns all the container keys.
+     *
      * @return array<string>
      */
     public function keys(): array
@@ -161,6 +166,8 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * Returns all containers Item values.
+     *
      * @return array<string, Token|ByteSequence|float|int|bool|string>
      */
     public function values(): array
@@ -168,20 +175,21 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return array_map(fn (Item $item): Token|ByteSequence|float|int|bool|string => $item->value, $this->members);
     }
 
-    public function value(string $key): Token|ByteSequence|float|int|bool|string|null
-    {
-        if (!array_key_exists($key, $this->members)) {
-            return null;
-        }
-
-        return $this->members[$key]->value;
-    }
-
+    /**
+     * Tells whether the key is present in the container.
+     */
     public function has(string $key): bool
     {
         return array_key_exists($key, $this->members);
     }
 
+    /**
+     * Returns the Item associated to the key.
+     *
+     * @throws SyntaxError         if the key is invalid
+     * @throws InvalidOffset       if the key is not found
+     * @throws ForbiddenStateError if the found item is in invalid state
+     */
     public function get(string $key): Item
     {
         self::validateKey($key);
@@ -190,9 +198,36 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
             throw InvalidOffset::dueToKeyNotFound($key);
         }
 
-        return $this->members[$key];
+        $item = $this->members[$key];
+        if (!$item->parameters->isEmpty()) {
+            throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
+        }
+
+        return $item;
     }
 
+    /**
+     * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
+     *
+     * @throws ForbiddenStateError if the found item is in invalid state
+     */
+    public function value(string $key): Token|ByteSequence|float|int|bool|string|null
+    {
+        if (!array_key_exists($key, $this->members)) {
+            return null;
+        }
+
+        $item = $this->members[$key];
+        if (!$item->parameters->isEmpty()) {
+            throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
+        }
+
+        return $item->value;
+    }
+
+    /**
+     * Tells whether the index is present in the container.
+     */
     public function hasPair(int $index): bool
     {
         return null !== $this->filterIndex($index);
@@ -210,6 +245,11 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * Returns the key-item pair positionned at a given index.
+     *
+     * @throws InvalidOffset       if the index is not found
+     * @throws ForbiddenStateError if the found item is in invalid state
+     *
      * @return array{0:string, 1:Item}
      */
     public function pair(int $index): array
@@ -219,10 +259,12 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        return [
-            array_keys($this->members)[$offset],
-            array_values($this->members)[$offset],
-        ];
+        $item = array_values($this->members)[$offset];
+        if (!$item->parameters->isEmpty()) {
+            throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
+        }
+
+        return [array_keys($this->members)[$offset], $item];
     }
 
     /**
