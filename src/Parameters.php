@@ -168,12 +168,10 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return array_map(fn (Item $item): Token|ByteSequence|float|int|bool|string => $item->value, $this->members);
     }
 
-    public function value(string $key): Token|ByteSequence|float|int|bool|string
+    public function value(string $key): Token|ByteSequence|float|int|bool|string|null
     {
-        self::validateKey($key);
-
         if (!array_key_exists($key, $this->members)) {
-            throw InvalidOffset::dueToKeyNotFound($key);
+            return null;
         }
 
         return $this->members[$key]->value;
@@ -314,9 +312,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     public function merge(iterable ...$others): void
     {
         foreach ($others as $other) {
-            foreach ($other as $key => $value) {
-                $this->set($key, $value);
-            }
+            $this->members = [...$this->members, ...self::fromAssociative($other)->members];
         }
     }
 }

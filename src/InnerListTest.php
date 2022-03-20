@@ -142,9 +142,8 @@ final class InnerListTest extends TestCase
      */
     public function it_fails_to_access_unknown_parameter_values(): void
     {
-        $this->expectException(InvalidOffset::class);
-
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
-        $instance->parameters->value('bar');
+
+        self::assertNull($instance->parameters->value('bar'));
     }
 }

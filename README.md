@@ -218,7 +218,7 @@ echo $dictionary->toHttpValue(); //returns "a=?0, z=42.0"
 The `Parameters` instance exposes the following methods:
 
 - `Parameters::values` to list all existing Bare Items value as an array list;
-- `Parameters::value($key)` to return the value of the Bare Item associated to the `$key` or throw if the key is unknown or invalid;
+- `Parameters::value(string $key)` to return the value of the Bare Item associated to the `$key` or `null` if the key is unknown or invalid;
 - `Parameters::merge` also accepts iterable as associative key-value as part of the variadic signature.
 
 ```php
@@ -238,7 +238,7 @@ $parameters->merge(
     ['b' => 'false']
 );
 $parameters->toHttpValue(); // returns ;b="false";foo="foo"
-
+$parameters->value('unknown'); // returns null
 ```
 
 #### Lists
