@@ -2,6 +2,24 @@
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file
 
+## [Next] - TBD
+
+### Added
+
+- `InnerList::fromHttpValue` named constructor to make the public API consistent for all VOs
+
+### Fixed
+
+- None
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
+
 ## [0.2.0] - 2022-03-20
 
 ### Added

@@ -63,12 +63,17 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField
         };
     }
 
+    public static function fromHttpValue(string $httpValue): self
+    {
+        return Parser::parseInnerList($httpValue);
+    }
+
     public function toHttpValue(): string
     {
-        return '('
-            .implode(' ', array_map(fn (Item $value): string => $value->toHttpValue(), $this->members))
-            .')'
-            .$this->parameters->toHttpValue();
+        return '('.implode(' ', array_map(
+            fn (Item $value): string => $value->toHttpValue(),
+            $this->members
+        )).')'.$this->parameters->toHttpValue();
     }
 
     public function count(): int

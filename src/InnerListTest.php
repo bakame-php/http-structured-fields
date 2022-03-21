@@ -146,4 +146,20 @@ final class InnerListTest extends TestCase
 
         self::assertNull($instance->parameters->value('bar'));
     }
+
+    /**
+     * @test
+     */
+    public function it_successfully_parse_a_http_field(): void
+    {
+        $instance = InnerList::fromHttpValue('("hello)world" 42 42.0;john=doe);foo="bar("');
+
+        self::assertCount(3, $instance);
+        self::assertCount(1, $instance->parameters);
+        self::assertSame('bar(', $instance->parameters->value('foo'));
+        self::assertSame('hello)world', $instance->get(0)->value);
+        self::assertSame(42, $instance->get(1)->value);
+        self::assertSame(42.0, $instance->get(2)->value);
+        self::assertInstanceOf(Token::class, $instance->get(2)->parameters->value('john'));
+    }
 }

@@ -20,7 +20,7 @@ use function substr;
  *
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2
  *
- * @internal Use OrderedList::fromHttpValue() or Dictionary::fromHttpValue() instead
+ * @internal Use Dictionary::fromHttpValue(), OrderedList::fromHttpValue(), InnerList::fromHttpValue() or Item::fromHttpValue() instead
  */
 final class Parser
 {
@@ -96,6 +96,26 @@ final class Parser
     }
 
     /**
+     * Returns a InnerList value object from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
+     */
+    public static function parseInnerList(string $httpValue): InnerList
+    {
+        if ('(' !== $httpValue[0]) {
+            throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list is missing a parenthesis.");
+        }
+
+        [$members, $offset] = self::parseInnerListValue($httpValue);
+        $remainder = ltrim(substr($httpValue, $offset), " \t");
+        if ('' !== $remainder) {
+            throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list contains invalid data.");
+        }
+
+        return $members;
+    }
+
+    /**
      * Returns an Item or an InnerList value object from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
@@ -105,7 +125,7 @@ final class Parser
     private static function parseItemOrInnerList(string $httpValue): array
     {
         if ('(' === $httpValue[0]) {
-            return self::parseInnerList($httpValue);
+            return self::parseInnerListValue($httpValue);
         }
 
         [$value, $offset] = self::parseBareItem($httpValue);
@@ -118,13 +138,13 @@ final class Parser
     }
 
     /**
-     * Returns an InnerList value object from an HTTP textual representation.
+     * Returns an InnerList value object from an HTTP textual representation and the consumed offset.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
      * @return array{0:InnerList, 1:int}
      */
-    private static function parseInnerList(string $httpValue): array
+    private static function parseInnerListValue(string $httpValue): array
     {
         $members = [];
         $remainder = substr($httpValue, 1);
