@@ -187,7 +187,7 @@ final class Parser
         return match (true) {
             '' === $httpValue => throw new SyntaxError('Unexpected empty string for The HTTP textual representation of an item.'),
             1 === preg_match('/^(-|\d)/', $httpValue) => self::parseNumber($httpValue),
-            '"' === $httpValue[0] =>  self::parseString($httpValue),
+            '"' === $httpValue[0] => self::parseString($httpValue),
             ':' === $httpValue[0] => self::parseByteSequence($httpValue),
             '?' === $httpValue[0] => self::parseBoolean($httpValue),
             1 === preg_match('/^([a-z*])/i', $httpValue) => self::parseToken($httpValue),
@@ -265,9 +265,7 @@ final class Parser
      */
     private static function parseNumber(string $httpValue): array
     {
-        if (1 !== preg_match('/^(?<number>-?\d+(?:\.\d+)?)(?:[^\d.]|$)/', $httpValue, $found)) {
-            throw new SyntaxError("Invalid number format in the HTTP textual representation of a number value `$httpValue`.");
-        }
+        preg_match('/^(?<number>-?\d+(?:\.\d+)?)(?:[^\d.]|$)/', $httpValue, $found);
 
         return match (true) {
             1 === preg_match('/^-?\d{1,12}\.\d{1,3}$/', $found['number']) => [(float) $found['number'], strlen($found['number'])],
@@ -305,10 +303,6 @@ final class Parser
             if ('\\' !== $char) {
                 $output .= $char;
                 continue;
-            }
-
-            if ('' === $httpValue) {
-                throw new SyntaxError("Invalid end of string in the HTTP textual representation of a string `$httpValue`.");
             }
 
             $char = $httpValue[0];

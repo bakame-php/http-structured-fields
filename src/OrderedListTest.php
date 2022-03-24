@@ -144,4 +144,24 @@ final class OrderedListTest extends StructuredFieldTest
 
         self::assertSame($res->toHttpValue(), $list->toHttpValue());
     }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_parse_invalid_string_1(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        OrderedList::fromHttpValue('(foo;number="hello\")');
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_parse_invalid_string_2(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Dictionary::fromHttpValue('number="hell\o"');
+    }
 }

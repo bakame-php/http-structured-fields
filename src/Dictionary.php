@@ -9,7 +9,6 @@ use Iterator;
 use IteratorAggregate;
 use function array_key_exists;
 use function array_keys;
-use function array_values;
 use function count;
 use function implode;
 use function preg_match;
@@ -98,6 +97,9 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return count($this->members);
     }
 
+    /**
+     * Tells whether the instance contains no member.
+     */
     public function isEmpty(): bool
     {
         return [] === $this->members;
@@ -133,11 +135,20 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return array_keys($this->members);
     }
 
+    /**
+     * Tells whether an item or an inner-list is attached to the given key.
+     */
     public function has(string $key): bool
     {
         return array_key_exists($key, $this->members);
     }
 
+    /**
+     * Returns the item or the inner-list is attached to the given key otherwise throw.
+     *
+     * @throws SyntaxError   If the key is invalid
+     * @throws InvalidOffset If the key is not found
+     */
     public function get(string $key): Item|InnerList
     {
         self::validateKey($key);
@@ -149,11 +160,17 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return $this->members[$key];
     }
 
+    /**
+     * Tells whether an item or an inner-list and a key are attached to the given index position.
+     */
     public function hasPair(int $index): bool
     {
         return null !== $this->filterIndex($index);
     }
 
+    /**
+     * Validate and Format the submitted index position.
+     */
     private function filterIndex(int $index): int|null
     {
         $max = count($this->members);
@@ -166,6 +183,12 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * Returns the item or the inner-list and its key as attached to the given
+     * collection according to their index position otherwise throw.
+     *
+     * @throws SyntaxError   If the key is invalid
+     * @throws InvalidOffset If the key is not found
+     *
      * @return array{0:string, 1:Item|InnerList}
      */
     public function pair(int $index): array
@@ -175,10 +198,14 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        return [
-            array_keys($this->members)[$offset],
-            array_values($this->members)[$offset],
-        ];
+        foreach ($this->toPairs() as $k => $pair) {
+            if ($k === $offset) {
+                return $pair;
+            }
+        }
+        // @codeCoverageIgnoreStart
+        throw InvalidOffset::dueToIndexNotFound($index);
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -201,6 +228,9 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         }
     }
 
+    /**
+     * Format the member type.
+     */
     private static function filterMember(InnerList|Item|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
     {
         return match (true) {

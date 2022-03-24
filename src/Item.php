@@ -107,9 +107,9 @@ final class Item implements StructuredField
             1 === preg_match("/[\r\t\n]/", $httpValue),
             1 === preg_match("/[^\x20-\x7E]/", $httpValue) => throw new SyntaxError("The HTTP textual representation `$httpValue` for an item contains invalid characters."),
             1 === preg_match('/^(-?[0-9])/', $httpValue) => self::parseNumber($httpValue),
-            $httpValue[0] == '"' => self::parseString($httpValue),
-            $httpValue[0] == ':' => self::parseBytesSequence($httpValue),
-            $httpValue[0] == '?' => self::parseBoolean($httpValue),
+            '"' === $httpValue[0] => self::parseString($httpValue),
+            ':' === $httpValue[0] => self::parseBytesSequence($httpValue),
+            '?' === $httpValue[0] => self::parseBoolean($httpValue),
             1 === preg_match('/^([a-z*])/i', $httpValue) => self::parseToken($httpValue),
             default => throw new SyntaxError("The HTTP textual representation `$httpValue` for an item is unknown or unsupported."),
         };
