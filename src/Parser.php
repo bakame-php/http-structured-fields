@@ -132,7 +132,7 @@ final class Parser
         if ('(' === $httpValue[0]) {
             [$innerList, $offset] = self::parseInnerListValue($httpValue);
 
-            return [InnerList::fromList($innerList[0], $innerList[1]), $offset];
+            return [InnerList::fromList(...$innerList), $offset];
         }
 
         [$value, $offset] = self::parseBareItem($httpValue);

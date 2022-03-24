@@ -255,10 +255,12 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        foreach ($this->toPairs() as $k => $pair) {
-            if ($k === $offset) {
-                return $pair;
+        $i = 0;
+        foreach ($this->members as $key => $member) {
+            if ($i === $offset) {
+                return [$key, $this->validateMember($member)];
             }
+            ++$i;
         }
 
         // @codeCoverageIgnoreStart
@@ -348,7 +350,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     /**
      * Merge multiple instances.
      *
-     * iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> ...$others
+     * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> ...$others
      */
     public function merge(iterable ...$others): void
     {

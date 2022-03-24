@@ -203,6 +203,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
                 return $pair;
             }
         }
+
         // @codeCoverageIgnoreStart
         throw InvalidOffset::dueToIndexNotFound($index);
         // @codeCoverageIgnoreEnd
@@ -284,7 +285,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     /**
      * Merge multiple instances.
      *
-     * iterable<array-key, InnerList|Item|Token|ByteSequence|float|int|bool|string> ...$others
+     * @param iterable<array-key, InnerList|Item|Token|ByteSequence|float|int|bool|string> ...$others
      */
     public function merge(iterable ...$others): void
     {
