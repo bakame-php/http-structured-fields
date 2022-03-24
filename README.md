@@ -126,12 +126,12 @@ $item->parameters->value("a"); //returns 1
 ```
 
 
-Once instantiated, accessing `Item` properties is done via three (2) readonly properties:
+Once instantiated, accessing `Item` properties is done via two (2) readonly properties:
 
 - `Item::value` which returns the instance underlying value
 - `Item::parameters` which returns the parameters associated to the `Item` as a distinct `Parameters` object
 
-**Of note: to instantiate a decimal number type a float MUST be used as the first argument input.**
+**Of note: to instantiate a decimal number type a float MUST be used as the first argument of `Item::from`.**
 
 ```php
 use Bakame\Http\StructuredFields\Item;
