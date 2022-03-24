@@ -99,8 +99,13 @@ final class Parser
      * Returns a InnerList value object from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
+     *
+     * @return array{
+     *  0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     *  1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * }
      */
-    public static function parseInnerList(string $httpValue): InnerList
+    public static function parseInnerList(string $httpValue): array
     {
         if ('(' !== $httpValue[0]) {
             throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list is missing a parenthesis.");
@@ -125,7 +130,9 @@ final class Parser
     private static function parseItemOrInnerList(string $httpValue): array
     {
         if ('(' === $httpValue[0]) {
-            return self::parseInnerListValue($httpValue);
+            [$innerList, $offset] = self::parseInnerListValue($httpValue);
+
+            return [InnerList::fromList($innerList[0], $innerList[1]), $offset];
         }
 
         [$value, $offset] = self::parseBareItem($httpValue);
@@ -142,7 +149,10 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
-     * @return array{0:InnerList, 1:int}
+     * @return array{0:array{
+     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * }, 1:int}
      */
     private static function parseInnerListValue(string $httpValue): array
     {
@@ -156,7 +166,7 @@ final class Parser
                 [$parameters, $offset] = self::parseParameters($remainder);
                 $remainder = substr($remainder, $offset);
 
-                return [InnerList::fromList($members, $parameters), strlen($httpValue) - strlen($remainder)];
+                return [[$members, $parameters], strlen($httpValue) - strlen($remainder)];
             }
 
             [$value, $offset] = self::parseBareItem($remainder);

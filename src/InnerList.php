@@ -65,7 +65,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField
 
     public static function fromHttpValue(string $httpValue): self
     {
-        return Parser::parseInnerList($httpValue);
+        return InnerList::fromList(...Parser::parseInnerList($httpValue));
     }
 
     public function toHttpValue(): string
