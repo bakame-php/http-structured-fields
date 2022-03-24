@@ -162,22 +162,4 @@ final class InnerListTest extends TestCase
         self::assertSame(42.0, $instance->get(2)->value);
         self::assertInstanceOf(Token::class, $instance->get(2)->parameters->value('john'));
     }
-
-    /**
-     * @test
-     */
-    public function it_fails_to_parse_an_invalid_http_field(): void
-    {
-        $this->expectException(SyntaxError::class);
-        InnerList::fromHttpValue('("hello)world" 42 42.0;john=doe);foo="bar(" toto');
-    }
-
-    /**
-     * @test
-     */
-    public function it_fails_to_parse_an_invalid_http_field_2(): void
-    {
-        $this->expectException(SyntaxError::class);
-        InnerList::fromHttpValue('"hello)world" 42 42.0;john=doe);foo="bar("');
-    }
 }

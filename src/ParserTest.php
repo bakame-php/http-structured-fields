@@ -62,4 +62,44 @@ final class ParserTest extends StructuredFieldTest
 
         Parser::parseDictionary('a="foébar"');
     }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_parse_invalid_string_1(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Parser::parseList('(foo;number="hello\")');
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_parse_invalid_string_2(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Parser::parseDictionary('number="hell\o"');
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_parse_an_invalid_http_field(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Parser::parseInnerList('("hello)world" 42 42.0;john=doe);foo="bar(" toto');
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_parse_an_invalid_http_field_2(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Parser::parseInnerList('"hello)world" 42 42.0;john=doe);foo="bar("');
+    }
 }
