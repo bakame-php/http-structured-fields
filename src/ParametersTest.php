@@ -270,4 +270,14 @@ final class ParametersTest extends StructuredFieldTest
         self::assertSame('helloWorld', $instance->value('string'));
         self::assertSame(['string' => 'helloWorld', 'boolean' => true], $instance->values());
     }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_parse_invalid_parameters_pairs(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Parameters::fromHttpValue(';foo =  bar');
+    }
 }

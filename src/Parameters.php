@@ -9,7 +9,6 @@ use Iterator;
 use IteratorAggregate;
 use function array_key_exists;
 use function array_keys;
-use function array_values;
 use function count;
 use function explode;
 use function ltrim;
@@ -24,7 +23,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 {
     private function __construct(
         /** @var array<string, Item> */
-        private array $members = []
+        private array $members
     ) {
     }
 
@@ -46,7 +45,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public static function fromAssociative(iterable $members = []): self
     {
-        $instance = new self();
+        $instance = new self([]);
         foreach ($members as $key => $member) {
             $instance->set($key, $member);
         }
@@ -65,7 +64,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public static function fromPairs(iterable $pairs = []): self
     {
-        $instance = new self();
+        $instance = new self([]);
         foreach ($pairs as [$key, $member]) {
             $instance->set($key, $member);
         }
@@ -80,7 +79,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public static function fromHttpValue(string $httpValue): self
     {
-        $instance = new self();
+        $instance = new self([]);
         if ('' === $httpValue) {
             return $instance;
         }
@@ -105,9 +104,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         $returnValue = [];
 
         foreach ($this->members as $key => $val) {
-            if (!$val->parameters->isEmpty()) {
-                throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
-            }
+            $val = $this->validateMember($val);
 
             $value = ';'.$key;
             if ($val->value !== true) {
@@ -118,6 +115,15 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         }
 
         return implode('', $returnValue);
+    }
+
+    private function validateMember(Item $item): Item
+    {
+        if (!$item->parameters->isEmpty()) {
+            throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
+        }
+
+        return $item;
     }
 
     public function count(): int
@@ -138,8 +144,8 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function getIterator(): Iterator
     {
-        foreach ($this->members as $key => $value) {
-            yield $key => $value;
+        foreach ($this->members as $key => $member) {
+            yield $key => $this->validateMember($member);
         }
     }
 
@@ -151,7 +157,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     public function toPairs(): Iterator
     {
         foreach ($this->members as $index => $member) {
-            yield [$index, $member];
+            yield [$index, $this->validateMember($member)];
         }
     }
 
@@ -172,7 +178,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function values(): array
     {
-        return array_map(fn (Item $item): Token|ByteSequence|float|int|bool|string => $item->value, $this->members);
+        return array_map(fn (Item $item): Token|ByteSequence|float|int|bool|string => $this->validateMember($item)->value, $this->members);
     }
 
     /**
@@ -198,12 +204,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
             throw InvalidOffset::dueToKeyNotFound($key);
         }
 
-        $item = $this->members[$key];
-        if (!$item->parameters->isEmpty()) {
-            throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
-        }
-
-        return $item;
+        return $this->validateMember($this->members[$key]);
     }
 
     /**
@@ -217,12 +218,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
             return null;
         }
 
-        $item = $this->members[$key];
-        if (!$item->parameters->isEmpty()) {
-            throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
-        }
-
-        return $item->value;
+        return $this->validateMember($this->members[$key])->value;
     }
 
     /**
@@ -259,12 +255,15 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        $item = array_values($this->members)[$offset];
-        if (!$item->parameters->isEmpty()) {
-            throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
+        foreach ($this->toPairs() as $k => $pair) {
+            if ($k === $offset) {
+                return $pair;
+            }
         }
 
-        return [array_keys($this->members)[$offset], $item];
+        // @codeCoverageIgnoreStart
+        throw InvalidOffset::dueToIndexNotFound($index);
+        // @codeCoverageIgnoreEnd
     }
 
     /**
