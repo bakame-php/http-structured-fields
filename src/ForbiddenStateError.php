@@ -2,8 +2,8 @@
 
 namespace Bakame\Http\StructuredFields;
 
-use UnexpectedValueException;
+use LogicException;
 
-final class ForbiddenStateError extends UnexpectedValueException implements StructuredFieldError
+final class ForbiddenStateError extends LogicException implements StructuredFieldError
 {
 }

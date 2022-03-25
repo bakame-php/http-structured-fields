@@ -10,7 +10,9 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Fixed
 
-- None
+- Made the `Parser` only returning collections array of items or bare items value
+- All `Parameters` getters checks for bare items validity.
+- `ForbiddenStateError` extends SPL `LogicException` instead of `UnexpectedValueException`
 
 ### Deprecated
 

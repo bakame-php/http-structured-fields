@@ -159,8 +159,6 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public function get(string $key): Item|InnerList
     {
-        self::validateKey($key);
-
         if (!array_key_exists($key, $this->members)) {
             throw InvalidOffset::dueToKeyNotFound($key);
         }
@@ -226,19 +224,19 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public function set(string $key, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): void
     {
-        self::validateKey($key);
-
-        $this->members[$key] = self::filterMember($member);
+        $this->members[self::filterKey($key)] = self::filterMember($member);
     }
 
     /**
      * Validate the instance key against RFC8941 rules.
      */
-    private static function validateKey(string $key): void
+    private static function filterKey(string $key): string
     {
         if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
             throw new SyntaxError("The dictionary key `$key` contains invalid characters.");
         }
+
+        return $key;
     }
 
     /**
@@ -251,7 +249,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     {
         return match (true) {
             $member instanceof InnerList, $member instanceof Item => $member,
-            is_iterable($member) => InnerList::fromList(...$member),
+            is_array($member) => InnerList::fromList(...$member),
             default => Item::from($member),
         };
     }
@@ -284,11 +282,9 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public function append(string $key, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): void
     {
-        self::validateKey($key);
-
         unset($this->members[$key]);
 
-        $this->members[$key] = self::filterMember($member);
+        $this->members[self::filterKey($key)] = self::filterMember($member);
     }
 
     /**
@@ -301,11 +297,9 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public function prepend(string $key, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): void
     {
-        self::validateKey($key);
-
         unset($this->members[$key]);
 
-        $this->members = [...[$key => self::filterMember($member)], ...$this->members];
+        $this->members = [...[self::filterKey($key) => self::filterMember($member)], ...$this->members];
     }
 
     /**

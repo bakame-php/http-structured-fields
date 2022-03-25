@@ -23,7 +23,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 {
     private function __construct(
         /** @var array<string, Item> */
-        private array $members
+        private array $members = []
     ) {
     }
 
@@ -36,16 +36,51 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * @throws SyntaxError If the string is not a valid
+     */
+    private static function filterKey(string $key): string
+    {
+        if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
+            throw new SyntaxError("The Parameters key `$key` contains invalid characters.");
+        }
+
+        return $key;
+    }
+
+    /**
+     * @throws ForbiddenStateError If the bare item contains parameters
+     */
+    private static function filterMember(Item $item): Item
+    {
+        if (!$item->parameters->isEmpty()) {
+            throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
+        }
+
+        return $item;
+    }
+
+    private static function formatMember(Item|ByteSequence|Token|bool|int|float|string $member): Item
+    {
+        return match (true) {
+            $member instanceof Item => self::filterMember($member),
+            default => Item::from($member),
+        };
+    }
+
+    /**
      * Returns a new instance from an associative iterable construct.
      *
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
      * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $members
+     *
+     * @throws SyntaxError         If the string is not a valid
+     * @throws ForbiddenStateError If the bare item contains parameters
      */
     public static function fromAssociative(iterable $members = []): self
     {
-        $instance = new self([]);
+        $instance = new self();
         foreach ($members as $key => $member) {
             $instance->set($key, $member);
         }
@@ -61,10 +96,12 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      * the second member represents the instance entry value
      *
      * @param iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> $pairs
+     *
+     * @throws ForbiddenStateError If the bare item contains parameters
      */
     public static function fromPairs(iterable $pairs = []): self
     {
-        $instance = new self([]);
+        $instance = new self();
         foreach ($pairs as [$key, $member]) {
             $instance->set($key, $member);
         }
@@ -76,10 +113,13 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      * Returns an instance from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.2
+     *
+     * @throws SyntaxError         If the string is not a valid
+     * @throws ForbiddenStateError If the bare item contains parameters
      */
     public static function fromHttpValue(string $httpValue): self
     {
-        $instance = new self([]);
+        $instance = new self();
         if ('' === $httpValue) {
             return $instance;
         }
@@ -99,31 +139,25 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return $instance;
     }
 
+    /**
+     * @throws ForbiddenStateError if the bare item contains parameters itself
+     */
     public function toHttpValue(): string
     {
         $returnValue = [];
 
-        foreach ($this->members as $key => $val) {
-            $val = $this->validateMember($val);
-
+        foreach ($this->members as $key => $member) {
             $value = ';'.$key;
-            if ($val->value !== true) {
-                $value .= '='.$val->toHttpValue();
+            $member = self::filterMember($member);
+
+            if ($member->value !== true) {
+                $value .= '='.$member->toHttpValue();
             }
 
             $returnValue[] = $value;
         }
 
         return implode('', $returnValue);
-    }
-
-    private function validateMember(Item $item): Item
-    {
-        if (!$item->parameters->isEmpty()) {
-            throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
-        }
-
-        return $item;
     }
 
     public function count(): int
@@ -140,24 +174,28 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * @throws ForbiddenStateError if the bare item contains parameters itself
+     *
      * @return Iterator<string, Item>
      */
     public function getIterator(): Iterator
     {
         foreach ($this->members as $key => $member) {
-            yield $key => $this->validateMember($member);
+            yield $key => self::filterMember($member);
         }
     }
 
     /**
      * Returns an iterable construct of dictionary pairs.
      *
+     * @throws ForbiddenStateError if the bare item contains parameters itself
+     *
      * @return Iterator<array{0:string, 1:Item}>
      */
     public function toPairs(): Iterator
     {
         foreach ($this->members as $index => $member) {
-            yield [$index, $this->validateMember($member)];
+            yield [$index, self::filterMember($member)];
         }
     }
 
@@ -174,11 +212,13 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     /**
      * Returns all containers Item values.
      *
+     * @throws ForbiddenStateError if the bare item contains parameters itself
+     *
      * @return array<string, Token|ByteSequence|float|int|bool|string>
      */
     public function values(): array
     {
-        return array_map(fn (Item $item): Token|ByteSequence|float|int|bool|string => $this->validateMember($item)->value, $this->members);
+        return array_map(fn (Item $item): Token|ByteSequence|float|int|bool|string => self::filterMember($item)->value, $this->members);
     }
 
     /**
@@ -192,19 +232,16 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     /**
      * Returns the Item associated to the key.
      *
-     * @throws SyntaxError         if the key is invalid
      * @throws InvalidOffset       if the key is not found
-     * @throws ForbiddenStateError if the found item is in invalid state
+     * @throws ForbiddenStateError if the bare item contains parameters itself
      */
     public function get(string $key): Item
     {
-        self::validateKey($key);
-
         if (!array_key_exists($key, $this->members)) {
             throw InvalidOffset::dueToKeyNotFound($key);
         }
 
-        return $this->validateMember($this->members[$key]);
+        return self::filterMember($this->members[$key]);
     }
 
     /**
@@ -218,7 +255,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
             return null;
         }
 
-        return $this->validateMember($this->members[$key])->value;
+        return self::filterMember($this->members[$key])->value;
     }
 
     /**
@@ -226,10 +263,13 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function hasPair(int $index): bool
     {
-        return null !== $this->filterIndex($index);
+        return null !== $this->formatIndex($index);
     }
 
-    private function filterIndex(int $index): int|null
+    /**
+     * Filter and format instance index.
+     */
+    private function formatIndex(int $index): int|null
     {
         $max = count($this->members);
 
@@ -250,7 +290,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function pair(int $index): array
     {
-        $offset = $this->filterIndex($index);
+        $offset = $this->formatIndex($index);
         if (null === $offset) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
@@ -258,7 +298,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         $i = 0;
         foreach ($this->members as $key => $member) {
             if ($i === $offset) {
-                return [$key, $this->validateMember($member)];
+                return [$key, self::filterMember($member)];
             }
             ++$i;
         }
@@ -270,37 +310,13 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
     /**
      * Add a member at the end of the instance if the key is new otherwise update the value associated with the key.
+     *
+     * @throws SyntaxError         If the string key is not a valid
+     * @throws ForbiddenStateError if the found item is in invalid state
      */
     public function set(string $key, Item|ByteSequence|Token|bool|int|float|string $member): void
     {
-        $member = self::filterMember($member);
-        self::validate($key, $member);
-
-        $this->members[$key] = $member;
-    }
-
-    private static function filterMember(Item|ByteSequence|Token|bool|int|float|string $member): Item
-    {
-        return match (true) {
-            $member instanceof Item => $member,
-            default => Item::from($member),
-        };
-    }
-
-    private static function validateKey(string $key): void
-    {
-        if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
-            throw new SyntaxError("The Parameters key `$key` contains invalid characters.");
-        }
-    }
-
-    private static function validate(string $key, Item $item): void
-    {
-        self::validateKey($key);
-
-        if (!$item->parameters->isEmpty()) {
-            throw new SyntaxError('Parameters instances can not contain parameterized Items.');
-        }
+        $this->members[self::filterKey($key)] = self::formatMember($member);
     }
 
     /**
@@ -323,34 +339,35 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
     /**
      * Add a member at the end of the instance if the key is new delete any previous reference to the key.
+     *
+     * @throws SyntaxError         If the string key is not a valid
+     * @throws ForbiddenStateError if the found item is in invalid state
      */
     public function append(string $key, Item|ByteSequence|Token|bool|int|float|string $member): void
     {
-        $member = self::filterMember($member);
-        self::validate($key, $member);
-
         unset($this->members[$key]);
 
-        $this->members[$key] = $member;
+        $this->members[self::filterKey($key)] = self::formatMember($member);
     }
 
     /**
      * Add a member at the beginning of the instance if the key is new delete any previous reference to the key.
+     *
+     * @throws SyntaxError         If the string key is not a valid
+     * @throws ForbiddenStateError if the found item is in invalid state
      */
     public function prepend(string $key, Item|ByteSequence|Token|bool|int|float|string $member): void
     {
-        $member = self::filterMember($member);
-        self::validate($key, $member);
-
         unset($this->members[$key]);
 
-        $this->members = [...[$key => $member], ...$this->members];
+        $this->members = [...[self::filterKey($key) =>  self::formatMember($member)], ...$this->members];
     }
 
     /**
      * Merge multiple instances.
      *
-     * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> ...$others
+     * @param  iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> ...$others
+     * @throws ForbiddenStateError                                                if the found item is in invalid state
      */
     public function merge(iterable ...$others): void
     {
