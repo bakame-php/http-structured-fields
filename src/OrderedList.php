@@ -34,13 +34,22 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         return new self(...$properties['members']);
     }
 
-    public static function from(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members): self
+    /**
+     * @param InnerList|Item|ByteSequence|Token|array{
+     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * }|bool|int|float|string ...$members
+     */
+    public static function from(InnerList|Item|ByteSequence|Token|array|bool|int|float|string ...$members): self
     {
         return self::fromList($members);
     }
 
     /**
-     * @param iterable<InnerList|Item|ByteSequence|Token|bool|int|float|string> $members
+     * @param iterable<InnerList|Item|ByteSequence|Token|array{
+     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * }|bool|int|float|string> $members
      */
     public static function fromList(iterable $members = []): self
     {
@@ -52,10 +61,17 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         return new self(...$newMembers);
     }
 
-    private static function filterMember(InnerList|Item|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
+    /**
+     * @param InnerList|Item|ByteSequence|Token|array{
+     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * }|bool|int|float|string $member
+     */
+    private static function filterMember(InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): InnerList|Item
     {
         return match (true) {
             $member instanceof InnerList, $member instanceof Item => $member,
+            is_array($member) => InnerList::fromList($member[0], $member[1]),
             default => Item::from($member),
         };
     }
@@ -123,16 +139,26 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
 
     /**
      * Insert members at the beginning of the list.
+     *
+     * @param InnerList|Item|ByteSequence|Token|array{
+     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * }|bool|int|float|string ...$members
      */
-    public function unshift(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members): void
+    public function unshift(InnerList|Item|ByteSequence|Token|array|bool|int|float|string ...$members): void
     {
         $this->members = [...array_map(self::filterMember(...), $members), ...$this->members];
     }
 
     /**
      * Insert members at the end of the list.
+     *
+     * @param InnerList|Item|ByteSequence|Token|array{
+     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * }|bool|int|float|string ...$members
      */
-    public function push(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members): void
+    public function push(InnerList|Item|ByteSequence|Token|array|bool|int|float|string ...$members): void
     {
         $this->members = [...$this->members, ...array_map(self::filterMember(...), $members)];
     }
@@ -140,11 +166,16 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     /**
      * Insert members starting at the given index.
      *
+     * @param InnerList|Item|ByteSequence|Token|array{
+     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * }|bool|int|float|string ...$members
+     *
      * @throws InvalidOffset If the index does not exist
      */
     public function insert(
         int $index,
-        InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members
+        InnerList|Item|ByteSequence|Token|array|bool|int|float|string ...$members
     ): void {
         $offset = $this->filterIndex($index);
         match (true) {
@@ -158,9 +189,14 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     /**
      * Replace the member associated with the index.
      *
+     * @param InnerList|Item|ByteSequence|Token|array{
+     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * }|bool|int|float|string $member
+     *
      * @throws InvalidOffset If the index does not exist
      */
-    public function replace(int $index, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): void
+    public function replace(int $index, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): void
     {
         if (null === ($offset = $this->filterIndex($index))) {
             throw InvalidOffset::dueToIndexNotFound($index);

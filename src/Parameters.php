@@ -241,7 +241,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Returns the key-item pair positionned at a given index.
+     * Returns the key-item pair found at a given index.
      *
      * @throws InvalidOffset       if the index is not found
      * @throws ForbiddenStateError if the found item is in invalid state

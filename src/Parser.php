@@ -13,7 +13,7 @@ use function strlen;
 use function substr;
 
 /**
- * A parser to create HTTP Structured Fields value objects from HTTP textual representation.
+ * A class to parse HTTP Structured Fields from their HTTP textual representation according to RFC8941.
  *
  * Based on gapple\StructuredFields\Parser class in Structured Field Values for PHP v1.0.0.
  * @link https://github.com/gapple/structured-fields/blob/v1.0.0/src/Parser.php
@@ -29,7 +29,10 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1
      *
-     * @return array<InnerList|Item|ByteSequence|Token|bool|int|float|string>
+     * @return array<array{
+     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * }|Item|ByteSequence|Token|bool|int|float|string>
      */
     public static function parseList(string $httpValue): array
     {
@@ -60,7 +63,10 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.2
      *
-     * @return array<string, InnerList|Item|ByteSequence|Token|bool|int|float|string>
+     * @return array<string, Item|ByteSequence|Token|array{
+     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * }|bool|int|float|string>
      */
     public static function parseDictionary(string $httpValue): array
     {
@@ -125,14 +131,15 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
      *
-     * @return array{0: InnerList|Item, 1:int}
+     * @return array{0: array{
+     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * }|Item, 1:int}
      */
     private static function parseItemOrInnerList(string $httpValue): array
     {
         if ('(' === $httpValue[0]) {
-            [$innerList, $offset] = self::parseInnerListValue($httpValue);
-
-            return [InnerList::fromList(...$innerList), $offset];
+            return self::parseInnerListValue($httpValue);
         }
 
         [$value, $offset] = self::parseBareItem($httpValue);
@@ -210,7 +217,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.2
      *
-     * @return array{0:array<array-key, Item|Token|ByteSequence|float|int|bool|string>, 1:int}
+     * @return array{0:array<array-key, Token|ByteSequence|float|int|bool|string>, 1:int}
      */
     private static function parseParameters(string $httpValue): array
     {
