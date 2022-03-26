@@ -314,27 +314,33 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
      */
-    public function set(string $key, Item|ByteSequence|Token|bool|int|float|string $member): void
+    public function set(string $key, Item|ByteSequence|Token|bool|int|float|string $member): self
     {
         $this->members[self::filterKey($key)] = self::formatMember($member);
+
+        return $this;
     }
 
     /**
      * Delete members associated with the list of submitted keys.
      */
-    public function delete(string ...$keys): void
+    public function delete(string ...$keys): self
     {
         foreach ($keys as $key) {
             unset($this->members[$key]);
         }
+
+        return $this;
     }
 
     /**
      * Remove all members from the instance.
      */
-    public function clear(): void
+    public function clear(): self
     {
         $this->members = [];
+
+        return $this;
     }
 
     /**
@@ -343,11 +349,13 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
      */
-    public function append(string $key, Item|ByteSequence|Token|bool|int|float|string $member): void
+    public function append(string $key, Item|ByteSequence|Token|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 
         $this->members[self::filterKey($key)] = self::formatMember($member);
+
+        return $this;
     }
 
     /**
@@ -356,11 +364,13 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
      */
-    public function prepend(string $key, Item|ByteSequence|Token|bool|int|float|string $member): void
+    public function prepend(string $key, Item|ByteSequence|Token|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 
         $this->members = [...[self::filterKey($key) =>  self::formatMember($member)], ...$this->members];
+
+        return $this;
     }
 
     /**
@@ -369,10 +379,12 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      * @param  iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> ...$others
      * @throws ForbiddenStateError                                                if the found item is in invalid state
      */
-    public function merge(iterable ...$others): void
+    public function merge(iterable ...$others): self
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromAssociative($other)->members];
         }
+
+        return $this;
     }
 }

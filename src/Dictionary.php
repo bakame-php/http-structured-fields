@@ -222,9 +222,11 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
      * }|bool|int|float|string $member
      */
-    public function set(string $key, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): void
+    public function set(string $key, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): self
     {
         $this->members[self::filterKey($key)] = self::filterMember($member);
+
+        return $this;
     }
 
     /**
@@ -257,19 +259,23 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     /**
      * Delete members associated with the list of submitted keys.
      */
-    public function delete(string ...$keys): void
+    public function delete(string ...$keys): self
     {
         foreach ($keys as $key) {
             unset($this->members[$key]);
         }
+
+        return $this;
     }
 
     /**
      * Remove all members from the instance.
      */
-    public function clear(): void
+    public function clear(): self
     {
         $this->members = [];
+
+        return $this;
     }
 
     /**
@@ -280,11 +286,13 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
      * }|bool|int|float|string $member
      */
-    public function append(string $key, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): void
+    public function append(string $key, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 
         $this->members[self::filterKey($key)] = self::filterMember($member);
+
+        return $this;
     }
 
     /**
@@ -295,11 +303,13 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
      * }|bool|int|float|string $member
      */
-    public function prepend(string $key, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): void
+    public function prepend(string $key, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 
         $this->members = [...[self::filterKey($key) => self::filterMember($member)], ...$this->members];
+
+        return $this;
     }
 
     /**
@@ -310,10 +320,12 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
      * }|bool|int|float|string> ...$others
      */
-    public function merge(iterable ...$others): void
+    public function merge(iterable ...$others): self
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromAssociative($other)->members];
         }
+
+        return $this;
     }
 }

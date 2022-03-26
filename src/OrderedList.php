@@ -145,9 +145,11 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
      * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
      * }|bool|int|float|string ...$members
      */
-    public function unshift(InnerList|Item|ByteSequence|Token|array|bool|int|float|string ...$members): void
+    public function unshift(InnerList|Item|ByteSequence|Token|array|bool|int|float|string ...$members): self
     {
         $this->members = [...array_map(self::filterMember(...), $members), ...$this->members];
+
+        return $this;
     }
 
     /**
@@ -158,9 +160,11 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
      * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
      * }|bool|int|float|string ...$members
      */
-    public function push(InnerList|Item|ByteSequence|Token|array|bool|int|float|string ...$members): void
+    public function push(InnerList|Item|ByteSequence|Token|array|bool|int|float|string ...$members): self
     {
         $this->members = [...$this->members, ...array_map(self::filterMember(...), $members)];
+
+        return $this;
     }
 
     /**
@@ -176,7 +180,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     public function insert(
         int $index,
         InnerList|Item|ByteSequence|Token|array|bool|int|float|string ...$members
-    ): void {
+    ): self {
         $offset = $this->filterIndex($index);
         match (true) {
             null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
@@ -184,6 +188,8 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
             count($this->members) === $offset => $this->push(...$members),
             default => array_splice($this->members, $offset, 0, array_map(self::filterMember(...), $members)),
         };
+
+        return $this;
     }
 
     /**
@@ -196,19 +202,21 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function replace(int $index, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): void
+    public function replace(int $index, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): self
     {
         if (null === ($offset = $this->filterIndex($index))) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
         $this->members[$offset] = self::filterMember($member);
+
+        return $this;
     }
 
     /**
      * Delete members associated with the list of instance indexes.
      */
-    public function remove(int ...$indexes): void
+    public function remove(int ...$indexes): self
     {
         $offsets = array_filter(
             array_map(fn (int $index): int|null => $this->filterIndex($index), $indexes),
@@ -222,13 +230,17 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
         if ([] !== $offsets) {
             $this->members = array_values($this->members);
         }
+
+        return $this;
     }
 
     /**
      * Remove all members from the instance.
      */
-    public function clear(): void
+    public function clear(): self
     {
         $this->members = [];
+
+        return $this;
     }
 }

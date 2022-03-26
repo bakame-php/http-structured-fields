@@ -125,17 +125,21 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField
     /**
      * Insert members at the beginning of the list.
      */
-    public function unshift(Item|ByteSequence|Token|bool|int|float|string ...$members): void
+    public function unshift(Item|ByteSequence|Token|bool|int|float|string ...$members): self
     {
         $this->members = [...array_map(self::filterMember(...), $members), ...$this->members];
+
+        return $this;
     }
 
     /**
      * Insert members at the end of the list.
      */
-    public function push(Item|ByteSequence|Token|bool|int|float|string ...$members): void
+    public function push(Item|ByteSequence|Token|bool|int|float|string ...$members): self
     {
         $this->members = [...$this->members, ...array_map(self::filterMember(...), $members)];
+
+        return $this;
     }
 
     /**
@@ -143,7 +147,7 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $index, Item|ByteSequence|Token|bool|int|float|string ...$members): void
+    public function insert(int $index, Item|ByteSequence|Token|bool|int|float|string ...$members): self
     {
         $offset = $this->filterIndex($index);
         match (true) {
@@ -152,21 +156,25 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField
             count($this->members) === $offset => $this->push(...$members),
             default => array_splice($this->members, $offset, 0, array_map(self::filterMember(...), $members)),
         };
+
+        return $this;
     }
 
-    public function replace(int $index, Item|ByteSequence|Token|bool|int|float|string $member): void
+    public function replace(int $index, Item|ByteSequence|Token|bool|int|float|string $member): self
     {
         if (null === ($offset = $this->filterIndex($index))) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
         $this->members[$offset] = self::filterMember($member);
+
+        return $this;
     }
 
     /**
      * Delete members associated with the list of instance indexes.
      */
-    public function remove(int ...$indexes): void
+    public function remove(int ...$indexes): self
     {
         $offsets = array_filter(
             array_map(fn (int $index): int|null => $this->filterIndex($index), $indexes),
@@ -180,13 +188,17 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField
         if ([] !== $offsets) {
             $this->members = array_values($this->members);
         }
+
+        return $this;
     }
 
     /**
      * Remove all members from the instance.
      */
-    public function clear(): void
+    public function clear(): self
     {
         $this->members = [];
+
+        return $this;
     }
 }
