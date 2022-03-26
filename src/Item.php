@@ -103,7 +103,7 @@ final class Item implements StructuredField
     {
         $httpValue = trim($httpValue, ' ');
         [$value, $parameters] = match (true) {
-            $httpValue === '',
+            '' === $httpValue,
             1 === preg_match("/[\r\t\n]/", $httpValue),
             1 === preg_match("/[^\x20-\x7E]/", $httpValue) => throw new SyntaxError("The HTTP textual representation `$httpValue` for an item contains invalid characters."),
             1 === preg_match('/^(-?[0-9])/', $httpValue) => self::parseNumber($httpValue),
@@ -225,26 +225,21 @@ final class Item implements StructuredField
         throw new SyntaxError("The HTTP textual representation `$originalString` for a string contains an invalid end string.");
     }
 
-    public function toHttpValue(): string
-    {
-        return $this->serializeValue($this->value).$this->parameters->toHttpValue();
-    }
-
     /**
      * Serialize the Item value according to RFC8941.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.1
      */
-    private function serializeValue(Token|ByteSequence|int|float|string|bool $value): string
+    public function toHttpValue(): string
     {
         return match (true) {
-            $value instanceof Token => $value->toHttpValue(),
-            $value instanceof ByteSequence => $value->toHttpValue(),
-            is_string($value) => '"'.preg_replace('/(["\\\])/', '\\\$1', $value).'"',
-            is_int($value) => (string) $value,
-            is_float($value) => $this->serializeDecimal($value),
-            default => '?'.($value ? '1' : '0'),
-        };
+            is_string($this->value) => '"'.preg_replace('/(["\\\])/', '\\\$1', $this->value).'"',
+            is_int($this->value) => (string) $this->value,
+            is_float($this->value) => $this->serializeDecimal($this->value),
+            is_bool($this->value) => '?'.($this->value ? '1' : '0'),
+            default => $this->value->toHttpValue(),
+        }
+        .$this->parameters->toHttpValue();
     }
 
     /**
