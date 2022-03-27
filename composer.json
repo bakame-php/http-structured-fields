@@ -2,9 +2,8 @@
     "name": "bakame/http-structured-fields",
     "description": "Structured Field Values for HTTP manipulation in PHP",
     "type": "library",
-    "license": [
-        "MIT"
-    ],
+    "keywords": ["http", "http headers", "http trailers", "headers", "trailers", "structured fields", "structured headers", "structured trailers", "parser", "serializer", "rfc8941"],
+    "license": "MIT",
     "authors": [
         {
             "name" : "Ignace Nyamagana Butera",
