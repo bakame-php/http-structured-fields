@@ -9,8 +9,10 @@ use Iterator;
 use IteratorAggregate;
 use function array_key_exists;
 use function array_keys;
+use function array_map;
 use function count;
 use function implode;
+use function is_array;
 use function preg_match;
 
 /**
@@ -38,10 +40,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<string, InnerList|Item|ByteSequence|Token|array{
-     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
-     * }|bool|int|float|string> $members
+     * @param iterable<string, InnerList|Item|ByteSequence|Token|bool|int|float|string> $members
      */
     public static function fromAssociative(iterable $members = []): self
     {
@@ -60,10 +59,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param iterable<array{0:string, 1:InnerList|Item|ByteSequence|Token|array{
-     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
-     * }|bool|int|float|string}> $pairs
+     * @param iterable<array{0:string, 1:InnerList|Item|ByteSequence|Token|bool|int|float|string}> $pairs
      */
     public static function fromPairs(iterable $pairs = []): self
     {
@@ -82,7 +78,10 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public static function fromHttpValue(string $httpValue): self
     {
-        return self::fromAssociative(Parser::parseDictionary($httpValue));
+        return self::fromAssociative(array_map(
+            fn (mixed $value): mixed => is_array($value) ? InnerList::fromList(...$value) : $value,
+            Parser::parseDictionary($httpValue)
+        ));
     }
 
     public function toHttpValue(): string
@@ -216,13 +215,8 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
 
     /**
      * Add a member at the end of the instance if the key is new otherwise update the value associated with the key.
-     *
-     * @param InnerList|Item|ByteSequence|Token|array{
-     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
-     * }|bool|int|float|string $member
      */
-    public function set(string $key, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): self
+    public function set(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): self
     {
         $this->members[self::filterKey($key)] = self::filterMember($member);
 
@@ -241,17 +235,10 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return $key;
     }
 
-    /**
-     * @param InnerList|Item|ByteSequence|Token|array{
-     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
-     * }|bool|int|float|string $member
-     */
-    private static function filterMember(InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): InnerList|Item
+    private static function filterMember(InnerList|Item|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
     {
         return match (true) {
             $member instanceof InnerList, $member instanceof Item => $member,
-            is_array($member) => InnerList::fromList(...$member),
             default => Item::from($member),
         };
     }
@@ -280,13 +267,8 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
 
     /**
      * Add a member at the end of the instance if the key is new delete any previous reference to the key.
-     *
-     * @param InnerList|Item|ByteSequence|Token|array{
-     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
-     * }|bool|int|float|string $member
      */
-    public function append(string $key, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): self
+    public function append(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 
@@ -297,13 +279,8 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
 
     /**
      * Add a member at the beginning of the instance if the key is new delete any previous reference to the key.
-     *
-     * @param InnerList|Item|ByteSequence|Token|array{
-     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
-     * }|bool|int|float|string $member
      */
-    public function prepend(string $key, InnerList|Item|ByteSequence|Token|array|bool|int|float|string $member): self
+    public function prepend(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 
@@ -315,10 +292,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     /**
      * Merge multiple instances.
      *
-     * @param iterable<array-key, InnerList|Item|ByteSequence|Token|array{
-     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
-     * }|bool|int|float|string> ...$others
+     * @param iterable<array-key, InnerList|Item|ByteSequence|Token|bool|int|float|string> ...$others
      */
     public function merge(iterable ...$others): self
     {
