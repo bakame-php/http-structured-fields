@@ -95,13 +95,17 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> $pairs
+     * @param Parameters|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> $pairs
      *
      * @throws ForbiddenStateError If the bare item contains parameters
      */
-    public static function fromPairs(iterable $pairs = []): self
+    public static function fromPairs(Parameters|iterable $pairs = []): self
     {
         $instance = new self();
+        if ($pairs instanceof Parameters) {
+            $pairs = $pairs->toPairs();
+        }
+
         foreach ($pairs as [$key, $member]) {
             $instance->set($key, $member);
         }
@@ -374,15 +378,29 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Merge multiple instances.
+     * Merge multiple instances using associative pairs.
      *
-     * @param  iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> ...$others
-     * @throws ForbiddenStateError                                                if the found item is in invalid state
+     * @param  Parameters|iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> ...$others
+     * @throws ForbiddenStateError                                                           if the found item is in invalid state
      */
-    public function merge(iterable ...$others): self
+    public function mergeAssociative(Parameters|iterable ...$others): self
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromAssociative($other)->members];
+        }
+
+        return $this;
+    }
+
+    /**
+     * Merge multiple instances using iterable pairs.
+     *
+     * @param Parameters|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> ...$others
+     */
+    public function mergePairs(Parameters|iterable ...$others): self
+    {
+        foreach ($others as $other) {
+            $this->members = [...$this->members, ...self::fromPairs($other)->members];
         }
 
         return $this;

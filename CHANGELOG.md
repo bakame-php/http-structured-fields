@@ -6,11 +6,13 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
-- All containers `Dictionary`, `InnerList`, `OrderedList`, `Parameters` modifying methods are made chainable.
+- `Dictionary::mergeAssociative` and `Dictionary::mergePairs` to allow merging with associative structures
+- `Parameters::mergeAssociative` and `Parameters::mergePairs` to allow merging with key-value pairs structures
 
 ### Fixed
 
-- Made the `Parser` only returning collections array of items or bare items value
+- All containers `Dictionary`, `InnerList`, `OrderedList`, `Parameters` modifying methods are made chainable.
+- `Parser` only returns `array`'s of items or bare items value.
 - All `Parameters` getters checks for bare items validity.
 - `ForbiddenStateError` extends SPL `LogicException` instead of `UnexpectedValueException`
 
@@ -20,7 +22,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- None
+- **[BC Break]** `Dictionary::merge` replaced by `Dictionary::mergeAssociative`
+- **[BC Break]** `Parameters::merge` replaced by `Parameters::mergeAssociative`
 
 ## [0.3.0] - 2022-03-21
 

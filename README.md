@@ -233,7 +233,7 @@ $parameters->value('b'); // returns true
 $parameters->get('b'); // returns Item::from(true)
 iterator_to_array($parameters->toPairs(), true); // returns [['b', Item::from(true)], ['foo', Item::from('bar')]]
 iterator_to_array($parameters, true); // returns ['b' => Item::from(true), 'foo' => Item::from('bar')]
-$parameters->merge(
+$parameters->mergeAssociative(
     Parameters::fromAssociative(['b' => true, 'foo' => 'foo']),
     ['b' => 'false']
 );

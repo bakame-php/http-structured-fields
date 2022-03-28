@@ -177,7 +177,7 @@ final class ParametersTest extends StructuredFieldTest
         $instance2 = Parameters::fromAssociative(['b' => true]);
         $instance3 = Parameters::fromAssociative(['a' => 42]);
 
-        $instance1->merge($instance2, $instance3);
+        $instance1->mergeAssociative($instance2, $instance3);
 
         self::assertEquals(Item::from(42), $instance1->get('a'));
         self::assertEquals(Item::from(true), $instance1->get('b'));
@@ -192,7 +192,7 @@ final class ParametersTest extends StructuredFieldTest
         $instance2 = Parameters::fromAssociative(['b' => Item::from(true)]);
         $instance3 = Parameters::fromAssociative(['a' => Item::from(42)]);
 
-        $instance3->merge($instance2, $instance1);
+        $instance3->mergeAssociative($instance2, $instance1);
 
         self::assertEquals(Item::from(false), $instance3->get('a'));
         self::assertEquals(Item::from(true), $instance3->get('b'));
@@ -204,8 +204,48 @@ final class ParametersTest extends StructuredFieldTest
     public function it_can_merge_without_argument_and_not_throw(): void
     {
         $instance = Parameters::fromAssociative(['a' => Item::from(false)]);
-        $instance->merge();
+        $instance->mergeAssociative();
         self::assertCount(1, $instance);
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_merge_one_or_more_instances_using_pairs(): void
+    {
+        $instance1 = Parameters::fromPairs([['a', Item::from(false)]]);
+        $instance2 = Parameters::fromPairs([['b', Item::from(true)]]);
+        $instance3 = Parameters::fromPairs([['a', Item::from(42)]]);
+
+        $instance3->mergePairs($instance2, $instance1);
+        self::assertCount(2, $instance3);
+
+        self::assertEquals(Item::from(false), $instance3->get('a'));
+        self::assertEquals(Item::from(true), $instance3->get('b'));
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_merge_without_pairs_and_not_throw(): void
+    {
+        $instance = Parameters::fromAssociative(['a' => Item::from(false)]);
+
+        self::assertCount(1, $instance->mergePairs());
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_merge_dictionary_instances_via_pairs_or_associative(): void
+    {
+        $instance1 = Parameters::fromAssociative(['a' => Item::from(false)]);
+        $instance2 = Parameters::fromAssociative(['b' => Item::from(true)]);
+
+        $instance3 = clone $instance1;
+        $instance4 = clone $instance2;
+
+        self::assertEquals($instance3->mergeAssociative($instance4), $instance1->mergePairs($instance2));
     }
 
     /**

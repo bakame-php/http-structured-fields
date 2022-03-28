@@ -251,7 +251,7 @@ final class ItemTest extends StructuredFieldTest
         self::assertCount(0, $instance->parameters);
 
         $instance->parameters->clear();
-        $instance->parameters->merge(['foo' => 'bar']);
+        $instance->parameters->mergeAssociative(['foo' => 'bar']);
 
         self::assertCount(1, $instance->parameters);
         self::assertSame('bar', $instance->parameters->value('foo'));

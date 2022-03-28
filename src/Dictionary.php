@@ -59,11 +59,15 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param iterable<array{0:string, 1:InnerList|Item|ByteSequence|Token|bool|int|float|string}> $pairs
+     * @param Dictionary|iterable<array{0:string, 1:InnerList|Item|ByteSequence|Token|bool|int|float|string}> $pairs
      */
-    public static function fromPairs(iterable $pairs = []): self
+    public static function fromPairs(Dictionary|iterable $pairs = []): self
     {
         $instance = new self();
+        if ($pairs instanceof Dictionary) {
+            $pairs = $pairs->toPairs();
+        }
+
         foreach ($pairs as [$key, $member]) {
             $instance->set($key, $member);
         }
@@ -292,12 +296,26 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     /**
      * Merge multiple instances.
      *
-     * @param iterable<array-key, InnerList|Item|ByteSequence|Token|bool|int|float|string> ...$others
+     * @param Dictionary|iterable<string, InnerList|Item|ByteSequence|Token|bool|int|float|string> ...$others
      */
-    public function merge(iterable ...$others): self
+    public function mergeAssociative(Dictionary|iterable ...$others): self
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromAssociative($other)->members];
+        }
+
+        return $this;
+    }
+
+    /**
+     * Merge multiple instances using iterable pairs.
+     *
+     * @param Dictionary|iterable<array{0:string, 1:InnerList|Item|ByteSequence|Token|bool|int|float|string}> ...$others
+     */
+    public function mergePairs(Dictionary|iterable ...$others): self
+    {
+        foreach ($others as $other) {
+            $this->members = [...$this->members, ...self::fromPairs($other)->members];
         }
 
         return $this;
