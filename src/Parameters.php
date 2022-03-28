@@ -267,18 +267,24 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function hasPair(int $index): bool
     {
-        return null !== $this->formatIndex($index);
+        try {
+            $this->filterIndex($index);
+
+            return true;
+        } catch (InvalidOffset) {
+            return false;
+        }
     }
 
     /**
      * Filter and format instance index.
      */
-    private function formatIndex(int $index): int|null
+    private function filterIndex(int $index): int
     {
         $max = count($this->members);
 
         return match (true) {
-            [] === $this->members, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            [] === $this->members, 0 > $max + $index, 0 > $max - $index - 1 => throw InvalidOffset::dueToIndexNotFound($index),
             0 > $index => $max + $index,
             default => $index,
         };
@@ -294,10 +300,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function pair(int $index): array
     {
-        $offset = $this->formatIndex($index);
-        if (null === $offset) {
-            throw InvalidOffset::dueToIndexNotFound($index);
-        }
+        $offset = $this->filterIndex($index);
 
         $i = 0;
         foreach ($this->members as $key => $member) {

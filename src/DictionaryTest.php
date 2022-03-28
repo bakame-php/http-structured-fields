@@ -75,6 +75,8 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertFalse($instance->hasPair(1));
 
         $instance->append('foobar', Item::from('BarBaz'));
+        self::assertTrue($instance->hasPair(1));
+
         /** @var array{0:string, 1:Item} $foundItem */
         $foundItem = $instance->pair(1);
 

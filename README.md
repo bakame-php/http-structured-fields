@@ -188,7 +188,8 @@ key to its members as such they expose the following methods:
 - `prepend` always add an element at the beginning of the container, if already present the previous value is removed;
 - `delete` to remove elements based on their associated keys;
 - `keys` to list all existing keys for the ordered maps as an array list;
-- `merge` merge multiple instances of iterable structure as associative constructs;
+- `mergeAssociative` merge multiple instances of iterable structure as associative constructs;
+- `mergePairs` merge multiple instances of iterable structure as pairs constructs;
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;

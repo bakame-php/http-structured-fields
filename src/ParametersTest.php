@@ -96,6 +96,7 @@ final class ParametersTest extends StructuredFieldTest
         self::assertFalse($instance->hasPair(1));
 
         $instance->append('foobar', Item::from('BarBaz'));
+        self::assertTrue($instance->hasPair(1));
         $foundItem = $instance->pair(1);
 
         self::assertCount(2, $instance);
