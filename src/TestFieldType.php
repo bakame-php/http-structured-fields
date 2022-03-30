@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-enum TestHeaderType: string
+enum TestFieldType: string
 {
     case Dictionary = 'dictionary';
     case List = 'list';

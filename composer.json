@@ -69,12 +69,8 @@
             "package": {
                 "name": "httpwg/structured-field-tests",
                 "version": "dev-main",
-                "dist": {
-                    "url": "https://github.com/httpwg/structured-field-tests/archive/main.zip",
-                    "type": "zip"
-                },
                 "source": {
-                    "url": "git@github.com:httpwg/structured-field-tests.git",
+                    "url": "https://github.com/httpwg/structured-field-tests.git",
                     "type": "git",
                     "reference": "main"
                 }

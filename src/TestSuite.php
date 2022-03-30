@@ -8,6 +8,7 @@ use Iterator;
 use IteratorAggregate;
 use JsonException;
 use RuntimeException;
+use function basename;
 use function fclose;
 use function fopen;
 use function is_resource;
@@ -19,15 +20,10 @@ use function stream_get_contents;
  */
 final class TestSuite implements IteratorAggregate
 {
-    /** @var array<string, TestUnit> */
-    private array $elements;
-
-    public function __construct(TestUnit ...$elements)
-    {
-        $this->elements = [];
-        foreach ($elements as $element) {
-            $this->add($element);
-        }
+    private function __construct(
+        /** @var array<string, TestUnit> */
+        private array $elements = []
+    ) {
     }
 
     public function add(TestUnit $test): void
@@ -72,7 +68,7 @@ final class TestSuite implements IteratorAggregate
         $records = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
         $suite = new self();
         foreach ($records as $offset => $record) {
-            $record['name'] = '#'.($offset + 1).': '.$record['name'];
+            $record['name'] = basename($path).' #'.($offset + 1).': '.$record['name'];
             $suite->add(TestUnit::fromDecoded($record));
         }
 

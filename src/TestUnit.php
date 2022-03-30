@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-use JsonException;
-use function json_decode;
-
 final class TestUnit
 {
     public function __construct(
         public readonly string $name,
-        public readonly string $headerType,
+        public readonly string $type,
         /** @var array<string> */
         public readonly array $raw,
         /** @var array<string> */
@@ -19,24 +16,6 @@ final class TestUnit
         public readonly bool $mustFail,
         public readonly bool $canFail,
     ) {
-    }
-
-    /**
-     * @throws JsonException
-     */
-    public static function fromJsonString(string $jsonTest): self
-    {
-        /** @var array{
-         *     name:string,
-         *     header_type: string,
-         *     raw: array<string>,
-         *     canonical?: array<string>,
-         *     must_fail?: bool,
-         *     can_fail?: bool
-         * } $data */
-        $data = json_decode($jsonTest, true, 512, JSON_THROW_ON_ERROR);
-
-        return self::fromDecoded($data);
     }
 
     /**
@@ -51,7 +30,7 @@ final class TestUnit
      */
     public static function fromDecoded(array $data): self
     {
-        $data += ['must_fail' => false, 'can_fail' => false, 'canonical' => $data['raw']];
+        $data += ['canonical' => $data['raw'], 'must_fail' => false, 'can_fail' => false];
 
         return new self(
             $data['name'],
