@@ -21,9 +21,9 @@ The package can be used to:
 - infer fields and data types from HTTP Structured Fields;
 
 ```php
-use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields;
 
-$field = Item::from("/terms", ['rel' => "copyright", 'anchor' => '#foo']);
+$field = StructuredFields\Item::from("/terms", ['rel' => "copyright", 'anchor' => '#foo']);
 echo $field->toHttpValue();           //display "/terms";rel="copyright";anchor="#foo"
 echo $field->value;                   //display "/terms"
 echo $field->parameters->value('rel'); //display "copyright"
@@ -61,17 +61,15 @@ representation of the field and to serialize the value object back to the textua
 - Serializing is done via a common `toHttpValue` public method. The method returns the normalized string representation suited for HTTP textual representation.
 
 ```php
-use Bakame\Http\StructuredFields\Dictionary;
-use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\OrderedList;
+use Bakame\Http\StructuredFields;
 
-$dictionary = Dictionary::fromHttpValue("a=?0,   b,   c=?1; foo=bar");
+$dictionary = StructuredFields\Dictionary::fromHttpValue("a=?0,   b,   c=?1; foo=bar");
 echo $dictionary->toHttpValue(); // "a=?0, b, c;foo=bar"
 
-$list = OrderedList::fromHttpValue('("foo"; a=1;b=2);lvl=5, ("bar" "baz");lvl=1');
+$list = StructuredFields\OrderedList::fromHttpValue('("foo"; a=1;b=2);lvl=5, ("bar" "baz");lvl=1');
 echo $list->toHttpValue(); // "("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1"
 
-$item = Item::fromHttpValue('"foo";a=1;b=2"');
+$item = StructuredFields\Item::fromHttpValue('"foo";a=1;b=2"');
 echo $item->toHttpValue(); // "foo";a=1;b=2
 ```
 
@@ -116,9 +114,9 @@ Instantiation via type recognition is done using the `Item::from` named construc
 - The second argument, which is optional, MUST be an iterable construct where its index represents the parameter key and its value an item or a item type value;
 
 ```php
-use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields;
 
-$item = Item::from("hello world", ["a" => 1]);
+$item = StructuredFields\Item::from("hello world", ["a" => 1]);
 $item->value; //returns "hello world"
 $item->isString(); //return true
 $item->isToken();  //return false
@@ -134,13 +132,13 @@ Once instantiated, accessing `Item` properties is done via two (2) readonly prop
 **Of note: to instantiate a decimal number type a float MUST be used as the first argument of `Item::from`.**
 
 ```php
-use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields;
 
-$decimal = Item::from(42.0);
+$decimal = StructuredFields\Item::from(42.0);
 $decimal->isDecimal(); //return true
 $decimal->isInteger(); //return false
 
-$item = Item::from(42);
+$item = StructuredFields\Item::from(42);
 $item->isDecimal(); //return false
 $item->isInteger(); //return true
 ```
@@ -163,9 +161,9 @@ At any given time it is possible with each of these objects to:
 - clear the container using the `clear` method;
 
 ```php
-use Bakame\Http\StructuredFields\Parameters;
+use Bakame\Http\StructuredFields;
 
-$parameters = Parameters::fromAssociative(['a' => 1, 'b' => 2, 'c' => "hello world"]);
+$parameters = StructuredFields\Parameters::fromAssociative(['a' => 1, 'b' => 2, 'c' => "hello world"]);
 count($parameters);          // return 2
 $parameters->isEmpty();      // returns false
 $parameters->toHttpValue();  // return ";a=1;b=2"
@@ -192,12 +190,10 @@ key to its members as such they expose the following methods:
 - `mergePairs` merge multiple instances of iterable structure as pairs constructs;
 
 ```php
-use Bakame\Http\StructuredFields\Dictionary;
-use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\Token;
+use Bakame\Http\StructuredFields;
 
-$dictionary = Dictionary::fromPairs([['b', true]]);
-$dictionary->append('c', Item::from(true, ['foo' => Token::fromString('bar')]));
+$dictionary = StructuredFields\Dictionary::fromPairs([['b', true]]);
+$dictionary->append('c', StructuredFields\Item::from(true, ['foo' => StructuredFields\Token::fromString('bar')]));
 $dictionary->prepend('a', false);
 $dictionary->toHttpValue(); //returns "a=?0, b, c;foo=bar"
 $dictionary->has('a');   //return true
@@ -223,11 +219,9 @@ The `Parameters` instance exposes the following methods:
 - `Parameters::merge` also accepts iterable as associative key-value as part of the variadic signature.
 
 ```php
-use Bakame\Http\StructuredFields\Parameters;
-use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\Token;
+use Bakame\Http\StructuredFields;
 
-$parameters = Parameters::fromAssociative(['b' => true, 'foo' => 'bar']);
+$parameters = StructuredFields\Parameters::fromAssociative(['b' => true, 'foo' => 'bar']);
 $parameters->keys(); // returns ['b', 'foo']
 $parameters->values(); // returns [true, 'bar']
 $parameters->value('b'); // returns true
@@ -235,7 +229,7 @@ $parameters->get('b'); // returns Item::from(true)
 iterator_to_array($parameters->toPairs(), true); // returns [['b', Item::from(true)], ['foo', Item::from('bar')]]
 iterator_to_array($parameters, true); // returns ['b' => Item::from(true), 'foo' => Item::from('bar')]
 $parameters->mergeAssociative(
-    Parameters::fromAssociative(['b' => true, 'foo' => 'foo']),
+    StructuredFields\Parameters::fromAssociative(['b' => true, 'foo' => 'foo']),
     ['b' => 'false']
 );
 $parameters->toHttpValue(); // returns ;b="false";foo="foo"
@@ -264,18 +258,19 @@ to enable manipulation their content.
 **EVERY CHANGE IN THE LIST WILL RE-INDEX THE LIST AS TO NOT EXPOSE MISSING INDEXES**
 
 ```php
-use Bakame\Http\StructuredFields\InnerList;
-use Bakame\Http\StructuredFields\OrderedList;
-use Bakame\Http\StructuredFields\Token;
+use Bakame\Http\StructuredFields;
 
-$innerList = InnerList::fromList([42, 42.0, "42"], ["a" => true]);
+$innerList = StructuredFields\InnerList::fromList([42, 42.0, "42"], ["a" => true]);
 $innerList->has(2); //return true
 $innerList->has(42); //return false
-$innerList->push(Token::fromString('forty-two'));
+$innerList->push(StructuredFields\Token::fromString('forty-two'));
 $innerList->remove(0, 2);
 echo $innerList->toHttpValue(); //returns '(42.0 forty-two);a'
 
-$orderedList = OrderedList::from(Item::from("42", ["foo" => "bar"]), $innerList);
+$orderedList = StructuredFields\OrderedList::from(
+    StructuredFields\Item::from("42", ["foo" => "bar"]), 
+    $innerList
+);
 echo $orderedList->toHttpValue(); //returns '"42";foo="bar", (42.0 forty-two);a'
 ```
 
@@ -287,11 +282,10 @@ RFC but the main ones are:
 - `InnerList` has a `Parameters` instance attached to it that you can access via its readonly property `parameters`, not `OrderedList`;
 
 ```php
-use Bakame\Http\StructuredFields\InnerList;
-use Bakame\Http\StructuredFields\Parameters;
+use Bakame\Http\StructuredFields;
 
-$innerList = InnerList::fromList([42, 42.0, "42"], ["a" => true]);
-$innerList->parameters;             //returns a Parameters object
+$innerList = StructuredFields\InnerList::fromList([42, 42.0, "42"], ["a" => true]);
+$innerList->parameters;             //returns a StructuredFields\Parameters object
 $innerList->parameters->value('a'); // returns true
 ```
 
