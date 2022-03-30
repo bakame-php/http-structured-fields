@@ -277,7 +277,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Filter and format instance index.
+     * Filters and format instance index.
      */
     private function filterIndex(int $index): int
     {
@@ -316,7 +316,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Add a member at the end of the instance if the key is new otherwise update the value associated with the key.
+     * Adds a member at the end of the instance otherwise updates the value associated with the key if already present.
      *
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
@@ -329,7 +329,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Delete members associated with the list of submitted keys.
+     * Deletes members associated with the list of submitted keys.
      */
     public function delete(string ...$keys): self
     {
@@ -341,7 +341,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Remove all members from the instance.
+     * Removes all members from the instance.
      */
     public function clear(): self
     {
@@ -351,7 +351,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Add a member at the end of the instance if the key is new delete any previous reference to the key.
+     * Adds a member at the end of the instance and deletes any previous reference to the key if present.
      *
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
@@ -366,7 +366,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Add a member at the beginning of the instance if the key is new delete any previous reference to the key.
+     * Adds a member at the beginning of the instance and deletes any previous reference to the key if present.
      *
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
@@ -381,7 +381,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Merge multiple instances using associative pairs.
+     * Merges multiple instances using iterable associative structures.
      *
      * @param  Parameters|iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> ...$others
      * @throws ForbiddenStateError                                                           if the found item is in invalid state

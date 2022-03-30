@@ -2,6 +2,24 @@
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file
 
+## [Next] - TBD
+
+### Added
+
+- None
+
+### Fixed
+
+- `InnerList::fromHttpValue` accepts Optional White Spaces like all the other named constructors at the start of its textual representation.
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
+
 ## [0.4.0] - 2022-03-27
 
 ### Added

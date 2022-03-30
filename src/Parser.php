@@ -40,19 +40,7 @@ final class Parser
         $remainder = ltrim($httpValue, ' ');
         while ('' !== $remainder) {
             [$members[], $offset] = self::parseItemOrInnerList($remainder);
-            $remainder = ltrim(substr($remainder, $offset), " \t");
-            if ('' === $remainder) {
-                return $members;
-            }
-
-            if (1 !== preg_match('/^(?<space>,[ \t]*)/', $remainder, $found)) {
-                throw new SyntaxError("The HTTP textual representation `$httpValue` for a list is missing an excepted comma.");
-            }
-
-            $remainder = substr($remainder, strlen($found['space']));
-            if ('' === $remainder) {
-                throw new SyntaxError("Unexpected end of line for The HTTP textual representation `$httpValue` of a list.");
-            }
+            $remainder = self::removeCommaSeparatedWhiteSpaces($remainder, $offset);
         }
 
         return $members;
@@ -75,27 +63,12 @@ final class Parser
         while ('' !== $remainder) {
             [$key, $offset] = self::parseKey($remainder);
             $remainder = substr($remainder, $offset);
-            if ('' !== $remainder && $remainder[0] === '=') {
-                $remainder = substr($remainder, 1);
-                [$members[$key], $offset] = self::parseItemOrInnerList($remainder);
-            } else {
-                [$parameters, $offset] = self::parseParameters($remainder);
-                $members[$key] = Item::from(true, $parameters);
+            if ('' === $remainder || '=' !== $remainder[0]) {
+                $remainder = '=?1'.$remainder;
             }
 
-            $remainder = ltrim(substr($remainder, $offset), " \t");
-            if ('' === $remainder) {
-                return $members;
-            }
-
-            if (1 !== preg_match('/^(?<space>,[ \t]*)/', $remainder, $found)) {
-                throw new SyntaxError("The HTTP textual representation `$httpValue` for a dictionary is missing an excepted comma.");
-            }
-
-            $remainder = substr($remainder, strlen($found['space']));
-            if ('' === $remainder) {
-                throw new SyntaxError("Unexpected end of line for The HTTP textual representation `$httpValue` for a dictionary.");
-            }
+            [$members[$key], $offset] = self::parseItemOrInnerList(substr($remainder, 1));
+            $remainder = self::removeCommaSeparatedWhiteSpaces($remainder, ++$offset);
         }
 
         return $members;
@@ -113,17 +86,53 @@ final class Parser
      */
     public static function parseInnerList(string $httpValue): array
     {
-        if ('(' !== $httpValue[0]) {
+        $remainder = ltrim($httpValue, ' ');
+        if ('(' !== $remainder[0]) {
             throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list is missing a parenthesis.");
         }
 
-        [$members, $offset] = self::parseInnerListValue($httpValue);
-        $remainder = ltrim(substr($httpValue, $offset), " \t");
+        [$members, $offset] = self::parseInnerListValue($remainder);
+        $remainder = self::removeOptionalWhiteSpaces(substr($remainder, $offset));
+
         if ('' !== $remainder) {
             throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list contains invalid data.");
         }
 
         return $members;
+    }
+
+    /**
+     * Filter optional white spaces before and after comma.
+     *
+     * @see https://tools.ietf.org/html/rfc7230#section-3.2.3
+     */
+    private static function removeCommaSeparatedWhiteSpaces(string $remainder, int $offset): string
+    {
+        $remainder = self::removeOptionalWhiteSpaces(substr($remainder, $offset));
+        if ('' === $remainder) {
+            return $remainder;
+        }
+
+        if (1 !== preg_match('/^(?<space>,[ \t]*)/', $remainder, $found)) {
+            throw new SyntaxError('The HTTP textual representation is missing an excepted comma.');
+        }
+
+        $remainder = substr($remainder, strlen($found['space']));
+        if ('' === $remainder) {
+            throw new SyntaxError('Unexpected end of line for The HTTP textual representation.');
+        }
+
+        return $remainder;
+    }
+
+    /**
+     * Remove optional white spaces before field value.
+     *
+     * @see https://tools.ietf.org/html/rfc7230#section-3.2.3
+     */
+    private static function removeOptionalWhiteSpaces(string $value): string
+    {
+        return ltrim($value, " \t");
     }
 
     /**

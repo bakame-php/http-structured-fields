@@ -184,7 +184,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Validate and Format the submitted index position.
+     * Validates and Format the submitted index position.
      */
     private function filterIndex(int $index): int
     {
@@ -221,7 +221,9 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Add a member at the end of the instance if the key is new otherwise update the value associated with the key.
+     * Adds a member at the end of the instance otherwise updates the value associated with the key if already present.
+     *
+     * @throws SyntaxError If the string key is not a valid
      */
     public function set(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): self
     {
@@ -231,7 +233,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Validate the instance key against RFC8941 rules.
+     * Validates the instance key against RFC8941 rules.
      */
     private static function filterKey(string $key): string
     {
@@ -251,7 +253,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Delete members associated with the list of submitted keys.
+     * Deletes members associated with the list of submitted keys.
      */
     public function delete(string ...$keys): self
     {
@@ -263,7 +265,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Remove all members from the instance.
+     * Removes all members from the instance.
      */
     public function clear(): self
     {
@@ -273,7 +275,9 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Add a member at the end of the instance if the key is new delete any previous reference to the key.
+     * Adds a member at the end of the instance and deletes any previous reference to the key if present.
+     *
+     * @throws SyntaxError If the string key is not a valid
      */
     public function append(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): self
     {
@@ -285,7 +289,9 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Add a member at the beginning of the instance if the key is new delete any previous reference to the key.
+     * Adds a member at the beginning of the instance and deletes any previous reference to the key if present.
+     *
+     * @throws SyntaxError If the string key is not a valid
      */
     public function prepend(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): self
     {
@@ -297,7 +303,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Merge multiple instances.
+     * Merges multiple instances using iterable associative structures.
      *
      * @param Dictionary|iterable<string, InnerList|Item|ByteSequence|Token|bool|int|float|string> ...$others
      */
@@ -311,7 +317,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Merge multiple instances using iterable pairs.
+     * Merges multiple instances using iterable pairs.
      *
      * @param Dictionary|iterable<array{0:string, 1:InnerList|Item|ByteSequence|Token|bool|int|float|string}> ...$others
      */

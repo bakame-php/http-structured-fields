@@ -126,7 +126,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Insert members at the beginning of the list.
+     * Inserts members at the beginning of the list.
      */
     public function unshift(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members): self
     {
@@ -136,7 +136,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Insert members at the end of the list.
+     * Inserts members at the end of the list.
      */
     public function push(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members): self
     {
@@ -146,7 +146,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Insert members starting at the given index.
+     * Inserts members starting at the given index.
      *
      * @throws InvalidOffset If the index does not exist
      */
@@ -166,7 +166,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Replace the member associated with the index.
+     * Replaces the member associated with the index.
      *
      * @throws InvalidOffset If the index does not exist
      */
@@ -182,7 +182,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Delete members associated with the list of instance indexes.
+     * Deletes members associated with the list of instance indexes.
      */
     public function remove(int ...$indexes): self
     {
@@ -203,7 +203,7 @@ final class OrderedList implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * Remove all members from the instance.
+     * Removes all members from the instance.
      */
     public function clear(): self
     {
