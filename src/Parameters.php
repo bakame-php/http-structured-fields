@@ -101,11 +101,11 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public static function fromPairs(Parameters|iterable $pairs = []): self
     {
-        $instance = new self();
         if ($pairs instanceof Parameters) {
-            $pairs = $pairs->toPairs();
+            return clone $pairs;
         }
 
+        $instance = new self();
         foreach ($pairs as [$key, $member]) {
             $instance->set($key, $member);
         }
@@ -124,6 +124,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     public static function fromHttpValue(string $httpValue): self
     {
         $instance = new self();
+        $httpValue = ltrim($httpValue, ' ');
         if ('' === $httpValue) {
             return $instance;
         }

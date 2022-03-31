@@ -321,4 +321,15 @@ final class ParametersTest extends StructuredFieldTest
 
         Parameters::fromHttpValue(';foo =  bar');
     }
+
+    /**
+     * @test
+     */
+    public function it_successfully_parse_a_parameter_value_with_optional_white_spaces_in_front(): void
+    {
+        self::assertEquals(
+            Parameters::fromHttpValue(';foo=bar'),
+            Parameters::fromHttpValue('        ;foo=bar')
+        );
+    }
 }
