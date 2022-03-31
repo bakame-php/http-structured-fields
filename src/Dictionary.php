@@ -63,11 +63,11 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public static function fromPairs(Dictionary|iterable $pairs = []): self
     {
-        $instance = new self();
         if ($pairs instanceof Dictionary) {
-            $pairs = $pairs->toPairs();
+            return clone $pairs;
         }
 
+        $instance = new self();
         foreach ($pairs as [$key, $member]) {
             $instance->set($key, $member);
         }
