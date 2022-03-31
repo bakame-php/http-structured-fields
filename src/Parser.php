@@ -25,7 +25,7 @@ use function substr;
 final class Parser
 {
     /**
-     * Returns an OrderedList value object from an HTTP textual representation.
+     * Returns an ordered list represented as a PHP list array from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1
      *
@@ -36,18 +36,18 @@ final class Parser
      */
     public static function parseList(string $httpValue): array
     {
-        $members = [];
+        $list = [];
         $remainder = ltrim($httpValue, ' ');
         while ('' !== $remainder) {
-            [$members[], $offset] = self::parseItemOrInnerList($remainder);
+            [$list[], $offset] = self::parseItemOrInnerList($remainder);
             $remainder = self::removeCommaSeparatedWhiteSpaces($remainder, $offset);
         }
 
-        return $members;
+        return $list;
     }
 
     /**
-     * Returns a Dictionary value object from an HTTP textual representation.
+     * Returns an ordered map represented as a PHP associative array from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.2
      *
@@ -58,7 +58,7 @@ final class Parser
      */
     public static function parseDictionary(string $httpValue): array
     {
-        $members = [];
+        $map = [];
         $remainder = ltrim($httpValue, ' ');
         while ('' !== $remainder) {
             [$key, $offset] = self::parseKey($remainder);
@@ -67,15 +67,15 @@ final class Parser
                 $remainder = '=?1'.$remainder;
             }
 
-            [$members[$key], $offset] = self::parseItemOrInnerList(substr($remainder, 1));
+            [$map[$key], $offset] = self::parseItemOrInnerList(substr($remainder, 1));
             $remainder = self::removeCommaSeparatedWhiteSpaces($remainder, ++$offset);
         }
 
-        return $members;
+        return $map;
     }
 
     /**
-     * Returns a InnerList value object from an HTTP textual representation.
+     * Returns an inner list represented as a PHP list array from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
@@ -91,14 +91,14 @@ final class Parser
             throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list is missing a parenthesis.");
         }
 
-        [$members, $offset] = self::parseInnerListValue($remainder);
+        [$list, $offset] = self::parseInnerListValue($remainder);
         $remainder = self::removeOptionalWhiteSpaces(substr($remainder, $offset));
 
         if ('' !== $remainder) {
             throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list contains invalid data.");
         }
 
-        return $members;
+        return $list;
     }
 
     /**
@@ -106,23 +106,23 @@ final class Parser
      *
      * @see https://tools.ietf.org/html/rfc7230#section-3.2.3
      */
-    private static function removeCommaSeparatedWhiteSpaces(string $remainder, int $offset): string
+    private static function removeCommaSeparatedWhiteSpaces(string $httpValue, int $offset): string
     {
-        $remainder = self::removeOptionalWhiteSpaces(substr($remainder, $offset));
-        if ('' === $remainder) {
-            return $remainder;
+        $httpValue = self::removeOptionalWhiteSpaces(substr($httpValue, $offset));
+        if ('' === $httpValue) {
+            return $httpValue;
         }
 
-        if (1 !== preg_match('/^(?<space>,[ \t]*)/', $remainder, $found)) {
+        if (1 !== preg_match('/^(?<space>,[ \t]*)/', $httpValue, $found)) {
             throw new SyntaxError('The HTTP textual representation is missing an excepted comma.');
         }
 
-        $remainder = substr($remainder, strlen($found['space']));
-        if ('' === $remainder) {
+        $httpValue = substr($httpValue, strlen($found['space']));
+        if ('' === $httpValue) {
             throw new SyntaxError('Unexpected end of line for The HTTP textual representation.');
         }
 
-        return $remainder;
+        return $httpValue;
     }
 
     /**
@@ -130,13 +130,13 @@ final class Parser
      *
      * @see https://tools.ietf.org/html/rfc7230#section-3.2.3
      */
-    private static function removeOptionalWhiteSpaces(string $value): string
+    private static function removeOptionalWhiteSpaces(string $httpValue): string
     {
-        return ltrim($value, " \t");
+        return ltrim($httpValue, " \t");
     }
 
     /**
-     * Returns an Item or an InnerList value object from an HTTP textual representation.
+     * Returns an Item value object or an inner list as a PHP list array from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
      *
@@ -161,7 +161,7 @@ final class Parser
     }
 
     /**
-     * Returns an InnerList value object from an HTTP textual representation and the consumed offset.
+     * Returns an inner list represented as a PHP list array from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
@@ -172,7 +172,7 @@ final class Parser
      */
     private static function parseInnerListValue(string $httpValue): array
     {
-        $members = [];
+        $list = [];
         $remainder = substr($httpValue, 1);
         while ('' !== $remainder) {
             $remainder = ltrim($remainder, ' ');
@@ -182,7 +182,7 @@ final class Parser
                 [$parameters, $offset] = self::parseParameters($remainder);
                 $remainder = substr($remainder, $offset);
 
-                return [[$members, $parameters], strlen($httpValue) - strlen($remainder)];
+                return [[$list, $parameters], strlen($httpValue) - strlen($remainder)];
             }
 
             [$value, $offset] = self::parseBareItem($remainder);
@@ -191,7 +191,7 @@ final class Parser
             [$parameters, $offset] = self::parseParameters($remainder);
             $remainder = substr($remainder, $offset);
 
-            $members[] = Item::from($value, $parameters);
+            $list[] = Item::from($value, $parameters);
 
             if ('' !== $remainder && !in_array($remainder[0], [' ', ')'], true)) {
                 throw new SyntaxError("The HTTP textual representation `$remainder` for a inner list is using invalid characters.");
@@ -202,7 +202,7 @@ final class Parser
     }
 
     /**
-     * Returns a Item or an InnerList value object from an HTTP textual representation.
+     * Returns an Item value from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.1
      *
@@ -222,36 +222,36 @@ final class Parser
     }
 
     /**
-     * Returns a Parameters value object from an HTTP textual representation.
+     * Returns an parameters container represented as a PHP associative array from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.2
      *
-     * @return array{0:array<array-key, Token|ByteSequence|float|int|bool|string>, 1:int}
+     * @return array{0:array<string, Token|ByteSequence|float|int|bool|string>, 1:int}
      */
     private static function parseParameters(string $httpValue): array
     {
-        $parameters = [];
+        $map = [];
         $remainder = $httpValue;
         while ('' !== $remainder && ';' === $remainder[0]) {
             $remainder = ltrim(substr($remainder, 1), ' ');
 
             [$key, $keyOffset] = self::parseKey($remainder);
-            $parameters[$key] = true;
+            $map[$key] = true;
 
             $remainder = substr($remainder, $keyOffset);
             if ('' !== $remainder && '=' === $remainder[0]) {
                 $remainder = substr($remainder, 1);
 
-                [$parameters[$key], $offset] = self::parseBareItem($remainder);
+                [$map[$key], $offset] = self::parseBareItem($remainder);
                 $remainder = substr($remainder, $offset);
             }
         }
 
-        return [$parameters, strlen($httpValue) - strlen($remainder)];
+        return [$map, strlen($httpValue) - strlen($remainder)];
     }
 
     /**
-     * Returns a Dictionary or a Parameter string key from an HTTP textual representation.
+     * Returns a Dictionary or a Parameter string key from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.3
      *
@@ -267,7 +267,7 @@ final class Parser
     }
 
     /**
-     * Returns a boolean from an HTTP textual representation.
+     * Returns a boolean from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.8
      *
@@ -283,7 +283,7 @@ final class Parser
     }
 
     /**
-     * Returns a int or a float from an HTTP textual representation.
+     * Returns a int or a float from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.4
      *
@@ -301,7 +301,7 @@ final class Parser
     }
 
     /**
-     * Returns a string from an HTTP textual representation.
+     * Returns a string from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.5
      *
@@ -345,7 +345,7 @@ final class Parser
     }
 
     /**
-     * Returns a Token from an HTTP textual representation.
+     * Returns a Token from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.6
      *
@@ -359,7 +359,7 @@ final class Parser
     }
 
     /**
-     * Returns a Byte Sequence from an HTTP textual representation.
+     * Returns a Byte Sequence from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.7
      *
