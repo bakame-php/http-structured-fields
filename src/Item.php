@@ -101,16 +101,16 @@ final class Item implements StructuredField
      */
     public static function fromHttpValue(string $httpValue): self
     {
-        $httpValue = trim($httpValue, ' ');
+        $itemString = trim($httpValue, ' ');
+
         [$value, $parameters] = match (true) {
-            '' === $httpValue,
-            1 === preg_match("/[\r\t\n]/", $httpValue),
-            1 === preg_match("/[^\x20-\x7E]/", $httpValue) => throw new SyntaxError("The HTTP textual representation `$httpValue` for an item contains invalid characters."),
-            1 === preg_match('/^(-?[0-9])/', $httpValue) => self::parseNumber($httpValue),
-            '"' === $httpValue[0] => self::parseString($httpValue),
-            ':' === $httpValue[0] => self::parseBytesSequence($httpValue),
-            '?' === $httpValue[0] => self::parseBoolean($httpValue),
-            1 === preg_match('/^([a-z*])/i', $httpValue) => self::parseToken($httpValue),
+            1 === preg_match("/[\r\t\n]|[^\x20-\x7E]/", $itemString),
+            '' === $itemString => throw new SyntaxError("The HTTP textual representation `$httpValue` for an item contains invalid characters."),
+            '"' === $itemString[0] => self::parseString($itemString),
+            ':' === $itemString[0] => self::parseBytesSequence($itemString),
+            '?' === $itemString[0] => self::parseBoolean($itemString),
+            1 === preg_match('/^(-?[0-9])/', $itemString) => self::parseNumber($itemString),
+            1 === preg_match('/^([a-z*])/i', $itemString) => self::parseToken($itemString),
             default => throw new SyntaxError("The HTTP textual representation `$httpValue` for an item is unknown or unsupported."),
         };
 

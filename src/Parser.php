@@ -8,7 +8,6 @@ use function in_array;
 use function ltrim;
 use function ord;
 use function preg_match;
-use function preg_quote;
 use function strlen;
 use function substr;
 
@@ -211,11 +210,10 @@ final class Parser
     private static function parseBareItem(string $httpValue): array
     {
         return match (true) {
-            '' === $httpValue => throw new SyntaxError('Unexpected empty string for The HTTP textual representation of an item.'),
-            1 === preg_match('/^(-|\d)/', $httpValue) => self::parseNumber($httpValue),
             '"' === $httpValue[0] => self::parseString($httpValue),
             ':' === $httpValue[0] => self::parseByteSequence($httpValue),
             '?' === $httpValue[0] => self::parseBoolean($httpValue),
+            1 === preg_match('/^(-|\d)/', $httpValue) => self::parseNumber($httpValue),
             1 === preg_match('/^([a-z*])/i', $httpValue) => self::parseToken($httpValue),
             default => throw new SyntaxError('Unknown or unsupported string for The HTTP textual representation of an item.'),
         };
@@ -353,7 +351,7 @@ final class Parser
      */
     private static function parseToken(string $httpValue): array
     {
-        preg_match('/^(?<token>[a-z*][a-z0-9:\/'.preg_quote("!#$%&'*+-.^_`|~").']*)/i', $httpValue, $found);
+        preg_match("/^(?<token>[a-z*][a-z0-9:\/\!\#\$%&'\*\+\-\.\^_`\|~]*)/i", $httpValue, $found);
 
         return [Token::fromString($found['token']), strlen($found['token'])];
     }
