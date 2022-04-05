@@ -13,7 +13,6 @@ use function array_map;
 use function count;
 use function implode;
 use function is_array;
-use function preg_match;
 
 /**
  * @implements IteratorAggregate<array-key, Item|InnerList>
@@ -227,21 +226,9 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public function set(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): self
     {
-        $this->members[self::filterKey($key)] = self::filterMember($member);
+        $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
 
         return $this;
-    }
-
-    /**
-     * Validates the instance key against RFC8941 rules.
-     */
-    private static function filterKey(string $key): string
-    {
-        if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
-            throw new SyntaxError("The dictionary key `$key` contains invalid characters.");
-        }
-
-        return $key;
     }
 
     private static function filterMember(InnerList|Item|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
@@ -283,7 +270,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     {
         unset($this->members[$key]);
 
-        $this->members[self::filterKey($key)] = self::filterMember($member);
+        $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
 
         return $this;
     }
@@ -297,7 +284,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     {
         unset($this->members[$key]);
 
-        $this->members = [...[self::filterKey($key) => self::filterMember($member)], ...$this->members];
+        $this->members = [...[MapKey::fromString($key)->value => self::filterMember($member)], ...$this->members];
 
         return $this;
     }

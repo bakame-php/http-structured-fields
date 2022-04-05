@@ -12,7 +12,6 @@ use function array_keys;
 use function count;
 use function explode;
 use function ltrim;
-use function preg_match;
 use function rtrim;
 use function trim;
 
@@ -33,18 +32,6 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     public static function __set_state(array $properties): self
     {
         return new self($properties['members']);
-    }
-
-    /**
-     * @throws SyntaxError If the string is not a valid
-     */
-    private static function filterKey(string $key): string
-    {
-        if (1 !== preg_match('/^[a-z*][a-z0-9.*_-]*$/', $key)) {
-            throw new SyntaxError("The Parameters key `$key` contains invalid characters.");
-        }
-
-        return $key;
     }
 
     /**
@@ -324,7 +311,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function set(string $key, Item|ByteSequence|Token|bool|int|float|string $member): self
     {
-        $this->members[self::filterKey($key)] = self::formatMember($member);
+        $this->members[MapKey::fromString($key)->value] = self::formatMember($member);
 
         return $this;
     }
@@ -361,7 +348,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     {
         unset($this->members[$key]);
 
-        $this->members[self::filterKey($key)] = self::formatMember($member);
+        $this->members[MapKey::fromString($key)->value] = self::formatMember($member);
 
         return $this;
     }
@@ -376,7 +363,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     {
         unset($this->members[$key]);
 
-        $this->members = [...[self::filterKey($key) =>  self::formatMember($member)], ...$this->members];
+        $this->members = [...[MapKey::fromString($key)->value =>  self::formatMember($member)], ...$this->members];
 
         return $this;
     }

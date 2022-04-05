@@ -6,7 +6,6 @@ namespace Bakame\Http\StructuredFields;
 
 use function in_array;
 use function ltrim;
-use function ord;
 use function preg_match;
 use function strlen;
 use function substr;
@@ -29,8 +28,8 @@ final class Parser
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1
      *
      * @return array<array{
-     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     *     0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     *     1:array<string,Item|ByteSequence|Token|bool|int|float|string>
      * }|Item|ByteSequence|Token|bool|int|float|string>
      */
     public static function parseList(string $httpValue): array
@@ -51,8 +50,8 @@ final class Parser
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.2
      *
      * @return array<string, Item|ByteSequence|Token|array{
-     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     *     0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     *     1:array<string,Item|ByteSequence|Token|bool|int|float|string>
      * }|bool|int|float|string>
      */
     public static function parseDictionary(string $httpValue): array
@@ -60,8 +59,8 @@ final class Parser
         $map = [];
         $remainder = ltrim($httpValue, ' ');
         while ('' !== $remainder) {
-            [$key, $offset] = self::parseKey($remainder);
-            $remainder = substr($remainder, $offset);
+            $key = MapKey::fromStringBeginning($remainder)->value;
+            $remainder = substr($remainder, strlen($key));
             if ('' === $remainder || '=' !== $remainder[0]) {
                 $remainder = '=?1'.$remainder;
             }
@@ -79,8 +78,8 @@ final class Parser
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
      * @return array{
-     *  0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     *  1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     *     0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     *     1:array<string,Item|ByteSequence|Token|bool|int|float|string>
      * }
      */
     public static function parseInnerList(string $httpValue): array
@@ -92,7 +91,6 @@ final class Parser
 
         [$list, $offset] = self::parseInnerListValue($remainder);
         $remainder = self::removeOptionalWhiteSpaces(substr($remainder, $offset));
-
         if ('' !== $remainder) {
             throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list contains invalid data.");
         }
@@ -140,8 +138,8 @@ final class Parser
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
      *
      * @return array{0: array{
-     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     *     0:array<Item|ByteSequence|Token|bool|int|float|string>,
+     *     1:array<string,Item|ByteSequence|Token|bool|int|float|string>
      * }|Item, 1:int}
      */
     private static function parseItemOrInnerList(string $httpValue): array
@@ -191,7 +189,6 @@ final class Parser
             $remainder = substr($remainder, $offset);
 
             $list[] = Item::from($value, $parameters);
-
             if ('' !== $remainder && !in_array($remainder[0], [' ', ')'], true)) {
                 throw new SyntaxError("The HTTP textual representation `$remainder` for a inner list is using invalid characters.");
             }
@@ -233,10 +230,10 @@ final class Parser
         while ('' !== $remainder && ';' === $remainder[0]) {
             $remainder = ltrim(substr($remainder, 1), ' ');
 
-            [$key, $keyOffset] = self::parseKey($remainder);
+            $key = MapKey::fromStringBeginning($remainder)->value;
             $map[$key] = true;
 
-            $remainder = substr($remainder, $keyOffset);
+            $remainder = substr($remainder, strlen($key));
             if ('' !== $remainder && '=' === $remainder[0]) {
                 $remainder = substr($remainder, 1);
 
@@ -246,22 +243,6 @@ final class Parser
         }
 
         return [$map, strlen($httpValue) - strlen($remainder)];
-    }
-
-    /**
-     * Returns a Dictionary or a Parameter string key from an HTTP textual representation and the consumed offset in a tuple.
-     *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.3
-     *
-     * @return array{0:string, 1:int}
-     */
-    private static function parseKey(string $httpValue): array
-    {
-        if (1 !== preg_match('/^(?<key>[a-z*][a-z0-9.*_-]*)/', $httpValue, $matches)) {
-            throw new SyntaxError("Invalid character in the HTTP textual representation of a key `$httpValue`.");
-        }
-
-        return [$matches['key'], strlen($matches['key'])];
     }
 
     /**
@@ -319,7 +300,7 @@ final class Parser
                 return [$output, $offset];
             }
 
-            if (ord($char) <= 0x1f || ord($char) >= 0x7f) {
+            if (1 === preg_match("/[^\x20-\x7E]/", $char)) {
                 throw new SyntaxError("Invalid character in the HTTP textual representation of a string `$httpValue`.");
             }
 
