@@ -256,4 +256,39 @@ final class ItemTest extends StructuredFieldTest
         self::assertCount(1, $instance->parameters);
         self::assertSame('bar', $instance->parameters->value('foo'));
     }
+
+    /**
+     * @test
+     */
+    public function it_can_create_an_item_from_a_array_pair(): void
+    {
+        $instance1 = Item::from(Token::fromString('babayaga'));
+        $instance2 = Item::fromPair([Token::fromString('babayaga')]);
+        $instance3 = Item::fromPair([Token::fromString('babayaga'), []]);
+
+        self::assertEquals($instance2, $instance1);
+        self::assertEquals($instance3, $instance1);
+    }
+
+    /**
+     * @test
+     * @dataProvider invalidPairProvider
+     * @param array<mixed> $pair
+     */
+    public function it_fails_to_create_an_item_from_a_array_pair(array $pair): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::fromPair($pair);  /* @phpstan-ignore-line */
+    }
+
+    /**
+     * @return iterable<string, array{pair:array<mixed>}>
+     */
+    public function invalidPairProvider(): iterable
+    {
+        yield 'empty pair' => ['pair' => []];
+        yield 'empty extra filled pair' => ['pair' => [1, [2], 3]];
+        yield 'associative array' => ['pair' => ['value' => 'bar', 'parameters' => ['foo' => 'bar']]];
+    }
 }

@@ -6,7 +6,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
-- None
+- `Item::fromPair`  named constructor to create a new instance from a pair expressed as an array list with two values.
 
 ### Fixed
 

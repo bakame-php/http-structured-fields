@@ -10,8 +10,6 @@ use function preg_match;
  */
 final class MapKey
 {
-    private const REGEXP_KEY = '/^(?<key>[a-z*][a-z0-9.*_-]*)/';
-
     private function __construct(
         public readonly string $value
     ) {
@@ -35,7 +33,7 @@ final class MapKey
      */
     public static function fromStringBeginning(string $httpValue): self
     {
-        if (1 !== preg_match(self::REGEXP_KEY, $httpValue, $found)) {
+        if (1 !== preg_match('/^(?<key>[a-z*][a-z0-9.*_-]*)/', $httpValue, $found)) {
             throw new SyntaxError("No valid http value key could be extracted from `$httpValue`.");
         }
 

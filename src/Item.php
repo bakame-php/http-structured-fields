@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use function count;
 use function in_array;
 use function is_bool;
 use function is_float;
@@ -32,6 +33,26 @@ final class Item implements StructuredField
     public static function __set_state(array $properties): self
     {
         return new self($properties['value'], $properties['parameters']);
+    }
+
+    /**
+     * @param array{
+     *     0:Token|ByteSequence|int|float|string|bool,
+     *     1?:iterable<string,Item|ByteSequence|Token|bool|int|float|string>
+     * } $pair
+     */
+    public static function fromPair(array $pair): self
+    {
+        if (!array_is_list($pair)) { /* @phpstan-ignore-line */
+            throw new SyntaxError('The pair must be represented by an array as a list.');
+        }
+
+        $pair[1] = $pair[1] ?? [];
+        if (2 !== count($pair)) { /* @phpstan-ignore-line */
+            throw new SyntaxError('The pair first value should be the item value and the optional second value the item parameters.');
+        }
+
+        return self::from(...$pair);
     }
 
     /**
