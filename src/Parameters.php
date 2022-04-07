@@ -371,10 +371,9 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     /**
      * Merges multiple instances using iterable associative structures.
      *
-     * @param  Parameters|iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> ...$others
-     * @throws ForbiddenStateError                                                           if the found item is in invalid state
+     * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> ...$others
      */
-    public function mergeAssociative(Parameters|iterable ...$others): self
+    public function mergeAssociative(iterable ...$others): self
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromAssociative($other)->members];
