@@ -332,4 +332,31 @@ final class ParametersTest extends StructuredFieldTest
             Parameters::fromHttpValue('        ;foo=bar')
         );
     }
+
+    /**
+     * @test
+     */
+    public function it_fails_creating_an_object_with_an_already_defined_parameter_configuration(): void
+    {
+        $this->expectException(StructuredFieldError::class);
+
+        $parameters = Parameters::fromAssociative(['a' => false]);
+        $item = $parameters->get('a');
+        $item->parameters->set('b', true);
+        self::assertSame('?0;b', $item->toHttpValue());
+
+        $parameters->toHttpValue();
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_serialize_after_sanitizing_the_parameters(): void
+    {
+        $parameters = Parameters::fromAssociative(['a' => false]);
+        $item = $parameters->get('a');
+        $item->parameters->set('b', true);
+
+        self::assertSame(';a=?0', $parameters->sanitize()->toHttpValue());
+    }
 }

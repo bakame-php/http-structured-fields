@@ -395,4 +395,21 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
         return $this;
     }
+
+    /**
+     * Ensure the container always contains only Bare Items.
+     *
+     * If Item with parameters exists they will be strip from the object
+     * before returning the parent instance
+     */
+    public function sanitize(): self
+    {
+        $this->members = array_map(function (Item $item): Item {
+            $item->parameters->clear();
+
+            return $item;
+        }, $this->members);
+
+        return $this;
+    }
 }

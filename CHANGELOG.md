@@ -7,6 +7,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Added
 
 - `Item::fromPair`  named constructor to create a new instance from a pair expressed as an array list with two values.
+- `Parameters::sanitize` ensure the container always contains only Bare Items.
 
 ### Fixed
 
