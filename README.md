@@ -73,7 +73,7 @@ $item = StructuredFields\Item::fromHttpValue('"foo";a=1;b=2"');
 echo $item->toHttpValue(); // "foo";a=1;b=2
 ```
 
-## Structured Fields Data Types
+## Building Structured Fields
 
 The RFC defines different data types to handle structured fields values.
 
@@ -124,7 +124,7 @@ $item->parameters->value("a"); //returns 1
 ```
 
 Conversely, the `Item::fromPair` is an alternative to the `Item::from`
-which expects a tuple composed by an array as w list where:
+which expects a tuple composed by an array as a list where:
 
 - The first member on index `0` represents one of the six (6) item type value;
 - The second optional member, on index `1`, MUST be an iterable construct where its index represents the parameter key and its value an item or a item type value;
@@ -179,9 +179,9 @@ At any given time it is possible with each of these objects to:
 use Bakame\Http\StructuredFields;
 
 $parameters = StructuredFields\Parameters::fromAssociative(['a' => 1, 'b' => 2, 'c' => "hello world"]);
-count($parameters);          // return 2
+count($parameters);          // return 3
 $parameters->isEmpty();      // returns false
-$parameters->toHttpValue();  // return ";a=1;b=2"
+$parameters->toHttpValue();  // return ';a=1;b=2;c="hello world"'
 ```
 
 #### Ordered Maps
@@ -220,10 +220,10 @@ $dictionary
     ->prepend('a', false)
     ->toHttpValue(); //returns "a=?0, b, c;foo=bar"
 
-$dictionary->has('a');   //return true
-$dictionary->has('foo'); //return false
-$dictionary->pair(1); //return ['b', Item::fromBoolean(true)]
-$dictionary->hasPair(-1);  //return true
+$dictionary->has('a');    //return true
+$dictionary->has('foo');  //return false
+$dictionary->pair(1);     //return ['b', Item::fromBoolean(true)]
+$dictionary->hasPair(-1); //return true
 
 echo $dictionary
     ->append('z', 42.0)
