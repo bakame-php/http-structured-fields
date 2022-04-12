@@ -16,6 +16,8 @@ final class ItemTest extends StructuredFieldTest
         __DIR__.'/../vendor/httpwg/structured-field-tests/number-generated.json',
         __DIR__.'/../vendor/httpwg/structured-field-tests/string.json',
         __DIR__.'/../vendor/httpwg/structured-field-tests/string-generated.json',
+        __DIR__.'/../vendor/httpwg/structured-field-tests/token.json',
+        __DIR__.'/../vendor/httpwg/structured-field-tests/token-generated.json',
         __DIR__.'/../vendor/httpwg/structured-field-tests/item.json',
     ];
 

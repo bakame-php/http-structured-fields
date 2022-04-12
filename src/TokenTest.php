@@ -4,27 +4,37 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use PHPUnit\Framework\TestCase;
 use function var_export;
 
 /**
  * @coversDefaultClass \Bakame\Http\StructuredFields\Token
  */
-final class TokenTest extends StructuredFieldTest
+final class TokenTest extends TestCase
 {
-    /** @var array|string[] */
-    protected array $paths = [
-        __DIR__.'/../vendor/httpwg/structured-field-tests/token.json',
-        __DIR__.'/../vendor/httpwg/structured-field-tests/token-generated.json',
-    ];
-
     /**
      * @test
+     * @dataProvider invalidTokenString
      */
-    public function it_will_fail_on_invalid_token_string(): void
+    public function it_will_fail_on_invalid_token_string(string $httpValue): void
     {
         $this->expectException(SyntaxError::class);
 
-        Token::fromString('a a');
+        Token::fromString($httpValue);
+    }
+
+    /**
+     * @return array<array{0:string}>
+     */
+    public function invalidTokenString(): array
+    {
+        return [
+            ['a a'],
+            ["a\u0001a"],
+            ['3a'],
+            ['a"a'],
+            ['a,a'],
+        ];
     }
 
     /**
