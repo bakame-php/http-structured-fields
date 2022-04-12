@@ -150,7 +150,9 @@ final class Item implements StructuredField
             $regexp .= '$';
         }
 
-        preg_match('/'.$regexp.'/i', $string, $found);
+        if (1 !== preg_match('/'.$regexp.'/i', $string, $found)) {
+            throw new SyntaxError("The HTTP textual representation `$string` for a Token contains invalid characters.");
+        }
 
         return [
             Token::fromString($found['token']),
@@ -193,7 +195,12 @@ final class Item implements StructuredField
      */
     private static function parseNumber(string $string): array
     {
-        if (1 !== preg_match('/^(?<number>-?\d+(?:\.\d+)?)(?:[^\d.]|$)/', $string, $found)) {
+        $regexp = '^(?<number>-?\d+(?:\.\d+)?)(?:[^\d.]|$)';
+        if (!str_contains($string, ';')) {
+            $regexp = '^(?<number>-?\d+(?:\.\d+)?)$';
+        }
+
+        if (1 !== preg_match('/'.$regexp.'/', $string, $found)) {
             throw new SyntaxError("The HTTP textual representation `$string` for a number contains invalid characters.");
         }
 

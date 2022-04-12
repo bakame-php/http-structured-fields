@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-use PHPUnit\Framework\TestCase;
 use function var_export;
 
 /**
  * @coversDefaultClass \Bakame\Http\StructuredFields\Token
  */
-final class TokenTest extends TestCase
+final class TokenTest extends StructuredFieldTest
 {
     /** @var array|string[] */
     protected array $paths = [
