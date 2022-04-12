@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-final class TestUnit
+final class TestRecord
 {
     public function __construct(
         public readonly string $name,

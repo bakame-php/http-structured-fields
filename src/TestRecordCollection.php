@@ -16,17 +16,17 @@ use function json_decode;
 use function stream_get_contents;
 
 /**
- * @implements IteratorAggregate<string, TestUnit>
+ * @implements IteratorAggregate<string, TestRecord>
  */
-final class TestSuite implements IteratorAggregate
+final class TestRecordCollection implements IteratorAggregate
 {
     private function __construct(
-        /** @var array<string, TestUnit> */
+        /** @var array<string, TestRecord> */
         private array $elements = []
     ) {
     }
 
-    public function add(TestUnit $test): void
+    public function add(TestRecord $test): void
     {
         if (isset($this->elements[$test->name])) {
             throw new RuntimeException('Already existing test name `'.$test->name.'`');
@@ -69,14 +69,14 @@ final class TestSuite implements IteratorAggregate
         $suite = new self();
         foreach ($records as $offset => $record) {
             $record['name'] = basename($path).' #'.($offset + 1).': '.$record['name'];
-            $suite->add(TestUnit::fromDecoded($record));
+            $suite->add(TestRecord::fromDecoded($record));
         }
 
         return $suite;
     }
 
     /**
-     * @return Iterator<string, TestUnit>
+     * @return Iterator<string, TestRecord>
      */
     public function getIterator(): Iterator
     {

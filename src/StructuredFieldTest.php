@@ -16,13 +16,13 @@ abstract class StructuredFieldTest extends TestCase
      * @dataProvider httpWgDataProvider
      * @test
      */
-    public function it_can_pass_http_wg_tests(TestUnit $test): void
+    public function it_can_pass_http_wg_tests(TestRecord $test): void
     {
         if ($test->mustFail) {
             $this->expectException(SyntaxError::class);
         }
 
-        $structuredField = TestFieldType::from($test->type)->newStructuredField(implode(',', $test->raw));
+        $structuredField = TestDataType::from($test->type)->newStructuredField(implode(',', $test->raw));
 
         if (!$test->mustFail) {
             self::assertSame(implode(',', $test->canonical), $structuredField->toHttpValue());
@@ -31,12 +31,12 @@ abstract class StructuredFieldTest extends TestCase
 
     /**
      * @throws JsonException
-     * @return iterable<string, array<TestUnit>>
+     * @return iterable<string, array<TestRecord>>
      */
     public function httpWgDataProvider(): iterable
     {
         foreach ($this->paths as $path) {
-            foreach (TestSuite::fromPath($path) as $test) {
+            foreach (TestRecordCollection::fromPath($path) as $test) {
                 yield $test->name => [$test];
             }
         }
