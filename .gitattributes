@@ -9,5 +9,6 @@
 /CHANGELOG.md       export-ignore
 /README.md          export-ignore
 /phpunit.xml        export-ignore
+/Makefile           export-ignore
 /**/*Test.php       export-ignore
 /**/Test**          export-ignore
