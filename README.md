@@ -8,7 +8,7 @@ Structured Field Values for PHP
 [![Total Downloads](https://img.shields.io/packagist/dt/bakame/http-structured-fields.svg?style=flat-square)](https://packagist.org/packages/bakame/http-structured-fields)
 [![Sponsor development of this project](https://img.shields.io/badge/sponsor%20this%20package-%E2%9D%A4-ff69b4.svg?style=flat-square)](https://github.com/sponsors/nyamsprod)
 
-The package uses value objects to parse, serialize and buikd [HTTP Structured Fields][1] in PHP.
+The package uses value objects to parse, serialize and build [HTTP Structured Fields][1] in PHP.
 
 HTTP Structured fields are intended for use by specifications of new HTTP fields that wish to 
 use a common syntax that is more restrictive than traditional HTTP field values or could
@@ -17,15 +17,14 @@ be used to [retrofit current headers][2] to have them compliant with the new syn
 The package can be used to:
 
 - parse and serialize HTTP Structured Fields
-- create and update HTTP Structured Fields in a predicable way;
-- infer fields and data types from HTTP Structured Fields;
+- build or update HTTP Structured Fields in a predicable way;
 
 ```php
 use Bakame\Http\StructuredFields;
 
 $field = StructuredFields\Item::from("/terms", ['rel' => "copyright", 'anchor' => '#foo']);
-echo $field->toHttpValue();           //display "/terms";rel="copyright";anchor="#foo"
-echo $field->value;                   //display "/terms"
+echo $field->toHttpValue();            //display "/terms";rel="copyright";anchor="#foo"
+echo $field->value;                    //display "/terms"
 echo $field->parameters->value('rel'); //display "copyright"
 ```
 
@@ -79,8 +78,8 @@ The RFC defines different data types to handle structured fields values.
 
 ### Items
 
-Items are the minimal building block for structured fields the following explains how to build 
-and interact with them.
+Items are the minimal building block for structured fields. The following section explains 
+how to build and interact with them.
 
 #### Bare Items
 
