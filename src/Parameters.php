@@ -404,11 +404,9 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function sanitize(): self
     {
-        $this->members = array_map(function (Item $item): Item {
+        foreach ($this->members as $item) {
             $item->parameters->clear();
-            
-            return $item;
-        }, $this->members);
+        }
 
         return $this;
     }
