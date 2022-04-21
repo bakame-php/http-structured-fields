@@ -22,4 +22,8 @@ phpcs:
 test:
 	@docker run --rm -it -v$(PWD):/app composer test
 
+# test
+sandbox:
+	@docker run --rm -it -v$(PWD):/app php:8.1-cli-alpine php ./app/test.php
+
 .PHONY: install update phpunit phpstan phpcs test

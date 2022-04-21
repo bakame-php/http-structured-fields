@@ -18,11 +18,12 @@ The package can be used to:
 
 - parse and serialize HTTP Structured Fields
 - build or update HTTP Structured Fields in a predicable way;
+- access HTTP Structured Fields data
 
 ```php
 use Bakame\Http\StructuredFields;
 
-$field = StructuredFields\Item::from("/terms", ['rel' => "copyright", 'anchor' => '#foo']);
+$field = StructuredFields\Item::from("/terms", ['rel' => 'copyright', 'anchor' => '#foo']);
 echo $field->toHttpValue();            //display "/terms";rel="copyright";anchor="#foo"
 echo $field->value;                    //display "/terms"
 echo $field->parameters->value('rel'); //display "copyright"
@@ -42,18 +43,32 @@ Using composer:
 composer require bakame/http-structured-fields
 ```
 
+or download the library and:
+
+- use any other [PSR-4][4] compatible autoloader.
+- use the bundle autoloader script as shown below:
+
+~~~php
+require 'path/to/http-structured-fields/repo/autoload.php';
+
+use Bakame\Http\StructuredFields;
+
+$list = StructuredFields\OrderedList::fromHttpValue('"/member/*/author", "/member/*/comments"');
+echo $list->get(-1)->value; //returns '/member/*/comments'
+~~~
+
 Documentation
 ---
 
-## Parsing and Serializing Structured Fields
+### Parsing and Serializing Structured Fields
 
-There are three top-level types that an HTTP field can be defined as:
+an HTTP field can be defined as:
 
-- Dictionaries,
-- Lists,
-- and Items.
+- a Dictionary,
+- a List,
+- an Item.
 
-For each of those top-level types, the package provide a dedicated value object to parse the textual 
+For each of those top-level types, the package provides a dedicated value object to parse the textual 
 representation of the field and to serialize the value object back to the textual representation. 
 
 - Parsing is done via a common named constructor `fromHttpValue` which expects the Header or Trailer string value.
@@ -72,19 +87,14 @@ $item = StructuredFields\Item::fromHttpValue('"foo";a=1;b=2"');
 echo $item->toHttpValue(); // "foo";a=1;b=2
 ```
 
-## Building Structured Fields
+### Building Structured Fields
 
-The RFC defines different data types to handle structured fields values.
+#### Items
 
-### Items
-
-Items are the minimal building block for structured fields. The following section explains 
-how to build and interact with them.
-
-#### Bare Items
+##### Bare Items
 
 Items can have different types [defined in the RFC][3]. They are translated to PHP native type 
-when possible. Two additional classes
+when possible otherwise two additional classes
 
 - `Bakame\Http\StructuredFields\Token` and
 - `Bakame\Http\StructuredFields\ByteSequence`
@@ -100,12 +110,12 @@ are used to represent non-native types as shown in the table below:
 | Token         | class `Token`        | `Item::isToken`        |
 | Byte Sequence | class `ByteSequence` | `Item::isByteSequence` |
 
-#### Extended Items
+##### Items associated with parameters
 
-Item can be associated with `Parameters` that are ordered maps of key-value pairs, where the 
-keys is a string and the value are bare items. Their public API will be cover in subsequent paragraphs.
+Item can be associated with that an ordered maps of key-value pairs called `Parameters`, where the 
+keys are strings and the value are bare items. Their public API will be cover in subsequent paragraphs.
 
-#### Usage
+##### Building and accessing Items data
 
 Instantiation via type recognition is done using the `Item::from` named constructor.
 
@@ -157,10 +167,10 @@ $item->isDecimal(); //return false
 $item->isInteger(); //return true
 ```
 
-### Containers
+#### Containers
 
-Apart from the `Item`, the RFC defines different items containers with different requirements. The
-package exposes those containers via the following value objects:
+Apart from the `Item` structure, the package exposes different containers
+with different requirements via the following value objects:
 
 - `Dictionary`,
 - `Parameters`,
@@ -170,25 +180,37 @@ package exposes those containers via the following value objects:
 At any given time it is possible with each of these objects to:
 
 - iterate over its members using the `IteratorAggregate` interface;
+- know the number of members it contains via the `Countable` interface;
 - tell whether the container is empty via an `isEmpty` method;
-- know the number of members contained in the container via the `Countable` interface;
-- clear the container using the `clear` method;
+- clear its content using the `clear` method;
+
+**Of note:** 
+
+- All setter methods are chainable 
+- For setter methods, Item types are inferred using `Item::from` if a `Item` object is not submitted.
+- Because all containers can be access by their indexes, some changes may re-index them as to not expose missing indexes.
 
 ```php
 use Bakame\Http\StructuredFields;
 
 $parameters = StructuredFields\Parameters::fromAssociative(['a' => 1, 'b' => 2, 'c' => "hello world"]);
-count($parameters);          // return 3
-$parameters->isEmpty();      // returns false
-$parameters->toHttpValue();  // return ';a=1;b=2;c="hello world"'
+count($parameters); // returns 3
+$parameters->isEmpty(); // returns false
+$parameters->toHttpValue(); // returns ';a=1;b=2;c="hello world"'
+$parameters->clear()->isEmpty(); // returns true
 ```
 
-#### Ordered Maps
+##### Ordered Maps
 
 The `Parameters` and the `Dictionary` classes allow associating a string 
-key to its members as such they expose 
+key to its members 
 
-the following getter methods:
+- `Parameters` can only contains `Item` instances 
+- `Dictionary` instance can contain `Item` and/or `InnerList` instances.
+
+Both classes exposes the following:
+
+getter methods:
 
 - `fromAssociative` a named constructor to instantiate the container with an associative array;
 - `fromPairs` a named constructor to instantiate the container with a list of key-value pairs;
@@ -199,7 +221,7 @@ the following getter methods:
 - `get` returns the element associated to a specific `key`;
 - `pair` returns the key-pair association present at a specific `index` (negative indexes are supported);
 
-the following setter methods:
+setter methods:
 
 - `set` add an element at the end of the container if the key is new otherwise only the value is updated;
 - `append` always add an element at the end of the container, if already present the previous value is removed;
@@ -207,8 +229,6 @@ the following setter methods:
 - `delete` to remove elements based on their associated keys;
 - `mergeAssociative` merge multiple instances of iterable structure as associative constructs;
 - `mergePairs` merge multiple instances of iterable structure as pairs constructs;
-
-**All setter methods are chainable.**
 
 ```php
 use Bakame\Http\StructuredFields;
@@ -229,11 +249,6 @@ echo $dictionary
     ->delete('b', 'c')
     ->toHttpValue(); //returns "a=?0, z=42.0"
 ```
-
-**Item types are inferred using `Item::from` if a `Item` object is not submitted.**
-
-- `Parameters` can only contains `Item` instances 
-- `Dictionary` instance can contain `Item` and `InnerList` instances.
 
 The `Parameters` instance exposes the following additional methods:
 
@@ -259,10 +274,17 @@ $parameters->toHttpValue(); // returns ;b="false";foo="foo"
 $parameters->value('unknown'); // returns null
 ```
 
-#### Lists
+##### Lists
 
-The `OrderedList` and the `InnerList` classes are list of members 
-that act as containers and also expose the following 
+The `OrderedList` and the `InnerList` classes are list of members that act as containers 
+
+The main distinction between `InnerList` and `OrderedList` are:
+
+- `OrderedList` members must be `InnerList` or `Items`;
+- `InnerList` members must be `Items`;
+- `InnerList` can have a `Parameters` instance attached to it;
+
+Both classes exposes the following:
 
 getter methods:
 
@@ -271,19 +293,13 @@ getter methods:
 - `get` to access an element at a given index (negative indexes are supported)
 - `has` tell whether an element is attached to the container using its `index`;
 
-setter methods (**All setter methods are chainable.**)
+setter methods
 
 - `push` to add elements at the end of the list;
 - `unshift` to add elements at the beginning of the list;
 - `insert` to add elements at a given position in the list; 
 - `replace` to replace an element at a given position in the list;
 - `remove` to remove elements based on their position;
-
-to enable manipulation their content.
-
-**Item types are inferred using `Item::from` if a `Item` object is not submitted.**
-
-**EVERY CHANGE IN THE LIST WILL RE-INDEX THE LIST AS TO NOT EXPOSE MISSING INDEXES**
 
 ```php
 use Bakame\Http\StructuredFields;
@@ -302,18 +318,13 @@ $orderedList = StructuredFields\OrderedList::from(
 echo $orderedList->toHttpValue(); //returns '"42";foo="bar", (42.0 forty-two);a'
 ```
 
-The distinction between `InnerList` and `OrderedList` is well explained in the 
-RFC but the main ones are:
-
-- `InnerList` members must be `Items`;
-- `OrderedList` members must be `InnerList` or `Items`;
-- `InnerList` has a `Parameters` instance attached to it that you can access via its readonly property `parameters`, not `OrderedList`;
+A `Parameters` instance can be associated to an `InnerList` using the same API described for the `Item` value object.
 
 ```php
 use Bakame\Http\StructuredFields;
 
 $innerList = StructuredFields\InnerList::fromList([42, 42.0, "42"], ["a" => true]);
-$innerList->parameters;             //returns a StructuredFields\Parameters object
+$innerList->parameters; //returns a StructuredFields\Parameters object
 $innerList->parameters->value('a'); // returns true
 ```
 
@@ -352,7 +363,7 @@ Credits
 Attribution
 -------
 
-This package is heavily inspired by previous work done by [Gapple](https://twitter.com/gappleca) on [Structured Field Values for PHP](https://github.com/gapple/structured-fields/).
+The package internal parser is heavily inspired by previous work done by [Gapple](https://twitter.com/gappleca) on [Structured Field Values for PHP](https://github.com/gapple/structured-fields/).
 
 License
 -------
@@ -362,3 +373,4 @@ The MIT License (MIT). Please see [License File](LICENSE) for more information.
 [1]: https://www.rfc-editor.org/rfc/rfc8941.html
 [2]: https://www.ietf.org/id/draft-ietf-httpbis-retrofit-00.html
 [3]: https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
+[4]: https://www.php-fig.org/psr/psr-4/
