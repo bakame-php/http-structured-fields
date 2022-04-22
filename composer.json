@@ -30,11 +30,11 @@
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^v3.8.0",
         "httpwg/structured-field-tests": "*@dev",
-        "phpunit/phpunit": "^9.5.20",
         "phpstan/phpstan": "^1.5.4",
         "phpstan/phpstan-strict-rules": "^1.1",
         "phpstan/phpstan-phpunit": "^1.0",
-        "phpstan/phpstan-deprecation-rules": "^1.0"
+        "phpstan/phpstan-deprecation-rules": "^1.0",
+        "phpunit/phpunit": "^9.5.20"
     },
     "autoload": {
         "psr-4": {
@@ -79,7 +79,7 @@
     ],
     "extra": {
         "branch-alias": {
-            "dev-develop": "1.0.x-dev"
+            "dev-develop": "1.x-dev"
         }
     }
 }

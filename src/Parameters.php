@@ -136,20 +136,13 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function toHttpValue(): string
     {
-        $returnValue = [];
+        $formatter = fn (Item $member, string $key): string => match (true) {
+            !$member->parameters->isEmpty() => throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.'),
+            true === $member->value => ';'.$key,
+            default => ';'.$key.'='.$member->toHttpValue(),
+        };
 
-        foreach ($this->members as $key => $member) {
-            $value = ';'.$key;
-            $member = self::filterMember($member);
-
-            if ($member->value !== true) {
-                $value .= '='.$member->toHttpValue();
-            }
-
-            $returnValue[] = $value;
-        }
-
-        return implode('', $returnValue);
+        return implode('', array_map($formatter, $this->members, array_keys($this->members)));
     }
 
     public function count(): int

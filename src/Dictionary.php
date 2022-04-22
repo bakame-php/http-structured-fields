@@ -89,15 +89,12 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
 
     public function toHttpValue(): string
     {
-        $returnValue = [];
-        foreach ($this->members as $key => $member) {
-            $returnValue[] = match (true) {
-                $member instanceof Item && true === $member->value => $key.$member->parameters->toHttpValue(),
-                default => $key.'='.$member->toHttpValue(),
-            };
-        }
+        $formatter = fn (Item|InnerList $member, string $key): string => match (true) {
+            $member instanceof Item && true === $member->value => $key.$member->parameters->toHttpValue(),
+            default => $key.'='.$member->toHttpValue(),
+        };
 
-        return implode(', ', $returnValue);
+        return implode(', ', array_map($formatter, $this->members, array_keys($this->members)));
     }
 
     public function count(): int
