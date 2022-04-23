@@ -37,7 +37,7 @@ System Requirements
 Installation
 ------------
 
-Using composer:
+Use composer:
 
 ```
 composer require bakame/http-structured-fields
@@ -60,13 +60,13 @@ echo $list->get(-1)->value; //returns '/member/*/comments'
 Parsing and Serializing Structured Fields
 ------------
 
-an HTTP field can be defined as:
+an HTTP field value can be:
 
 - a Dictionary,
 - a List,
 - an Item.
 
-For each of those top-level types, the package provides a dedicated value object to parse the textual 
+For each of these top-level types, the package provides a dedicated value object to parse the textual 
 representation of the field and to serialize the value object back to the textual representation. 
 
 - Parsing is done via a common named constructor `fromHttpValue` which expects the Header or Trailer string value.
@@ -90,17 +90,18 @@ Building Structured Fields
 
 ### Items
 
-#### Bare Items
+#### Definitions
 
-Items can have different types [defined in the RFC][3]. They are translated to PHP native type 
-when possible otherwise two additional classes
+Items can have different types [defined in the RFC][3]. 
 
-- `Bakame\Http\StructuredFields\Token` and
-- `Bakame\Http\StructuredFields\ByteSequence`
+They are translated to PHP using:
 
-are used to represent non-native types as shown in the table below: 
+- native type where possible 
+- specific classes defined in the package namespace to represent non-native type
 
-| HTTP DataType | Returned value       | validation method      |
+The table below summarize the item value type.
+
+| HTTP DataType | Package Data Type    | validation method      |
 |---------------|----------------------|------------------------|
 | Integer       | `int`                | `Item::isInteger`      |
 | Decimal       | `float`              | `Item::isDecimal`      |
@@ -109,12 +110,29 @@ are used to represent non-native types as shown in the table below:
 | Token         | class `Token`        | `Item::isToken`        |
 | Byte Sequence | class `ByteSequence` | `Item::isByteSequence` |
 
-#### Items with parameters
+Items can be associated with an ordered maps of key-value pairs also known as parameters, where the 
+keys are strings and the value are bare items. Their public API is covered in subsequent paragraphs.
 
-Item can be associated with that an ordered maps of key-value pairs called `Parameters`, where the 
-keys are strings and the value are bare items. Their public API will be cover in subsequent paragraphs.
+**An item without any parameter associated to it is said to be a bare item.**
 
-#### Usage
+#### Token Data type
+
+The Token data type is a special string as defined in the RFC. To distinguish it from a normal string, the `Bakame\Http\StructuredFields\Token` class is used.
+
+To instantiate the class you are required to use the `Token::fromString` named constructor.
+The class also exposes the complementat=ry public methods `Token::toString` as well as the `Token::toHttpValue` to enable its textual representation.
+
+
+#### Byte Sequence Data type
+
+The Byte Sequence data type is a special string as defined in the RFC to represent base64 encoded data. To distinguish it from a normal string, 
+the `Bakame\Http\StructuredFields\ByteSequence` class is used.
+
+To instantiate the class you are required to use the `ByteSequence::fromDecoded` or `ByteSequence::fromEncoded` named constructors.
+The class also exposes the complementat=ry public methods `ByteSequence::decoded`, `ByteSequence::encoded` as well as 
+the `ByteSequence::toHttpValue` to enable its textual representation.
+
+#### Usages
 
 Instantiation via type recognition is done using the `Item::from` named constructor.
 
@@ -124,27 +142,33 @@ Instantiation via type recognition is done using the `Item::from` named construc
 ```php
 use Bakame\Http\StructuredFields;
 
-$item = StructuredFields\Item::from("hello world", ["a" => 1]);
+$item = StructuredFields\Item::from("hello world", ["a" => true]);
 $item->value; //returns "hello world"
 $item->isString(); //return true
 $item->isToken();  //return false
-$item->parameters->value("a"); //returns 1
+$item->parameters->value("a"); //returns true
 ```
 
 Conversely, the `Item::fromPair` is an alternative to the `Item::from`
 which expects a tuple composed by an array as a list where:
 
 - The first member on index `0` represents one of the six (6) item type value;
-- The second optional member, on index `1`, MUST be an iterable construct where its index represents the parameter key and its value an item or a item type value;
+- The second optional member, on index `1`, MUST be an iterable construct containing tuples of key-value pairs;
 
 ```php
 use Bakame\Http\StructuredFields;
 
-$item = StructuredFields\Item::fromPair(["hello world", ["a" => 1]]);
+$item = StructuredFields\Item::fromPair([
+    "hello world", 
+    [
+        ["a", StructuredFields\ByteSequence::fromDecoded("Hello World")]
+    ]
+]);
 $item->value; //returns "hello world"
 $item->isString(); //return true
-$item->isToken();  //return false
-$item->parameters->value("a"); //returns 1
+$item->parameters->get("a")->isByteSequence(); //returns true
+$item->parameters->value("a")->decoded(); //returns 'Hello World'
+echo $item->toHttpValue(); //returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
 
 Once instantiated, accessing `Item` properties is done via two (2) readonly properties:
@@ -168,8 +192,7 @@ $item->isInteger(); //return true
 
 ### Containers
 
-Apart from the `Item` structure, the package exposes different containers
-with different requirements via the following value objects:
+The package exposes different ordered maps and lists with different requirements via the following value objects:
 
 - `Dictionary`,
 - `Parameters`,
@@ -204,14 +227,14 @@ $parameters->clear()->isEmpty(); // returns true
 The `Parameters` and the `Dictionary` classes allow associating a string 
 key to its members 
 
-- `Parameters` can only contains `Item` instances 
+- `Parameters` can only contain `Item` instances 
 - `Dictionary` instance can contain `Item` and/or `InnerList` instances.
 
 Both classes exposes the following:
 
 getter methods:
 
-- `fromAssociative` a named constructor to instantiate the container with an associative array;
+- `fromAssociative` a named constructor to instantiate the container with an iterable construct of associative value;
 - `fromPairs` a named constructor to instantiate the container with a list of key-value pairs;
 - `toPairs` returns an iterator to iterate over the container pairs;
 - `keys` to list all existing keys of the ordered maps as an array list;
@@ -266,7 +289,7 @@ $parameters->get('b'); // returns Item::from(true)
 iterator_to_array($parameters->toPairs(), true); // returns [['b', Item::from(true)], ['foo', Item::from('bar')]]
 iterator_to_array($parameters, true); // returns ['b' => Item::from(true), 'foo' => Item::from('bar')]
 $parameters->mergeAssociative(
-    StructuredFields\Parameters::fromAssociative(['b' => true, 'foo' => 'foo']),
+    StructuredFields\Parameters::fromPairs([['b', true], ['foo', 'foo']]),
     ['b' => 'false']
 );
 $parameters->toHttpValue(); // returns ;b="false";foo="foo"
@@ -277,7 +300,7 @@ $parameters->value('unknown'); // returns null
 
 The `OrderedList` and the `InnerList` classes are list of members that act as containers 
 
-The main distinction between `InnerList` and `OrderedList` are:
+The main distinction between `OrderedList` and `InnerList` are:
 
 - `OrderedList` members must be `InnerList` or `Items`;
 - `InnerList` members must be `Items`;
@@ -317,7 +340,7 @@ $orderedList = StructuredFields\OrderedList::from(
 echo $orderedList->toHttpValue(); //returns '"42";foo="bar", (42.0 forty-two);a'
 ```
 
-A `Parameters` instance can be associated to an `InnerList` using the same API described for the `Item` value object.
+A `Parameters` instance can be associated to an `InnerList` using the same API as for the `Item` value object.
 
 ```php
 use Bakame\Http\StructuredFields;

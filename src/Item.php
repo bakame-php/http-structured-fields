@@ -38,7 +38,7 @@ final class Item implements StructuredField
     /**
      * @param array{
      *     0:Token|ByteSequence|int|float|string|bool,
-     *     1?:iterable<string,Item|ByteSequence|Token|bool|int|float|string>
+     *     1?:Parameters|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}>
      * } $pair
      */
     public static function fromPair(array $pair): self
@@ -52,7 +52,7 @@ final class Item implements StructuredField
             throw new SyntaxError('The pair first value should be the item value and the optional second value the item parameters.');
         }
 
-        return self::from(...$pair);
+        return self::from($pair[0], Parameters::fromPairs($pair[1]));
     }
 
     /**

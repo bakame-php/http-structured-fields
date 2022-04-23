@@ -262,7 +262,7 @@ final class ItemTest extends StructuredFieldTest
     /**
      * @test
      */
-    public function it_can_create_an_item_from_a_array_pair(): void
+    public function it_can_create_an_item_from_a_array_of_pairs(): void
     {
         $instance1 = Item::from(Token::fromString('babayaga'));
         $instance2 = Item::fromPair([Token::fromString('babayaga')]);
@@ -277,7 +277,7 @@ final class ItemTest extends StructuredFieldTest
      * @dataProvider invalidPairProvider
      * @param array<mixed> $pair
      */
-    public function it_fails_to_create_an_item_from_a_array_pair(array $pair): void
+    public function it_fails_to_create_an_item_from_an_array_of_pairs(array $pair): void
     {
         $this->expectException(SyntaxError::class);
 
@@ -292,5 +292,16 @@ final class ItemTest extends StructuredFieldTest
         yield 'empty pair' => ['pair' => []];
         yield 'empty extra filled pair' => ['pair' => [1, [2], 3]];
         yield 'associative array' => ['pair' => ['value' => 'bar', 'parameters' => ['foo' => 'bar']]];
+    }
+
+    /**
+     * @test
+     */
+    public function it_can_create_an_item_from_a_array_of_pairs_and_parameters(): void
+    {
+        $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);
+        $instance2 = Item::fromPair([Token::fromString('babayaga'), [['a', true]]]);
+
+        self::assertEquals($instance2, $instance1);
     }
 }
