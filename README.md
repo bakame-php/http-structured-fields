@@ -57,10 +57,8 @@ $list = StructuredFields\OrderedList::fromHttpValue('"/member/*/author", "/membe
 echo $list->get(-1)->value; //returns '/member/*/comments'
 ~~~
 
-Documentation
----
-
-### Parsing and Serializing Structured Fields
+Parsing and Serializing Structured Fields
+------------
 
 an HTTP field can be defined as:
 
@@ -87,11 +85,12 @@ $item = StructuredFields\Item::fromHttpValue('"foo";a=1;b=2"');
 echo $item->toHttpValue(); // "foo";a=1;b=2
 ```
 
-### Building Structured Fields
+Building Structured Fields
+------------
 
-#### Items
+### Items
 
-##### Bare Items
+#### Bare Items
 
 Items can have different types [defined in the RFC][3]. They are translated to PHP native type 
 when possible otherwise two additional classes
@@ -110,12 +109,12 @@ are used to represent non-native types as shown in the table below:
 | Token         | class `Token`        | `Item::isToken`        |
 | Byte Sequence | class `ByteSequence` | `Item::isByteSequence` |
 
-##### Items associated with parameters
+#### Items with parameters
 
 Item can be associated with that an ordered maps of key-value pairs called `Parameters`, where the 
 keys are strings and the value are bare items. Their public API will be cover in subsequent paragraphs.
 
-##### Building and accessing Items data
+#### Usage
 
 Instantiation via type recognition is done using the `Item::from` named constructor.
 
@@ -167,7 +166,7 @@ $item->isDecimal(); //return false
 $item->isInteger(); //return true
 ```
 
-#### Containers
+### Containers
 
 Apart from the `Item` structure, the package exposes different containers
 with different requirements via the following value objects:
@@ -200,7 +199,7 @@ $parameters->toHttpValue(); // returns ';a=1;b=2;c="hello world"'
 $parameters->clear()->isEmpty(); // returns true
 ```
 
-##### Ordered Maps
+#### Ordered Maps
 
 The `Parameters` and the `Dictionary` classes allow associating a string 
 key to its members 
@@ -274,7 +273,7 @@ $parameters->toHttpValue(); // returns ;b="false";foo="foo"
 $parameters->value('unknown'); // returns null
 ```
 
-##### Lists
+#### Lists
 
 The `OrderedList` and the `InnerList` classes are list of members that act as containers 
 
