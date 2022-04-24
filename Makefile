@@ -22,8 +22,12 @@ phpcs:
 test:
 	@docker run --rm -it -v$(PWD):/app composer test
 
-# test
+# downgrade
+downgrade:
+	@docker run --rm -it -v$(PWD):/app --workdir=/app php:8.1-cli-alpine vendor/bin/rector process src
+
+# sandbox
 sandbox:
 	@docker run --rm -it -v$(PWD):/app php:8.1-cli-alpine php ./app/test.php
 
-.PHONY: install update phpunit phpstan phpcs test
+.PHONY: install update phpunit phpstan phpcs test sandbox downgrade

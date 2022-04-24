@@ -34,7 +34,8 @@
         "phpstan/phpstan-strict-rules": "^1.1",
         "phpstan/phpstan-phpunit": "^1.0",
         "phpstan/phpstan-deprecation-rules": "^1.0",
-        "phpunit/phpunit": "^9.5.20"
+        "phpunit/phpunit": "^9.5.20",
+        "rector/rector": "~0.12.21"
     },
     "autoload": {
         "psr-4": {
