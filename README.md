@@ -18,7 +18,6 @@ The package can be used to:
 
 - parse and serialize HTTP Structured Fields
 - build or update HTTP Structured Fields in a predicable way;
-- access HTTP Structured Fields data
 
 ```php
 use Bakame\Http\StructuredFields;
