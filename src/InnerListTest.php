@@ -173,4 +173,45 @@ final class InnerListTest extends TestCase
             InnerList::fromHttpValue('        ("hello)world" 42 42.0;john=doe);foo="bar("')
         );
     }
+
+    /**
+     * @test
+     */
+    public function it_implements_the_array_access_interface(): void
+    {
+        $sequence = InnerList::fromList();
+        $sequence[] = 42;
+
+        self::assertTrue(isset($sequence[0]));
+        self::assertEquals(42, $sequence[0]->value);
+
+        $sequence[0] = false;
+
+        self::assertNotEquals(42, $sequence[0]->value);
+        unset($sequence[0]);
+
+        self::assertCount(0, $sequence);
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_insert_unknown_index_via_the_array_access_interface(): void
+    {
+        $this->expectException(StructuredFieldError::class);
+
+        $sequence = InnerList::fromList();
+        $sequence[0] = Item::from(42.0);
+    }
+
+    /**
+     * @test
+     */
+    public function testArrayAccessThrowsInvalidIndex2(): void
+    {
+        $sequence = InnerList::from();
+        unset($sequence[0]);
+
+        self::assertCount(0, $sequence);
+    }
 }

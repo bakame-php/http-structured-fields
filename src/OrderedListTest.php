@@ -144,4 +144,46 @@ final class OrderedListTest extends StructuredFieldTest
 
         self::assertSame($res->toHttpValue(), $list->toHttpValue());
     }
+
+    /**
+     * @test
+     */
+    public function it_implements_the_array_access_interface(): void
+    {
+        $sequence = OrderedList::fromList();
+        $sequence[] = InnerList::from(42, 69);
+
+        self::assertTrue(isset($sequence[0]));
+        self::assertInstanceOf(InnerList::class, $sequence[0]);
+        self::assertEquals(42, $sequence[0]->get(0)->value);
+
+        $sequence[0] = false;
+
+        self::assertEquals(Item::from(false), $sequence[0]);
+        unset($sequence[0]);
+
+        self::assertFalse(isset($sequence[0]));
+    }
+
+    /**
+     * @test
+     */
+    public function it_fails_to_insert_unknown_index_via_the_array_access_interface(): void
+    {
+        $this->expectException(StructuredFieldError::class);
+
+        $sequence = OrderedList::fromList();
+        $sequence[0] = Item::from(42.0);
+    }
+
+    /**
+     * @test
+     */
+    public function testArrayAccessThrowsInvalidIndex2(): void
+    {
+        $sequence = OrderedList::from();
+        unset($sequence[0]);
+
+        self::assertCount(0, $sequence);
+    }
 }

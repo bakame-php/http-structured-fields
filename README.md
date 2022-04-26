@@ -367,6 +367,32 @@ setter methods
 - `replace` to replace an element at a given position in the list;
 - `remove` to remove elements based on their position;
 
+Additionally, both classes implements PHP `ArrayAccess` interface as syntactic sugar methods
+around the `get`, `has`, `push`, `remove` and `replace` methods. 
+
+```php
+use Bakame\Http\StructuredFields;
+
+$innerList = StructuredFields\InnerList::fromList([42, 42.0, "42"], ["a" => true]);
+isset($innerList[2]); //return true
+isset($innerList[42]); //return false
+$innerList[] = StructuredFields\Token::fromString('forty-two');
+unset($innerList[0]);
+unset($innerList[1]); //<-- we use `1` instead of 2 because of re-indexation !!!
+echo $innerList->toHttpValue(); //returns '(42.0 forty-two);a'
+```
+
+**if you try to set a key which does not exist an exception will be thrown as both 
+classes must remain valid lists with no empty keys.
+Be aware that re-indexation behaviour may affect your logic**
+
+```php
+use Bakame\Http\StructuredFields;
+
+$innerList = StructuredFields\OrderedList::fromList([42, 42.0, "42"], ["a" => true]);
+$innerList[2] = StructuredFields\Token::fromString('forty-two'); // will throw
+```
+
 A `Parameters` instance can be associated to an `InnerList` using the same API as for the `Item` value object.
 
 ```php

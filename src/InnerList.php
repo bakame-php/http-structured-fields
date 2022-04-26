@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use ArrayAccess;
 use Countable;
 use Iterator;
 use IteratorAggregate;
@@ -14,9 +15,10 @@ use function array_values;
 use function count;
 
 /**
- * @implements IteratorAggregate<array-key, Item>
+ * @implements IteratorAggregate<int, Item>
+ * @implements ArrayAccess<int, Item>
  */
-final class InnerList implements Countable, IteratorAggregate, StructuredField
+final class InnerList implements ArrayAccess, Countable, IteratorAggregate, StructuredField
 {
     /** @var array<Item> */
     private array $members;
@@ -200,5 +202,57 @@ final class InnerList implements Countable, IteratorAggregate, StructuredField
         $this->members = [];
 
         return $this;
+    }
+
+    /**
+     * @param int $offset the integer index of the member to validate.
+     *
+     * @see ::has
+     */
+    public function offsetExists($offset): bool
+    {
+        return $this->has($offset);
+    }
+
+    /**
+     *
+     * @param int $offset the integer index of the member to retrieve.
+     *
+     * @see ::get
+     */
+    public function offsetGet($offset): Item
+    {
+        return $this->get($offset);
+    }
+
+    /**
+     *
+     * @param int $offset the integer index of the member to remove
+     *
+     * @see ::remove
+     *
+     */
+    public function offsetUnset($offset): void
+    {
+        $this->remove($offset);
+    }
+
+    /**
+     *
+     * @param int|null                                      $offset the integer index of member to add or update
+     * @param Item|ByteSequence|Token|bool|int|float|string $value  the member to add
+     *
+     * @see ::push
+     * @see ::insert
+     */
+    public function offsetSet($offset, $value): void
+    {
+        if (null !== $offset) {
+            $this->replace($offset, $value);
+
+            return;
+        }
+
+        $this->push($value);
     }
 }
