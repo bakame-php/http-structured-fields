@@ -243,7 +243,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
      * @param Item|ByteSequence|Token|bool|int|float|string $value  the member to add
      *
      * @see ::push
-     * @see ::insert
+     * @see ::replace
      */
     public function offsetSet($offset, $value): void
     {

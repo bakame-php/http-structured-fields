@@ -225,7 +225,6 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
     }
 
     /**
-     *
      * @param int $offset the integer index of the member to retrieve.
      *
      * @see ::get
@@ -236,7 +235,6 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
     }
 
     /**
-     *
      * @param int $offset the integer index of the member to remove
      *
      * @see ::remove
@@ -248,12 +246,11 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
     }
 
     /**
-     *
      * @param int|null                                                $offset the integer index of member to add or update
      * @param InnerList|Item|ByteSequence|Token|bool|int|float|string $value  the member to add
      *
      * @see ::push
-     * @see ::insert
+     * @see ::replace
      */
     public function offsetSet($offset, $value): void
     {
