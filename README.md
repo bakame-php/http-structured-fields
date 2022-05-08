@@ -91,9 +91,7 @@ Building Structured Fields
 
 #### Definitions
 
-Items can have different types [defined in the RFC][3]. 
-
-They are translated to PHP using:
+Items can have different types that are translated to PHP using:
 
 - native type where possible 
 - specific classes defined in the package namespace to represent non-native type
@@ -109,28 +107,24 @@ The table below summarize the item value type.
 | Token         | class `Token`        | `Item::isToken`        |
 | Byte Sequence | class `ByteSequence` | `Item::isByteSequence` |
 
-Items can be associated with an ordered maps of key-value pairs also known as parameters, where the 
-keys are strings and the value are bare items. Their public API is covered in subsequent paragraphs.
-
-**An item without any parameter associated to it is said to be a bare item.**
-
-#### Token type
+##### Token
 
 ```php
 use Bakame\Http\StructuredFields;
 
-$token = StructuredFields\Token::fromString('bar')]));
+$token = StructuredFields\Token::fromString('bar');
 
 echo $token->toString();         //displays 'bar'
 echo $dictionary->toHttpValue(); //displays 'bar'
 ```
 
-The Token data type is a special string as defined in the RFC. To distinguish it from a normal string, the `Bakame\Http\StructuredFields\Token` class is used.
+The Token data type is a special string as defined in the RFC. To distinguish it from a normal string, 
+the `Bakame\Http\StructuredFields\Token` class is used.
 
 To instantiate the class you are required to use the `Token::fromString` named constructor.
 The class also exposes the complementary public methods `Token::toString` as well as the `Token::toHttpValue` to enable its textual representation.
 
-#### Byte Sequence type
+##### Byte Sequence
 
 ```php
 use Bakame\Http\StructuredFields;
@@ -144,14 +138,19 @@ echo $sequenceFromDecoded->toHttpValue(); //displays ':SGVsbG8gV29ybGQ=:'
 echo $sequenceFromEncoded->toHttpValue(); //displays ':SGVsbG8gV29ybGQ=:'
 ```
 
-The Byte Sequence data type is a special string as defined in the RFC to represent base64 encoded data. To distinguish it from a normal string, 
-the `Bakame\Http\StructuredFields\ByteSequence` class is used.
+The Byte Sequence data type is a special string as defined in the RFC to represent base64 encoded data.
+To distinguish it from a normal string, the `Bakame\Http\StructuredFields\ByteSequence` class is used.
 
-To instantiate the class you are required to use the `ByteSequence::fromDecoded` or `ByteSequence::fromEncoded` named constructors.
-The class also exposes the complementary public methods `ByteSequence::decoded`, `ByteSequence::encoded` as well as 
-the `ByteSequence::toHttpValue` to enable its textual representation.
+To instantiate the class you are required to use the `ByteSequence::fromDecoded` or `ByteSequence::fromEncoded` 
+named constructors. The class also exposes the complementary public methods `ByteSequence::decoded`, 
+`ByteSequence::encoded` as well as the `ByteSequence::toHttpValue` to enable its textual representation.
 
 #### Usages
+
+Items can be associated with an ordered maps of key-value pairs also known as parameters, where the
+keys are strings and the value are bare items. Their public API is covered in subsequent paragraphs.
+
+**An item without any parameter associated to it is said to be a bare item.**
 
 ```php
 use Bakame\Http\StructuredFields;
@@ -166,7 +165,8 @@ $item->parameters->value("a"); //returns true
 Instantiation via type recognition is done using the `Item::from` named constructor.
 
 - The first argument represents one of the six (6) item type value;
-- The second argument, which is optional, MUST be an iterable construct where its index represents the parameter key and its value an item or a item type value;
+- The second argument, which is optional, MUST be an iterable construct  
+  where its index represents the parameter key and its value an item or an item type value;
 
 ```php
 use Bakame\Http\StructuredFields;
@@ -184,11 +184,12 @@ $item->parameters->value("a")->decoded(); //returns 'Hello World'
 echo $item->toHttpValue(); //returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
 
-Conversely, the `Item::fromPair` is an alternative to the `Item::from`
-which expects a tuple composed by an array as a list where:
+`Item::fromPair` is an alternative to the `Item::from` named constructor, it expects 
+a tuple composed by an array as a list where:
 
 - The first member on index `0` represents one of the six (6) item type value;
-- The second optional member, on index `1`, MUST be an iterable construct containing tuples of key-value pairs;
+- The second optional member, on index `1`, **MUST** be an iterable construct containing 
+  tuples of key-value pairs;
 
 Once instantiated, accessing `Item` properties is done via two (2) readonly properties:
 
@@ -238,8 +239,7 @@ At any given time it is possible with each of these objects to:
 **Of note:** 
 
 - All setter methods are chainable 
-- For setter methods, Item types are inferred using `Item::from` if a `Item` object is not submitted.
-- Because all containers can be access by their indexes, some changes may re-index them as to not expose missing indexes.
+- For setter methods, Item types are inferred using `Item::from` if a `Item` object is not provided.
 
 #### Ordered Maps
 
@@ -271,7 +271,7 @@ key to its members
 - `Parameters` can only contain `Item` instances 
 - `Dictionary` instance can contain `Item` and/or `InnerList` instances.
 
-Both classes exposes the following:
+Both classes expose the following:
 
 named constructors:
 
@@ -283,9 +283,9 @@ getter methods:
 - `toPairs` returns an iterator to iterate over the container pairs;
 - `keys` to list all existing keys of the ordered maps as an array list;
 - `has` tell whether a specific element is associated to a given `key`;
-- `hasPair` tell whether a `key-value` association exists at a given `index` (negative indexes are supported);
+- `hasPair` tell whether a `key-value` association exists at a given `index`;
 - `get` returns the element associated to a specific `key`;
-- `pair` returns the key-pair association present at a specific `index` (negative indexes are supported);
+- `pair` returns the key-pair association present at a specific `index`;
 
 setter methods:
 
@@ -298,9 +298,9 @@ setter methods:
 
 The `Parameters` instance exposes the following additional methods:
 
-- `Parameters::values()` to list all existing Bare Items value as an array list;
-- `Parameters::value(string $key)` to return the value of the Bare Item associated to the `$key` or `null` if the key is unknown or invalid;
-- `Parameters::sanitize()` to return an instance where all Items present in the container are Bare Items. Any non Bared Item instance will see its parameters getting clear up.
+- `Parameters::values` to list all existing Bare Items value as an array list;
+- `Parameters::value` to return the value of the Bare Item associated to the `$key` or `null` if the key is unknown or invalid;
+- `Parameters::sanitize` to return an instance where all Items present in the container are Bare Items. Any non Bared Item instance will see its parameters getting clear up.
 
 ```php
 use Bakame\Http\StructuredFields;
@@ -319,6 +319,8 @@ $parameters->mergeAssociative(
 $parameters->toHttpValue(); // returns ;b="false";foo="foo"
 $parameters->value('unknown'); // returns null
 ```
+
+**Both classes support negative indexes.**
 
 #### Lists
 
@@ -347,7 +349,7 @@ The main distinction between `OrderedList` and `InnerList` are:
 - `InnerList` members must be `Items`;
 - `InnerList` can have a `Parameters` instance attached to it;
 
-Both classes exposes the following:
+Both classes expose the following:
 
 named constructors:
 
@@ -366,6 +368,7 @@ setter methods
 - `insert` to add elements at a given position in the list; 
 - `replace` to replace an element at a given position in the list;
 - `remove` to remove elements based on their position;
+- `sanitize` force re-indexation of the list if needed to remove key "gaps".
 
 Additionally, both classes implements PHP `ArrayAccess` interface as syntactic sugar methods
 around the `get`, `has`, `push`, `remove` and `replace` methods. 
@@ -377,14 +380,14 @@ $innerList = StructuredFields\InnerList::fromList([42, 42.0, "42"], ["a" => true
 isset($innerList[2]); //return true
 isset($innerList[42]); //return false
 $innerList[] = StructuredFields\Token::fromString('forty-two');
-unset($innerList[0]);
-unset($innerList[1]); //<-- we use `1` instead of 2 because of re-indexation !!!
+unset($innerList[0], $innerList[2]);
 echo $innerList->toHttpValue(); //returns '(42.0 forty-two);a'
 ```
 
-**if you try to set a key which does not exist an exception will be thrown as both 
-classes must remain valid lists with no empty keys.
-Be aware that re-indexation behaviour may affect your logic**
+**if you try to set a key which does not exist an exception will be 
+thrown as both classes must remain valid lists with no empty 
+keys. Be aware that re-indexation behaviour may affect
+your logic**
 
 ```php
 use Bakame\Http\StructuredFields;

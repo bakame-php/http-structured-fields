@@ -8,6 +8,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - `Item::fromPair` named constructor to create a new instance from a pair expressed as an array list with two values.
 - `Parameters::sanitize` ensure the container always contains only Bare Items.
+- `InnerList::sanitize` ensure the list is without gaps.
+- `OrderedLost::sanitize` ensure the list is without gaps.
 - `autoload.php` script to allow non composer application to load the package
 - `OrderedList` and `InnerList` now implements the PHP `ArrayAccess` interface.
 
@@ -23,7 +25,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- None
+- **[BC Break]** `InnerList` no longer re-index its content replaced by `InnerList::sanitize` to force re-indexation.
+- **[BC Break]** `OrdererList` no longer re-index its content replaced by `InnerList::sanitize` to force re-indexation.
 
 ## [0.4.0] - 2022-03-27
 

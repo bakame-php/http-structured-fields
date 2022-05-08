@@ -187,7 +187,18 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
             unset($this->members[$offset]);
         }
 
-        if ([] !== $offsets) {
+        return $this;
+    }
+
+    /**
+     * Ensure the container always contains list.
+     *
+     * If gaps are present in the list their are removed
+     * and the list gets re-indexed.
+     */
+    public function sanitize(): self
+    {
+        if (!array_is_list($this->members)) {
             $this->members = array_values($this->members);
         }
 
