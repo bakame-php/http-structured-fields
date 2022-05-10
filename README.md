@@ -82,7 +82,7 @@ For each of these top-level types, the package provides a dedicated value object
 representation of the field and to serialize the value object back to the textual representation. 
 
 - Parsing is done via a common named constructor `fromHttpValue` which expects the Header or Trailer string value.
-- Serializing is done via a common `toHttpValue` public method. The method returns the normalized string representation suited for HTTP textual representation.
+- Serializing is done via a common `toHttpValue` public method. The method returns the **normalized string** representation suited for HTTP textual representation.
 
 Building Structured Fields
 ------------

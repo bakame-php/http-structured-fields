@@ -198,6 +198,12 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
      */
     public function sanitize(): self
     {
+        $this->parameters->sanitize();
+
+        foreach ($this->members as $member) {
+            $member->parameters->sanitize();
+        }
+
         if (!array_is_list($this->members)) {
             $this->members = array_values($this->members);
         }

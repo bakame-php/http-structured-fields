@@ -315,4 +315,11 @@ final class Item implements StructuredField
     {
         return $this->value instanceof ByteSequence;
     }
+
+    public function sanitize(): self
+    {
+        $this->parameters->sanitize();
+
+        return $this;
+    }
 }

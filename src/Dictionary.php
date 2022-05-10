@@ -259,6 +259,18 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * Ensure the container contains valid members.
+     */
+    public function sanitize(): self
+    {
+        foreach ($this->members as $member) {
+            $member->sanitize();
+        }
+
+        return $this;
+    }
+
+    /**
      * Adds a member at the end of the instance and deletes any previous reference to the key if present.
      *
      * @throws SyntaxError If the string key is not a valid

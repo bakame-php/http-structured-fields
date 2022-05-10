@@ -200,7 +200,6 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
         return $this;
     }
 
-
     /**
      * Ensure the container always contains list.
      *
@@ -209,6 +208,10 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
      */
     public function sanitize(): self
     {
+        foreach ($this->members as $member) {
+            $member->parameters->sanitize();
+        }
+
         if (!array_is_list($this->members)) {
             $this->members = array_values($this->members);
         }
