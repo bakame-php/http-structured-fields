@@ -12,3 +12,4 @@
 /Makefile           export-ignore
 /**/*Test.php       export-ignore
 /**/Test**          export-ignore
+/rector.php         export-ignore
