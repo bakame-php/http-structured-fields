@@ -29,11 +29,11 @@ final class TokenTest extends TestCase
     public function invalidTokenString(): array
     {
         return [
-            ['a a'],
-            ["a\u0001a"],
-            ['3a'],
-            ['a"a'],
-            ['a,a'],
+            'token contains spaces inside' => ['a a'],
+            'token contains non-ASCII characters' => ["a\u0001a"],
+            'token starts with invalid characters' => ['3a'],
+            'token contains double quote' => ['a"a'],
+            'token contains comma' => ['a,a'],
         ];
     }
 
