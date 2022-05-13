@@ -256,4 +256,35 @@ final class DictionaryTest extends StructuredFieldTest
 
         self::assertEquals($instance, $generatedInstance);
     }
+
+    /** @test */
+    public function it_can_sanitize_the_maps(): void
+    {
+        $structuredField = Dictionary::fromAssociative();
+        $structuredField->append('item', 42);
+        $item = $structuredField->get('item');
+        $item->parameters->append('forty-two', '42');
+        $wrongUpdatedItem = $item->parameters->get('forty-two');
+        $wrongUpdatedItem->parameters->append('invalid-value', 'not-valid');
+        self::assertCount(1, $wrongUpdatedItem->parameters);
+
+        $structuredField->sanitize();
+        self::assertCount(0, $wrongUpdatedItem->parameters);
+    }
+
+    /** @test */
+    public function it_fails_http_conversion_with_invalid_parameters(): void
+    {
+        $this->expectException(StructuredFieldError::class);
+
+        $structuredField = Dictionary::fromPairs();
+        $structuredField->append('item', 42);
+        $item = $structuredField->get('item');
+        $item->parameters->append('forty-two', '42');
+        $wrongUpdatedItem = $item->parameters->get('forty-two');
+        $wrongUpdatedItem->parameters->append('invalid-value', 'not-valid');
+        self::assertCount(1, $wrongUpdatedItem->parameters);
+
+        $structuredField->toHttpValue();
+    }
 }
