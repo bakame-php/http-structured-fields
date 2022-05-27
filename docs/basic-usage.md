@@ -5,7 +5,7 @@ an HTTP field value can be:
 
 - an [Item](item.md);
 - a [Dictionary](ordered-maps.md);
-- a [List](orderedlist.md);
+- a [List](lists.md);
 
 For each of these top-level types, the package provides a dedicated value object to parse the textual
 representation of the field and to serialize the value object back to the textual representation.
