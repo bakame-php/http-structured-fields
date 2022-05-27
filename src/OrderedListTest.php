@@ -162,6 +162,7 @@ final class OrderedListTest extends StructuredFieldTest
         self::assertEquals(Item::from(false), $sequence[0]);
         unset($sequence[0]);
 
+        self::assertCount(0, $sequence);
         self::assertFalse(isset($sequence[0]));
     }
 
