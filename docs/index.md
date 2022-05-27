@@ -44,7 +44,7 @@ composer require bakame/http-structured-fields
 
 or download the library and:
 
-- use any other [PSR-4][4] compatible autoloader.
+- use any other [PSR-4](https://www.php-fig.org/psr/psr-4/) compatible autoloader.
 - use the bundle autoloader script as shown below:
 
 ~~~php
@@ -59,51 +59,13 @@ echo $list[-1]->value; //returns '/member/*/comments'
 Documentation
 ------------
 
-Full documentation can be found in the [docs](/docs).
+- [Basic Usage](basic-usage.md)
+- [Items](item.md)
+- [Containers](containers.md)
+- [Ordered Maps](ordered-maps.md)
+- [Lists](lists.md)
 
-Contributing
--------
-
-Contributions are welcome and will be fully credited. Please see [CONTRIBUTING](.github/CONTRIBUTING.md) and [CODE OF CONDUCT](.github/CODE_OF_CONDUCT.md) for details.
-
-Testing
--------
-
-The library:
-
-- has a [PHPUnit](https://phpunit.de) test suite
-- has a coding style compliance test suite using [PHP CS Fixer](https://cs.sensiolabs.org/).
-- has a code analysis compliance test suite using [PHPStan](https://github.com/phpstan/phpstan).
-- is compliant with [the language agnostic HTTP Structured Fields Test suite](https://github.com/httpwg/structured-field-tests).
-
-To run the tests, run the following command from the project folder.
-
-``` bash
-$ composer test
-```
-
-Security
--------
-
-If you discover any security related issues, please email nyamsprod@gmail.com instead of using the issue tracker.
-
-Credits
--------
-
-- [ignace nyamagana butera](https://github.com/nyamsprod)
-- [All Contributors](https://github.com/bakame-php/http-structured-fields/contributors)
-
-Attribution
--------
-
-The package internal parser is heavily inspired by previous work done by [Gapple](https://twitter.com/gappleca) on [Structured Field Values for PHP](https://github.com/gapple/structured-fields/).
-
-License
--------
-
-The MIT License (MIT). Please see [License File](LICENSE) for more information.
 
 [1]: https://www.rfc-editor.org/rfc/rfc8941.html
 [2]: https://www.ietf.org/id/draft-ietf-httpbis-retrofit-00.html
 [3]: https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
-[4]: https://www.php-fig.org/psr/psr-4/
