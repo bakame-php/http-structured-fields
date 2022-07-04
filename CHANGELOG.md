@@ -2,6 +2,24 @@
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file
 
+## [Next] - TBD
+
+### Added
+
+- None
+- 
+### Fixed
+
+- `None
+
+### Deprecated
+
+- None
+
+### Removed
+
+- **[BC Break]** `__set_state` implementation in all objects.
+
 ## [0.5.0] - 2022-05-13
 
 ### Added

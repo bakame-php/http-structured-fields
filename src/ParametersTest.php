@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use function iterator_to_array;
-use function var_export;
 
 /**
  * @coversDefaultClass \Bakame\Http\StructuredFields\Parameters
@@ -283,19 +282,6 @@ final class ParametersTest extends StructuredFieldTest
         $fields = Item::from('/terms', ['rel' => 'copyright', 'anchor' => '#foo']);
         $fields->parameters->get('anchor')->parameters->set('yolo', 42);
         $fields->parameters->value('anchor');
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_be_regenerated_with_eval(): void
-    {
-        $instance = Parameters::fromAssociative(['a' => Item::from(false)]);
-
-        /** @var Parameters $generatedInstance */
-        $generatedInstance = eval('return '.var_export($instance, true).';');
-
-        self::assertEquals($instance, $generatedInstance);
     }
 
     /**

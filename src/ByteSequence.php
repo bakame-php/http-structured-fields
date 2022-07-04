@@ -16,14 +16,6 @@ final class ByteSequence implements StructuredField
     }
 
     /**
-     * @param array{value:string} $properties
-     */
-    public static function __set_state(array $properties): self
-    {
-        return new self($properties['value']);
-    }
-
-    /**
      * Returns a new instance from a Base64 encoded string.
      */
     public static function fromEncoded(Stringable|string $encodedValue): self

@@ -6,7 +6,6 @@ namespace Bakame\Http\StructuredFields;
 
 use PHPUnit\Framework\TestCase;
 use function iterator_to_array;
-use function var_export;
 
 /**
  * @coversDefaultClass \Bakame\Http\StructuredFields\InnerList
@@ -112,19 +111,6 @@ final class InnerListTest extends TestCase
         self::assertFalse($instance->has(3));
 
         $instance->get(3);
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_be_regenerated_with_eval(): void
-    {
-        $instance = InnerList::fromList([false], ['foo' => 'bar']);
-
-        /** @var InnerList $generatedInstance */
-        $generatedInstance = eval('return '.var_export($instance, true).';');
-
-        self::assertEquals($instance, $generatedInstance);
     }
 
     /**

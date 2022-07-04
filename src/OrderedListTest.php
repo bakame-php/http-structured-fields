@@ -118,19 +118,6 @@ final class OrderedListTest extends StructuredFieldTest
     /**
      * @test
      */
-    public function it_can_be_regenerated_with_eval(): void
-    {
-        $instance = OrderedList::from(Item::from(false));
-
-        /** @var OrderedList $generatedInstance */
-        $generatedInstance = eval('return '.var_export($instance, true).';');
-
-        self::assertEquals($instance, $generatedInstance);
-    }
-
-    /**
-     * @test
-     */
     public function test_it_can_generate_the_same_value(): void
     {
         $res = OrderedList::fromHttpValue('token, "string", ?1; parameter, (42 42.0)');

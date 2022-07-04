@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayObject;
-use function var_export;
 
 final class ItemTest extends StructuredFieldTest
 {
@@ -201,26 +200,6 @@ final class ItemTest extends StructuredFieldTest
         $this->expectException(SyntaxError::class);
 
         Item::fromHttpValue('foo,bar;a=3');
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_be_regenerated_with_eval(): void
-    {
-        $instance = Item::from('/terms', [
-            'string' => '42',
-            'integer' => 42,
-            'float' => 4.2,
-            'boolean' => true,
-            'token' => Token::fromString('forty-two'),
-            'byte-sequence' => ByteSequence::fromDecoded('a42'),
-        ]);
-
-        /** @var Item $generatedInstance */
-        $generatedInstance = eval('return '.var_export($instance, true).';');
-
-        self::assertEquals($instance, $generatedInstance);
     }
 
     /**

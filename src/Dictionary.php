@@ -26,14 +26,6 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * @param array{members:array<string, Item|InnerList>} $properties
-     */
-    public static function __set_state(array $properties): self
-    {
-        return new self($properties['members']);
-    }
-
-    /**
      * Returns a new instance from an associative iterable construct.
      *
      * its keys represent the dictionary entry key

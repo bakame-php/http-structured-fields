@@ -29,14 +29,6 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
         $this->members = $members;
     }
 
-    /**
-     * @param array{members:array<Item|InnerList>} $properties
-     */
-    public static function __set_state(array $properties): self
-    {
-        return new self(...$properties['members']);
-    }
-
     public static function from(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members): self
     {
         return self::fromList($members);

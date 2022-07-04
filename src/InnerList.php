@@ -30,14 +30,6 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
         $this->members = $members;
     }
 
-    /**
-     * @param array{members:array<Item>, parameters:Parameters} $properties
-     */
-    public static function __set_state(array $properties): self
-    {
-        return new self($properties['parameters'], ...$properties['members']);
-    }
-
     public static function from(Item|ByteSequence|Token|bool|int|float|string ...$members): self
     {
         return self::fromList($members);

@@ -27,14 +27,6 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
-     * @param array{members:array<string, Item>} $properties
-     */
-    public static function __set_state(array $properties): self
-    {
-        return new self($properties['members']);
-    }
-
-    /**
      * @throws ForbiddenStateError If the bare item contains parameters
      */
     private static function filterMember(Item $item): Item

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use PHPUnit\Framework\TestCase;
-use function var_export;
 
 /**
  * @coversDefaultClass \Bakame\Http\StructuredFields\Token
@@ -35,18 +34,5 @@ final class TokenTest extends TestCase
             'token contains double quote' => ['a"a'],
             'token contains comma' => ['a,a'],
         ];
-    }
-
-    /**
-     * @test
-     */
-    public function it_can_be_regenerated_with_eval(): void
-    {
-        $instance = Token::fromString('helloworld');
-
-        /** @var Token $generatedInstance */
-        $generatedInstance = eval('return '.var_export($instance, true).';');
-
-        self::assertEquals($instance, $generatedInstance);
     }
 }
