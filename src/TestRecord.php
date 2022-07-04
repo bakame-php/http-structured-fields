@@ -6,7 +6,7 @@ namespace Bakame\Http\StructuredFields;
 
 final class TestRecord
 {
-    public function __construct(
+    private function __construct(
         public readonly string $name,
         public readonly string $type,
         /** @var array<string> */
