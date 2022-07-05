@@ -33,7 +33,7 @@ final class MapKey
      */
     public static function fromStringBeginning(string $httpValue): self
     {
-        if (1 !== preg_match('/^(?<key>[a-z*][a-z0-9.*_-]*)/', $httpValue, $found)) {
+        if (1 !== preg_match('/^(?<key>[a-z*][a-z\d.*_-]*)/', $httpValue, $found)) {
             throw new SyntaxError("No valid http value key could be extracted from `$httpValue`.");
         }
 

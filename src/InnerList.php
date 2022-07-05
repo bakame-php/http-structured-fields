@@ -185,7 +185,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
     /**
      * Ensure the container always contains list.
      *
-     * If gaps are present in the list their are removed
+     * If gaps are present in the list they are removed
      * and the list gets re-indexed.
      */
     public function sanitize(): self

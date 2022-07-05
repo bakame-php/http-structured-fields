@@ -122,7 +122,7 @@ final class Item implements StructuredField
             '"' === $itemString[0] => self::parseString($itemString),
             ':' === $itemString[0] => self::parseBytesSequence($itemString),
             '?' === $itemString[0] => self::parseBoolean($itemString),
-            1 === preg_match('/^(-?[0-9])/', $itemString) => self::parseNumber($itemString),
+            1 === preg_match('/^(-?\d)/', $itemString) => self::parseNumber($itemString),
             1 === preg_match('/^([a-z*])/i', $itemString) => self::parseToken($itemString),
             default => throw new SyntaxError("The HTTP textual representation `$httpValue` for an item is unknown or unsupported."),
         };
@@ -173,7 +173,7 @@ final class Item implements StructuredField
      */
     private static function parseBytesSequence(string $string): array
     {
-        if (1 !== preg_match('/^:(?<bytes>[a-z0-9+\/=]*):/i', $string, $matches)) {
+        if (1 !== preg_match('/^:(?<bytes>[a-z\d+\/=]*):/i', $string, $matches)) {
             throw new SyntaxError("The HTTP textual representation `$string` for a byte sequence contains invalid characters.");
         }
 

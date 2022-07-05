@@ -51,7 +51,7 @@ final class InnerListTest extends TestCase
         self::assertFalse($instance->has(1));
 
         $instance->push('BarBaz');
-        $instance->insert(1, );
+        $instance->insert(1);
         $member = $instance->get(1);
         self::assertCount(2, $instance);
         self::assertIsString($member->value);

@@ -11,7 +11,7 @@ final class Token implements StructuredField
 {
     private function __construct(private string $value)
     {
-        if (1 !== preg_match("/^([a-z*][a-z0-9:\/\!\#\$%&'\*\+\-\.\^_`\|~]*)$/i", $this->value)) {
+        if (1 !== preg_match("/^([a-z*][a-z\d:\/!#\$%&'*+\-.^_`|~]*)$/i", $this->value)) {
             throw new SyntaxError('Invalid characters in token');
         }
     }

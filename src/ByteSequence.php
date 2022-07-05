@@ -11,8 +11,9 @@ use function preg_match;
 
 final class ByteSequence implements StructuredField
 {
-    private function __construct(private string $value)
-    {
+    private function __construct(
+        private string $value
+    ) {
     }
 
     /**
@@ -20,7 +21,7 @@ final class ByteSequence implements StructuredField
      */
     public static function fromEncoded(Stringable|string $encodedValue): self
     {
-        if (1 !== preg_match('/^(?<bytes>[a-z0-9+\/=]*)$/i', (string) $encodedValue, $matches)) {
+        if (1 !== preg_match('/^(?<bytes>[a-z\d+\/=]*)$/i', (string) $encodedValue, $matches)) {
             throw new SyntaxError('Invalid character in byte sequence');
         }
 

@@ -20,10 +20,17 @@ use function trim;
  */
 final class Parameters implements Countable, IteratorAggregate, StructuredField
 {
-    private function __construct(
-        /** @var array<string, Item> */
-        private array $members = []
-    ) {
+    /** @var array<string, Item> */
+    private array $members = [];
+
+    /**
+     * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $members
+     */
+    private function __construct(iterable $members = [])
+    {
+        foreach ($members as $key => $value) {
+            $this->set($key, $value);
+        }
     }
 
     /**
@@ -59,12 +66,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public static function fromAssociative(iterable $members = []): self
     {
-        $instance = new self();
-        foreach ($members as $key => $member) {
-            $instance->set($key, $member);
-        }
-
-        return $instance;
+        return new self($members);
     }
 
     /**

@@ -332,7 +332,7 @@ final class Parser
      */
     private static function parseToken(string $httpValue): array
     {
-        preg_match("/^(?<token>[a-z*][a-z0-9:\/\!\#\$%&'\*\+\-\.\^_`\|~]*)/i", $httpValue, $found);
+        preg_match("/^(?<token>[a-z*][a-z\d:\/!#\$%&'*+\-.^_`|~]*)/i", $httpValue, $found);
 
         return [Token::fromString($found['token']), strlen($found['token'])];
     }
@@ -346,7 +346,7 @@ final class Parser
      */
     private static function parseByteSequence(string $httpValue): array
     {
-        if (1 !== preg_match('/^(?<sequence>:(?<byte>[a-z0-9+\/=]*):)/i', $httpValue, $matches)) {
+        if (1 !== preg_match('/^(?<sequence>:(?<byte>[a-z\d+\/=]*):)/i', $httpValue, $matches)) {
             throw new SyntaxError("Invalid characters in the HTTP textual representation of a Byte Sequence `$httpValue`.");
         }
 

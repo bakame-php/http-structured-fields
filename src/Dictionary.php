@@ -19,10 +19,17 @@ use function is_array;
  */
 final class Dictionary implements Countable, IteratorAggregate, StructuredField
 {
-    private function __construct(
-        /** @var array<string, Item|InnerList>  */
-        private array $members = []
-    ) {
+    /** @var array<string, Item|InnerList>  */
+    private array $members = [];
+
+    /**
+     * @param iterable<string, InnerList|Item|ByteSequence|Token|bool|int|float|string> $members
+     */
+    private function __construct(iterable $members = [])
+    {
+        foreach ($members as $key => $member) {
+            $this->set($key, $member);
+        }
     }
 
     /**
@@ -35,12 +42,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public static function fromAssociative(iterable $members = []): self
     {
-        $instance = new self();
-        foreach ($members as $index => $member) {
-            $instance->set($index, $member);
-        }
-
-        return $instance;
+        return new self($members);
     }
 
     /**
