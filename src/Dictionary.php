@@ -109,9 +109,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      */
     public function getIterator(): Iterator
     {
-        foreach ($this->members as $index => $member) {
-            yield $index => $member;
-        }
+        yield from $this->members;
     }
 
     /**

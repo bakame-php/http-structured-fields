@@ -85,9 +85,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
      */
     public function getIterator(): Iterator
     {
-        foreach ($this->members as $member) {
-            yield $member;
-        }
+        yield from $this->members;
     }
 
     public function has(int $index): bool

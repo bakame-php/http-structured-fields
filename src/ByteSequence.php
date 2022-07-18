@@ -52,7 +52,7 @@ final class ByteSequence implements StructuredField
      */
     public function encoded(): string
     {
-        return  base64_encode($this->value);
+        return base64_encode($this->value);
     }
 
     public function toHttpValue(): string

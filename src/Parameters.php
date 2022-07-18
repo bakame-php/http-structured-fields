@@ -159,9 +159,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      */
     public function getIterator(): Iterator
     {
-        foreach ($this->members as $key => $member) {
-            yield $key => self::filterMember($member);
-        }
+        yield from $this->members;
     }
 
     /**

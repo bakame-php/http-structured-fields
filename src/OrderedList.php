@@ -88,9 +88,7 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
      */
     public function getIterator(): Iterator
     {
-        foreach ($this->members as $item) {
-            yield $item;
-        }
+        yield from $this->members;
     }
 
     public function has(int $index): bool
