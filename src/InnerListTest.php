@@ -12,9 +12,7 @@ use function iterator_to_array;
  */
 final class InnerListTest extends TestCase
 {
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_be_instantiated_with_an_collection_of_item(): void
     {
         $stringItem = Item::from('helloWorld');
@@ -26,14 +24,13 @@ final class InnerListTest extends TestCase
         self::assertSame($stringItem, $instance->get(0));
         self::assertFalse($instance->isEmpty());
 
-        self::assertEquals($arrayParams, iterator_to_array($instance, true));
+        self::assertEquals($arrayParams, iterator_to_array($instance));
         $instance->clear();
         self::assertTrue($instance->isEmpty());
+        self::assertFalse($instance->isNotEmpty());
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_add_or_remove_members(): void
     {
         $stringItem = Item::from('helloWorld');
@@ -44,6 +41,7 @@ final class InnerListTest extends TestCase
         self::assertCount(2, $instance);
         self::assertTrue($instance->has(1));
         self::assertTrue($instance->parameters->isEmpty());
+        self::assertFalse($instance->parameters->isNotEmpty());
 
         $instance->remove(1);
 
@@ -60,11 +58,10 @@ final class InnerListTest extends TestCase
         $instance->remove(0, 1);
         self::assertCount(0, $instance);
         self::assertTrue($instance->isEmpty());
+        self::assertFalse($instance->isNotEmpty());
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_unshift_insert_and_replace(): void
     {
         $container = InnerList::fromList();
@@ -78,9 +75,7 @@ final class InnerListTest extends TestCase
         self::assertSame('(:SGVsbG8gV29ybGQ=: 42.0 42)', $container->toHttpValue());
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_replace_invalid_index(): void
     {
         $this->expectException(InvalidOffset::class);
@@ -89,9 +84,7 @@ final class InnerListTest extends TestCase
         $container->replace(0, ByteSequence::fromDecoded('Hello World'));
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_insert_at_an_invalid_index(): void
     {
         $this->expectException(InvalidOffset::class);
@@ -100,9 +93,7 @@ final class InnerListTest extends TestCase
         $container->insert(3, ByteSequence::fromDecoded('Hello World'));
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
         $this->expectException(InvalidOffset::class);
@@ -113,9 +104,7 @@ final class InnerListTest extends TestCase
         $instance->get(3);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_access_its_parameter_values(): void
     {
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
@@ -123,9 +112,7 @@ final class InnerListTest extends TestCase
         self::assertSame('bar', $instance->parameters->value('foo'));
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_access_unknown_parameter_values(): void
     {
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
@@ -133,9 +120,7 @@ final class InnerListTest extends TestCase
         self::assertNull($instance->parameters->value('bar'));
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_successfully_parse_a_http_field(): void
     {
         $instance = InnerList::fromHttpValue('("hello)world" 42 42.0;john=doe);foo="bar("');
@@ -149,9 +134,7 @@ final class InnerListTest extends TestCase
         self::assertInstanceOf(Token::class, $instance->get(2)->parameters->value('john'));
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_successfully_parse_a_http_field_with_optional_white_spaces_in_front(): void
     {
         self::assertEquals(
@@ -160,9 +143,7 @@ final class InnerListTest extends TestCase
         );
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_implements_the_array_access_interface(): void
     {
         $sequence = InnerList::fromList();
@@ -179,9 +160,7 @@ final class InnerListTest extends TestCase
         self::assertCount(0, $sequence);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_insert_unknown_index_via_the_array_access_interface(): void
     {
         $this->expectException(StructuredFieldError::class);
@@ -190,9 +169,7 @@ final class InnerListTest extends TestCase
         $sequence[0] = Item::from(42.0);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function testArrayAccessThrowsInvalidIndex2(): void
     {
         $sequence = InnerList::from();
@@ -200,8 +177,6 @@ final class InnerListTest extends TestCase
 
         self::assertCount(0, $sequence);
     }
-
-
 
     /** @test */
     public function it_can_sanitize_the_maps(): void
@@ -226,14 +201,49 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        $structuredField = InnerList::fromList();
-        $structuredField[] = 69;
-        $item = $structuredField[0];
+        $structuredField = InnerList::from(69);
+        $item = $structuredField->get(0);
         $item->parameters->append('forty-two', '42');
         $wrongUpdatedItem = $item->parameters->get('forty-two');
         $wrongUpdatedItem->parameters->append('invalid-value', 'not-valid');
         self::assertCount(1, $wrongUpdatedItem->parameters);
 
         $structuredField->toHttpValue();
+    }
+
+    /** @test */
+    public function it_fails_to_fetch_an_value_using_an_integer(): void
+    {
+        $this->expectException(InvalidOffset::class);
+
+        $structuredField = InnerList::from();
+        $structuredField->get('zero');
+    }
+
+    /** @test */
+    public function it_can_access_the_item_value(): void
+    {
+        $token = Token::fromString('token');
+        $input = ['foobar', 0, false, $token];
+        $structuredField = InnerList::fromList($input);
+
+        self::assertSame($input, $structuredField->values());
+
+        self::assertFalse($structuredField->value(2));
+        self::assertNull($structuredField->value(42));
+        self::assertNull($structuredField->value('2'));
+        self::assertSame($token, $structuredField->value(-1));
+    }
+
+    /** @test */
+    public function it_will_strip_invalid_state_object_via_values_methods(): void
+    {
+        $bar = Item::from(Token::fromString('bar'));
+        $bar->parameters->set('baz', 42);
+        $structuredField = InnerList::from(false, $bar);
+        $structuredField[1]->parameters['baz']->parameters->set('error', 'error');
+
+        self::assertNull($structuredField->value(1));
+        self::assertEquals([false], $structuredField->values());
     }
 }

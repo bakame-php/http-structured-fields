@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-use Countable;
 use Iterator;
-use IteratorAggregate;
+use Throwable;
+use TypeError;
 use function array_key_exists;
 use function array_keys;
+use function array_map;
 use function count;
 use function explode;
+use function is_string;
 use function ltrim;
 use function rtrim;
 use function trim;
 
 /**
- * @implements IteratorAggregate<string, Item>
+ * @implements StructuredFieldOrderedMap<string, Item>
  */
-final class Parameters implements Countable, IteratorAggregate, StructuredField
+final class Parameters implements StructuredFieldOrderedMap
 {
     /** @var array<string, Item> */
     private array $members = [];
@@ -35,20 +37,22 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
 
     /**
      * @throws ForbiddenStateError If the bare item contains parameters
+     * @throws TypeError If the structured field is not supported
      */
     private static function filterMember(Item $item): Item
     {
-        if (!$item->parameters->isEmpty()) {
+        if ($item->parameters->isNotEmpty()) {
             throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
         }
 
         return $item;
     }
 
-    private static function formatMember(Item|ByteSequence|Token|bool|int|float|string $member): Item
+    private static function formatMember(StructuredField|ByteSequence|Token|bool|int|float|string $member): Item
     {
         return match (true) {
             $member instanceof Item => self::filterMember($member),
+            $member instanceof StructuredField => throw new TypeError('Expecting a "'.Item::class.'" instance; received "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
     }
@@ -76,14 +80,14 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param Parameters|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> $pairs
+     * @param StructuredFieldOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> $pairs
      *
      * @throws ForbiddenStateError If the bare item contains parameters
      */
-    public static function fromPairs(Parameters|iterable $pairs = []): self
+    public static function fromPairs(StructuredFieldOrderedMap|iterable $pairs = []): self
     {
-        if ($pairs instanceof Parameters) {
-            return clone $pairs;
+        if ($pairs instanceof StructuredFieldOrderedMap) {
+            $pairs = $pairs->toPairs();
         }
 
         $instance = new self();
@@ -144,18 +148,20 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return count($this->members);
     }
 
-    /**
-     * Tells whether the container is empty or not.
-     */
     public function isEmpty(): bool
     {
         return [] === $this->members;
     }
 
+    public function isNotEmpty(): bool
+    {
+        return !$this->isEmpty();
+    }
+
     /**
      * @throws ForbiddenStateError if the bare item contains parameters itself
      *
-     * @return Iterator<string, Item>
+     * @return Iterator<array-key, Item>
      */
     public function getIterator(): Iterator
     {
@@ -199,11 +205,25 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     }
 
     /**
+     * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
+     */
+    public function value(string|int $offset): Token|ByteSequence|float|int|bool|string|null
+    {
+        try {
+            $member = $this->get($offset);
+        } catch (Throwable) {
+            return null;
+        }
+
+        return $member->value;
+    }
+
+    /**
      * Tells whether the key is present in the container.
      */
-    public function has(string $key): bool
+    public function has(string|int $offset): bool
     {
-        return array_key_exists($key, $this->members);
+        return is_string($offset) && array_key_exists($offset, $this->members);
     }
 
     /**
@@ -212,27 +232,13 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      * @throws InvalidOffset       if the key is not found
      * @throws ForbiddenStateError if the bare item contains parameters itself
      */
-    public function get(string $key): Item
+    public function get(string|int $key): Item
     {
-        if (!array_key_exists($key, $this->members)) {
+        if (is_int($key) || !array_key_exists($key, $this->members)) {
             throw InvalidOffset::dueToKeyNotFound($key);
         }
 
         return self::filterMember($this->members[$key]);
-    }
-
-    /**
-     * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
-     *
-     * @throws ForbiddenStateError if the found item is in invalid state
-     */
-    public function value(string $key): Token|ByteSequence|float|int|bool|string|null
-    {
-        if (!array_key_exists($key, $this->members)) {
-            return null;
-        }
-
-        return self::filterMember($this->members[$key])->value;
     }
 
     /**
@@ -294,7 +300,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
      */
-    public function set(string $key, Item|ByteSequence|Token|bool|int|float|string $member): self
+    public function set(string $key, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
     {
         $this->members[MapKey::fromString($key)->value] = self::formatMember($member);
 
@@ -313,9 +319,6 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         return $this;
     }
 
-    /**
-     * Removes all members from the instance.
-     */
     public function clear(): self
     {
         $this->members = [];
@@ -329,7 +332,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
      */
-    public function append(string $key, Item|ByteSequence|Token|bool|int|float|string $member): self
+    public function append(string $key, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 
@@ -344,7 +347,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
      */
-    public function prepend(string $key, Item|ByteSequence|Token|bool|int|float|string $member): self
+    public function prepend(string $key, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 
@@ -356,7 +359,7 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     /**
      * Merges multiple instances using iterable associative structures.
      *
-     * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> ...$others
+     * @param iterable<string, Item|Token|ByteSequence|float|int|bool|string> ...$others
      */
     public function mergeAssociative(iterable ...$others): self
     {
@@ -370,9 +373,9 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
     /**
      * Merge multiple instances using iterable pairs.
      *
-     * @param Parameters|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> ...$others
+     * @param StructuredFieldOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> ...$others
      */
-    public function mergePairs(Parameters|iterable ...$others): self
+    public function mergePairs(StructuredFieldOrderedMap|iterable ...$others): self
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromPairs($other)->members];
@@ -394,5 +397,42 @@ final class Parameters implements Countable, IteratorAggregate, StructuredField
         }
 
         return $this;
+    }
+
+    /**
+     * @param string $offset
+     */
+    public function offsetExists($offset): bool
+    {
+        return $this->has($offset);
+    }
+
+    /**
+     * @param string $offset
+     */
+    public function offsetGet($offset): Item
+    {
+        return $this->get($offset);
+    }
+
+    /**
+     * @param string $offset
+     */
+    public function offsetUnset($offset): void
+    {
+        $this->delete($offset);
+    }
+
+    /**
+     * @param string|null $offset
+     * @param Item|ByteSequence|Token|bool|int|float|string $value  the member value
+     */
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        if (!is_string($offset)) {
+            throw new SyntaxError('The offset for a parameter member is expected to be a string; "'.gettype($offset).'" given.');
+        }
+
+        $this->set($offset, $value);
     }
 }

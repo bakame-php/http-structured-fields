@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-use Countable;
 use Iterator;
-use IteratorAggregate;
+use Throwable;
+use TypeError;
+use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -15,15 +16,15 @@ use function implode;
 use function is_array;
 
 /**
- * @implements IteratorAggregate<array-key, Item|InnerList>
+ * @implements StructuredFieldOrderedMap<string, Item|InnerList<int, Item>>
  */
-final class Dictionary implements Countable, IteratorAggregate, StructuredField
+final class Dictionary implements StructuredFieldOrderedMap
 {
-    /** @var array<string, Item|InnerList>  */
+    /** @var array<string, Item|InnerList<int, Item>> */
     private array $members = [];
 
     /**
-     * @param iterable<string, InnerList|Item|ByteSequence|Token|bool|int|float|string> $members
+     * @param iterable<string, InnerList<array-key, Item>|Item|ByteSequence|Token|bool|int|float|string> $members
      */
     private function __construct(iterable $members = [])
     {
@@ -38,7 +39,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<string, InnerList|Item|ByteSequence|Token|bool|int|float|string> $members
+     * @param iterable<string, InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string> $members
      */
     public static function fromAssociative(iterable $members = []): self
     {
@@ -52,12 +53,12 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param Dictionary|iterable<array{0:string, 1:InnerList|Item|ByteSequence|Token|bool|int|float|string}> $pairs
+     * @param StructuredFieldOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string}> $pairs
      */
-    public static function fromPairs(Dictionary|iterable $pairs = []): self
+    public static function fromPairs(StructuredFieldOrderedMap|iterable $pairs = []): self
     {
-        if ($pairs instanceof Dictionary) {
-            return clone $pairs;
+        if ($pairs instanceof StructuredFieldOrderedMap) {
+            $pairs = $pairs->toPairs();
         }
 
         $instance = new self();
@@ -96,16 +97,18 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return count($this->members);
     }
 
-    /**
-     * Tells whether the instance contains no member.
-     */
     public function isEmpty(): bool
     {
         return [] === $this->members;
     }
 
+    public function isNotEmpty(): bool
+    {
+        return !$this->isEmpty();
+    }
+
     /**
-     * @return Iterator<string, Item|InnerList>
+     * @return Iterator<string, Item|InnerList<int, Item>>
      */
     public function getIterator(): Iterator
     {
@@ -115,7 +118,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     /**
      * Returns an iterable construct of dictionary pairs.
      *
-     * @return Iterator<array{0:string, 1:Item|InnerList}>
+     * @return Iterator<array{0:string, 1:Item|InnerList<int, Item>}>
      */
     public function toPairs(): Iterator
     {
@@ -137,9 +140,49 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     /**
      * Tells whether an item or an inner-list is attached to the given key.
      */
-    public function has(string $key): bool
+    public function has(string|int $offset): bool
     {
-        return array_key_exists($key, $this->members);
+        return is_string($offset) && array_key_exists($offset, $this->members);
+    }
+
+    /**
+     * Returns all containers Item values.
+     *
+     * @return array<string, InnerList<int, Item>|Token|ByteSequence|float|int|bool|string>
+     */
+    public function values(): array
+    {
+        $mapper = function (Item|InnerList $item): InnerList|Token|ByteSequence|float|int|bool|string|null {
+            try {
+                $member = self::filterForbiddenState($item);
+
+                return $member instanceof Item ? $member->value : $member;
+            } catch (Throwable) {
+                return null;
+            }
+        };
+
+        return array_filter(array_map($mapper, $this->members), fn (mixed $value): bool => null !== $value);
+    }
+
+    /**
+     * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
+     *
+     * @return InnerList<int, Item>|ByteSequence|Token|float|int|bool|string|null
+     */
+    public function value(string|int $offset): InnerList|ByteSequence|Token|float|int|bool|string|null
+    {
+        try {
+            $member = $this->get($offset);
+        } catch (Throwable) {
+            return null;
+        }
+
+        if ($member instanceof Item) {
+            return $member->value;
+        }
+
+        return $member;
     }
 
     /**
@@ -148,13 +191,13 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      * @throws SyntaxError   If the key is invalid
      * @throws InvalidOffset If the key is not found
      */
-    public function get(string $key): Item|InnerList
+    public function get(string|int $key): Item|InnerList
     {
-        if (!array_key_exists($key, $this->members)) {
+        if (is_int($key) || !array_key_exists($key, $this->members)) {
             throw InvalidOffset::dueToKeyNotFound($key);
         }
 
-        return $this->members[$key];
+        return self::filterForbiddenState($this->members[$key]);
     }
 
     /**
@@ -191,7 +234,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      *
      * @throws InvalidOffset If the key is not found
      *
-     * @return array{0:string, 1:Item|InnerList}
+     * @return array{0:string, 1:Item|InnerList<int, Item>}
      */
     public function pair(int $index): array
     {
@@ -213,19 +256,39 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function set(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): self
+    public function set(string $key, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
     {
         $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
 
         return $this;
     }
 
-    private static function filterMember(InnerList|Item|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
+    private static function filterMember(StructuredField|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
     {
         return match (true) {
-            $member instanceof InnerList, $member instanceof Item => $member,
+            $member instanceof InnerList, $member instanceof Item => self::filterForbiddenState($member),
+            $member instanceof StructuredField => throw new TypeError('Expecting a "'.Item::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
+    }
+
+    private static function filterForbiddenState(InnerList|Item $member): InnerList|Item
+    {
+        foreach ($member->parameters as $item) {
+            if ($item->parameters->isNotEmpty()) {
+                throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
+            }
+        }
+
+        if ($member instanceof Item) {
+            return $member;
+        }
+
+        foreach ($member as $item) {
+            self::filterForbiddenState($item);
+        }
+
+        return $member;
     }
 
     /**
@@ -240,9 +303,6 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
         return $this;
     }
 
-    /**
-     * Removes all members from the instance.
-     */
     public function clear(): self
     {
         $this->members = [];
@@ -267,7 +327,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function append(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): self
+    public function append(string $key, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 
@@ -281,7 +341,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
      *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function prepend(string $key, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): self
+    public function prepend(string $key, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 
@@ -293,7 +353,7 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     /**
      * Merges multiple instances using iterable associative structures.
      *
-     * @param iterable<string, InnerList|Item|ByteSequence|Token|bool|int|float|string> ...$others
+     * @param iterable<string, InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string> ...$others
      */
     public function mergeAssociative(iterable ...$others): self
     {
@@ -307,14 +367,52 @@ final class Dictionary implements Countable, IteratorAggregate, StructuredField
     /**
      * Merges multiple instances using iterable pairs.
      *
-     * @param Dictionary|iterable<array{0:string, 1:InnerList|Item|ByteSequence|Token|bool|int|float|string}> ...$others
+     * @param StructuredFieldOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string}> ...$others
      */
-    public function mergePairs(Dictionary|iterable ...$others): self
+    public function mergePairs(StructuredFieldOrderedMap|iterable ...$others): self
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromPairs($other)->members];
         }
 
         return $this;
+    }
+
+    /**
+     * @param string $offset
+     */
+    public function offsetExists(mixed $offset): bool
+    {
+        return $this->has($offset);
+    }
+
+    /**
+     * @param string $offset
+     *
+     * @return Item|InnerList<int, Item>
+     */
+    public function offsetGet(mixed $offset): InnerList|Item
+    {
+        return $this->get($offset);
+    }
+
+    /**
+     * @param string $offset
+     */
+    public function offsetUnset(mixed $offset): void
+    {
+        $this->delete($offset);
+    }
+
+    /**
+     * @param InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string $value
+     */
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        if (!is_string($offset)) {
+            throw new SyntaxError('The offset for a dictionary member is expected to be a string; "'.gettype($offset).'" given.');
+        }
+
+        $this->set($offset, $value);
     }
 }

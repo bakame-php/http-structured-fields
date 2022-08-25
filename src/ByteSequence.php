@@ -9,7 +9,7 @@ use function base64_decode;
 use function base64_encode;
 use function preg_match;
 
-final class ByteSequence implements StructuredField
+final class ByteSequence
 {
     private function __construct(
         private string $value
@@ -53,10 +53,5 @@ final class ByteSequence implements StructuredField
     public function encoded(): string
     {
         return base64_encode($this->value);
-    }
-
-    public function toHttpValue(): string
-    {
-        return ':'.$this->encoded().':';
     }
 }

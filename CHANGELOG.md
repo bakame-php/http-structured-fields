@@ -6,11 +6,13 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
-- None
-- 
+- Introduce the`StructuredFieldContainer` interface.
+- `OrderedList`, `InnerList` now implements the `StructuredFieldList` interface.
+- `Parameters` and `Dictionnary` now implements the PHP `StructuredFieldOrderedMap` interface.
+
 ### Fixed
 
-- `None
+- None
 
 ### Deprecated
 
@@ -18,7 +20,12 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
+- **[BC Break]** `Parameters::values` methods no longer throw on invalid state; value is skipped from returned array.
 - **[BC Break]** `__set_state` implementation in all objects.
+- **[BC Break]** `Token` no longer implements the `StructuredField` interface.
+- **[BC Break]** `Token::toHttpValue` is removed with no replacement.
+- **[BC Break]** `ByteSequence` no longer implements the `StructuredField` interface.
+- **[BC Break]** `ByteSequence::toHttpValue` is removed with no replacement.
 
 ## [0.5.0] - 2022-05-13
 

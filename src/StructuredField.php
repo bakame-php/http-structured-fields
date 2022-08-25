@@ -12,4 +12,9 @@ interface StructuredField
      * @throws ForbiddenStateError If a component of the object is in invalid state
      */
     public function toHttpValue(): string;
+
+    /**
+     * Ensure the structured field is always valid.
+     */
+    public function sanitize(): self;
 }

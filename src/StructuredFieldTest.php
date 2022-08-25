@@ -6,10 +6,11 @@ namespace Bakame\Http\StructuredFields;
 
 use JsonException;
 use PHPUnit\Framework\TestCase;
+use function implode;
 
 abstract class StructuredFieldTest extends TestCase
 {
-    /** @var array|string[] */
+    /** @var array<string> */
     protected array $paths;
 
     /**

@@ -14,9 +14,7 @@ final class ByteSequenceTest extends StructuredFieldTest
         __DIR__.'/../vendor/httpwg/structured-field-tests/binary.json',
     ];
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_will_fail_on_invalid_decoded_string(): void
     {
         $this->expectException(SyntaxError::class);
@@ -24,9 +22,7 @@ final class ByteSequenceTest extends StructuredFieldTest
         ByteSequence::fromEncoded('a a');
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_decode_base64_field(): void
     {
         $source = 'cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==';
@@ -34,12 +30,9 @@ final class ByteSequenceTest extends StructuredFieldTest
 
         self::assertSame('pretend this is binary content.', $item->decoded());
         self::assertSame($source, $item->encoded());
-        self::assertSame(":$source:", $item->toHttpValue());
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_encode_raw_field(): void
     {
         $decoded = 'pretend this is binary content.';
@@ -48,6 +41,5 @@ final class ByteSequenceTest extends StructuredFieldTest
 
         self::assertSame('pretend this is binary content.', $item->decoded());
         self::assertSame($source, $item->encoded());
-        self::assertSame(":$source:", $item->toHttpValue());
     }
 }

@@ -20,9 +20,7 @@ final class ItemTest extends StructuredFieldTest
         __DIR__.'/../vendor/httpwg/structured-field-tests/item.json',
     ];
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_instantiate_a_decimal_too_big(): void
     {
         $this->expectException(SyntaxError::class);
@@ -30,9 +28,7 @@ final class ItemTest extends StructuredFieldTest
         Item::from(1_000_000_000_000.0);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_instantiate_a_decimal_too_small(): void
     {
         $this->expectException(SyntaxError::class);
@@ -40,17 +36,13 @@ final class ItemTest extends StructuredFieldTest
         Item::from(-1_000_000_000_000.0);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_instantiate_a_decimal(): void
     {
         self::assertSame('42.0', Item::from(42.0)->toHttpValue());
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_instantiate_a_integer_too_big(): void
     {
         $this->expectException(SyntaxError::class);
@@ -58,9 +50,7 @@ final class ItemTest extends StructuredFieldTest
         Item::from(1_000_000_000_000_000);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_instantiate_a_integer_too_small(): void
     {
         $this->expectException(SyntaxError::class);
@@ -68,50 +58,38 @@ final class ItemTest extends StructuredFieldTest
         Item::from(-1_000_000_000_000_000);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_instantiates_an_integer(): void
     {
         self::assertSame('42', Item::from(42)->toHttpValue());
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_instantiates_a_boolean(): void
     {
         self::assertSame('?1', Item::from(true)->toHttpValue());
         self::assertSame('?0', Item::from(false)->toHttpValue());
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_instantiates_a_token(): void
     {
         self::assertSame('helloworld', Item::from(Token::fromString('helloworld'))->toHttpValue());
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_instantiates_a_binary(): void
     {
         self::assertInstanceOf(ByteSequence::class, Item::from(ByteSequence::fromDecoded('foobar'))->value);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_instantiates_a_string(): void
     {
         self::assertSame('"foobar"', Item::from('foobar')->toHttpValue());
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_instantiate_an_invalid_string(): void
     {
         $this->expectException(SyntaxError::class);
@@ -166,9 +144,7 @@ final class ItemTest extends StructuredFieldTest
         ];
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function test_in_can_be_instantiated_using_bare_items(): void
     {
         $item1 = Item::from('/terms', [
@@ -192,9 +168,7 @@ final class ItemTest extends StructuredFieldTest
         self::assertEquals($item2, $item1);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_will_fail_with_wrong_token(): void
     {
         $this->expectException(SyntaxError::class);
@@ -202,9 +176,7 @@ final class ItemTest extends StructuredFieldTest
         Item::fromHttpValue('foo,bar;a=3');
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_access_its_parameter_values(): void
     {
         $instance = Item::fromHttpValue('1; a; b=?0');
@@ -212,9 +184,7 @@ final class ItemTest extends StructuredFieldTest
         self::assertTrue($instance->parameters->value('a'));
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_access_unknown_parameter_values(): void
     {
         $instance = Item::fromHttpValue('1; a; b=?0');
@@ -222,9 +192,7 @@ final class ItemTest extends StructuredFieldTest
         self::assertNull($instance->parameters->value('bar'));
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_exchange_parameters(): void
     {
         $instance = Item::from(Token::fromString('babayaga'));
@@ -238,9 +206,7 @@ final class ItemTest extends StructuredFieldTest
         self::assertSame('bar', $instance->parameters->value('foo'));
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_create_an_item_from_a_array_of_pairs(): void
     {
         $instance1 = Item::from(Token::fromString('babayaga'));
@@ -273,9 +239,7 @@ final class ItemTest extends StructuredFieldTest
         yield 'associative array' => ['pair' => ['value' => 'bar', 'parameters' => ['foo' => 'bar']]];
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_create_an_item_from_a_array_of_pairs_and_parameters(): void
     {
         $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);

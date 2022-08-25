@@ -7,7 +7,7 @@ namespace Bakame\Http\StructuredFields;
 use Stringable;
 use function preg_match;
 
-final class Token implements StructuredField
+final class Token
 {
     private function __construct(private string $value)
     {
@@ -19,11 +19,6 @@ final class Token implements StructuredField
     public static function fromString(string|Stringable $value): self
     {
         return new self((string) $value);
-    }
-
-    public function toHttpValue(): string
-    {
-        return $this->toString();
     }
 
     public function toString(): string

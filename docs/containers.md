@@ -24,8 +24,18 @@ with different requirements. At any given time it is possible with each of these
 
 - iterate over its members using the `IteratorAggregate` interface;
 - know the number of members it contains via the `Countable` interface;
-- tell whether the container is empty via an `isEmpty` method;
-- clear its content using the `clear` method;
+- Access container members via the `ArrayAccess` interface;
+- tell whether the container is empty or not using the `isEmpty` and/or `isNotEmpty` methods from the `StrucutedFieldContainer` interface;
+- clear its content using the `clear` method from the `StrucutedFieldContainer` interface;
+- to sanitize them and their inner contents so that all members are convertible to HTTP fields.
+- unwrap Item value using the `values`, `value` methods from the `StrucutedFieldContainer` interface;
+
+getter methods:
+
+- `get` to access an element at a given index (negative indexes are supported)
+- `has` tell whether an element is attached to the container using its `index`;
+
+
 
 **Of note:**
 

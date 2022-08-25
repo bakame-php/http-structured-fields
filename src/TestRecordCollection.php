@@ -20,10 +20,11 @@ use function stream_get_contents;
  */
 final class TestRecordCollection implements IteratorAggregate
 {
-    private function __construct(
-        /** @var array<string, TestRecord> */
-        private array $elements = []
-    ) {
+    /** @var array<string, TestRecord> */
+    private array $elements = [];
+
+    private function __construct()
+    {
     }
 
     public function add(TestRecord $test): void

@@ -19,11 +19,6 @@ named constructors:
 - `fromList` instantiates the container with a list of members in an iterable construct;
 - `from` instantiates the container with a list of members as variadic;
 
-getter methods:
-
-- `get` to access an element at a given index (negative indexes are supported)
-- `has` tell whether an element is attached to the container using its `index`;
-
 setter methods
 
 - `push` to add elements at the end of the list;
@@ -76,22 +71,4 @@ use Bakame\Http\StructuredFields;
 
 $innerList = StructuredFields\OrderedList::fromList([42, 42.0, "42"], ["a" => true]);
 $innerList[2] = StructuredFields\Token::fromString('forty-two'); // will throw
-```
-
-## OrderedList specific methods
-
-- `OrderedList::sanitize` returns an instance where all included items or containers are sanitized.
-
-## InnerList specific methods
-
-
-- `InnerList::sanitize` returns an instance where all included items or containers are sanitized as well
-  as the `Parameters` object associated with the current `InnerList` instance.
-
-```php
-use Bakame\Http\StructuredFields;
-
-$innerList = StructuredFields\InnerList::fromList([42, 42.0, "42"], ["a" => true]);
-$innerList->parameters; //returns a StructuredFields\Parameters object
-$innerList->parameters->value('a'); // returns true
 ```

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-use ArrayAccess;
-use Countable;
 use Iterator;
-use IteratorAggregate;
+use Throwable;
+use TypeError;
+use function array_filter;
 use function array_map;
 use function array_splice;
 use function array_values;
@@ -16,17 +16,16 @@ use function implode;
 use function is_array;
 
 /**
- * @implements IteratorAggregate<array-key, Item|InnerList>
- * @implements ArrayAccess<int, Item|InnerList>
+ * @implements StructuredFieldList<int, Item|InnerList<int, Item>>
  */
-final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, StructuredField
+final class OrderedList implements StructuredFieldList
 {
-    /** @var array<Item|InnerList>  */
+    /** @var array<int, Item|InnerList<int, Item>>  */
     private array $members;
 
     private function __construct(Item|InnerList ...$members)
     {
-        $this->members = $members;
+        $this->members = array_values($members);
     }
 
     public static function from(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members): self
@@ -47,12 +46,32 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
         return new self(...$newMembers);
     }
 
-    private static function filterMember(InnerList|Item|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
+    private static function filterMember(StructuredField|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
     {
         return match (true) {
-            $member instanceof InnerList, $member instanceof Item => $member,
+            $member instanceof InnerList, $member instanceof Item => self::filterForbiddenState($member),
+            $member instanceof StructuredField => throw new TypeError('Expecting a "'.Item::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
+    }
+
+    private static function filterForbiddenState(InnerList|Item $member): InnerList|Item
+    {
+        foreach ($member->parameters as $item) {
+            if ($item->parameters->isNotEmpty()) {
+                throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
+            }
+        }
+
+        if ($member instanceof Item) {
+            return $member;
+        }
+
+        foreach ($member as $item) {
+            self::filterForbiddenState($item);
+        }
+
+        return $member;
     }
 
     /**
@@ -83,46 +102,96 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
         return [] === $this->members;
     }
 
+    public function isNotEmpty(): bool
+    {
+        return !$this->isEmpty();
+    }
+
     /**
-     * @return Iterator<Item|InnerList>
+     * @return Iterator<int, Item|InnerList<int, Item>>
      */
     public function getIterator(): Iterator
     {
         yield from $this->members;
     }
 
-    public function has(int $index): bool
+    public function has(string|int $offset): bool
     {
-        return null !== $this->filterIndex($index);
+        return is_int($offset) && null !== $this->filterIndex($offset);
     }
 
-    private function filterIndex(int $index): int|null
+    private function filterIndex(int|string $index): int|null
     {
         $max = count($this->members);
 
         return match (true) {
+            is_string($index) => null,
             [] === $this->members, 0 > $max + $index, 0 > $max - $index - 1 => null,
             0 > $index => $max + $index,
             default => $index,
         };
     }
 
-    public function get(int $index): Item|InnerList
+    /**
+     * Returns all containers Item values.
+     *
+     * @return array<int, InnerList<int, Item>|Token|ByteSequence|float|int|bool|string>
+     */
+    public function values(): array
     {
+        $mapper = function (Item|InnerList $item): InnerList|Token|ByteSequence|float|int|bool|string|null {
+            try {
+                $member = self::filterForbiddenState($item);
+
+                return $member instanceof Item ? $member->value : $member;
+            } catch (Throwable) {
+                return null;
+            }
+        };
+
+        return array_filter(array_map($mapper, $this->members), fn (mixed $value): bool => null !== $value);
+    }
+
+    /**
+     * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
+     *
+     * @return InnerList<int, Item>|Token|ByteSequence|float|int|bool|string|null
+     */
+    public function value(string|int $offset): InnerList|ByteSequence|Token|float|int|bool|string|null
+    {
+        try {
+            $member = $this->get($offset);
+        } catch (Throwable) {
+            return null;
+        }
+
+        if ($member instanceof Item) {
+            return $member->value;
+        }
+
+        return $member;
+    }
+
+    public function get(string|int $index): Item|InnerList
+    {
+        if (!is_int($index)) {
+            throw InvalidOffset::dueToIndexNotFound($index);
+        }
+
         $offset = $this->filterIndex($index);
         if (null === $offset) {
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        return $this->members[$offset];
+        return self::filterForbiddenState($this->members[$offset]);
     }
 
     /**
      * Inserts members at the beginning of the list.
      */
-    public function unshift(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members): self
+    public function unshift(StructuredField|ByteSequence|Token|bool|int|float|string ...$members): self
     {
-        $this->members = [...array_map(self::filterMember(...), $members), ...$this->members];
+        $this->members = [...array_map(self::filterMember(...), array_values($members)), ...$this->members];
 
         return $this;
     }
@@ -130,9 +199,9 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
     /**
      * Inserts members at the end of the list.
      */
-    public function push(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members): self
+    public function push(StructuredField|ByteSequence|Token|bool|int|float|string ...$members): self
     {
-        $this->members = [...$this->members, ...array_map(self::filterMember(...), $members)];
+        $this->members = [...$this->members, ...array_map(self::filterMember(...), array_values($members))];
 
         return $this;
     }
@@ -142,10 +211,8 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(
-        int $index,
-        InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members
-    ): self {
+    public function insert(int $index, StructuredField|ByteSequence|Token|bool|int|float|string ...$members): self
+    {
         $offset = $this->filterIndex($index);
         match (true) {
             null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
@@ -162,7 +229,7 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function replace(int $index, InnerList|Item|ByteSequence|Token|bool|int|float|string $member): self
+    public function replace(int $index, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
     {
         if (null === ($offset = $this->filterIndex($index))) {
             throw InvalidOffset::dueToIndexNotFound($index);
@@ -198,20 +265,13 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
      */
     public function sanitize(): self
     {
-        foreach ($this->members as $member) {
-            $member->parameters->sanitize();
-        }
-
-        if (!array_is_list($this->members)) {
-            $this->members = array_values($this->members);
-        }
+        $this->members = array_values(
+            array_map(fn (StructuredField $member): StructuredField => $member->sanitize(), $this->members)
+        );
 
         return $this;
     }
 
-    /**
-     * Removes all members from the instance.
-     */
     public function clear(): self
     {
         $this->members = [];
@@ -220,9 +280,7 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
     }
 
     /**
-     * @param int $offset the integer index of the member to validate.
-     *
-     * @see ::has
+     * @param int $offset
      */
     public function offsetExists($offset): bool
     {
@@ -230,34 +288,28 @@ final class OrderedList implements ArrayAccess, Countable, IteratorAggregate, St
     }
 
     /**
-     * @param int $offset the integer index of the member to retrieve.
+     * @param int $offset
      *
-     * @see ::get
+     * @return Item|InnerList<int, Item>
      */
-    public function offsetGet($offset): Item|InnerList
+    public function offsetGet(mixed $offset): Item|InnerList
     {
         return $this->get($offset);
     }
 
-    /**
-     * @param int $offset the integer index of the member to remove
-     *
-     * @see ::remove
-     *
-     */
     public function offsetUnset($offset): void
     {
         $this->remove($offset);
     }
 
     /**
-     * @param int|null                                                $offset the integer index of member to add or update
-     * @param InnerList|Item|ByteSequence|Token|bool|int|float|string $value  the member to add
+     * @param int|null $offset
+     * @param InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string $value  the member to add
      *
      * @see ::push
      * @see ::replace
      */
-    public function offsetSet($offset, $value): void
+    public function offsetSet(mixed $offset, $value): void
     {
         if (null !== $offset) {
             $this->replace($offset, $value);

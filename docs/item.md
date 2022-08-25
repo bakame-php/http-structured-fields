@@ -34,7 +34,7 @@ The Token data type is a special string as defined in the RFC. To distinguish it
 the `Bakame\Http\StructuredFields\Token` class is used.
 
 To instantiate the class you are required to use the `Token::fromString` named constructor.
-The class also exposes the complementary public methods `Token::toString` as well as the `Token::toHttpValue` to enable its textual representation.
+The class also exposes the complementary public methods `Token::toString` to enable its textual representation.
 
 ### Byte Sequence
 
@@ -46,8 +46,6 @@ $sequenceFromEncoded = StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29yb
 
 echo $sequenceFromEncoded->decoded();     //displays 'Hello World'
 echo $sequenceFromDecoded->encoded();     //displays 'SGVsbG8gV29ybGQ='
-echo $sequenceFromDecoded->toHttpValue(); //displays ':SGVsbG8gV29ybGQ=:'
-echo $sequenceFromEncoded->toHttpValue(); //displays ':SGVsbG8gV29ybGQ=:'
 ```
 
 The Byte Sequence data type is a special string as defined in the RFC to represent base64 encoded data.
@@ -55,7 +53,7 @@ To distinguish it from a normal string, the `Bakame\Http\StructuredFields\ByteSe
 
 To instantiate the class you are required to use the `ByteSequence::fromDecoded` or `ByteSequence::fromEncoded`
 named constructors. The class also exposes the complementary public methods `ByteSequence::decoded`,
-`ByteSequence::encoded` as well as the `ByteSequence::toHttpValue` to enable its textual representation.
+`ByteSequence::encoded`  to enable its textual representation.
 
 ## Usages
 

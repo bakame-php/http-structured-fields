@@ -30,7 +30,7 @@ final class Item implements StructuredField
     /**
      * @param array{
      *     0:Token|ByteSequence|int|float|string|bool,
-     *     1?:Parameters|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}>
+     *     1?:StructuredFieldOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}>
      * } $pair
      */
     public static function fromPair(array $pair): self
@@ -257,7 +257,8 @@ final class Item implements StructuredField
             is_int($this->value) => (string) $this->value,
             is_float($this->value) => $this->serializeDecimal($this->value),
             is_bool($this->value) => '?'.($this->value ? '1' : '0'),
-            default => $this->value->toHttpValue(),
+            $this->value instanceof Token => $this->value->toString(),
+            default => ':'.$this->value->encoded().':',
         }
         .$this->parameters->toHttpValue();
     }

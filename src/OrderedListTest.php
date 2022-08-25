@@ -15,9 +15,7 @@ final class OrderedListTest extends StructuredFieldTest
         __DIR__.'/../vendor/httpwg/structured-field-tests/listlist.json',
     ];
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_be_instantiated_with_an_collection_of_item(): void
     {
         $stringItem = Item::from('helloWorld');
@@ -27,13 +25,12 @@ final class OrderedListTest extends StructuredFieldTest
 
         self::assertSame($stringItem, $instance->get(0));
         self::assertFalse($instance->isEmpty());
+        self::assertTrue($instance->isNotEmpty());
 
-        self::assertEquals($arrayParams, iterator_to_array($instance, true));
+        self::assertEquals($arrayParams, iterator_to_array($instance));
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_add_or_remove_members(): void
     {
         $stringItem = Item::from('helloWorld');
@@ -62,9 +59,7 @@ final class OrderedListTest extends StructuredFieldTest
         self::assertTrue($instance->isEmpty());
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_can_unshift_insert_and_replace(): void
     {
         $instance = OrderedList::fromList();
@@ -80,9 +75,7 @@ final class OrderedListTest extends StructuredFieldTest
         self::assertTrue($instance->isEmpty());
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_replace_invalid_index(): void
     {
         $this->expectException(InvalidOffset::class);
@@ -91,9 +84,7 @@ final class OrderedListTest extends StructuredFieldTest
         $container->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_insert_at_an_invalid_index(): void
     {
         $this->expectException(InvalidOffset::class);
@@ -102,9 +93,7 @@ final class OrderedListTest extends StructuredFieldTest
         $container->insert(3, Item::from(ByteSequence::fromDecoded('Hello World')));
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
         $this->expectException(InvalidOffset::class);
@@ -115,9 +104,7 @@ final class OrderedListTest extends StructuredFieldTest
         $instance->get(3);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function test_it_can_generate_the_same_value(): void
     {
         $res = OrderedList::fromHttpValue('token, "string", ?1; parameter, (42 42.0)');
@@ -132,13 +119,11 @@ final class OrderedListTest extends StructuredFieldTest
         self::assertSame($res->toHttpValue(), $list->toHttpValue());
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_implements_the_array_access_interface(): void
     {
         $sequence = OrderedList::fromList();
-        $sequence[] = InnerList::from(42, 69);
+        $sequence[] = InnerList::from(42, 69); // @phpstan-ignore-line
 
         self::assertTrue(isset($sequence[0]));
         self::assertInstanceOf(InnerList::class, $sequence[0]);
@@ -153,9 +138,7 @@ final class OrderedListTest extends StructuredFieldTest
         self::assertFalse(isset($sequence[0]));
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function it_fails_to_insert_unknown_index_via_the_array_access_interface(): void
     {
         $this->expectException(StructuredFieldError::class);
@@ -164,9 +147,7 @@ final class OrderedListTest extends StructuredFieldTest
         $sequence[0] = Item::from(42.0);
     }
 
-    /**
-     * @test
-     */
+    /** @test */
     public function testArrayAccessThrowsInvalidIndex2(): void
     {
         $sequence = OrderedList::from();
@@ -207,5 +188,41 @@ final class OrderedListTest extends StructuredFieldTest
         self::assertCount(1, $wrongUpdatedItem->parameters);
 
         $structuredField->toHttpValue();
+    }
+
+    /** @test */
+    public function it_fails_to_fetch_an_value_using_an_integer(): void
+    {
+        $this->expectException(InvalidOffset::class);
+
+        $structuredField = OrderedList::from();
+        $structuredField->get('zero');
+    }
+
+    /** @test */
+    public function it_can_access_the_item_value(): void
+    {
+        $token = Token::fromString('token');
+        $innerList = InnerList::from('test');
+        $input = ['foobar', 0, false, $token, $innerList];
+        $structuredField = OrderedList::fromList($input);
+
+        self::assertSame($input, $structuredField->values());
+        self::assertFalse($structuredField->value(2));
+        self::assertNull($structuredField->value(42));
+        self::assertNull($structuredField->value('2'));
+        self::assertSame($innerList, $structuredField->value(-1));
+    }
+
+    /** @test */
+    public function it_will_strip_invalid_state_object_via_values_methods(): void
+    {
+        $bar = Item::from(Token::fromString('bar'));
+        $bar->parameters->set('baz', 42);
+        $structuredField = OrderedList::from(false, $bar);
+        $structuredField[1]->parameters['baz']->parameters->set('error', 'error');
+
+        self::assertNull($structuredField->value(1));
+        self::assertEquals([false], $structuredField->values());
     }
 }
