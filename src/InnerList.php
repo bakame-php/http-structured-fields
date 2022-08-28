@@ -128,7 +128,7 @@ final class InnerList implements StructuredFieldList
     {
         $mapper = function (Item $item): float|int|bool|string|null {
             try {
-                return self::filterForbiddenState($item)->decodedValue();
+                return self::filterForbiddenState($item)->value();
             } catch (Throwable) {
                 return null;
             }
@@ -143,7 +143,7 @@ final class InnerList implements StructuredFieldList
     public function value(string|int $offset): float|int|bool|string|null
     {
         try {
-            return $this->get($offset)->decodedValue();
+            return $this->get($offset)->value();
         } catch (Throwable) {
             return null;
         }

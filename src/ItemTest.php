@@ -75,12 +75,15 @@ final class ItemTest extends StructuredFieldTest
     public function it_instantiates_a_token(): void
     {
         self::assertSame('helloworld', Item::from(Token::fromString('helloworld'))->toHttpValue());
+        self::assertSame('helloworld', Item::fromToken('helloworld')->toHttpValue());
     }
 
     /** @test */
     public function it_instantiates_a_binary(): void
     {
-        self::assertInstanceOf(ByteSequence::class, Item::from(ByteSequence::fromDecoded('foobar'))->value);
+        self::assertSame('foobar', Item::from(ByteSequence::fromDecoded('foobar'))->value());
+        self::assertSame('foobar', Item::fromDecodedByteSequence('foobar')->value());
+        self::assertSame('foobar', Item::fromEncodedByteSequence('Zm9vYmFy')->value());
     }
 
     /** @test */

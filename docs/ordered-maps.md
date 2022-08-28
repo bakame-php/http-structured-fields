@@ -51,7 +51,7 @@ $dictionary->hasPair(-1); //return true
 echo $dictionary
     ->append('z', 42.0)
     ->delete('b', 'c')
-    ->toHttpValue(); //returns "a=?0, z=42.0"
+    ->toHttpValue(); // returns "a=?0, z=42.0"
 ```
 
 ## Parameters specific methods
@@ -65,10 +65,10 @@ The `Parameters` instance exposes the following additional methods:
 use Bakame\Http\StructuredFields;
 
 $parameters = StructuredFields\Parameters::fromAssociative(['b' => true, 'foo' => 'bar']);
-$parameters->keys(); // returns ['b', 'foo']
-$parameters->values(); // returns [true, 'bar']
+$parameters->keys();     // returns ['b', 'foo']
+$parameters->values();   // returns [true, 'bar']
 $parameters->value('b'); // returns true
-$parameters->get('b'); // returns Item::from(true)
+$parameters->get('b');   // returns Item::from(true)
 $parameters['b']; // returns Item::from(true)
 iterator_to_array($parameters->toPairs(), true); // returns [['b', Item::from(true)], ['foo', Item::from('bar')]]
 iterator_to_array($parameters, true); // returns ['b' => Item::from(true), 'foo' => Item::from('bar')]

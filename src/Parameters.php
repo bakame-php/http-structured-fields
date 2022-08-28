@@ -136,7 +136,7 @@ final class Parameters implements StructuredFieldOrderedMap
     {
         $formatter = fn (Item $member, string $key): string => match (true) {
             $member->parameters->hasMembers() => throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.'),
-            true === $member->value => ';'.$key,
+            true === $member->value() => ';'.$key,
             default => ';'.$key.'='.$member->toHttpValue(),
         };
 
@@ -201,7 +201,7 @@ final class Parameters implements StructuredFieldOrderedMap
     {
         $mapper = function (Item $item): float|int|bool|string|null {
             try {
-                return self::filterMember($item)->decodedValue();
+                return self::filterMember($item)->value();
             } catch (Throwable) {
                 return null;
             }
@@ -216,7 +216,7 @@ final class Parameters implements StructuredFieldOrderedMap
     public function value(string|int $offset): float|int|bool|string|null
     {
         try {
-            return $this->get($offset)->decodedValue();
+            return $this->get($offset)->value();
         } catch (Throwable) {
             return null;
         }

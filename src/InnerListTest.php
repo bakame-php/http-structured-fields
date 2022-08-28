@@ -52,8 +52,8 @@ final class InnerListTest extends TestCase
         $instance->insert(1);
         $member = $instance->get(1);
         self::assertCount(2, $instance);
-        self::assertIsString($member->value);
-        self::assertStringContainsString('BarBaz', $member->value);
+        self::assertIsString($member->value());
+        self::assertStringContainsString('BarBaz', $member->value());
 
         $instance->remove(0, 1);
         self::assertCount(0, $instance);
@@ -128,9 +128,9 @@ final class InnerListTest extends TestCase
         self::assertCount(3, $instance);
         self::assertCount(1, $instance->parameters);
         self::assertSame('bar(', $instance->parameters->value('foo'));
-        self::assertSame('hello)world', $instance->get(0)->value);
-        self::assertSame(42, $instance->get(1)->value);
-        self::assertSame(42.0, $instance->get(2)->value);
+        self::assertSame('hello)world', $instance->get(0)->value());
+        self::assertSame(42, $instance->get(1)->value());
+        self::assertSame(42.0, $instance->get(2)->value());
         self::assertSame('doe', $instance->get(2)->parameters->value('john'));
     }
 
@@ -150,11 +150,11 @@ final class InnerListTest extends TestCase
         $sequence[] = 42;
 
         self::assertTrue(isset($sequence[0]));
-        self::assertEquals(42, $sequence[0]->value);
+        self::assertEquals(42, $sequence[0]->value());
 
         $sequence[0] = false;
 
-        self::assertNotEquals(42, $sequence[0]->value);
+        self::assertNotEquals(42, $sequence[0]->value());
         unset($sequence[0]);
 
         self::assertCount(0, $sequence);

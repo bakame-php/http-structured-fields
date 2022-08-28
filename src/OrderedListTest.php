@@ -51,8 +51,8 @@ final class OrderedListTest extends StructuredFieldTest
 
         self::assertCount(2, $instance);
         self::assertInstanceOf(Item::class, $member);
-        self::assertIsString($member->value);
-        self::assertStringContainsString('BarBaz', $member->value);
+        self::assertIsString($member->value());
+        self::assertStringContainsString('BarBaz', $member->value());
 
         $instance->remove(0, 1);
         self::assertCount(0, $instance);
@@ -127,7 +127,7 @@ final class OrderedListTest extends StructuredFieldTest
 
         self::assertTrue(isset($sequence[0]));
         self::assertInstanceOf(InnerList::class, $sequence[0]);
-        self::assertEquals(42, $sequence[0]->get(0)->value);
+        self::assertEquals(42, $sequence[0]->get(0)->value());
 
         $sequence[0] = false;
 

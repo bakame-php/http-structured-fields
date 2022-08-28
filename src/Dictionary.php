@@ -85,7 +85,7 @@ final class Dictionary implements StructuredFieldOrderedMap
     public function toHttpValue(): string
     {
         $formatter = fn (Item|InnerList $member, string $key): string => match (true) {
-            $member instanceof Item && true === $member->value => $key.$member->parameters->toHttpValue(),
+            $member instanceof Item && true === $member->value() => $key.$member->parameters->toHttpValue(),
             default => $key.'='.$member->toHttpValue(),
         };
 
@@ -156,7 +156,7 @@ final class Dictionary implements StructuredFieldOrderedMap
             try {
                 $member = self::filterForbiddenState($item);
 
-                return $member instanceof Item ? $member->decodedValue() : $member;
+                return $member instanceof Item ? $member->value() : $member;
             } catch (Throwable) {
                 return null;
             }
@@ -179,7 +179,7 @@ final class Dictionary implements StructuredFieldOrderedMap
         }
 
         if ($member instanceof Item) {
-            return $member->decodedValue();
+            return $member->value();
         }
 
         return $member;

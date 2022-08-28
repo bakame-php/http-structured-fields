@@ -96,8 +96,8 @@ final class ParametersTest extends StructuredFieldTest
         $foundItem = $instance->pair(1);
 
         self::assertCount(2, $instance);
-        self::assertIsString($foundItem[1]->value);
-        self::assertStringContainsString('BarBaz', $foundItem[1]->value);
+        self::assertIsString($foundItem[1]->value());
+        self::assertStringContainsString('BarBaz', $foundItem[1]->value());
 
         $instance->delete('foobar', 'string');
         self::assertCount(0, $instance);

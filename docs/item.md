@@ -26,8 +26,7 @@ use Bakame\Http\StructuredFields;
 
 $token = StructuredFields\Token::fromString('bar');
 
-echo $token->value;              //displays 'bar'
-echo $dictionary->toHttpValue(); //displays 'bar'
+echo $token->value; // displays 'bar'
 ```
 
 The Token data type is a special string as defined in the RFC. To distinguish it from a normal string,
@@ -44,8 +43,8 @@ use Bakame\Http\StructuredFields;
 $sequenceFromDecoded = StructuredFields\ByteSequence::fromDecoded("Hello World");
 $sequenceFromEncoded = StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29ybGQ=");
 
-echo $sequenceFromEncoded->decoded(); //displays 'Hello World'
-echo $sequenceFromDecoded->encoded(); //displays 'SGVsbG8gV29ybGQ='
+echo $sequenceFromEncoded->decoded(); // displays 'Hello World'
+echo $sequenceFromDecoded->encoded(); // displays 'SGVsbG8gV29ybGQ='
 ```
 
 The Byte Sequence data type is a special string as defined in the RFC to represent base64 encoded data.
@@ -66,9 +65,9 @@ keys are strings and the value are bare items. Their public API is covered in th
 use Bakame\Http\StructuredFields;
 
 $item = StructuredFields\Item::from("hello world", ["a" => true]);
-$item->value;      //returns "hello world"
-$item->isString(); //returns true
-$item->isToken();  //returns false
+$item->value();    // returns "hello world"
+$item->isString(); // returns true
+$item->isToken();  // returns false
 $item->parameters->value("a"); //returns true
 ```
 
@@ -87,12 +86,21 @@ $item = StructuredFields\Item::fromPair([
         ["a", StructuredFields\ByteSequence::fromDecoded("Hello World")],
     ]
 ]);
-$item->value; //returns "hello world"
-$item->isString(); //return true
-$item->parameters->get("a")->isByteSequence(); //returns true
-$item->parameters->value("a"); //returns the decoded value 'Hello World'
-echo $item->toHttpValue();     //returns "hello world";a=:SGVsbG8gV29ybGQ=:
+$item->value(); // returns "hello world"
+$item->isString(); // returns true
+$item->parameters->get("a")->isByteSequence(); // returns true
+$item->parameters->value("a"); // returns the decoded value 'Hello World'
+echo $item->toHttpValue();     // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
+
+It is possible to use
+
+- `Item::fromToken` internally use `Token::fromString` to
+- `Item::fromEncodedByteSequence` internally use `ByteSequence::fromEncoded`
+- `Item::fromDecodedByteSequence` internally use `ByteSequence::fromDecoded`
+
+Thos listed named constructores expect a string as its first argument and the 
+same argument definition as in `Item::from` for parameters argument.
 
 `Item::fromPair` is an alternative to the `Item::from` named constructor, it expects
 a tuple composed by an array as a list where:
@@ -112,10 +120,9 @@ And on method called `Item::decodedValue()` which returns the underlying value f
 use Bakame\Http\StructuredFields;
 
 $item = StructuredFields\Item::from(StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29ybGQ=")]);
-$item->value; //returns instance of StructuredFields\ByteSequence object
-$item->isByteSequence(); //returns true
-$item->decodedValue(); //returns the decoded value 'Hello World'
-echo 
+$item->isByteSequence(); // returns true
+echo $item->value(); // returns the decoded value 'Hello World'
+```
 
 **Of note: to instantiate a decimal number type a float MUST be used as the first argument of `Item::from`.**
 

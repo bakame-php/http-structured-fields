@@ -143,7 +143,7 @@ final class OrderedList implements StructuredFieldList
             try {
                 $member = self::filterForbiddenState($item);
 
-                return $member instanceof Item ? $member->decodedValue() : $member;
+                return $member instanceof Item ? $member->value() : $member;
             } catch (Throwable) {
                 return null;
             }
@@ -166,7 +166,7 @@ final class OrderedList implements StructuredFieldList
         }
 
         if ($member instanceof Item) {
-            return $member->decodedValue();
+            return $member->value();
         }
 
         return $member;

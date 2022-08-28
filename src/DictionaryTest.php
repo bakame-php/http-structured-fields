@@ -77,8 +77,8 @@ final class DictionaryTest extends StructuredFieldTest
         /** @var array{0:string, 1:Item} $foundItem */
         $foundItem = $instance->pair(1);
 
-        self::assertIsString($foundItem[1]->value);
-        self::assertStringContainsString('BarBaz', $foundItem[1]->value);
+        self::assertIsString($foundItem[1]->value());
+        self::assertStringContainsString('BarBaz', $foundItem[1]->value());
 
         $instance->delete('foobar', 'string');
         self::assertCount(0, $instance);

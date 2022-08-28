@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use Stringable;
 use function count;
 use function in_array;
 use function is_bool;
@@ -22,7 +23,7 @@ use function trim;
 final class Item implements StructuredField
 {
     private function __construct(
-        public readonly Token|ByteSequence|int|float|string|bool $value,
+        private Token|ByteSequence|int|float|string|bool $value,
         public readonly Parameters $parameters
     ) {
     }
@@ -62,6 +63,36 @@ final class Item implements StructuredField
             is_string($value) => self::filterString($value),
             default => $value,
         }, Parameters::fromAssociative($parameters));
+    }
+
+    /**
+     * Returns a new instance from an encoded byte sequence and an iterable of key-value parameters.
+     *
+     * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
+     */
+    public static function fromEncodedByteSequence(string|Stringable $value, iterable $parameters = []): self
+    {
+        return self::from(ByteSequence::fromEncoded($value), $parameters);
+    }
+
+    /**
+     * Returns a new instance from a decoded byte sequence and an iterable of key-value parameters.
+     *
+     * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
+     */
+    public static function fromDecodedByteSequence(string|Stringable $value, iterable $parameters = []): self
+    {
+        return self::from(ByteSequence::fromDecoded($value), $parameters);
+    }
+
+    /**
+     * Returns a new instance from a Token and an iterable of key-value parameters.
+     *
+     * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
+     */
+    public static function fromToken(string|Stringable $value, iterable $parameters = []): self
+    {
+        return self::from(Token::fromString($value), $parameters);
     }
 
     /**
@@ -248,7 +279,7 @@ final class Item implements StructuredField
     /**
      * Returns the underlying value decoded.
      */
-    public function decodedValue(): string|int|float|bool
+    public function value(): string|int|float|bool
     {
         return match (true) {
             $this->value instanceof Token => $this->value->value,
