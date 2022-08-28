@@ -41,7 +41,7 @@ final class Parameters implements StructuredFieldOrderedMap
      */
     private static function filterMember(Item $item): Item
     {
-        if ($item->parameters->isNotEmpty()) {
+        if ($item->parameters->hasMembers()) {
             throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
         }
 
@@ -135,7 +135,7 @@ final class Parameters implements StructuredFieldOrderedMap
     public function toHttpValue(): string
     {
         $formatter = fn (Item $member, string $key): string => match (true) {
-            !$member->parameters->isEmpty() => throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.'),
+            $member->parameters->hasMembers() => throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.'),
             true === $member->value => ';'.$key,
             default => ';'.$key.'='.$member->toHttpValue(),
         };
@@ -153,7 +153,7 @@ final class Parameters implements StructuredFieldOrderedMap
         return [] === $this->members;
     }
 
-    public function isNotEmpty(): bool
+    public function hasMembers(): bool
     {
         return !$this->isEmpty();
     }
@@ -195,27 +195,31 @@ final class Parameters implements StructuredFieldOrderedMap
     /**
      * Returns all containers Item values.
      *
-     * @throws ForbiddenStateError if the bare item contains parameters itself
-     *
-     * @return array<string, Token|ByteSequence|float|int|bool|string>
+     * @return array<string, float|int|bool|string>
      */
     public function values(): array
     {
-        return array_map(fn (Item $item): Token|ByteSequence|float|int|bool|string => self::filterMember($item)->value, $this->members);
+        $mapper = function (Item $item): float|int|bool|string|null {
+            try {
+                return self::filterMember($item)->decodedValue();
+            } catch (Throwable) {
+                return null;
+            }
+        };
+
+        return array_filter(array_map($mapper, $this->members), fn (mixed $value): bool => null !== $value);
     }
 
     /**
      * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
      */
-    public function value(string|int $offset): Token|ByteSequence|float|int|bool|string|null
+    public function value(string|int $offset): float|int|bool|string|null
     {
         try {
-            $member = $this->get($offset);
+            return $this->get($offset)->decodedValue();
         } catch (Throwable) {
             return null;
         }
-
-        return $member->value;
     }
 
     /**

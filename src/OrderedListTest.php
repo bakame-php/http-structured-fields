@@ -25,7 +25,7 @@ final class OrderedListTest extends StructuredFieldTest
 
         self::assertSame($stringItem, $instance->get(0));
         self::assertFalse($instance->isEmpty());
-        self::assertTrue($instance->isNotEmpty());
+        self::assertTrue($instance->hasMembers());
 
         self::assertEquals($arrayParams, iterator_to_array($instance));
     }
@@ -207,7 +207,7 @@ final class OrderedListTest extends StructuredFieldTest
         $input = ['foobar', 0, false, $token, $innerList];
         $structuredField = OrderedList::fromList($input);
 
-        self::assertSame($input, $structuredField->values());
+        self::assertSame(['foobar', 0, false, 'token', $innerList], $structuredField->values());
         self::assertFalse($structuredField->value(2));
         self::assertNull($structuredField->value(42));
         self::assertNull($structuredField->value('2'));

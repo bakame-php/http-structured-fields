@@ -10,10 +10,13 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `OrderedList`, `InnerList` now implements the `StructuredFieldList` interface.
 - `Parameters` and `Dictionnary` now implements the PHP `StructuredFieldOrderedMap` interface.
 - `Token::value` is a readonly property.
+- `Item::decodedValue` returns the decoded value of an Item (returns value can be `float|int|string|bool`).
 
 ### Fixed
 
-- None
+- **[BC Break]** `Parameters::values` and `Parameters::value` methods also decode `ByteSequence` and `Token` classes.
+- **[BC Break]** `Parameters::values` methods no longer throw on invalid state; value is skipped from returned array.
+- **[BC Break]** `Parameters::value` methods no longer throw on invalid state; `null` value is returned instead.
 
 ### Deprecated
 
@@ -21,7 +24,6 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- **[BC Break]** `Parameters::values` methods no longer throw on invalid state; value is skipped from returned array.
 - **[BC Break]** `__set_state` implementation in all objects.
 - **[BC Break]** `Token` no longer implements the `StructuredField` interface.
 - **[BC Break]** `Token::toHttpValue` is removed; use the `Item` class to serialize a `Token`.

@@ -27,7 +27,7 @@ final class InnerListTest extends TestCase
         self::assertEquals($arrayParams, iterator_to_array($instance));
         $instance->clear();
         self::assertTrue($instance->isEmpty());
-        self::assertFalse($instance->isNotEmpty());
+        self::assertFalse($instance->hasMembers());
     }
 
     /** @test */
@@ -41,7 +41,7 @@ final class InnerListTest extends TestCase
         self::assertCount(2, $instance);
         self::assertTrue($instance->has(1));
         self::assertTrue($instance->parameters->isEmpty());
-        self::assertFalse($instance->parameters->isNotEmpty());
+        self::assertFalse($instance->parameters->hasMembers());
 
         $instance->remove(1);
 
@@ -58,7 +58,7 @@ final class InnerListTest extends TestCase
         $instance->remove(0, 1);
         self::assertCount(0, $instance);
         self::assertTrue($instance->isEmpty());
-        self::assertFalse($instance->isNotEmpty());
+        self::assertFalse($instance->hasMembers());
     }
 
     /** @test */
@@ -131,7 +131,7 @@ final class InnerListTest extends TestCase
         self::assertSame('hello)world', $instance->get(0)->value);
         self::assertSame(42, $instance->get(1)->value);
         self::assertSame(42.0, $instance->get(2)->value);
-        self::assertInstanceOf(Token::class, $instance->get(2)->parameters->value('john'));
+        self::assertSame('doe', $instance->get(2)->parameters->value('john'));
     }
 
     /** @test */
@@ -227,12 +227,12 @@ final class InnerListTest extends TestCase
         $input = ['foobar', 0, false, $token];
         $structuredField = InnerList::fromList($input);
 
-        self::assertSame($input, $structuredField->values());
+        self::assertSame(['foobar', 0, false, 'token'], $structuredField->values());
 
         self::assertFalse($structuredField->value(2));
         self::assertNull($structuredField->value(42));
         self::assertNull($structuredField->value('2'));
-        self::assertSame($token, $structuredField->value(-1));
+        self::assertSame('token', $structuredField->value(-1));
     }
 
     /** @test */

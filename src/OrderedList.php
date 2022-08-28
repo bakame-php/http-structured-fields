@@ -57,9 +57,9 @@ final class OrderedList implements StructuredFieldList
 
     private static function filterForbiddenState(InnerList|Item $member): InnerList|Item
     {
-        foreach ($member->parameters as $item) {
-            if ($item->parameters->isNotEmpty()) {
-                throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
+        foreach ($member->parameters as $offset => $item) {
+            if ($item->parameters->hasMembers()) {
+                throw new ForbiddenStateError('Parameter `"'.$offset.'"` is in invalid state; Parameters instances can not contain parameterized Items.');
             }
         }
 
@@ -102,7 +102,7 @@ final class OrderedList implements StructuredFieldList
         return [] === $this->members;
     }
 
-    public function isNotEmpty(): bool
+    public function hasMembers(): bool
     {
         return !$this->isEmpty();
     }
@@ -135,15 +135,15 @@ final class OrderedList implements StructuredFieldList
     /**
      * Returns all containers Item values.
      *
-     * @return array<int, InnerList<int, Item>|Token|ByteSequence|float|int|bool|string>
+     * @return array<int, InnerList<int, Item>|float|int|bool|string>
      */
     public function values(): array
     {
-        $mapper = function (Item|InnerList $item): InnerList|Token|ByteSequence|float|int|bool|string|null {
+        $mapper = function (Item|InnerList $item): InnerList|float|int|bool|string|null {
             try {
                 $member = self::filterForbiddenState($item);
 
-                return $member instanceof Item ? $member->value : $member;
+                return $member instanceof Item ? $member->decodedValue() : $member;
             } catch (Throwable) {
                 return null;
             }
@@ -155,9 +155,9 @@ final class OrderedList implements StructuredFieldList
     /**
      * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
      *
-     * @return InnerList<int, Item>|Token|ByteSequence|float|int|bool|string|null
+     * @return InnerList<int, Item>|float|int|bool|string|null
      */
-    public function value(string|int $offset): InnerList|ByteSequence|Token|float|int|bool|string|null
+    public function value(string|int $offset): InnerList|float|int|bool|string|null
     {
         try {
             $member = $this->get($offset);
@@ -166,7 +166,7 @@ final class OrderedList implements StructuredFieldList
         }
 
         if ($member instanceof Item) {
-            return $member->value;
+            return $member->decodedValue();
         }
 
         return $member;

@@ -32,7 +32,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertEquals($arrayParams, iterator_to_array($instance));
         $instance->clear();
         self::assertTrue($instance->isEmpty());
-        self::assertFalse($instance->isNotEmpty());
+        self::assertFalse($instance->hasMembers());
     }
 
     /** @test */
@@ -261,11 +261,11 @@ final class DictionaryTest extends StructuredFieldTest
     {
         $structuredField = Dictionary::fromPairs();
         $structuredField['foo'] = 'bar';
-        self::assertTrue($structuredField->isNotEmpty());
+        self::assertTrue($structuredField->hasMembers());
 
         unset($structuredField['foo']);
 
-        self::assertFalse($structuredField->isNotEmpty());
+        self::assertFalse($structuredField->hasMembers());
     }
 
     /** @test */
@@ -293,7 +293,7 @@ final class DictionaryTest extends StructuredFieldTest
             'foobar' => 'foobar',
             'zero' => 0,
             'false' => false,
-            'token' => $token,
+            'token' => 'token',
         ], $structuredField->values());
 
         self::assertFalse($structuredField->value('false'));

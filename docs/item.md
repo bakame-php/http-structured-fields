@@ -8,7 +8,7 @@ Items can have different types that are translated to PHP using:
 - native type where possible
 - specific classes defined in the package namespace to represent non-native type
 
-The table below summarize the item value type.
+The table below summarizes the item value type.
 
 | HTTP DataType | Package Data Type    | validation method      |
 |---------------|----------------------|------------------------|
@@ -44,8 +44,8 @@ use Bakame\Http\StructuredFields;
 $sequenceFromDecoded = StructuredFields\ByteSequence::fromDecoded("Hello World");
 $sequenceFromEncoded = StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29ybGQ=");
 
-echo $sequenceFromEncoded->decoded();     //displays 'Hello World'
-echo $sequenceFromDecoded->encoded();     //displays 'SGVsbG8gV29ybGQ='
+echo $sequenceFromEncoded->decoded(); //displays 'Hello World'
+echo $sequenceFromDecoded->encoded(); //displays 'SGVsbG8gV29ybGQ='
 ```
 
 The Byte Sequence data type is a special string as defined in the RFC to represent base64 encoded data.
@@ -90,8 +90,8 @@ $item = StructuredFields\Item::fromPair([
 $item->value; //returns "hello world"
 $item->isString(); //return true
 $item->parameters->get("a")->isByteSequence(); //returns true
-$item->parameters->value("a")->decoded(); //returns 'Hello World'
-echo $item->toHttpValue(); //returns "hello world";a=:SGVsbG8gV29ybGQ=:
+$item->parameters->value("a"); //returns the decoded value 'Hello World'
+echo $item->toHttpValue();     //returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
 
 `Item::fromPair` is an alternative to the `Item::from` named constructor, it expects
@@ -105,6 +105,17 @@ Once instantiated, accessing `Item` properties is done via two (2) readonly prop
 
 - `Item::value` which returns the instance underlying value
 - `Item::parameters` which returns the parameters associated to the `Item` as a distinct `Parameters` object
+
+And on method called `Item::decodedValue()` which returns the underlying value fully decoded.
+
+```php
+use Bakame\Http\StructuredFields;
+
+$item = StructuredFields\Item::from(StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29ybGQ=")]);
+$item->value; //returns instance of StructuredFields\ByteSequence object
+$item->isByteSequence(); //returns true
+$item->decodedValue(); //returns the decoded value 'Hello World'
+echo 
 
 **Of note: to instantiate a decimal number type a float MUST be used as the first argument of `Item::from`.**
 

@@ -246,6 +246,18 @@ final class Item implements StructuredField
     }
 
     /**
+     * Returns the underlying value decoded.
+     */
+    public function decodedValue(): string|int|float|bool
+    {
+        return match (true) {
+            $this->value instanceof Token => $this->value->value,
+            $this->value instanceof ByteSequence => $this->value->decoded(),
+            default => $this->value,
+        };
+    }
+
+    /**
      * Serialize the Item value according to RFC8941.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.1

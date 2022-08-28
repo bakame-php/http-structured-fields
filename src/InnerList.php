@@ -58,9 +58,9 @@ final class InnerList implements StructuredFieldList
 
     private static function filterForbiddenState(Item $member): Item
     {
-        foreach ($member->parameters as $item) {
-            if ($item->parameters->isNotEmpty()) {
-                throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
+        foreach ($member->parameters as $offset => $item) {
+            if ($item->parameters->hasMembers()) {
+                throw new ForbiddenStateError('Parameter `"'.$offset.'"` is in invalid state; Parameters instances can not contain parameterized Items.');
             }
         }
 
@@ -90,7 +90,7 @@ final class InnerList implements StructuredFieldList
         return [] === $this->members;
     }
 
-    public function isNotEmpty(): bool
+    public function hasMembers(): bool
     {
         return !$this->isEmpty();
     }
@@ -126,13 +126,12 @@ final class InnerList implements StructuredFieldList
      */
     public function values(): array
     {
-        $mapper = function (Item $item): Token|ByteSequence|float|int|bool|string|null {
+        $mapper = function (Item $item): float|int|bool|string|null {
             try {
-                $member = self::filterForbiddenState($item);
+                return self::filterForbiddenState($item)->decodedValue();
             } catch (Throwable) {
                 return null;
             }
-            return $member->value;
         };
 
         return array_filter(array_map($mapper, $this->members), fn (mixed $value): bool => null !== $value);
@@ -141,15 +140,13 @@ final class InnerList implements StructuredFieldList
     /**
      * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
      */
-    public function value(string|int $offset): Token|ByteSequence|float|int|bool|string|null
+    public function value(string|int $offset): float|int|bool|string|null
     {
         try {
-            $member = $this->get($offset);
+            return $this->get($offset)->decodedValue();
         } catch (Throwable) {
             return null;
         }
-
-        return $member->value;
     }
 
     public function get(string|int $index): Item

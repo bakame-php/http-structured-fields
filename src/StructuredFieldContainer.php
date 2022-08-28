@@ -25,7 +25,7 @@ interface StructuredFieldContainer extends Countable, ArrayAccess, IteratorAggre
     /**
      * Tells whether the instance contains members.
      */
-    public function isNotEmpty(): bool;
+    public function hasMembers(): bool;
 
     /**
      * Remove all members from the instance.
@@ -73,7 +73,7 @@ interface StructuredFieldContainer extends Countable, ArrayAccess, IteratorAggre
     public function values(): array;
 
     /**
-     * @return StructuredFieldContainer<int,Item>|ByteSequence|Token|string|int|float|bool|null
+     * @return StructuredFieldContainer<int,Item>|string|int|float|bool|null
      */
-    public function value(string|int $offset): StructuredFieldContainer|ByteSequence|Token|float|int|bool|string|null;
+    public function value(string|int $offset): StructuredFieldContainer|float|int|bool|string|null;
 }

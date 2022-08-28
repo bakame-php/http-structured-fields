@@ -321,11 +321,11 @@ final class ParametersTest extends StructuredFieldTest
     {
         $structuredField = Parameters::fromPairs();
         $structuredField['foo'] = 'bar';
-        self::assertTrue($structuredField->isNotEmpty());
+        self::assertTrue($structuredField->hasMembers());
 
         unset($structuredField['foo']);
 
-        self::assertFalse($structuredField->isNotEmpty());
+        self::assertFalse($structuredField->hasMembers());
     }
 
     /** @test */
