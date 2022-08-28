@@ -26,7 +26,7 @@ use Bakame\Http\StructuredFields;
 
 $token = StructuredFields\Token::fromString('bar');
 
-echo $token->toString();         //displays 'bar'
+echo $token->value;              //displays 'bar'
 echo $dictionary->toHttpValue(); //displays 'bar'
 ```
 
@@ -34,7 +34,7 @@ The Token data type is a special string as defined in the RFC. To distinguish it
 the `Bakame\Http\StructuredFields\Token` class is used.
 
 To instantiate the class you are required to use the `Token::fromString` named constructor.
-The class also exposes the complementary public methods `Token::toString` to enable its textual representation.
+The class also exposes its value via the public readonly property `value` to enable its textual representation.
 
 ### Byte Sequence
 

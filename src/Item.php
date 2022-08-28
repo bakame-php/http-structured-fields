@@ -257,7 +257,7 @@ final class Item implements StructuredField
             is_int($this->value) => (string) $this->value,
             is_float($this->value) => $this->serializeDecimal($this->value),
             is_bool($this->value) => '?'.($this->value ? '1' : '0'),
-            $this->value instanceof Token => $this->value->toString(),
+            $this->value instanceof Token => $this->value->value,
             default => ':'.$this->value->encoded().':',
         }
         .$this->parameters->toHttpValue();

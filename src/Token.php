@@ -9,7 +9,7 @@ use function preg_match;
 
 final class Token
 {
-    private function __construct(private string $value)
+    private function __construct(public readonly string $value)
     {
         if (1 !== preg_match("/^([a-z*][a-z\d:\/!#\$%&'*+\-.^_`|~]*)$/i", $this->value)) {
             throw new SyntaxError('Invalid characters in token');
@@ -19,10 +19,5 @@ final class Token
     public static function fromString(string|Stringable $value): self
     {
         return new self((string) $value);
-    }
-
-    public function toString(): string
-    {
-        return $this->value;
     }
 }
