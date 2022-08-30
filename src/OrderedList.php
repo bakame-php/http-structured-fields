@@ -135,29 +135,27 @@ final class OrderedList implements MemberList
     /**
      * Returns all containers Item values.
      *
-     * @return array<int, InnerList<int, Item>|float|int|bool|string>
+     * @return array<int, array<int, float|int|bool|string>|float|int|bool|string>
      */
     public function values(): array
     {
-        $mapper = function (Item|InnerList $item): InnerList|float|int|bool|string|null {
-            try {
-                $member = self::filterForbiddenState($item);
-
-                return $member instanceof Item ? $member->value() : $member;
-            } catch (Throwable) {
-                return null;
+        $result = [];
+        foreach ($this->members as $offset => $item) {
+            $value = $this->value($offset);
+            if (null !== $value) {
+                $result[$offset] = $value;
             }
-        };
+        }
 
-        return array_filter(array_map($mapper, $this->members), fn (mixed $value): bool => null !== $value);
+        return $result;
     }
 
     /**
      * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
      *
-     * @return InnerList<int, Item>|float|int|bool|string|null
+     * @return array<int, float|int|bool|string>|float|int|bool|string|null
      */
-    public function value(string|int $offset): InnerList|float|int|bool|string|null
+    public function value(string|int $offset): array|float|int|bool|string|null
     {
         try {
             $member = $this->get($offset);
@@ -169,7 +167,7 @@ final class OrderedList implements MemberList
             return $member->value();
         }
 
-        return $member;
+        return $member->values();
     }
 
     public function get(string|int $offset): Item|InnerList

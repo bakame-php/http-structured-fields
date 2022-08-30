@@ -206,9 +206,9 @@ final class Parameters implements MemberOrderedMap
     {
         $result = [];
         foreach ($this->members as $offset => $item) {
-            try {
-                $result[$offset] = self::filterMember($item, $offset)->value();
-            } catch (Throwable) {
+            $value = $this->value($offset);
+            if (null !== $value) {
+                $result[$offset] = $value;
             }
         }
 

@@ -68,12 +68,12 @@ interface MemberContainer extends Countable, ArrayAccess, IteratorAggregate, Str
     public function offsetUnset(mixed $offset): void;
 
     /**
-     * @return array<TKey, MemberContainer<int,Item>|ByteSequence|Token|string|int|float|bool>
+     * @return array<TKey, array<array-key, string|int|float|bool>|string|int|float|bool>
      */
     public function values(): array;
 
     /**
-     * @return MemberContainer<int,Item>|string|int|float|bool|null
+     * @return array<array-key, string|int|float|bool>|string|int|float|bool|null
      */
-    public function value(string|int $offset): MemberContainer|float|int|bool|string|null;
+    public function value(string|int $offset): array|float|int|bool|string|null;
 }

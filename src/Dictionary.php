@@ -7,7 +7,6 @@ namespace Bakame\Http\StructuredFields;
 use Iterator;
 use Throwable;
 use TypeError;
-use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -148,29 +147,27 @@ final class Dictionary implements MemberOrderedMap
     /**
      * Returns all containers Item values.
      *
-     * @return array<string, InnerList<int, Item>|float|int|bool|string>
+     * @return array<string, array<int, float|int|bool|string>|float|int|bool|string>
      */
     public function values(): array
     {
-        $mapper = function (Item|InnerList $item): InnerList|float|int|bool|string|null {
-            try {
-                $member = self::filterForbiddenState($item);
-
-                return $member instanceof Item ? $member->value() : $member;
-            } catch (Throwable) {
-                return null;
+        $result = [];
+        foreach ($this->members as $offset => $item) {
+            $value = $this->value($offset);
+            if (null !== $value) {
+                $result[$offset] = $value;
             }
-        };
+        }
 
-        return array_filter(array_map($mapper, $this->members), fn (mixed $value): bool => null !== $value);
+        return $result;
     }
 
     /**
      * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
      *
-     * @return InnerList<int, Item>|float|int|bool|string|null
+     * @return array<int, float|int|bool|string>|float|int|bool|string|null
      */
-    public function value(string|int $offset): InnerList|float|int|bool|string|null
+    public function value(string|int $offset): array|float|int|bool|string|null
     {
         try {
             $member = $this->get($offset);
@@ -182,7 +179,7 @@ final class Dictionary implements MemberOrderedMap
             return $member->value();
         }
 
-        return $member;
+        return $member->values();
     }
 
     /**

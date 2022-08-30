@@ -122,15 +122,15 @@ final class InnerList implements MemberList
     /**
      * Returns all containers Item values.
      *
-     * @return array<int, Token|ByteSequence|float|int|bool|string>
+     * @return array<int, float|int|bool|string>
      */
     public function values(): array
     {
         $result = [];
         foreach ($this->members as $offset => $item) {
-            try {
-                $result[$offset] = self::filterMember($item)->value();
-            } catch (Throwable) {
+            $value = $this->value($offset);
+            if (null !== $value) {
+                $result[$offset] = $value;
             }
         }
 

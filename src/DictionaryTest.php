@@ -301,8 +301,8 @@ final class DictionaryTest extends StructuredFieldTest
 
         self::assertNull($structuredField->value('a'));
         self::assertArrayNotHasKey('a', $structuredField->values());
-        self::assertEquals(['b' => false, 'c' => $innerList], $structuredField->values());
-        self::assertSame($innerList, $structuredField->value('c'));
-        self::assertSame($innerList, $structuredField->values()['c']);
+        self::assertEquals(['b' => false, 'c' => [0 => 'foobar']], $structuredField->values());
+        self::assertSame([0 => 'foobar'], $structuredField->value('c'));
+        self::assertSame([0 => 'foobar'], $structuredField->values()['c']);
     }
 }
