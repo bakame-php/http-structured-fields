@@ -191,13 +191,13 @@ final class Dictionary implements StructuredFieldOrderedMap
      * @throws SyntaxError   If the key is invalid
      * @throws InvalidOffset If the key is not found
      */
-    public function get(string|int $key): Item|InnerList
+    public function get(string|int $offset): Item|InnerList
     {
-        if (is_int($key) || !array_key_exists($key, $this->members)) {
-            throw InvalidOffset::dueToKeyNotFound($key);
+        if (is_int($offset) || !array_key_exists($offset, $this->members)) {
+            throw InvalidOffset::dueToKeyNotFound($offset);
         }
 
-        return self::filterForbiddenState($this->members[$key]);
+        return self::filterForbiddenState($this->members[$offset]);
     }
 
     /**
@@ -274,9 +274,9 @@ final class Dictionary implements StructuredFieldOrderedMap
 
     private static function filterForbiddenState(InnerList|Item $member): InnerList|Item
     {
-        foreach ($member->parameters as $item) {
+        foreach ($member->parameters as $offset => $item) {
             if ($item->parameters->hasMembers()) {
-                throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
+                throw new ForbiddenStateError('Parameter member `"'.$offset.'"` is in invalid state; Parameters instances can only contain bare items.');
             }
         }
 
@@ -306,18 +306,6 @@ final class Dictionary implements StructuredFieldOrderedMap
     public function clear(): self
     {
         $this->members = [];
-
-        return $this;
-    }
-
-    /**
-     * Ensure the container contains valid members.
-     */
-    public function sanitize(): self
-    {
-        foreach ($this->members as $member) {
-            $member->sanitize();
-        }
 
         return $this;
     }

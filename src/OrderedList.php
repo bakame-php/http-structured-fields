@@ -59,7 +59,7 @@ final class OrderedList implements StructuredFieldList
     {
         foreach ($member->parameters as $offset => $item) {
             if ($item->parameters->hasMembers()) {
-                throw new ForbiddenStateError('Parameter `"'.$offset.'"` is in invalid state; Parameters instances can not contain parameterized Items.');
+                throw new ForbiddenStateError('Parameter member `"'.$offset.'"` is in invalid state; Parameters instances can only contain bare items.');
             }
         }
 
@@ -172,18 +172,18 @@ final class OrderedList implements StructuredFieldList
         return $member;
     }
 
-    public function get(string|int $index): Item|InnerList
+    public function get(string|int $offset): Item|InnerList
     {
-        if (!is_int($index)) {
-            throw InvalidOffset::dueToIndexNotFound($index);
+        if (!is_int($offset)) {
+            throw InvalidOffset::dueToIndexNotFound($offset);
         }
 
-        $offset = $this->filterIndex($index);
-        if (null === $offset) {
-            throw InvalidOffset::dueToIndexNotFound($index);
+        $index = $this->filterIndex($offset);
+        if (null === $index) {
+            throw InvalidOffset::dueToIndexNotFound($offset);
         }
 
-        return self::filterForbiddenState($this->members[$offset]);
+        return self::filterForbiddenState($this->members[$index]);
     }
 
     /**
@@ -253,21 +253,6 @@ final class OrderedList implements StructuredFieldList
         foreach ($offsets as $offset) {
             unset($this->members[$offset]);
         }
-
-        return $this;
-    }
-
-    /**
-     * Ensure the container always contains list.
-     *
-     * If gaps are present in the list they are removed
-     * and the list gets re-indexed.
-     */
-    public function sanitize(): self
-    {
-        $this->members = array_values(
-            array_map(fn (StructuredField $member): StructuredField => $member->sanitize(), $this->members)
-        );
 
         return $this;
     }

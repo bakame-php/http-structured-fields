@@ -32,6 +32,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - **[BC Break]** `Token::toString` is removed use its readonly property instead `Token::value`.
 - **[BC Break]** `ByteSequence` no longer implements the `StructuredField` interface.
 - **[BC Break]** `ByteSequence::toHttpValue` is removed; use the `Item` class to serialize a `ByteSequence`.
+- **[BC Break]** `::sanitize` method is removed use `Parameters::clear` method instead if needed.
 
 ## [0.5.0] - 2022-05-13
 

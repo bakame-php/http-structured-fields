@@ -60,7 +60,7 @@ final class InnerList implements StructuredFieldList
     {
         foreach ($member->parameters as $offset => $item) {
             if ($item->parameters->hasMembers()) {
-                throw new ForbiddenStateError('Parameter `"'.$offset.'"` is in invalid state; Parameters instances can not contain parameterized Items.');
+                throw new ForbiddenStateError('Parameter member `"'.$offset.'"` is in invalid state; Parameters instances can only contain bare items.');
             }
         }
 
@@ -126,15 +126,15 @@ final class InnerList implements StructuredFieldList
      */
     public function values(): array
     {
-        $mapper = function (Item $item): float|int|bool|string|null {
+        $result = [];
+        foreach ($this->members as $offset => $item) {
             try {
-                return self::filterForbiddenState($item)->value();
+                $result[$offset] = self::filterMember($item)->value();
             } catch (Throwable) {
-                return null;
             }
-        };
+        }
 
-        return array_filter(array_map($mapper, $this->members), fn (mixed $value): bool => null !== $value);
+        return $result;
     }
 
     /**
@@ -149,18 +149,18 @@ final class InnerList implements StructuredFieldList
         }
     }
 
-    public function get(string|int $index): Item
+    public function get(string|int $offset): Item
     {
-        if (!is_int($index)) {
-            throw InvalidOffset::dueToIndexNotFound($index);
+        if (!is_int($offset)) {
+            throw InvalidOffset::dueToIndexNotFound($offset);
         }
 
-        $offset = $this->filterIndex($index);
-        if (null === $offset) {
-            throw InvalidOffset::dueToIndexNotFound($index);
+        $index = $this->filterIndex($offset);
+        if (null === $index) {
+            throw InvalidOffset::dueToIndexNotFound($offset);
         }
 
-        return self::filterForbiddenState($this->members[$offset]);
+        return self::filterForbiddenState($this->members[$index]);
     }
 
     /**
@@ -225,22 +225,6 @@ final class InnerList implements StructuredFieldList
         foreach ($offsets as $offset) {
             unset($this->members[$offset]);
         }
-
-        return $this;
-    }
-
-    /**
-     * Ensure the container always contains list.
-     *
-     * If gaps are present in the list they are removed
-     * and the list gets re-indexed.
-     */
-    public function sanitize(): self
-    {
-        $this->parameters->sanitize();
-        $this->members = array_values(
-            array_map(fn (StructuredField $member): StructuredField => $member->sanitize(), $this->members)
-        );
 
         return $this;
     }

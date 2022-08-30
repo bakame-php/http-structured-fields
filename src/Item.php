@@ -100,7 +100,7 @@ final class Item implements StructuredField
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.2
      */
-    public static function filterDecimal(float $value): float
+    private static function filterDecimal(float $value): float
     {
         if (abs(floor($value)) > 999_999_999_999) {
             throw new SyntaxError('Integer portion of decimals is limited to 12 digits');
@@ -114,7 +114,7 @@ final class Item implements StructuredField
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.3
      */
-    public static function filterString(string $value): string
+    private static function filterString(string $value): string
     {
         if (1 === preg_match('/[^\x20-\x7E]/i', $value)) {
             throw new SyntaxError('The string `'.$value.'` contains invalid characters.');
@@ -212,7 +212,7 @@ final class Item implements StructuredField
     }
 
     /**
-     * Parses an HTTP textual representation of an Item as a Number Data Type.
+     * Parses an HTTP textual representation of an Item as a Data Type number.
      *
      * @return array{0:int|float, 1:string}
      */
@@ -277,6 +277,22 @@ final class Item implements StructuredField
     }
 
     /**
+     * Serialize the Item decimal value according to RFC8941.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.1.5
+     */
+    private function serializeDecimal(float $value): string
+    {
+        /** @var string $result */
+        $result = json_encode(round($value, 3, PHP_ROUND_HALF_EVEN));
+        if (str_contains($result, '.')) {
+            return $result;
+        }
+
+        return $result.'.0';
+    }
+
+    /**
      * Returns the underlying value decoded.
      */
     public function value(): string|int|float|bool
@@ -297,29 +313,12 @@ final class Item implements StructuredField
     {
         return match (true) {
             is_string($this->value) => '"'.preg_replace('/(["\\\])/', '\\\$1', $this->value).'"',
-            is_int($this->value) => (string) $this->value,
+            is_int($this->value) => (string)$this->value,
             is_float($this->value) => $this->serializeDecimal($this->value),
             is_bool($this->value) => '?'.($this->value ? '1' : '0'),
             $this->value instanceof Token => $this->value->value,
             default => ':'.$this->value->encoded().':',
-        }
-        .$this->parameters->toHttpValue();
-    }
-
-    /**
-     * Serialize the Item decimal value according to RFC8941.
-     *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.1.5
-     */
-    private function serializeDecimal(float $value): string
-    {
-        /** @var string $result */
-        $result = json_encode(round($value, 3, PHP_ROUND_HALF_EVEN));
-        if (str_contains($result, '.')) {
-            return $result;
-        }
-
-        return $result.'.0';
+        }.$this->parameters->toHttpValue();
     }
 
     public function isInteger(): bool
@@ -350,12 +349,5 @@ final class Item implements StructuredField
     public function isByteSequence(): bool
     {
         return $this->value instanceof ByteSequence;
-    }
-
-    public function sanitize(): self
-    {
-        $this->parameters->sanitize();
-
-        return $this;
     }
 }

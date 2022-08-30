@@ -39,13 +39,18 @@ final class Parameters implements StructuredFieldOrderedMap
      * @throws ForbiddenStateError If the bare item contains parameters
      * @throws TypeError If the structured field is not supported
      */
-    private static function filterMember(Item $item): Item
+    private static function filterMember(Item $item, string|int $offset = null): Item
     {
-        if ($item->parameters->hasMembers()) {
-            throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.');
+        if (!$item->parameters->hasMembers()) {
+            return $item;
         }
 
-        return $item;
+        $message = 'Parameters instances can only contain bare items.';
+        if (null !== $offset) {
+            $message = 'Parameter member `"'.$offset.'"` is in invalid state; '.$message;
+        }
+
+        throw new ForbiddenStateError($message);
     }
 
     private static function formatMember(StructuredField|ByteSequence|Token|bool|int|float|string $member): Item
@@ -134,10 +139,10 @@ final class Parameters implements StructuredFieldOrderedMap
      */
     public function toHttpValue(): string
     {
-        $formatter = fn (Item $member, string $key): string => match (true) {
-            $member->parameters->hasMembers() => throw new ForbiddenStateError('Parameters instances can not contain parameterized Items.'),
-            true === $member->value() => ';'.$key,
-            default => ';'.$key.'='.$member->toHttpValue(),
+        $formatter = fn (Item $member, string $offset): string => match (true) {
+            $member->parameters->hasMembers() => throw new ForbiddenStateError('Parameter member `"'.$offset.'"` is in invalid state; Parameters instances can only contain bare items.'),
+            true === $member->value() => ';'.$offset,
+            default => ';'.$offset.'='.$member->toHttpValue(),
         };
 
         return implode('', array_map($formatter, $this->members, array_keys($this->members)));
@@ -178,7 +183,7 @@ final class Parameters implements StructuredFieldOrderedMap
     public function toPairs(): Iterator
     {
         foreach ($this->members as $index => $member) {
-            yield [$index, self::filterMember($member)];
+            yield [$index, self::filterMember($member, $index)];
         }
     }
 
@@ -199,15 +204,15 @@ final class Parameters implements StructuredFieldOrderedMap
      */
     public function values(): array
     {
-        $mapper = function (Item $item): float|int|bool|string|null {
+        $result = [];
+        foreach ($this->members as $offset => $item) {
             try {
-                return self::filterMember($item)->value();
+                $result[$offset] = self::filterMember($item, $offset)->value();
             } catch (Throwable) {
-                return null;
             }
-        };
+        }
 
-        return array_filter(array_map($mapper, $this->members), fn (mixed $value): bool => null !== $value);
+        return $result;
     }
 
     /**
@@ -236,13 +241,13 @@ final class Parameters implements StructuredFieldOrderedMap
      * @throws InvalidOffset       if the key is not found
      * @throws ForbiddenStateError if the bare item contains parameters itself
      */
-    public function get(string|int $key): Item
+    public function get(string|int $offset): Item
     {
-        if (is_int($key) || !array_key_exists($key, $this->members)) {
-            throw InvalidOffset::dueToKeyNotFound($key);
+        if (is_int($offset) || !array_key_exists($offset, $this->members)) {
+            throw InvalidOffset::dueToKeyNotFound($offset);
         }
 
-        return self::filterMember($this->members[$key]);
+        return self::filterMember($this->members[$offset], $offset);
     }
 
     /**
@@ -288,7 +293,7 @@ final class Parameters implements StructuredFieldOrderedMap
         $i = 0;
         foreach ($this->members as $key => $member) {
             if ($i === $offset) {
-                return [$key, self::filterMember($member)];
+                return [$key, self::filterMember($member, $index)];
             }
             ++$i;
         }
@@ -383,21 +388,6 @@ final class Parameters implements StructuredFieldOrderedMap
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromPairs($other)->members];
-        }
-
-        return $this;
-    }
-
-    /**
-     * Ensure the container always contains only Bare Items.
-     *
-     * If Item with parameters exists they will be strip from the object
-     * before returning the parent instance
-     */
-    public function sanitize(): self
-    {
-        foreach ($this->members as $item) {
-            $item->parameters->clear();
         }
 
         return $this;

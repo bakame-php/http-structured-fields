@@ -297,15 +297,25 @@ final class ParametersTest extends StructuredFieldTest
     }
 
     /** @test */
-    public function it_can_serialize_after_sanitizing_the_parameters(): void
+    public function it_fails_serializing_after_invalid_operation(): void
     {
-        $parameters = Parameters::fromAssociative(['a' => false]);
-        $item = $parameters->get('a');
-        $item->parameters->set('b', true);
+        $this->expectException(StructuredFieldError::class);
 
-        self::assertSame(';a=?0', $parameters->sanitize()->toHttpValue());
+        $parameters = Parameters::fromAssociative(['a' => false]);
+        $parameters->get('a')->parameters->set('b', false);
+
+        $parameters->toHttpValue();
     }
 
+    /** @test */
+    public function it_returns_null_values_after_invalid_operation(): void
+    {
+        $parameters = Parameters::fromAssociative(['a' => 'missing', 'b' => 'present']);
+        $parameters->get('a')->parameters->set('b', false);
+
+        self::assertArrayNotHasKey('a', $parameters->values());
+        self::assertSame(['b' => 'present'], $parameters->values());
+    }
 
     /** @test */
     public function it_fails_to_add_an_integer_via_array_access(): void

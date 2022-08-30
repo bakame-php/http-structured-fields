@@ -26,7 +26,6 @@ setter methods
 - `insert` to add elements at a given position in the list;
 - `replace` to replace an element at a given position in the list;
 - `remove` to remove elements based on their position;
-- `sanitize` force re-indexation of the list if needed to remove key "gaps".
 
 Additionally, both classes implements PHP `ArrayAccess` interface as syntactic sugar methods
 around the `get`, `has`, `push`, `remove` and `replace` methods.
