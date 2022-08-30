@@ -27,8 +27,11 @@ setter methods
 - `replace` to replace an element at a given position in the list;
 - `remove` to remove elements based on their position;
 
-Additionally, both classes implements PHP `ArrayAccess` interface as syntactic sugar methods
-around the `get`, `has`, `push`, `remove` and `replace` methods.
+In addition to `StructuredField` specific interfaces, both classes implements:
+
+- PHP `Countable` interface.
+- PHP `IteratorAggregate` interface.
+- PHP `ArrayAccess` interface.
 
 ```php
 use Bakame\Http\StructuredFields;
@@ -68,6 +71,7 @@ your logic**
 ```php
 use Bakame\Http\StructuredFields;
 
-$innerList = StructuredFields\OrderedList::fromList([42, 42.0, "42"], ["a" => true]);
+$innerList = StructuredFields\OrderedList::fromList([42, 42.0]);
 $innerList[2] = StructuredFields\Token::fromString('forty-two'); // will throw
+echo $innerList->toHttpValue(), PHP_EOL;
 ```

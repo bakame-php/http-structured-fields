@@ -9,9 +9,9 @@ use Iterator;
 /**
  * @template TKey
  * @template TValue of StructuredField
- * @template-extends StructuredFieldContainer<TKey, TValue>
+ * @template-extends MemberContainer<TKey, TValue>
  */
-interface StructuredFieldOrderedMap extends StructuredFieldContainer
+interface MemberOrderedMap extends MemberContainer
 {
     /**
      * Returns an iterable construct of dictionary pairs.
@@ -49,14 +49,14 @@ interface StructuredFieldOrderedMap extends StructuredFieldContainer
      *
      * @throws SyntaxError If the string key is not a valid
      *
-     * @return StructuredFieldOrderedMap<TKey, TValue>
+     * @return MemberOrderedMap<TKey, TValue>
      */
     public function set(string $key, StructuredField $member): self;
 
     /**
      * Deletes members associated with the list of submitted keys.
      *
-     * @return StructuredFieldOrderedMap<TKey, TValue>
+     * @return MemberOrderedMap<TKey, TValue>
      */
     public function delete(string ...$keys): self;
 
@@ -67,7 +67,7 @@ interface StructuredFieldOrderedMap extends StructuredFieldContainer
      *
      * @throws SyntaxError If the string key is not a valid
      *
-     * @return StructuredFieldOrderedMap<TKey, TValue>
+     * @return MemberOrderedMap<TKey, TValue>
      */
     public function append(string $key, StructuredField $member): self;
 
@@ -78,7 +78,7 @@ interface StructuredFieldOrderedMap extends StructuredFieldContainer
      *
      * @throws SyntaxError If the string key is not a valid
      *
-     * @return StructuredFieldOrderedMap<TKey, TValue>
+     * @return MemberOrderedMap<TKey, TValue>
      */
     public function prepend(string $key, StructuredField $member): self;
 
@@ -87,16 +87,16 @@ interface StructuredFieldOrderedMap extends StructuredFieldContainer
      *
      * @param iterable<TKey, TValue> ...$others
      *
-     * @return StructuredFieldOrderedMap<TKey, TValue>
+     * @return MemberOrderedMap<TKey, TValue>
      */
     public function mergeAssociative(iterable ...$others): self;
 
     /**
      * Merges multiple instances using iterable pairs.
      *
-     * @param StructuredFieldOrderedMap<TKey, TValue>|iterable<array{0:TKey, 1:TValue}> ...$others
+     * @param MemberOrderedMap<TKey, TValue>|iterable<array{0:TKey, 1:TValue}> ...$others
      *
-     * @return StructuredFieldOrderedMap<TKey, TValue>
+     * @return MemberOrderedMap<TKey, TValue>
      */
-    public function mergePairs(StructuredFieldOrderedMap|iterable ...$others): self;
+    public function mergePairs(MemberOrderedMap|iterable ...$others): self;
 }

@@ -7,16 +7,16 @@ namespace Bakame\Http\StructuredFields;
 /**
  * @template TKey
  * @template TValue of StructuredField
- * @template-extends StructuredFieldContainer<TKey, TValue>
+ * @template-extends MemberContainer<TKey, TValue>
  */
-interface StructuredFieldList extends StructuredFieldContainer
+interface MemberList extends MemberContainer
 {
     /**
      * Insert members at the beginning of the list.
      *
      * @param TValue ...$members
      *
-     * @return StructuredFieldList<TKey, TValue>
+     * @return MemberList<TKey, TValue>
      */
     public function unshift(StructuredField ...$members): self;
 
@@ -25,7 +25,7 @@ interface StructuredFieldList extends StructuredFieldContainer
      *
      * @param TValue ...$members
      *
-     * @return StructuredFieldList<TKey, TValue>
+     * @return MemberList<TKey, TValue>
      */
     public function push(StructuredField ...$members): self;
 
@@ -36,21 +36,21 @@ interface StructuredFieldList extends StructuredFieldContainer
      *
      * @throws InvalidOffset If the index does not exist
      *
-     * @return StructuredFieldList<TKey, TValue>
+     * @return MemberList<TKey, TValue>
      */
     public function insert(int $index, StructuredField ...$members): self;
 
     /**
      * @param TValue $member
      *
-     * @return StructuredFieldList<TKey, TValue>
+     * @return MemberList<TKey, TValue>
      */
     public function replace(int $index, StructuredField $member): self;
 
     /**
      * Delete members associated with the list of instance indexes.
      *
-     * @return StructuredFieldList<TKey, TValue>
+     * @return MemberList<TKey, TValue>
      */
     public function remove(int ...$indexes): self;
 }

@@ -14,9 +14,9 @@ use function array_values;
 use function count;
 
 /**
- * @implements StructuredFieldList<int, Item>
+ * @implements MemberList<int, Item>
  */
-final class InnerList implements StructuredFieldList
+final class InnerList implements MemberList
 {
     /** @var array<int, Item> */
     private array $members;
@@ -85,14 +85,14 @@ final class InnerList implements StructuredFieldList
         return count($this->members);
     }
 
-    public function isEmpty(): bool
+    public function hasNoMembers(): bool
     {
         return [] === $this->members;
     }
 
     public function hasMembers(): bool
     {
-        return !$this->isEmpty();
+        return !$this->hasNoMembers();
     }
 
     /**

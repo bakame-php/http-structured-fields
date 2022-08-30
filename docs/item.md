@@ -30,7 +30,7 @@ echo $token->value; // displays 'bar'
 ```
 
 The Token data type is a special string as defined in the RFC. To distinguish it from a normal string,
-the `Bakame\Http\StructuredFields\Token` class is used.
+the `Bakame\Http\StructuredFields\Token` class can be used.
 
 To instantiate the class you are required to use the `Token::fromString` named constructor.
 The class also exposes its value via the public readonly property `value` to enable its textual representation.
@@ -52,14 +52,15 @@ To distinguish it from a normal string, the `Bakame\Http\StructuredFields\ByteSe
 
 To instantiate the class you are required to use the `ByteSequence::fromDecoded` or `ByteSequence::fromEncoded`
 named constructors. The class also exposes the complementary public methods `ByteSequence::decoded`,
-`ByteSequence::encoded`  to enable its textual representation.
+`ByteSequence::encoded` to enable the correct textual representation.
 
 ## Usages
 
-Items can be associated with an ordered maps of key-value pairs also known as parameters, where the
+Items can be associated with parameters that are an ordered maps of key-value pairs where the
 keys are strings and the value are bare items. Their public API is covered in the [ordered maps section](ordered-maps.md].
 
 **An item without any parameter associated to it is said to be a bare item.**
+**Exception will be thrown when trying to access or serialize a parameter object containing non-bare items.**
 
 ```php
 use Bakame\Http\StructuredFields;
@@ -77,6 +78,15 @@ Instantiation via type recognition is done using the `Item::from` named construc
 - The second argument, which is optional, MUST be an iterable construct  
   where its index represents the parameter key and its value an item or an item type value;
 
+It is possible to use
+
+- `Item::fromToken` internally use `Token::fromString` to
+- `Item::fromEncodedByteSequence` internally use `ByteSequence::fromEncoded`
+- `Item::fromDecodedByteSequence` internally use `ByteSequence::fromDecoded`
+
+Those listed named constructores expect a string or a stringable object as its first argument and the
+same argument definition as in `Item::from` for parameters argument.
+
 ```php
 use Bakame\Http\StructuredFields;
 
@@ -93,15 +103,6 @@ $item->parameters->value("a"); // returns the decoded value 'Hello World'
 echo $item->toHttpValue();     // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
 
-It is possible to use
-
-- `Item::fromToken` internally use `Token::fromString` to
-- `Item::fromEncodedByteSequence` internally use `ByteSequence::fromEncoded`
-- `Item::fromDecodedByteSequence` internally use `ByteSequence::fromDecoded`
-
-Thos listed named constructores expect a string as its first argument and the 
-same argument definition as in `Item::from` for parameters argument.
-
 `Item::fromPair` is an alternative to the `Item::from` named constructor, it expects
 a tuple composed by an array as a list where:
 
@@ -109,12 +110,10 @@ a tuple composed by an array as a list where:
 - The second optional member, on index `1`, **MUST** be an iterable construct containing
   tuples of key-value pairs;
 
-Once instantiated, accessing `Item` properties is done via two (2) readonly properties:
+Once instantiated, accessing `Item` properties is done via:
 
-- `Item::value` which returns the instance underlying value
-- `Item::parameters` which returns the parameters associated to the `Item` as a distinct `Parameters` object
-
-And on method called `Item::decodedValue()` which returns the underlying value fully decoded.
+- the method `Item::value` which returns the instance underlying value fully decoded;
+- the readonly property `Item::parameters` which returns the parameters associated to the `Item` as a distinct `Parameters` object
 
 ```php
 use Bakame\Http\StructuredFields;

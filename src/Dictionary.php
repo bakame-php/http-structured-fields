@@ -16,9 +16,9 @@ use function implode;
 use function is_array;
 
 /**
- * @implements StructuredFieldOrderedMap<string, Item|InnerList<int, Item>>
+ * @implements MemberOrderedMap<string, Item|InnerList<int, Item>>
  */
-final class Dictionary implements StructuredFieldOrderedMap
+final class Dictionary implements MemberOrderedMap
 {
     /** @var array<string, Item|InnerList<int, Item>> */
     private array $members = [];
@@ -53,11 +53,11 @@ final class Dictionary implements StructuredFieldOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param StructuredFieldOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string}> $pairs
+     * @param MemberOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string}> $pairs
      */
-    public static function fromPairs(StructuredFieldOrderedMap|iterable $pairs = []): self
+    public static function fromPairs(MemberOrderedMap|iterable $pairs = []): self
     {
-        if ($pairs instanceof StructuredFieldOrderedMap) {
+        if ($pairs instanceof MemberOrderedMap) {
             $pairs = $pairs->toPairs();
         }
 
@@ -97,14 +97,14 @@ final class Dictionary implements StructuredFieldOrderedMap
         return count($this->members);
     }
 
-    public function isEmpty(): bool
+    public function hasNoMembers(): bool
     {
         return [] === $this->members;
     }
 
     public function hasMembers(): bool
     {
-        return !$this->isEmpty();
+        return !$this->hasNoMembers();
     }
 
     /**
@@ -355,9 +355,9 @@ final class Dictionary implements StructuredFieldOrderedMap
     /**
      * Merges multiple instances using iterable pairs.
      *
-     * @param StructuredFieldOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string}> ...$others
+     * @param MemberOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string}> ...$others
      */
-    public function mergePairs(StructuredFieldOrderedMap|iterable ...$others): self
+    public function mergePairs(MemberOrderedMap|iterable ...$others): self
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromPairs($other)->members];

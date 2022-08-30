@@ -18,9 +18,9 @@ use function rtrim;
 use function trim;
 
 /**
- * @implements StructuredFieldOrderedMap<string, Item>
+ * @implements MemberOrderedMap<string, Item>
  */
-final class Parameters implements StructuredFieldOrderedMap
+final class Parameters implements MemberOrderedMap
 {
     /** @var array<string, Item> */
     private array $members = [];
@@ -85,13 +85,13 @@ final class Parameters implements StructuredFieldOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param StructuredFieldOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> $pairs
+     * @param MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> $pairs
      *
      * @throws ForbiddenStateError If the bare item contains parameters
      */
-    public static function fromPairs(StructuredFieldOrderedMap|iterable $pairs = []): self
+    public static function fromPairs(MemberOrderedMap|iterable $pairs = []): self
     {
-        if ($pairs instanceof StructuredFieldOrderedMap) {
+        if ($pairs instanceof MemberOrderedMap) {
             $pairs = $pairs->toPairs();
         }
 
@@ -153,14 +153,14 @@ final class Parameters implements StructuredFieldOrderedMap
         return count($this->members);
     }
 
-    public function isEmpty(): bool
+    public function hasNoMembers(): bool
     {
         return [] === $this->members;
     }
 
     public function hasMembers(): bool
     {
-        return !$this->isEmpty();
+        return !$this->hasNoMembers();
     }
 
     /**
@@ -382,9 +382,9 @@ final class Parameters implements StructuredFieldOrderedMap
     /**
      * Merge multiple instances using iterable pairs.
      *
-     * @param StructuredFieldOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> ...$others
+     * @param MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> ...$others
      */
-    public function mergePairs(StructuredFieldOrderedMap|iterable ...$others): self
+    public function mergePairs(MemberOrderedMap|iterable ...$others): self
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromPairs($other)->members];

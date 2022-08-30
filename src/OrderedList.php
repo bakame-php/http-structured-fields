@@ -16,9 +16,9 @@ use function implode;
 use function is_array;
 
 /**
- * @implements StructuredFieldList<int, Item|InnerList<int, Item>>
+ * @implements MemberList<int, Item|InnerList<int, Item>>
  */
-final class OrderedList implements StructuredFieldList
+final class OrderedList implements MemberList
 {
     /** @var array<int, Item|InnerList<int, Item>>  */
     private array $members;
@@ -97,14 +97,14 @@ final class OrderedList implements StructuredFieldList
         return count($this->members);
     }
 
-    public function isEmpty(): bool
+    public function hasNoMembers(): bool
     {
         return [] === $this->members;
     }
 
     public function hasMembers(): bool
     {
-        return !$this->isEmpty();
+        return !$this->hasNoMembers();
     }
 
     /**

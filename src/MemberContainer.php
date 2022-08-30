@@ -15,12 +15,12 @@ use IteratorAggregate;
  * @template-extends IteratorAggregate<TKey, TValue>
  * @template-extends ArrayAccess<TKey, TValue>
  */
-interface StructuredFieldContainer extends Countable, ArrayAccess, IteratorAggregate, StructuredField
+interface MemberContainer extends Countable, ArrayAccess, IteratorAggregate, StructuredField
 {
     /**
      * Tells whether the instance has no member.
      */
-    public function isEmpty(): bool;
+    public function hasNoMembers(): bool;
 
     /**
      * Tells whether the instance contains members.
@@ -68,12 +68,12 @@ interface StructuredFieldContainer extends Countable, ArrayAccess, IteratorAggre
     public function offsetUnset(mixed $offset): void;
 
     /**
-     * @return array<TKey, StructuredFieldContainer<int,Item>|ByteSequence|Token|string|int|float|bool>
+     * @return array<TKey, MemberContainer<int,Item>|ByteSequence|Token|string|int|float|bool>
      */
     public function values(): array;
 
     /**
-     * @return StructuredFieldContainer<int,Item>|string|int|float|bool|null
+     * @return MemberContainer<int,Item>|string|int|float|bool|null
      */
-    public function value(string|int $offset): StructuredFieldContainer|float|int|bool|string|null;
+    public function value(string|int $offset): MemberContainer|float|int|bool|string|null;
 }

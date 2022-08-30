@@ -7,7 +7,7 @@ an HTTP field value can be:
 - a [Dictionary](ordered-maps.md);
 - a [List](lists.md);
 
-For each of these top-level types, the package provides a dedicated value object to parse the textual
+For each of these top-level types, the package provides a dedicated object to parse the textual
 representation of the field and to serialize the value object back to the textual representation.
 
 - Parsing is done via a common named constructor `fromHttpValue` which expects the Header or Trailer string value.

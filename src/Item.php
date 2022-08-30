@@ -31,7 +31,7 @@ final class Item implements StructuredField
     /**
      * @param array{
      *     0:Token|ByteSequence|int|float|string|bool,
-     *     1?:StructuredFieldOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}>
+     *     1?:MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}>
      * } $pair
      */
     public static function fromPair(array $pair): self

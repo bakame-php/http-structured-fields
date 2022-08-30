@@ -54,12 +54,11 @@ echo $dictionary
     ->toHttpValue(); // returns "a=?0, z=42.0"
 ```
 
-## Parameters specific methods
+In addition to `StructuredField` specific interfaces, both classes implements:
 
-The `Parameters` instance exposes the following additional methods:
-
-- `Parameters::values` to list all existing Bare Item values as an array list;
-- `Parameters::value` to return the value of the Bare Item associated to the `$key` or `null` if the key is unknown or invalid;
+- PHP `Countable` interface.
+- PHP `IteratorAggregate` interface.
+- PHP `ArrayAccess` interface.
 
 ```php
 use Bakame\Http\StructuredFields;
@@ -69,7 +68,7 @@ $parameters->keys();     // returns ['b', 'foo']
 $parameters->values();   // returns [true, 'bar']
 $parameters->value('b'); // returns true
 $parameters->get('b');   // returns Item::from(true)
-$parameters['b']; // returns Item::from(true)
+$parameters['b'];        // returns Item::from(true)
 iterator_to_array($parameters->toPairs(), true); // returns [['b', Item::from(true)], ['foo', Item::from('bar')]]
 iterator_to_array($parameters, true); // returns ['b' => Item::from(true), 'foo' => Item::from('bar')]
 $parameters->mergeAssociative(
