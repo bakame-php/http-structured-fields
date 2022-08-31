@@ -16,7 +16,7 @@ use function count;
 /**
  * @implements MemberList<int, Item>
  */
-final class InnerList implements MemberList
+final class InnerList implements MemberList, ParameterAccess
 {
     /** @var array<int, Item> */
     private array $members;

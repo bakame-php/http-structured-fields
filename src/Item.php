@@ -20,7 +20,7 @@ use function strlen;
 use function substr;
 use function trim;
 
-final class Item implements StructuredField
+final class Item implements StructuredField, ParameterAccess
 {
     private function __construct(
         private Token|ByteSequence|int|float|string|bool $value,
