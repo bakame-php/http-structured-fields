@@ -19,14 +19,12 @@ final class InnerListTest extends TestCase
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
         $instance = InnerList::fromList($arrayParams, Parameters::fromAssociative(['test' => Item::from(42)]));
-        self::assertFalse($instance->parameters->hasNoMembers());
 
         self::assertSame($stringItem, $instance->get(0));
-        self::assertFalse($instance->hasNoMembers());
+        self::assertTrue($instance->hasMembers());
 
         self::assertEquals($arrayParams, iterator_to_array($instance));
         $instance->clear();
-        self::assertTrue($instance->hasNoMembers());
         self::assertFalse($instance->hasMembers());
     }
 
@@ -40,7 +38,6 @@ final class InnerListTest extends TestCase
 
         self::assertCount(2, $instance);
         self::assertTrue($instance->has(1));
-        self::assertTrue($instance->parameters->hasNoMembers());
         self::assertFalse($instance->parameters->hasMembers());
 
         $instance->remove(1);
@@ -57,7 +54,6 @@ final class InnerListTest extends TestCase
 
         $instance->remove(0, 1);
         self::assertCount(0, $instance);
-        self::assertTrue($instance->hasNoMembers());
         self::assertFalse($instance->hasMembers());
     }
 
@@ -71,7 +67,7 @@ final class InnerListTest extends TestCase
         $container->replace(0, ByteSequence::fromDecoded('Hello World'));
 
         self::assertCount(3, $container);
-        self::assertFalse($container->hasNoMembers());
+        self::assertTrue($container->hasMembers());
         self::assertSame('(:SGVsbG8gV29ybGQ=: 42.0 42)', $container->toHttpValue());
     }
 

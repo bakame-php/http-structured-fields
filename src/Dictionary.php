@@ -15,9 +15,9 @@ use function implode;
 use function is_array;
 
 /**
- * @implements MemberOrderedMap<string, Item|InnerList<int, Item>>
+ * @implements OrderedMap<string, Item|InnerList<int, Item>>
  */
-final class Dictionary implements MemberOrderedMap
+final class Dictionary implements OrderedMap
 {
     /** @var array<string, Item|InnerList<int, Item>> */
     private array $members = [];
@@ -52,11 +52,11 @@ final class Dictionary implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string}> $pairs
+     * @param OrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string}> $pairs
      */
-    public static function fromPairs(MemberOrderedMap|iterable $pairs = []): self
+    public static function fromPairs(OrderedMap|iterable $pairs = []): self
     {
-        if ($pairs instanceof MemberOrderedMap) {
+        if ($pairs instanceof OrderedMap) {
             $pairs = $pairs->toPairs();
         }
 
@@ -96,14 +96,9 @@ final class Dictionary implements MemberOrderedMap
         return count($this->members);
     }
 
-    public function hasNoMembers(): bool
-    {
-        return [] === $this->members;
-    }
-
     public function hasMembers(): bool
     {
-        return !$this->hasNoMembers();
+        return [] !== $this->members;
     }
 
     /**
@@ -352,9 +347,9 @@ final class Dictionary implements MemberOrderedMap
     /**
      * Merges multiple instances using iterable pairs.
      *
-     * @param MemberOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string}> ...$others
+     * @param OrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string}> ...$others
      */
-    public function mergePairs(MemberOrderedMap|iterable ...$others): self
+    public function mergePairs(OrderedMap|iterable ...$others): self
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromPairs($other)->members];

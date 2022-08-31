@@ -18,9 +18,9 @@ use function rtrim;
 use function trim;
 
 /**
- * @implements MemberOrderedMap<string, Item>
+ * @implements OrderedMap<string, Item>
  */
-final class Parameters implements MemberOrderedMap
+final class Parameters implements OrderedMap
 {
     /** @var array<string, Item> */
     private array $members = [];
@@ -85,13 +85,13 @@ final class Parameters implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> $pairs
+     * @param OrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> $pairs
      *
      * @throws ForbiddenStateError If the bare item contains parameters
      */
-    public static function fromPairs(MemberOrderedMap|iterable $pairs = []): self
+    public static function fromPairs(OrderedMap|iterable $pairs = []): self
     {
-        if ($pairs instanceof MemberOrderedMap) {
+        if ($pairs instanceof OrderedMap) {
             $pairs = $pairs->toPairs();
         }
 
@@ -153,14 +153,9 @@ final class Parameters implements MemberOrderedMap
         return count($this->members);
     }
 
-    public function hasNoMembers(): bool
-    {
-        return [] === $this->members;
-    }
-
     public function hasMembers(): bool
     {
-        return !$this->hasNoMembers();
+        return [] !== $this->members;
     }
 
     /**
@@ -382,9 +377,9 @@ final class Parameters implements MemberOrderedMap
     /**
      * Merge multiple instances using iterable pairs.
      *
-     * @param MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> ...$others
+     * @param OrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> ...$others
      */
-    public function mergePairs(MemberOrderedMap|iterable ...$others): self
+    public function mergePairs(OrderedMap|iterable ...$others): self
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromPairs($other)->members];

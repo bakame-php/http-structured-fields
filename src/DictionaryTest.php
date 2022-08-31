@@ -31,7 +31,6 @@ final class DictionaryTest extends StructuredFieldTest
 
         self::assertEquals($arrayParams, iterator_to_array($instance));
         $instance->clear();
-        self::assertTrue($instance->hasNoMembers());
         self::assertFalse($instance->hasMembers());
     }
 
@@ -63,7 +62,7 @@ final class DictionaryTest extends StructuredFieldTest
         $instance = Dictionary::fromAssociative($arrayParams);
 
         self::assertCount(2, $instance);
-        self::assertFalse($instance->hasNoMembers());
+        self::assertTrue($instance->hasMembers());
         $instance->delete('boolean');
 
         self::assertCount(1, $instance);
@@ -82,7 +81,7 @@ final class DictionaryTest extends StructuredFieldTest
 
         $instance->delete('foobar', 'string');
         self::assertCount(0, $instance);
-        self::assertTrue($instance->hasNoMembers());
+        self::assertFalse($instance->hasMembers());
     }
 
     /** @test */

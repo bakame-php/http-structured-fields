@@ -24,9 +24,7 @@ final class OrderedListTest extends StructuredFieldTest
         $instance = OrderedList::fromList($arrayParams);
 
         self::assertSame($stringItem, $instance->get(0));
-        self::assertFalse($instance->hasNoMembers());
         self::assertTrue($instance->hasMembers());
-
         self::assertEquals($arrayParams, iterator_to_array($instance));
     }
 
@@ -56,7 +54,7 @@ final class OrderedListTest extends StructuredFieldTest
 
         $instance->remove(0, 1);
         self::assertCount(0, $instance);
-        self::assertTrue($instance->hasNoMembers());
+        self::assertFalse($instance->hasMembers());
     }
 
     /** @test */
@@ -69,10 +67,11 @@ final class OrderedListTest extends StructuredFieldTest
         $instance->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
 
         self::assertCount(3, $instance);
-        self::assertFalse($instance->hasNoMembers());
+        self::assertTrue($instance->hasMembers());
         self::assertSame(':SGVsbG8gV29ybGQ=:, 42.0, 42', $instance->toHttpValue());
+
         $instance->clear();
-        self::assertTrue($instance->hasNoMembers());
+        self::assertFalse($instance->hasMembers());
     }
 
     /** @test */

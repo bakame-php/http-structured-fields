@@ -9,9 +9,9 @@ use Iterator;
 /**
  * @template TKey
  * @template TValue of StructuredField
- * @template-extends MemberContainer<TKey, TValue>
+ * @template-extends Container<TKey, TValue>
  */
-interface MemberOrderedMap extends MemberContainer
+interface OrderedMap extends Container
 {
     /**
      * Returns an iterable construct of dictionary pairs.
@@ -49,14 +49,14 @@ interface MemberOrderedMap extends MemberContainer
      *
      * @throws SyntaxError If the string key is not a valid
      *
-     * @return MemberOrderedMap<TKey, TValue>
+     * @return OrderedMap<TKey, TValue>
      */
     public function set(string $key, StructuredField $member): self;
 
     /**
      * Deletes members associated with the list of submitted keys.
      *
-     * @return MemberOrderedMap<TKey, TValue>
+     * @return OrderedMap<TKey, TValue>
      */
     public function delete(string ...$keys): self;
 
@@ -67,7 +67,7 @@ interface MemberOrderedMap extends MemberContainer
      *
      * @throws SyntaxError If the string key is not a valid
      *
-     * @return MemberOrderedMap<TKey, TValue>
+     * @return OrderedMap<TKey, TValue>
      */
     public function append(string $key, StructuredField $member): self;
 
@@ -78,7 +78,7 @@ interface MemberOrderedMap extends MemberContainer
      *
      * @throws SyntaxError If the string key is not a valid
      *
-     * @return MemberOrderedMap<TKey, TValue>
+     * @return OrderedMap<TKey, TValue>
      */
     public function prepend(string $key, StructuredField $member): self;
 
@@ -87,16 +87,16 @@ interface MemberOrderedMap extends MemberContainer
      *
      * @param iterable<TKey, TValue> ...$others
      *
-     * @return MemberOrderedMap<TKey, TValue>
+     * @return OrderedMap<TKey, TValue>
      */
     public function mergeAssociative(iterable ...$others): self;
 
     /**
      * Merges multiple instances using iterable pairs.
      *
-     * @param MemberOrderedMap<TKey, TValue>|iterable<array{0:TKey, 1:TValue}> ...$others
+     * @param OrderedMap<TKey, TValue>|iterable<array{0:TKey, 1:TValue}> ...$others
      *
-     * @return MemberOrderedMap<TKey, TValue>
+     * @return OrderedMap<TKey, TValue>
      */
-    public function mergePairs(MemberOrderedMap|iterable ...$others): self;
+    public function mergePairs(OrderedMap|iterable ...$others): self;
 }
