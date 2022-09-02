@@ -6,7 +6,6 @@ namespace Bakame\Http\StructuredFields;
 
 use Iterator;
 use Throwable;
-use TypeError;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -37,7 +36,7 @@ final class Parameters implements OrderedMap
 
     /**
      * @throws ForbiddenStateError If the bare item contains parameters
-     * @throws TypeError If the structured field is not supported
+     * @throws InvalidArgument If the structured field is not supported
      */
     private static function filterMember(Item $item, string|int $offset = null): Item
     {
@@ -57,7 +56,7 @@ final class Parameters implements OrderedMap
     {
         return match (true) {
             $member instanceof Item => self::filterMember($member),
-            $member instanceof StructuredField => throw new TypeError('Expecting a "'.Item::class.'" instance; received "'.$member::class.'" instead.'),
+            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" instance; received "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
     }

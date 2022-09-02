@@ -6,7 +6,6 @@ namespace Bakame\Http\StructuredFields;
 
 use Iterator;
 use Throwable;
-use TypeError;
 use function array_filter;
 use function array_map;
 use function array_splice;
@@ -50,7 +49,7 @@ final class OrderedList implements MemberList
     {
         return match (true) {
             $member instanceof InnerList, $member instanceof Item => self::filterForbiddenState($member),
-            $member instanceof StructuredField => throw new TypeError('Expecting a "'.Item::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
+            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
     }
