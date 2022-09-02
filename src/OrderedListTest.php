@@ -122,7 +122,7 @@ final class OrderedListTest extends StructuredFieldTest
     public function it_implements_the_array_access_interface(): void
     {
         $sequence = OrderedList::fromList();
-        $sequence[] = InnerList::from(42, 69); // @phpstan-ignore-line
+        $sequence[] = InnerList::from(42, 69);
 
         self::assertTrue(isset($sequence[0]));
         self::assertInstanceOf(InnerList::class, $sequence[0]);
