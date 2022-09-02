@@ -86,13 +86,13 @@ final class Parser
     {
         $remainder = ltrim($httpValue, ' ');
         if ('(' !== $remainder[0]) {
-            throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list is missing a parenthesis.");
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list is missing a parenthesis.");
         }
 
         [$list, $offset] = self::parseInnerListValue($remainder);
         $remainder = self::removeOptionalWhiteSpaces(substr($remainder, $offset));
         if ('' !== $remainder) {
-            throw new SyntaxError("The HTTP textual representation `$httpValue` for a inner list contains invalid data.");
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list contains invalid data.");
         }
 
         return $list;
@@ -190,11 +190,11 @@ final class Parser
 
             $list[] = Item::from($value, $parameters);
             if ('' !== $remainder && !in_array($remainder[0], [' ', ')'], true)) {
-                throw new SyntaxError("The HTTP textual representation `$remainder` for a inner list is using invalid characters.");
+                throw new SyntaxError("The HTTP textual representation \"$remainder\" for a inner list is using invalid characters.");
             }
         }
 
-        throw new SyntaxError("Unexpected end of line for The HTTP textual representation `$remainder` for a inner list.");
+        throw new SyntaxError("Unexpected end of line for The HTTP textual representation \"$remainder\" for a inner list.");
     }
 
     /**
@@ -255,7 +255,7 @@ final class Parser
     private static function parseBoolean(string $httpValue): array
     {
         if (1 !== preg_match('/^\?[01]/', $httpValue)) {
-            throw new SyntaxError("Invalid character in the HTTP textual representation of a boolean value `$httpValue`.");
+            throw new SyntaxError("Invalid character in the HTTP textual representation of a boolean value \"$httpValue\".");
         }
 
         return ['1' === $httpValue[1], 2];
@@ -275,7 +275,7 @@ final class Parser
         return match (true) {
             1 === preg_match('/^-?\d{1,12}\.\d{1,3}$/', $found['number']) => [(float) $found['number'], strlen($found['number'])],
             1 === preg_match('/^-?\d{1,15}$/', $found['number']) => [(int) $found['number'], strlen($found['number'])],
-            default => throw new SyntaxError("The number format in the HTTP textual representation `$httpValue` contains too much digit."),
+            default => throw new SyntaxError("The number format in the HTTP textual representation \"$httpValue\" contains too much digit."),
         };
     }
 
@@ -301,7 +301,7 @@ final class Parser
             }
 
             if (1 === preg_match("/[^\x20-\x7E]/", $char)) {
-                throw new SyntaxError("Invalid character in the HTTP textual representation of a string `$httpValue`.");
+                throw new SyntaxError("Invalid character in the HTTP textual representation of a string \"$httpValue\".");
             }
 
             $httpValue = substr($httpValue, 1);
@@ -314,13 +314,13 @@ final class Parser
             $offset += 1;
             $httpValue = substr($httpValue, 1);
             if (!in_array($char, ['"', '\\'], true)) {
-                throw new SyntaxError("Invalid characters in the HTTP textual representation of a string `$httpValue`.");
+                throw new SyntaxError("Invalid characters in the HTTP textual representation of a string \"$httpValue\".");
             }
 
             $output .= $char;
         }
 
-        throw new SyntaxError("Invalid end of string in the HTTP textual representation of a string `$httpValue`.");
+        throw new SyntaxError("Invalid end of string in the HTTP textual representation of a string \"$httpValue\".");
     }
 
     /**
@@ -347,7 +347,7 @@ final class Parser
     private static function parseByteSequence(string $httpValue): array
     {
         if (1 !== preg_match('/^(?<sequence>:(?<byte>[a-z\d+\/=]*):)/i', $httpValue, $matches)) {
-            throw new SyntaxError("Invalid characters in the HTTP textual representation of a Byte Sequence `$httpValue`.");
+            throw new SyntaxError("Invalid characters in the HTTP textual representation of a Byte Sequence \"$httpValue\".");
         }
 
         return [ByteSequence::fromEncoded($matches['byte']), strlen($matches['sequence'])];

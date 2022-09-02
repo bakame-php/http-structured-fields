@@ -59,7 +59,7 @@ final class InnerList implements MemberList, ParameterAccess
     {
         foreach ($member->parameters as $offset => $item) {
             if ($item->parameters->hasMembers()) {
-                throw new ForbiddenStateError('Parameter member `"'.$offset.'"` is in invalid state; Parameters instances can only contain bare items.');
+                throw new ForbiddenStateError('Parameter member "'.$offset.'" is in invalid state; Parameters instances can only contain bare items.');
             }
         }
 

@@ -16,18 +16,18 @@ final class InvalidOffset extends OutOfBoundsException implements StructuredFiel
     public static function dueToIndexNotFound(string|int $index): self
     {
         if (is_string($index)) {
-            return new self('The member index can not be the string `'.$index.'`.');
+            return new self('The member index can not be the string "'.$index.'".');
         }
 
-        return new self('No member exists with the index `'.$index.'`.');
+        return new self('No member exists with the index "'.$index.'".');
     }
 
     public static function dueToKeyNotFound(string|int $key): self
     {
         if (is_int($key)) {
-            return new self('The member key  can not be the integer`'.$key.'`.');
+            return new self('The member key  can not be the integer "'.$key.'".');
         }
 
-        return new self('No member exists with the key `'.$key.'`.');
+        return new self('No member exists with the key "'.$key.'".');
     }
 }

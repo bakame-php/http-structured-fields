@@ -22,7 +22,7 @@ final class MapKey
     {
         $instance = self::fromStringBeginning($httpValue);
         if ($instance->value !== $httpValue) {
-            throw new SyntaxError("No valid http value key could be extracted from `$httpValue`.");
+            throw new SyntaxError("No valid http value key could be extracted from \"$httpValue\".");
         }
 
         return $instance;
@@ -34,7 +34,7 @@ final class MapKey
     public static function fromStringBeginning(string $httpValue): self
     {
         if (1 !== preg_match('/^(?<key>[a-z*][a-z\d.*_-]*)/', $httpValue, $found)) {
-            throw new SyntaxError("No valid http value key could be extracted from `$httpValue`.");
+            throw new SyntaxError("No valid http value key could be extracted from \"$httpValue\".");
         }
 
         return new self($found['key']);

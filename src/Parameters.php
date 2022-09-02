@@ -46,7 +46,7 @@ final class Parameters implements OrderedMap
 
         $message = 'Parameters instances can only contain bare items.';
         if (null !== $offset) {
-            $message = 'Parameter member `"'.$offset.'"` is in invalid state; '.$message;
+            $message = 'Parameter member "'.$offset.'" is in invalid state; '.$message;
         }
 
         throw new ForbiddenStateError($message);
@@ -121,7 +121,7 @@ final class Parameters implements OrderedMap
         foreach (explode(';', $httpValue) as $pair) {
             [$key, $value] = explode('=', $pair, 2) + [1 => '?1'];
             if (rtrim($key) !== $key || ltrim($value) !== $value) {
-                throw new SyntaxError("The HTTP textual representation `$pair` for a parameter pair contains invalid characters.");
+                throw new SyntaxError("The HTTP textual representation \"$pair\" for a parameter pair contains invalid characters.");
             }
 
             $key = trim($key);
@@ -139,7 +139,7 @@ final class Parameters implements OrderedMap
     public function toHttpValue(): string
     {
         $formatter = fn (Item $member, string $offset): string => match (true) {
-            $member->parameters->hasMembers() => throw new ForbiddenStateError('Parameter member `"'.$offset.'"` is in invalid state; Parameters instances can only contain bare items.'),
+            $member->parameters->hasMembers() => throw new ForbiddenStateError('Parameter member "'.$offset.'" is in invalid state; Parameters instances can only contain bare items.'),
             true === $member->value() => ';'.$offset,
             default => ';'.$offset.'='.$member->toHttpValue(),
         };

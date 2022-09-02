@@ -117,7 +117,7 @@ final class Item implements StructuredField, ParameterAccess
     private static function filterString(string $value): string
     {
         if (1 === preg_match('/[^\x20-\x7E]/i', $value)) {
-            throw new SyntaxError('The string `'.$value.'` contains invalid characters.');
+            throw new SyntaxError('The string "'.$value.'" contains invalid characters.');
         }
 
         return $value;
@@ -149,13 +149,13 @@ final class Item implements StructuredField, ParameterAccess
 
         [$value, $parameters] = match (true) {
             1 === preg_match("/[\r\t\n]|[^\x20-\x7E]/", $itemString),
-            '' === $itemString => throw new SyntaxError("The HTTP textual representation `$httpValue` for an item contains invalid characters."),
+            '' === $itemString => throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.'),
             '"' === $itemString[0] => self::parseString($itemString),
             ':' === $itemString[0] => self::parseBytesSequence($itemString),
             '?' === $itemString[0] => self::parseBoolean($itemString),
             1 === preg_match('/^(-?\d)/', $itemString) => self::parseNumber($itemString),
             1 === preg_match('/^([a-z*])/i', $itemString) => self::parseToken($itemString),
-            default => throw new SyntaxError("The HTTP textual representation `$httpValue` for an item is unknown or unsupported."),
+            default => throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item is unknown or unsupported.'),
         };
 
         return new self($value, Parameters::fromHttpValue($parameters));
@@ -174,7 +174,7 @@ final class Item implements StructuredField, ParameterAccess
         }
 
         if (1 !== preg_match('/'.$regexp.'/i', $string, $found)) {
-            throw new SyntaxError("The HTTP textual representation `$string` for a Token contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation \"$string\" for a Token contains invalid characters.");
         }
 
         return [
@@ -191,7 +191,7 @@ final class Item implements StructuredField, ParameterAccess
     private static function parseBoolean(string $string): array
     {
         if (1 !== preg_match('/^\?[01]/', $string)) {
-            throw new SyntaxError("The HTTP textual representation `$string` for a boolean contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation \"$string\" for a boolean contains invalid characters.");
         }
 
         return [$string[1] === '1', substr($string, 2)];
@@ -205,7 +205,7 @@ final class Item implements StructuredField, ParameterAccess
     private static function parseBytesSequence(string $string): array
     {
         if (1 !== preg_match('/^:(?<bytes>[a-z\d+\/=]*):/i', $string, $matches)) {
-            throw new SyntaxError("The HTTP textual representation `$string` for a byte sequence contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation \"$string\" for a byte sequence contains invalid characters.");
         }
 
         return [ByteSequence::fromEncoded($matches['bytes']), substr($string, strlen($matches[0]))];
@@ -224,13 +224,13 @@ final class Item implements StructuredField, ParameterAccess
         }
 
         if (1 !== preg_match('/'.$regexp.'/', $string, $found)) {
-            throw new SyntaxError("The HTTP textual representation `$string` for a number contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation \"$string\" for a number contains invalid characters.");
         }
 
         $number = match (true) {
             1 === preg_match('/^-?\d{1,12}\.\d{1,3}$/', $found['number']) => (float) $found['number'],
             1 === preg_match('/^-?\d{1,15}$/', $found['number']) => (int) $found['number'],
-            default => throw new SyntaxError("The HTTP textual representation `$string` for a number contain too many digits."),
+            default => throw new SyntaxError("The HTTP textual representation \"$string\" for a number contain too many digits."),
         };
 
         return [$number, substr($string, strlen($found['number']))];
@@ -261,19 +261,19 @@ final class Item implements StructuredField, ParameterAccess
             }
 
             if ($string === '') {
-                throw new SyntaxError("The HTTP textual representation `$originalString` for a string contains an invalid end string.");
+                throw new SyntaxError("The HTTP textual representation \"$originalString\" for a string contains an invalid end string.");
             }
 
             $char = $string[0];
             $string = substr($string, 1);
             if (!in_array($char, ['"', '\\'], true)) {
-                throw new SyntaxError("The HTTP textual representation `$originalString` for a string contains invalid characters.");
+                throw new SyntaxError("The HTTP textual representation \"$originalString\" for a string contains invalid characters.");
             }
 
             $returnValue .= $char;
         }
 
-        throw new SyntaxError("The HTTP textual representation `$originalString` for a string contains an invalid end string.");
+        throw new SyntaxError("The HTTP textual representation \"$originalString\" for a string contains an invalid end string.");
     }
 
     /**
