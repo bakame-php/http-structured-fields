@@ -34,7 +34,7 @@ final class Item implements StructuredField, ParameterAccess
     /**
      * @param array{
      *     0:DataType,
-     *     1?:OrderedMap<string, Item>|iterable<array{0:string, 1:Item|DataType}>
+     *     1?:MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|DataType}>
      * } $pair
      */
     public static function fromPair(array $pair): self

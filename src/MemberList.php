@@ -7,9 +7,9 @@ namespace Bakame\Http\StructuredFields;
 /**
  * @template TKey
  * @template TValue of StructuredField
- * @template-extends Container<TKey, TValue>
+ * @template-extends MemberContainer<TKey, TValue>
  */
-interface MemberList extends Container
+interface MemberList extends MemberContainer
 {
     /**
      * Insert members at the beginning of the list.

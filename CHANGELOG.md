@@ -6,14 +6,13 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
-- The `Container` interface.
-- The `ParameterAccess` interface.
+- The `Container`, `MemberList`, `MemberOrderedMap`, `ParameterAccess` interfaces.
+- `OrderedList` and `InnerList` implement the `MemberList` interface.
+- `Parameters` and `Dictionnary` implement the `MemberOrderedMap` interface.
 - The `InvalidArgument` exception.
-- `OrderedList`, `InnerList` now implements the `MemberList` interface.
-- `Parameters` and `Dictionnary` now implements the PHP `OrderedMap` interface.
 - `Token::value` is a readonly property.
 - `Item::value` method returns the decoded value of an Item (returns value can be `float|int|string|bool`).
-- `Item::fromToken`, `Item::fromDecodedByteSequence` , `Item::fromEncodedByteSequence` to ease specific string initiation 
+- `Item::fromToken`, `Item::fromDecodedByteSequence` , `Item::fromEncodedByteSequence` to ease `Item` creation. 
 
 ### Fixed
 

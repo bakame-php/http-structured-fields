@@ -15,9 +15,9 @@ use function is_array;
 
 /**
  * @phpstan-type DataType ByteSequence|Token|bool|int|float|string
- * @implements OrderedMap<string, Item|InnerList<int, Item>>
+ * @implements MemberOrderedMap<string, Item|InnerList<int, Item>>
  */
-final class Dictionary implements OrderedMap
+final class Dictionary implements MemberOrderedMap
 {
     /** @var array<string, Item|InnerList<int, Item>> */
     private array $members = [];
@@ -52,11 +52,11 @@ final class Dictionary implements OrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param OrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|DataType}> $pairs
+     * @param MemberOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|DataType}> $pairs
      */
-    public static function fromPairs(OrderedMap|iterable $pairs = []): self
+    public static function fromPairs(MemberOrderedMap|iterable $pairs = []): self
     {
-        if ($pairs instanceof OrderedMap) {
+        if ($pairs instanceof MemberOrderedMap) {
             $pairs = $pairs->toPairs();
         }
 
@@ -347,9 +347,9 @@ final class Dictionary implements OrderedMap
     /**
      * Merges multiple instances using iterable pairs.
      *
-     * @param OrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|DataType}> ...$others
+     * @param MemberOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|DataType}> ...$others
      */
-    public function mergePairs(OrderedMap|iterable ...$others): self
+    public function mergePairs(MemberOrderedMap|iterable ...$others): self
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromPairs($other)->members];

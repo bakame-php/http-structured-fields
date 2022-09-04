@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 /**
- * @property-read OrderedMap<string, Item> $parameters
+ * @property-read MemberOrderedMap<string, Item> $parameters
  */
 interface ParameterAccess
 {

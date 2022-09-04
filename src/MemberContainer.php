@@ -15,7 +15,7 @@ use IteratorAggregate;
  * @template-extends IteratorAggregate<TKey, TValue>
  * @template-extends ArrayAccess<TKey, TValue>
  */
-interface Container extends Countable, ArrayAccess, IteratorAggregate, StructuredField
+interface MemberContainer extends Countable, ArrayAccess, IteratorAggregate, StructuredField
 {
     /**
      * Tells whether the instance contains members.
