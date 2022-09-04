@@ -15,6 +15,7 @@ use function implode;
 use function is_array;
 
 /**
+ * @phpstan-type DataType ByteSequence|Token|bool|int|float|string
  * @implements MemberList<int, Item|MemberList<int, Item>>
  */
 final class OrderedList implements MemberList
@@ -28,7 +29,7 @@ final class OrderedList implements MemberList
     }
 
     /**
-     * @param MemberList<int, Item>|Item|ByteSequence|Token|bool|int|float|string ...$members
+     * @param MemberList<int, Item>|Item|DataType ...$members
      *
      * @return static
      */
@@ -38,7 +39,7 @@ final class OrderedList implements MemberList
     }
 
     /**
-     * @param iterable<MemberList<int, Item>|Item|ByteSequence|Token|bool|int|float|string> $members
+     * @param iterable<MemberList<int, Item>|Item|DataType> $members
      */
     public static function fromList(iterable $members = []): self
     {
@@ -286,7 +287,7 @@ final class OrderedList implements MemberList
 
     /**
      * @param int|null $offset
-     * @param MemberList<int, Item>|Item|ByteSequence|Token|bool|int|float|string $value  the member to add
+     * @param MemberList<int, Item>|Item|DataType $value  the member to add
      *
      * @see ::push
      * @see ::replace

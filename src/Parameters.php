@@ -17,6 +17,7 @@ use function rtrim;
 use function trim;
 
 /**
+ * @phpstan-type DataType ByteSequence|Token|bool|int|float|string
  * @implements OrderedMap<string, Item>
  */
 final class Parameters implements OrderedMap
@@ -25,7 +26,7 @@ final class Parameters implements OrderedMap
     private array $members = [];
 
     /**
-     * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $members
+     * @param iterable<string, Item|DataType> $members
      */
     private function __construct(iterable $members = [])
     {
@@ -362,7 +363,7 @@ final class Parameters implements OrderedMap
     /**
      * Merges multiple instances using iterable associative structures.
      *
-     * @param iterable<string, Item|Token|ByteSequence|float|int|bool|string> ...$others
+     * @param iterable<string, Item|DataType> ...$others
      */
     public function mergeAssociative(iterable ...$others): self
     {
@@ -376,7 +377,7 @@ final class Parameters implements OrderedMap
     /**
      * Merge multiple instances using iterable pairs.
      *
-     * @param OrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> ...$others
+     * @param OrderedMap<string, Item>|iterable<array{0:string, 1:Item|DataType}> ...$others
      */
     public function mergePairs(OrderedMap|iterable ...$others): self
     {
@@ -413,7 +414,7 @@ final class Parameters implements OrderedMap
 
     /**
      * @param string|null $offset
-     * @param Item|ByteSequence|Token|bool|int|float|string $value  the member value
+     * @param Item|DataType $value  the member value
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {

@@ -20,6 +20,9 @@ use function strlen;
 use function substr;
 use function trim;
 
+/**
+ * @phpstan-type DataType ByteSequence|Token|bool|int|float|string
+ */
 final class Item implements StructuredField, ParameterAccess
 {
     private function __construct(
@@ -30,8 +33,8 @@ final class Item implements StructuredField, ParameterAccess
 
     /**
      * @param array{
-     *     0:Token|ByteSequence|int|float|string|bool,
-     *     1?:OrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}>
+     *     0:DataType,
+     *     1?:OrderedMap<string, Item>|iterable<array{0:string, 1:Item|DataType}>
      * } $pair
      */
     public static function fromPair(array $pair): self
@@ -51,7 +54,7 @@ final class Item implements StructuredField, ParameterAccess
     /**
      * Returns a new instance from a value type and an iterable of key-value parameters.
      *
-     * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
+     * @param iterable<string,Item|DataType> $parameters
      */
     public static function from(
         Token|ByteSequence|int|float|string|bool $value,
@@ -68,7 +71,7 @@ final class Item implements StructuredField, ParameterAccess
     /**
      * Returns a new instance from an encoded byte sequence and an iterable of key-value parameters.
      *
-     * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
+     * @param iterable<string,Item|DataType> $parameters
      */
     public static function fromEncodedByteSequence(string|Stringable $value, iterable $parameters = []): self
     {
@@ -78,7 +81,7 @@ final class Item implements StructuredField, ParameterAccess
     /**
      * Returns a new instance from a decoded byte sequence and an iterable of key-value parameters.
      *
-     * @param iterable<string,Item|ByteSequence|Token|bool|int|float|string> $parameters
+     * @param iterable<string,Item|DataType> $parameters
      */
     public static function fromDecodedByteSequence(string|Stringable $value, iterable $parameters = []): self
     {

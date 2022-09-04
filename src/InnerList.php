@@ -13,6 +13,7 @@ use function array_values;
 use function count;
 
 /**
+ * @phpstan-type DataType ByteSequence|Token|bool|int|float|string
  * @implements MemberList<int, Item>
  */
 final class InnerList implements MemberList, ParameterAccess
@@ -33,8 +34,8 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param iterable<Item|ByteSequence|Token|bool|int|float|string> $members
-     * @param iterable<array-key, Item|ByteSequence|Token|bool|int|float|string> $parameters
+     * @param iterable<Item|DataType> $members
+     * @param iterable<string, Item|DataType> $parameters
      */
     public static function fromList(iterable $members = [], iterable $parameters = []): self
     {
@@ -255,7 +256,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param Item|ByteSequence|Token|bool|int|float|string $value the member to add
+     * @param Item|DataType $value the member to add
      *
      * @see ::push
      * @see ::replace

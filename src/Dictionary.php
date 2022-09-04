@@ -14,6 +14,7 @@ use function implode;
 use function is_array;
 
 /**
+ * @phpstan-type DataType ByteSequence|Token|bool|int|float|string
  * @implements OrderedMap<string, Item|InnerList<int, Item>>
  */
 final class Dictionary implements OrderedMap
@@ -22,7 +23,7 @@ final class Dictionary implements OrderedMap
     private array $members = [];
 
     /**
-     * @param iterable<string, InnerList<array-key, Item>|Item|ByteSequence|Token|bool|int|float|string> $members
+     * @param iterable<string, InnerList<int, Item>|Item|DataType> $members
      */
     private function __construct(iterable $members = [])
     {
@@ -37,7 +38,7 @@ final class Dictionary implements OrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<string, InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string> $members
+     * @param iterable<string, InnerList<int, Item>|Item|DataType> $members
      */
     public static function fromAssociative(iterable $members = []): self
     {
@@ -51,7 +52,7 @@ final class Dictionary implements OrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param OrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string}> $pairs
+     * @param OrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|DataType}> $pairs
      */
     public static function fromPairs(OrderedMap|iterable $pairs = []): self
     {
@@ -346,7 +347,7 @@ final class Dictionary implements OrderedMap
     /**
      * Merges multiple instances using iterable pairs.
      *
-     * @param OrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string}> ...$others
+     * @param OrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|DataType}> ...$others
      */
     public function mergePairs(OrderedMap|iterable ...$others): self
     {
@@ -384,7 +385,7 @@ final class Dictionary implements OrderedMap
     }
 
     /**
-     * @param InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string $value
+     * @param InnerList<int, Item>|Item|DataType $value
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
