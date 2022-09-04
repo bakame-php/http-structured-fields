@@ -91,14 +91,13 @@ same argument definition as in `Item::from` for parameters argument.
 use Bakame\Http\StructuredFields;
 
 $item = StructuredFields\Item::fromPair([
-    "hello world", 
-    [
+    "hello world", [
         ["a", StructuredFields\ByteSequence::fromDecoded("Hello World")],
     ]
 ]);
-$item->value(); // returns "hello world"
+$item->value();    // returns "hello world"
 $item->isString(); // returns true
-$item->parameters->get("a")->isByteSequence(); // returns true
+$item->parameters["a"]->isByteSequence(); // returns true
 $item->parameters->value("a"); // returns the decoded value 'Hello World'
 echo $item->toHttpValue();     // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
@@ -120,7 +119,7 @@ use Bakame\Http\StructuredFields;
 
 $item = StructuredFields\Item::from(StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29ybGQ=")]);
 $item->isByteSequence(); // returns true
-echo $item->value(); // returns the decoded value 'Hello World'
+echo $item->value();     // returns the decoded value 'Hello World'
 ```
 
 **Of note: to instantiate a decimal number type a float MUST be used as the first argument of `Item::from`.**
