@@ -9,7 +9,7 @@ namespace Bakame\Http\StructuredFields;
  */
 final class OrderedListTest extends StructuredFieldTest
 {
-    /** @var array|string[] */
+    /** @var array<string> */
     protected array $paths = [
         __DIR__.'/../vendor/httpwg/structured-field-tests/list.json',
         __DIR__.'/../vendor/httpwg/structured-field-tests/listlist.json',
@@ -60,7 +60,7 @@ final class OrderedListTest extends StructuredFieldTest
     /** @test */
     public function it_can_unshift_insert_and_replace(): void
     {
-        $instance = OrderedList::fromList();
+        $instance = OrderedList::from();
         $instance->unshift(Item::from('42'));
         $instance->push(Item::from(42));
         $instance->insert(1, Item::from(42.0));
@@ -79,7 +79,7 @@ final class OrderedListTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $container = OrderedList::fromList();
+        $container = OrderedList::from();
         $container->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
     }
 
@@ -88,7 +88,7 @@ final class OrderedListTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $container = OrderedList::fromList();
+        $container = OrderedList::from();
         $container->insert(3, Item::from(ByteSequence::fromDecoded('Hello World')));
     }
 
@@ -97,7 +97,7 @@ final class OrderedListTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = OrderedList::fromList();
+        $instance = OrderedList::from();
         self::assertFalse($instance->has(3));
 
         $instance->get(3);
@@ -121,7 +121,7 @@ final class OrderedListTest extends StructuredFieldTest
     /** @test */
     public function it_implements_the_array_access_interface(): void
     {
-        $sequence = OrderedList::fromList();
+        $sequence = OrderedList::from();
         $sequence[] = InnerList::from(42, 69);
 
         self::assertTrue(isset($sequence[0]));
@@ -142,7 +142,7 @@ final class OrderedListTest extends StructuredFieldTest
     {
         $this->expectException(StructuredFieldError::class);
 
-        $sequence = OrderedList::fromList();
+        $sequence = OrderedList::from();
         $sequence[0] = Item::from(42.0);
     }
 
@@ -160,7 +160,7 @@ final class OrderedListTest extends StructuredFieldTest
     {
         $this->expectException(StructuredFieldError::class);
 
-        $structuredField = OrderedList::fromList();
+        $structuredField = OrderedList::from();
         $structuredField[] = 42;
         $item = $structuredField[0];
         $item->parameters->append('forty-two', '42');

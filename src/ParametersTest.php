@@ -11,7 +11,7 @@ use function iterator_to_array;
  */
 final class ParametersTest extends StructuredFieldTest
 {
-    /** @var array|string[] */
+    /** @var array<string> */
     protected array $paths = [
         __DIR__.'/../vendor/httpwg/structured-field-tests/param-dict.json',
         __DIR__.'/../vendor/httpwg/structured-field-tests/param-list.json',
