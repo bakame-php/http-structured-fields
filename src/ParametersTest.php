@@ -264,7 +264,6 @@ final class ParametersTest extends StructuredFieldTest
         ]);
 
         self::assertSame('helloWorld', $instance->get('string')->value());
-        self::assertSame(['string' => 'helloWorld', 'boolean' => true], $instance->values());
     }
 
     /** @test */
@@ -311,11 +310,11 @@ final class ParametersTest extends StructuredFieldTest
     /** @test */
     public function it_returns_null_values_after_invalid_operation(): void
     {
+        $this->expectException(ForbiddenStateError::class);
         $parameters = Parameters::fromAssociative(['a' => 'missing', 'b' => 'present']);
         $parameters->get('a')->parameters->set('b', false);
 
-        self::assertArrayNotHasKey('a', $parameters->values());
-        self::assertSame(['b' => 'present'], $parameters->values());
+        $parameters->toHttpValue();
     }
 
     /** @test */

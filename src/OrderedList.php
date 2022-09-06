@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Iterator;
-use Throwable;
 use function array_filter;
 use function array_map;
 use function array_splice;
@@ -130,44 +129,6 @@ final class OrderedList implements MemberList
             0 > $index => $max + $index,
             default => $index,
         };
-    }
-
-    /**
-     * Returns all containers Item values.
-     *
-     * @return array<int, array<int, float|int|bool|string>|float|int|bool|string>
-     */
-    public function values(): array
-    {
-        $result = [];
-        foreach ($this->members as $offset => $item) {
-            $value = $this->value($offset);
-            if (null !== $value) {
-                $result[$offset] = $value;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
-     *
-     * @return array<int, float|int|bool|string>|float|int|bool|string|null
-     */
-    private function value(string|int $offset): array|float|int|bool|string|null
-    {
-        try {
-            $member = $this->get($offset);
-        } catch (Throwable) {
-            return null;
-        }
-
-        if ($member instanceof Item) {
-            return $member->value();
-        }
-
-        return $member->values();
     }
 
     public function get(string|int $offset): Item|InnerList

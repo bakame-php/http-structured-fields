@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Iterator;
-use Throwable;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -137,44 +136,6 @@ final class Dictionary implements MemberOrderedMap
     public function has(string|int $offset): bool
     {
         return is_string($offset) && array_key_exists($offset, $this->members);
-    }
-
-    /**
-     * Returns all containers Item values.
-     *
-     * @return array<string, array<int, float|int|bool|string>|float|int|bool|string>
-     */
-    public function values(): array
-    {
-        $result = [];
-        foreach ($this->members as $offset => $item) {
-            $value = $this->value($offset);
-            if (null !== $value) {
-                $result[$offset] = $value;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
-     *
-     * @return array<int, float|int|bool|string>|float|int|bool|string|null
-     */
-    private function value(string|int $offset): array|float|int|bool|string|null
-    {
-        try {
-            $member = $this->get($offset);
-        } catch (Throwable) {
-            return null;
-        }
-
-        if ($member instanceof Item) {
-            return $member->value();
-        }
-
-        return $member->values();
     }
 
     /**

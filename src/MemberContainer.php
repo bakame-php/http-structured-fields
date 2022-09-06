@@ -61,9 +61,4 @@ interface MemberContainer extends Countable, ArrayAccess, IteratorAggregate, Str
      * @param TKey $offset
      */
     public function offsetUnset(mixed $offset): void;
-
-    /**
-     * @return array<TKey, array<array-key, string|int|float|bool>|string|int|float|bool>
-     */
-    public function values(): array;
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Iterator;
-use Throwable;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -190,25 +189,6 @@ final class Parameters implements MemberOrderedMap
     public function keys(): array
     {
         return array_keys($this->members);
-    }
-
-    /**
-     * Returns all containers Item values.
-     *
-     * @return array<string, float|int|bool|string>
-     */
-    public function values(): array
-    {
-        $result = [];
-        foreach ($this->members as $offset => $item) {
-            try {
-                $result[$offset] = $this->get($offset)->value();
-            } catch (Throwable) {
-                continue;
-            }
-        }
-
-        return $result;
     }
 
     /**

@@ -208,8 +208,6 @@ final class InnerListTest extends TestCase
         $input = ['foobar', 0, false, $token];
         $structuredField = InnerList::fromList($input);
 
-        self::assertSame(['foobar', 0, false, 'token'], $structuredField->values());
-
         self::assertFalse($structuredField[2]->value());
         self::assertSame('token', $structuredField[-1]->value());
     }
@@ -217,11 +215,12 @@ final class InnerListTest extends TestCase
     /** @test */
     public function it_will_strip_invalid_state_object_via_values_methods(): void
     {
+        $this->expectException(ForbiddenStateError::class);
         $bar = Item::from(Token::fromString('bar'));
         $bar->parameters->set('baz', 42);
         $structuredField = InnerList::from(false, $bar);
         $structuredField[1]->parameters['baz']->parameters->set('error', 'error');
 
-        self::assertEquals([false], $structuredField->values());
+        $structuredField->toHttpValue();
     }
 }

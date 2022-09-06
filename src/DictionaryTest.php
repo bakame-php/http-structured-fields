@@ -273,13 +273,6 @@ final class DictionaryTest extends StructuredFieldTest
             ['token', $token],
         ]);
 
-        self::assertSame([
-            'foobar' => 'foobar',
-            'zero' => 0,
-            'false' => false,
-            'token' => 'token',
-        ], $structuredField->values());
-
         self::assertInstanceOf(Item::class, $structuredField->get('false'));
         self::assertFalse($structuredField->get('false')->value());
     }
@@ -287,6 +280,7 @@ final class DictionaryTest extends StructuredFieldTest
     /** @test */
     public function it_will_strip_invalid_state_object_via_values_methods(): void
     {
+        $this->expectException(StructuredFieldError::class);
         $bar = Item::from(Token::fromString('bar'));
         $bar->parameters->set('baz', 42);
         $innerList = InnerList::from('foobar');
@@ -296,9 +290,6 @@ final class DictionaryTest extends StructuredFieldTest
             ->set('c', $innerList);
 
         $structuredField->get('a')->parameters['baz']->parameters->set('error', 'error');
-
-        self::assertArrayNotHasKey('a', $structuredField->values());
-        self::assertEquals(['b' => false, 'c' => [0 => 'foobar']], $structuredField->values());
-        self::assertSame([0 => 'foobar'], $structuredField->values()['c']);
+        $structuredField->toHttpValue();
     }
 }

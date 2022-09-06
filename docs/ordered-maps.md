@@ -65,7 +65,6 @@ use Bakame\Http\StructuredFields;
 
 $parameters = StructuredFields\Parameters::fromAssociative(['b' => true, 'foo' => 'bar']);
 $parameters->keys();       // returns ['b', 'foo']
-$parameters->values();     // returns [true, 'bar']
 $parameters->get('b');     // returns Item::from(true)
 $parameters['b'];          // returns Item::from(true)
 $parameters['b']->value(); // returns true

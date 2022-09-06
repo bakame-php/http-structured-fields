@@ -188,22 +188,21 @@ final class OrderedListTest extends StructuredFieldTest
         $input = ['foobar', 0, false, $token, $innerList];
         $structuredField = OrderedList::fromList($input);
 
-        self::assertSame(['foobar', 0, false, 'token', [0 => 'test']], $structuredField->values());
         self::assertInstanceOf(Item::class, $structuredField[2]);
         self::assertFalse($structuredField[2]->value());
 
         self::assertInstanceOf(InnerList::class, $structuredField[-1]);
-        self::assertSame([0 => 'test'], $structuredField[-1]->values());
     }
 
     /** @test */
     public function it_will_strip_invalid_state_object_via_values_methods(): void
     {
+        $this->expectException(ForbiddenStateError::class);
         $bar = Item::from(Token::fromString('bar'));
         $bar->parameters->set('baz', 42);
         $structuredField = OrderedList::from(false, $bar);
         $structuredField[1]->parameters['baz']->parameters->set('error', 'error');
 
-        self::assertEquals([false], $structuredField->values());
+        $structuredField->toHttpValue();
     }
 }

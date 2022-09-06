@@ -29,7 +29,6 @@ At any given time it is possible with each of these objects to:
 - access container members via the `ArrayAccess` interface;
 - tell whether the container contains or not members with the `hasMembers` methods from the `Container` interface;
 - clear its content using the `clear` method from the `Container` interface;
-- unwrap Item value using the `values`, `value` methods from the `Container` interface;
 
 getter methods:
 

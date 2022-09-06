@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Iterator;
-use Throwable;
 use function array_filter;
 use function array_map;
 use function array_splice;
@@ -112,24 +111,6 @@ final class InnerList implements MemberList, ParameterAccess
             0 > $index => $max + $index,
             default => $index,
         };
-    }
-
-    /**
-     * Returns all containers Item values.
-     *
-     * @return array<int, float|int|bool|string>
-     */
-    public function values(): array
-    {
-        $result = [];
-        foreach ($this->members as $offset => $item) {
-            try {
-                $result[$offset] = $this->get($offset)->value();
-            } catch (Throwable) {
-            }
-        }
-
-        return $result;
     }
 
     public function get(string|int $offset): Item
