@@ -189,10 +189,11 @@ final class OrderedListTest extends StructuredFieldTest
         $structuredField = OrderedList::fromList($input);
 
         self::assertSame(['foobar', 0, false, 'token', [0 => 'test']], $structuredField->values());
-        self::assertFalse($structuredField->value(2));
-        self::assertNull($structuredField->value(42));
-        self::assertNull($structuredField->value('2'));
-        self::assertSame([0 => 'test'], $structuredField->value(-1));
+        self::assertInstanceOf(Item::class, $structuredField[2]);
+        self::assertFalse($structuredField[2]->value());
+
+        self::assertInstanceOf(InnerList::class, $structuredField[-1]);
+        self::assertSame([0 => 'test'], $structuredField[-1]->values());
     }
 
     /** @test */
@@ -203,7 +204,6 @@ final class OrderedListTest extends StructuredFieldTest
         $structuredField = OrderedList::from(false, $bar);
         $structuredField[1]->parameters['baz']->parameters->set('error', 'error');
 
-        self::assertNull($structuredField->value(1));
         self::assertEquals([false], $structuredField->values());
     }
 }

@@ -247,10 +247,12 @@ final class ParametersTest extends StructuredFieldTest
     /** @test */
     public function it_returns_null_if_internal_parameters_are_changed_illegally(): void
     {
+        $this->expectException(StructuredFieldError::class);
+
         $fields = Item::from('/terms', ['rel' => 'copyright', 'anchor' => '#foo']);
         $fields->parameters['anchor']->parameters->set('yolo', 42);
 
-        self::assertNull($fields->parameters->value('anchor'));
+        $fields->parameters->get('anchor');
     }
 
     /** @test */
@@ -261,7 +263,7 @@ final class ParametersTest extends StructuredFieldTest
             'boolean' => Item::from(true),
         ]);
 
-        self::assertSame('helloWorld', $instance->value('string'));
+        self::assertSame('helloWorld', $instance->get('string')->value());
         self::assertSame(['string' => 'helloWorld', 'boolean' => true], $instance->values());
     }
 

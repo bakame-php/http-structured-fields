@@ -64,11 +64,11 @@ In addition to `StructuredField` specific interfaces, both classes implements:
 use Bakame\Http\StructuredFields;
 
 $parameters = StructuredFields\Parameters::fromAssociative(['b' => true, 'foo' => 'bar']);
-$parameters->keys();     // returns ['b', 'foo']
-$parameters->values();   // returns [true, 'bar']
-$parameters->value('b'); // returns true
-$parameters->get('b');   // returns Item::from(true)
-$parameters['b'];        // returns Item::from(true)
+$parameters->keys();       // returns ['b', 'foo']
+$parameters->values();     // returns [true, 'bar']
+$parameters->get('b');     // returns Item::from(true)
+$parameters['b'];          // returns Item::from(true)
+$parameters['b']->value(); // returns true
 iterator_to_array($parameters->toPairs(), true); // returns [['b', Item::from(true)], ['foo', Item::from('bar')]]
 iterator_to_array($parameters, true); // returns ['b' => Item::from(true), 'foo' => Item::from('bar')]
 $parameters->mergeAssociative(
@@ -76,7 +76,6 @@ $parameters->mergeAssociative(
     ['b' => 'false']
 );
 $parameters->toHttpValue(); // returns ;b="false";foo="foo"
-$parameters->value('unknown'); // returns null
 ```
 
 **Both classes support negative indexes.**

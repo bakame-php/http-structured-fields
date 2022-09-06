@@ -66,9 +66,4 @@ interface MemberContainer extends Countable, ArrayAccess, IteratorAggregate, Str
      * @return array<TKey, array<array-key, string|int|float|bool>|string|int|float|bool>
      */
     public function values(): array;
-
-    /**
-     * @return array<array-key, string|int|float|bool>|string|int|float|bool|null
-     */
-    public function value(string|int $offset): array|float|int|bool|string|null;
 }

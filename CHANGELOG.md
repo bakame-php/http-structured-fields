@@ -16,9 +16,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Fixed
 
-- **[BC Break]** `Parameters::values` and `Parameters::value` decode `ByteSequence` and `Token` classes.
+- **[BC Break]** `Parameters::values` decode `ByteSequence` and `Token` classes.
 - **[BC Break]** `Parameters::values` no longer throw on invalid state; value is skipped from returned array.
-- **[BC Break]** `Parameters::value` no longer throw on invalid state; `null` value is returned instead.
 
 ### Deprecated
 
@@ -34,6 +33,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - **[BC Break]** `ByteSequence::toHttpValue` is removed; use the `Item` class to serialize a `ByteSequence`.
 - **[BC Break]** `::sanitize` method is removed use `Parameters::clear` method instead if needed.
 - **[BC Break]** `isEmpty` method is removed use `hasMembers` method instead.
+- **[BC Break]** `Parameters::value` use `Item::value` method instead.
 
 ## [0.5.0] - 2022-05-13
 

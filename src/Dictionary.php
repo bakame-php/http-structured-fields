@@ -162,7 +162,7 @@ final class Dictionary implements MemberOrderedMap
      *
      * @return array<int, float|int|bool|string>|float|int|bool|string|null
      */
-    public function value(string|int $offset): array|float|int|bool|string|null
+    private function value(string|int $offset): array|float|int|bool|string|null
     {
         try {
             $member = $this->get($offset);

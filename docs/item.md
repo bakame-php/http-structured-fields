@@ -69,7 +69,7 @@ $item = StructuredFields\Item::from("hello world", ["a" => true]);
 $item->value();    // returns "hello world"
 $item->isString(); // returns true
 $item->isToken();  // returns false
-$item->parameters->value("a"); //returns true
+$item->parameters["a"]->value(); //returns true
 ```
 
 Instantiation via type recognition is done using the `Item::from` named constructor.
@@ -98,8 +98,8 @@ $item = StructuredFields\Item::fromPair([
 $item->value();    // returns "hello world"
 $item->isString(); // returns true
 $item->parameters["a"]->isByteSequence(); // returns true
-$item->parameters->value("a"); // returns the decoded value 'Hello World'
-echo $item->toHttpValue();     // returns "hello world";a=:SGVsbG8gV29ybGQ=:
+$item->parameters["a"]->value(); // returns the decoded value 'Hello World'
+echo $item->toHttpValue();       // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
 
 `Item::fromPair` is an alternative to the `Item::from` named constructor, it expects

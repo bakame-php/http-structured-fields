@@ -201,25 +201,14 @@ final class Parameters implements MemberOrderedMap
     {
         $result = [];
         foreach ($this->members as $offset => $item) {
-            $value = $this->value($offset);
-            if (null !== $value) {
-                $result[$offset] = $value;
+            try {
+                $result[$offset] = $this->get($offset)->value();
+            } catch (Throwable) {
+                continue;
             }
         }
 
         return $result;
-    }
-
-    /**
-     * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
-     */
-    public function value(string|int $offset): float|int|bool|string|null
-    {
-        try {
-            return $this->get($offset)->value();
-        } catch (Throwable) {
-            return null;
-        }
     }
 
     /**

@@ -184,15 +184,16 @@ final class ItemTest extends StructuredFieldTest
     {
         $instance = Item::fromHttpValue('1; a; b=?0');
 
-        self::assertTrue($instance->parameters->value('a'));
+        self::assertTrue($instance->parameters['a']->value());
     }
 
     /** @test */
     public function it_fails_to_access_unknown_parameter_values(): void
     {
-        $instance = Item::fromHttpValue('1; a; b=?0');
+        $this->expectException(StructuredFieldError::class);
 
-        self::assertNull($instance->parameters->value('bar'));
+        $instance = Item::fromHttpValue('1; a; b=?0');
+        $instance->parameters['bar']->value();
     }
 
     /** @test */
@@ -206,7 +207,7 @@ final class ItemTest extends StructuredFieldTest
         $instance->parameters->mergeAssociative(['foo' => 'bar']);
 
         self::assertCount(1, $instance->parameters);
-        self::assertSame('bar', $instance->parameters->value('foo'));
+        self::assertSame('bar', $instance->parameters['foo']->value());
     }
 
     /** @test */

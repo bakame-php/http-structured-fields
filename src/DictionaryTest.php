@@ -280,9 +280,8 @@ final class DictionaryTest extends StructuredFieldTest
             'token' => 'token',
         ], $structuredField->values());
 
-        self::assertFalse($structuredField->value('false'));
-        self::assertNull($structuredField->value('unknown'));
-        self::assertNull($structuredField->value(42));
+        self::assertInstanceOf(Item::class, $structuredField->get('false'));
+        self::assertFalse($structuredField->get('false')->value());
     }
 
     /** @test */
@@ -298,10 +297,8 @@ final class DictionaryTest extends StructuredFieldTest
 
         $structuredField->get('a')->parameters['baz']->parameters->set('error', 'error');
 
-        self::assertNull($structuredField->value('a'));
         self::assertArrayNotHasKey('a', $structuredField->values());
         self::assertEquals(['b' => false, 'c' => [0 => 'foobar']], $structuredField->values());
-        self::assertSame([0 => 'foobar'], $structuredField->value('c'));
         self::assertSame([0 => 'foobar'], $structuredField->values()['c']);
     }
 }

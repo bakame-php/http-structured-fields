@@ -108,15 +108,15 @@ final class InnerListTest extends TestCase
     {
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
 
-        self::assertSame('bar', $instance->parameters->value('foo'));
+        self::assertSame('bar', $instance->parameters['foo']->value());
     }
 
     /** @test */
     public function it_fails_to_access_unknown_parameter_values(): void
     {
-        $instance = InnerList::fromList([false], ['foo' => 'bar']);
+        $this->expectException(StructuredFieldError::class);
 
-        self::assertNull($instance->parameters->value('bar'));
+        InnerList::fromList([false], ['foo' => 'bar'])->parameters['bar']->value();
     }
 
     /** @test */
@@ -126,11 +126,11 @@ final class InnerListTest extends TestCase
 
         self::assertCount(3, $instance);
         self::assertCount(1, $instance->parameters);
-        self::assertSame('bar(', $instance->parameters->value('foo'));
+        self::assertSame('bar(', $instance->parameters['foo']->value());
         self::assertSame('hello)world', $instance->get(0)->value());
         self::assertSame(42, $instance->get(1)->value());
         self::assertSame(42.0, $instance->get(2)->value());
-        self::assertSame('doe', $instance->get(2)->parameters->value('john'));
+        self::assertSame('doe', $instance->get(2)->parameters['john']->value());
     }
 
     /** @test */
@@ -210,10 +210,8 @@ final class InnerListTest extends TestCase
 
         self::assertSame(['foobar', 0, false, 'token'], $structuredField->values());
 
-        self::assertFalse($structuredField->value(2));
-        self::assertNull($structuredField->value(42));
-        self::assertNull($structuredField->value('2'));
-        self::assertSame('token', $structuredField->value(-1));
+        self::assertFalse($structuredField[2]->value());
+        self::assertSame('token', $structuredField[-1]->value());
     }
 
     /** @test */
@@ -224,7 +222,6 @@ final class InnerListTest extends TestCase
         $structuredField = InnerList::from(false, $bar);
         $structuredField[1]->parameters['baz']->parameters->set('error', 'error');
 
-        self::assertNull($structuredField->value(1));
         self::assertEquals([false], $structuredField->values());
     }
 }

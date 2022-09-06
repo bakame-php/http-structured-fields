@@ -123,25 +123,13 @@ final class InnerList implements MemberList, ParameterAccess
     {
         $result = [];
         foreach ($this->members as $offset => $item) {
-            $value = $this->value($offset);
-            if (null !== $value) {
-                $result[$offset] = $value;
+            try {
+                $result[$offset] = $this->get($offset)->value();
+            } catch (Throwable) {
             }
         }
 
         return $result;
-    }
-
-    /**
-     * Returns the Item value of a specific key if it exists and is valid otherwise returns null.
-     */
-    public function value(string|int $offset): float|int|bool|string|null
-    {
-        try {
-            return $this->get($offset)->value();
-        } catch (Throwable) {
-            return null;
-        }
     }
 
     public function get(string|int $offset): Item
