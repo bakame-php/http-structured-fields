@@ -12,7 +12,6 @@ use function array_values;
 use function count;
 
 /**
- * @phpstan-type DataType ByteSequence|Token|bool|int|float|string
  * @implements MemberList<int, Item>
  */
 final class InnerList implements MemberList, ParameterAccess

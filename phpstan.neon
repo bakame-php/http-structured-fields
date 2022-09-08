@@ -9,3 +9,5 @@ parameters:
         - src
     ignoreErrors:
     reportUnmatchedIgnoredErrors: true
+    typeAliases:
+        DataType: '\Bakame\Http\StructuredFields\ByteSequence|\Bakame\Http\StructuredFields\Token|bool|int|float|string'

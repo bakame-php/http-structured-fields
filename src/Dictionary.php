@@ -13,7 +13,6 @@ use function implode;
 use function is_array;
 
 /**
- * @phpstan-type DataType ByteSequence|Token|bool|int|float|string
  * @implements MemberOrderedMap<string, Item|InnerList<int, Item>>
  */
 final class Dictionary implements MemberOrderedMap

@@ -14,8 +14,7 @@ use function implode;
 use function is_array;
 
 /**
- * @phpstan-type DataType ByteSequence|Token|bool|int|float|string
- * @implements MemberList<int, Item|MemberList<int, Item>>
+ * @implements MemberList<int, Item|InnerList<int, Item>>
  */
 final class OrderedList implements MemberList
 {
@@ -28,17 +27,17 @@ final class OrderedList implements MemberList
     }
 
     /**
-     * @param MemberList<int, Item>|Item|DataType ...$members
+     * @param InnerList<int, Item>|Item|DataType ...$members
      *
      * @return static
      */
-    public static function from(MemberList|Item|ByteSequence|Token|bool|int|float|string ...$members): self
+    public static function from(InnerList|Item|ByteSequence|Token|bool|int|float|string ...$members): self
     {
         return self::fromList($members);
     }
 
     /**
-     * @param iterable<MemberList<int, Item>|Item|DataType> $members
+     * @param iterable<InnerList<int, Item>|Item|DataType> $members
      */
     public static function fromList(iterable $members = []): self
     {
@@ -107,7 +106,7 @@ final class OrderedList implements MemberList
     }
 
     /**
-     * @return Iterator<int, Item|MemberList<int, Item>>
+     * @return Iterator<int, Item|InnerList<int, Item>>
      */
     public function getIterator(): Iterator
     {
@@ -147,8 +146,10 @@ final class OrderedList implements MemberList
 
     /**
      * Inserts members at the beginning of the list.
+     *
+     * @param InnerList<int, Item>|Item|DataType ...$members
      */
-    public function unshift(MemberList|StructuredField|ByteSequence|Token|bool|int|float|string ...$members): self
+    public function unshift(StructuredField|ByteSequence|Token|bool|int|float|string ...$members): self
     {
         $this->members = [...array_map(self::filterMember(...), array_values($members)), ...$this->members];
 
@@ -157,8 +158,10 @@ final class OrderedList implements MemberList
 
     /**
      * Inserts members at the end of the list.
+     *
+     * @param InnerList<int, Item>|Item|DataType ...$members
      */
-    public function push(MemberList|StructuredField|ByteSequence|Token|bool|int|float|string ...$members): self
+    public function push(StructuredField|ByteSequence|Token|bool|int|float|string ...$members): self
     {
         $this->members = [...$this->members, ...array_map(self::filterMember(...), array_values($members))];
 
@@ -168,9 +171,11 @@ final class OrderedList implements MemberList
     /**
      * Inserts members starting at the given index.
      *
+     * @param InnerList<int, Item>|Item|DataType $members
+     *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $index, MemberList|StructuredField|ByteSequence|Token|bool|int|float|string ...$members): self
+    public function insert(int $index, StructuredField|ByteSequence|Token|bool|int|float|string ...$members): self
     {
         $offset = $this->filterIndex($index);
         match (true) {
@@ -185,6 +190,8 @@ final class OrderedList implements MemberList
 
     /**
      * Replaces the member associated with the index.
+     *
+     * @param InnerList<int, Item>|Item|DataType $member
      *
      * @throws InvalidOffset If the index does not exist
      */
@@ -248,7 +255,7 @@ final class OrderedList implements MemberList
 
     /**
      * @param int|null $offset
-     * @param MemberList<int, Item>|Item|DataType $value  the member to add
+     * @param InnerList<int, Item>|Item|DataType $value  the member to add
      *
      * @see ::push
      * @see ::replace

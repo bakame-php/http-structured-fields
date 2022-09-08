@@ -16,7 +16,6 @@ use function rtrim;
 use function trim;
 
 /**
- * @phpstan-type DataType ByteSequence|Token|bool|int|float|string
  * @implements MemberOrderedMap<string, Item>
  */
 final class Parameters implements MemberOrderedMap

@@ -20,9 +20,6 @@ use function strlen;
 use function substr;
 use function trim;
 
-/**
- * @phpstan-type DataType ByteSequence|Token|bool|int|float|string
- */
 final class Item implements StructuredField, ParameterAccess
 {
     private function __construct(
