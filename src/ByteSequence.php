@@ -12,7 +12,7 @@ use function preg_match;
 final class ByteSequence
 {
     private function __construct(
-        private string $value
+        private readonly string $value
     ) {
     }
 
@@ -21,12 +21,15 @@ final class ByteSequence
      */
     public static function fromEncoded(Stringable|string $encodedValue): self
     {
-        if (1 !== preg_match('/^(?<bytes>[a-z\d+\/=]*)$/i', (string) $encodedValue, $matches)) {
+        $encodedValue = (string) $encodedValue;
+        if (1 !== preg_match('/^[a-z\d+\/=]*$/i', $encodedValue)) {
             throw new SyntaxError('Invalid character in byte sequence');
         }
 
-        /** @var string $decoded */
-        $decoded = base64_decode($matches['bytes'], true);
+        $decoded = base64_decode($encodedValue, true);
+        if (false === $decoded) {
+            throw new SyntaxError('Invalid character in byte sequence');
+        }
 
         return new self($decoded);
     }

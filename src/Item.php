@@ -23,7 +23,7 @@ use function trim;
 final class Item implements StructuredField, ParameterAccess
 {
     private function __construct(
-        private Token|ByteSequence|int|float|string|bool $value,
+        private readonly Token|ByteSequence|int|float|string|bool $value,
         public readonly Parameters $parameters
     ) {
     }
