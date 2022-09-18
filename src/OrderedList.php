@@ -19,11 +19,10 @@ use function is_array;
 final class OrderedList implements MemberList
 {
     /** @var array<int, Item|InnerList<int, Item>>  */
-    private array $members;
+    private array $members = [];
 
-    private function __construct(Item|InnerList ...$members)
+    private function __construct()
     {
-        $this->members = array_values($members);
     }
 
     /**
@@ -41,12 +40,12 @@ final class OrderedList implements MemberList
      */
     public static function fromList(iterable $members = []): self
     {
-        $newMembers = [];
+        $instance = new self();
         foreach ($members as $member) {
-            $newMembers[] = self::filterMember($member);
+            $instance->push(self::filterMember($member));
         }
 
-        return new self(...$newMembers);
+        return $instance;
     }
 
     private static function filterMember(StructuredField|ByteSequence|Token|bool|int|float|string $member): InnerList|Item

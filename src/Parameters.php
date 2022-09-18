@@ -23,14 +23,8 @@ final class Parameters implements MemberOrderedMap
     /** @var array<string, Item> */
     private array $members = [];
 
-    /**
-     * @param iterable<string, Item|DataType> $members
-     */
-    private function __construct(iterable $members = [])
+    private function __construct()
     {
-        foreach ($members as $key => $value) {
-            $this->set($key, $value);
-        }
     }
 
     /**
@@ -73,7 +67,12 @@ final class Parameters implements MemberOrderedMap
      */
     public static function fromAssociative(iterable $members = []): self
     {
-        return new self($members);
+        $instance = new self();
+        foreach ($members as $key => $member) {
+            $instance->set($key, $member);
+        }
+
+        return $instance;
     }
 
     /**

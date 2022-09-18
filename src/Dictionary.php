@@ -20,14 +20,8 @@ final class Dictionary implements MemberOrderedMap
     /** @var array<string, Item|InnerList<int, Item>> */
     private array $members = [];
 
-    /**
-     * @param iterable<string, InnerList<int, Item>|Item|DataType> $members
-     */
-    private function __construct(iterable $members = [])
+    private function __construct()
     {
-        foreach ($members as $key => $member) {
-            $this->set($key, $member);
-        }
     }
 
     /**
@@ -40,7 +34,12 @@ final class Dictionary implements MemberOrderedMap
      */
     public static function fromAssociative(iterable $members = []): self
     {
-        return new self($members);
+        $instance = new self();
+        foreach ($members as $key => $member) {
+            $instance->set($key, $member);
+        }
+
+        return $instance;
     }
 
     /**

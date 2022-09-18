@@ -17,13 +17,10 @@ use function count;
 final class InnerList implements MemberList, ParameterAccess
 {
     /** @var array<int, Item> */
-    private array $members;
+    private array $members = [];
 
-    private function __construct(
-        public readonly Parameters $parameters,
-        Item ...$members
-    ) {
-        $this->members = array_values($members);
+    private function __construct(public readonly Parameters $parameters)
+    {
     }
 
     public static function from(Item|ByteSequence|Token|bool|int|float|string ...$members): self
@@ -37,12 +34,12 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function fromList(iterable $members = [], iterable $parameters = []): self
     {
-        $newMembers = [];
+        $instance = new self(Parameters::fromAssociative($parameters));
         foreach ($members as $member) {
-            $newMembers[] = self::filterMember($member);
+            $instance->push(self::filterMember($member));
         }
 
-        return new self(Parameters::fromAssociative($parameters), ...$newMembers);
+        return $instance;
     }
 
     private static function filterMember(StructuredField|ByteSequence|Token|bool|int|float|string $member): Item
