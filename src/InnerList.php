@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Iterator;
+use Stringable;
 use function array_filter;
 use function array_map;
 use function array_splice;
@@ -62,7 +63,7 @@ final class InnerList implements MemberList, ParameterAccess
         return $member;
     }
 
-    public static function fromHttpValue(string $httpValue): self
+    public static function fromHttpValue(Stringable|string $httpValue): self
     {
         return InnerList::fromList(...Parser::parseInnerList($httpValue));
     }

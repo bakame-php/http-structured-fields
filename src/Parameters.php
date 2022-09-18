@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Iterator;
+use Stringable;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -108,10 +109,10 @@ final class Parameters implements MemberOrderedMap
      * @throws SyntaxError         If the string is not a valid
      * @throws ForbiddenStateError If the bare item contains parameters
      */
-    public static function fromHttpValue(string $httpValue): self
+    public static function fromHttpValue(Stringable|string $httpValue): self
     {
         $instance = new self();
-        $httpValue = ltrim($httpValue, ' ');
+        $httpValue = ltrim((string) $httpValue, ' ');
         if ('' === $httpValue) {
             return $instance;
         }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use Stringable;
 use function in_array;
 use function ltrim;
 use function preg_match;
@@ -32,10 +33,10 @@ final class Parser
      *     1:array<string,Item|ByteSequence|Token|bool|int|float|string>
      * }|Item|ByteSequence|Token|bool|int|float|string>
      */
-    public static function parseList(string $httpValue): array
+    public static function parseList(Stringable|string $httpValue): array
     {
         $list = [];
-        $remainder = ltrim($httpValue, ' ');
+        $remainder = ltrim((string) $httpValue, ' ');
         while ('' !== $remainder) {
             [$list[], $offset] = self::parseItemOrInnerList($remainder);
             $remainder = self::removeCommaSeparatedWhiteSpaces($remainder, $offset);
@@ -54,10 +55,10 @@ final class Parser
      *     1:array<string,Item|ByteSequence|Token|bool|int|float|string>
      * }|bool|int|float|string>
      */
-    public static function parseDictionary(string $httpValue): array
+    public static function parseDictionary(Stringable|string $httpValue): array
     {
         $map = [];
-        $remainder = ltrim($httpValue, ' ');
+        $remainder = ltrim((string) $httpValue, ' ');
         while ('' !== $remainder) {
             $key = MapKey::fromStringBeginning($remainder)->value;
             $remainder = substr($remainder, strlen($key));
@@ -82,9 +83,9 @@ final class Parser
      *     1:array<string,Item|ByteSequence|Token|bool|int|float|string>
      * }
      */
-    public static function parseInnerList(string $httpValue): array
+    public static function parseInnerList(Stringable|string $httpValue): array
     {
-        $remainder = ltrim($httpValue, ' ');
+        $remainder = ltrim((string) $httpValue, ' ');
         if ('(' !== $remainder[0]) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list is missing a parenthesis.");
         }

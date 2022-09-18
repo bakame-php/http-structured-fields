@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Iterator;
+use Stringable;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -70,7 +71,7 @@ final class Dictionary implements MemberOrderedMap
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
      */
-    public static function fromHttpValue(string $httpValue): self
+    public static function fromHttpValue(Stringable|string $httpValue): self
     {
         return self::fromAssociative(array_map(
             fn (mixed $value): mixed => is_array($value) ? InnerList::fromList(...$value) : $value,

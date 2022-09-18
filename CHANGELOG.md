@@ -13,6 +13,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Token::value` is a readonly property.
 - `Item::value` method returns the decoded value of an Item (returns value can be `float|int|string|bool`).
 - `Item::fromToken`, `Item::fromDecodedByteSequence` , `Item::fromEncodedByteSequence` to ease `Item` creation. 
+- `Parser` methods also accepts `Stringable` objects.
 
 ### Fixed
 

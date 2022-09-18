@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Iterator;
+use Stringable;
 use function array_filter;
 use function array_map;
 use function array_splice;
@@ -81,7 +82,7 @@ final class OrderedList implements MemberList
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1
      */
-    public static function fromHttpValue(string $httpValue): self
+    public static function fromHttpValue(Stringable|string $httpValue): self
     {
         return self::fromList(array_map(
             fn (mixed $value): mixed => is_array($value) ? InnerList::fromList(...$value) : $value,
