@@ -46,26 +46,32 @@ final class InnerList implements MemberList, ParameterAccess
     private static function filterMember(StructuredField|ByteSequence|Token|bool|int|float|string $member): Item
     {
         return match (true) {
-            $member instanceof Item => self::filterForbiddenState($member),
+            $member instanceof Item => $member,
             $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" instance; received a "'.$member::class.'" instance instead.'),
             default => Item::from($member),
         };
     }
 
-    private static function filterForbiddenState(Item $member): Item
-    {
-        foreach ($member->parameters as $offset => $item) {
-            if ($item->parameters->hasMembers()) {
-                throw new ForbiddenStateError('Parameter member "'.$offset.'" is in invalid state; Parameters instances can only contain bare items.');
-            }
-        }
-
-        return $member;
-    }
-
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
         return InnerList::fromList(...Parser::parseInnerList($httpValue));
+    }
+
+    public function parameters(): Parameters
+    {
+        return clone $this->parameters;
+    }
+
+    public function withParameters(Parameters $parameters): static
+    {
+        if ($this->parameters->toHttpValue() === $parameters->toHttpValue()) {
+            return $this;
+        }
+
+        $newInstance = new self($parameters);
+        $newInstance->members = $this->members;
+
+        return $newInstance;
     }
 
     public function toHttpValue(): string
@@ -121,7 +127,7 @@ final class InnerList implements MemberList, ParameterAccess
             throw InvalidOffset::dueToIndexNotFound($offset);
         }
 
-        return self::filterForbiddenState($this->members[$index]);
+        return $this->members[$index];
     }
 
     /**

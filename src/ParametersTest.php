@@ -223,39 +223,6 @@ final class ParametersTest extends StructuredFieldTest
     }
 
     /** @test */
-    public function it_fails_if_internal_parameters_are_changed_illegally_1(): void
-    {
-        $this->expectException(ForbiddenStateError::class);
-
-        $fields = Item::from('/terms', ['rel' => 'copyright', 'anchor' => '#foo']);
-        $fields->parameters->get('anchor')->parameters->set('yolo', 42);
-
-        $fields->toHttpValue();
-    }
-
-    /** @test */
-    public function it_fails_if_internal_parameters_are_changed_illegally_2(): void
-    {
-        $this->expectException(ForbiddenStateError::class);
-
-        $fields = Item::from('/terms', ['rel' => 'copyright', 'anchor' => '#foo']);
-        $fields->parameters->get('anchor')->parameters->set('yolo', 42);
-
-        $fields->parameters->get('anchor');
-    }
-
-    /** @test */
-    public function it_returns_null_if_internal_parameters_are_changed_illegally(): void
-    {
-        $this->expectException(StructuredFieldError::class);
-
-        $fields = Item::from('/terms', ['rel' => 'copyright', 'anchor' => '#foo']);
-        $fields->parameters['anchor']->parameters->set('yolo', 42);
-
-        $fields->parameters->get('anchor');
-    }
-
-    /** @test */
     public function it_can_return_bare_items_values(): void
     {
         $instance = Parameters::fromAssociative([
@@ -281,40 +248,6 @@ final class ParametersTest extends StructuredFieldTest
             Parameters::fromHttpValue(';foo=bar'),
             Parameters::fromHttpValue('        ;foo=bar')
         );
-    }
-
-    /** @test */
-    public function it_fails_creating_an_object_with_an_already_defined_parameter_configuration(): void
-    {
-        $this->expectException(StructuredFieldError::class);
-
-        $parameters = Parameters::fromAssociative(['a' => false]);
-        $item = $parameters->get('a');
-        $item->parameters->set('b', true);
-        self::assertSame('?0;b', $item->toHttpValue());
-
-        $parameters->toHttpValue();
-    }
-
-    /** @test */
-    public function it_fails_serializing_after_invalid_operation(): void
-    {
-        $this->expectException(StructuredFieldError::class);
-
-        $parameters = Parameters::fromAssociative(['a' => false]);
-        $parameters->get('a')->parameters->set('b', false);
-
-        $parameters->toHttpValue();
-    }
-
-    /** @test */
-    public function it_returns_null_values_after_invalid_operation(): void
-    {
-        $this->expectException(ForbiddenStateError::class);
-        $parameters = Parameters::fromAssociative(['a' => 'missing', 'b' => 'present']);
-        $parameters->get('a')->parameters->set('b', false);
-
-        $parameters->toHttpValue();
     }
 
     /** @test */

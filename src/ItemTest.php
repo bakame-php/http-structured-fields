@@ -184,7 +184,7 @@ final class ItemTest extends StructuredFieldTest
     {
         $instance = Item::fromHttpValue('1; a; b=?0');
 
-        self::assertTrue($instance->parameters['a']->value());
+        self::assertTrue($instance->parameters()['a']->value());
     }
 
     /** @test */
@@ -193,7 +193,7 @@ final class ItemTest extends StructuredFieldTest
         $this->expectException(StructuredFieldError::class);
 
         $instance = Item::fromHttpValue('1; a; b=?0');
-        $instance->parameters['bar']->value();
+        $instance->parameters()['bar']->value();
     }
 
     /** @test */
@@ -201,13 +201,14 @@ final class ItemTest extends StructuredFieldTest
     {
         $instance = Item::from(Token::fromString('babayaga'));
 
-        self::assertCount(0, $instance->parameters);
+        self::assertCount(0, $instance->parameters());
 
-        $instance->parameters->clear();
-        $instance->parameters->mergeAssociative(['foo' => 'bar']);
+        $parameters = $instance->parameters();
+        $parameters->clear();
+        $parameters->mergeAssociative(['foo' => 'bar']);
 
-        self::assertCount(1, $instance->parameters);
-        self::assertSame('bar', $instance->parameters['foo']->value());
+        self::assertCount(0, $instance->parameters());
+        self::assertSame('bar', $parameters['foo']->value());
     }
 
     /** @test */
@@ -250,5 +251,30 @@ final class ItemTest extends StructuredFieldTest
         $instance2 = Item::fromPair([Token::fromString('babayaga'), [['a', true]]]);
 
         self::assertEquals($instance2, $instance1);
+    }
+
+    /** @test */
+    public function it_can_create_via_with_value_method_a_new_object(): void
+    {
+        $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);
+        $instance2 = $instance1->withValue(Token::fromString('babayaga'));
+        $instance3 = $instance1->withValue('babayaga');
+
+        self::assertSame($instance1, $instance2);
+        self::assertNotSame($instance1, $instance3);
+        self::assertNotSame($instance1->parameters(), $instance3->parameters());
+        self::assertEquals($instance1->parameters(), $instance3->parameters());
+    }
+
+    /** @test */
+    public function it_can_create_via_with_parameters_method_a_new_object(): void
+    {
+        $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);
+        $instance2 = $instance1->withParameters(Parameters::fromAssociative(['a' => true]));
+        $instance3 = $instance1->withParameters(Parameters::fromAssociative(['a' => false]));
+
+        self::assertSame($instance1, $instance2);
+        self::assertNotSame($instance1, $instance3);
+        self::assertEquals($instance1->value(), $instance3->value());
     }
 }

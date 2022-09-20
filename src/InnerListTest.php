@@ -130,7 +130,7 @@ final class InnerListTest extends TestCase
         self::assertSame('hello)world', $instance->get(0)->value());
         self::assertSame(42, $instance->get(1)->value());
         self::assertSame(42.0, $instance->get(2)->value());
-        self::assertSame('doe', $instance->get(2)->parameters['john']->value());
+        self::assertSame('doe', $instance->get(2)->parameters()['john']->value());
     }
 
     /** @test */
@@ -178,21 +178,6 @@ final class InnerListTest extends TestCase
     }
 
     /** @test */
-    public function it_fails_http_conversion_with_invalid_parameters(): void
-    {
-        $this->expectException(StructuredFieldError::class);
-
-        $structuredField = InnerList::from(69);
-        $item = $structuredField->get(0);
-        $item->parameters->append('forty-two', '42');
-        $wrongUpdatedItem = $item->parameters->get('forty-two');
-        $wrongUpdatedItem->parameters->append('invalid-value', 'not-valid');
-        self::assertCount(1, $wrongUpdatedItem->parameters);
-
-        $structuredField->toHttpValue();
-    }
-
-    /** @test */
     public function it_fails_to_fetch_an_value_using_an_integer(): void
     {
         $this->expectException(InvalidOffset::class);
@@ -213,14 +198,14 @@ final class InnerListTest extends TestCase
     }
 
     /** @test */
-    public function it_will_strip_invalid_state_object_via_values_methods(): void
+    public function it_can_create_via_with_parameters_method_a_new_object(): void
     {
-        $this->expectException(ForbiddenStateError::class);
-        $bar = Item::from(Token::fromString('bar'));
-        $bar->parameters->set('baz', 42);
-        $structuredField = InnerList::from(false, $bar);
-        $structuredField[1]->parameters['baz']->parameters->set('error', 'error');
+        $instance1 = InnerList::fromList([Token::fromString('babayaga'), 'a', true], ['a' => true]);
+        $instance2 = $instance1->withParameters(Parameters::fromAssociative(['a' => true]));
+        $instance3 = $instance1->withParameters(Parameters::fromAssociative(['a' => false]));
 
-        $structuredField->toHttpValue();
+        self::assertSame($instance1, $instance2);
+        self::assertNotSame($instance1->parameters(), $instance3->parameters());
+        self::assertEquals(iterator_to_array($instance1), iterator_to_array($instance3));
     }
 }

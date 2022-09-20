@@ -15,11 +15,19 @@ final class ByteSequenceTest extends StructuredFieldTest
     ];
 
     /** @test */
-    public function it_will_fail_on_invalid_decoded_string(): void
+    public function it_will_fail_on_invalid_decoded_string_with_inner_space(): void
     {
         $this->expectException(SyntaxError::class);
 
         ByteSequence::fromEncoded('a a');
+    }
+
+    /** @test */
+    public function it_will_fail_on_invalid_decoded_string(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        ByteSequence::fromEncoded('aaaaa');
     }
 
     /** @test */

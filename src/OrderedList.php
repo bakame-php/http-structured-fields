@@ -52,29 +52,10 @@ final class OrderedList implements MemberList
     private static function filterMember(StructuredField|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
     {
         return match (true) {
-            $member instanceof InnerList, $member instanceof Item => self::filterForbiddenState($member),
+            $member instanceof InnerList, $member instanceof Item => $member,
             $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
-    }
-
-    private static function filterForbiddenState(InnerList|Item $member): InnerList|Item
-    {
-        foreach ($member->parameters as $offset => $item) {
-            if ($item->parameters->hasMembers()) {
-                throw new ForbiddenStateError('Parameter member "'.$offset.'" is in invalid state; Parameters instances can only contain bare items.');
-            }
-        }
-
-        if ($member instanceof Item) {
-            return $member;
-        }
-
-        foreach ($member as $item) {
-            self::filterForbiddenState($item);
-        }
-
-        return $member;
     }
 
     /**
@@ -84,10 +65,12 @@ final class OrderedList implements MemberList
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        return self::fromList(array_map(
-            fn (mixed $value): mixed => is_array($value) ? InnerList::fromList(...$value) : $value,
-            Parser::parseList($httpValue)
-        ));
+        $instance = new self();
+        foreach (Parser::parseList($httpValue) as $value) {
+            $instance->push(is_array($value) ? InnerList::fromList(...$value) : $value);
+        }
+
+        return $instance;
     }
 
     public function toHttpValue(): string
@@ -115,16 +98,20 @@ final class OrderedList implements MemberList
 
     public function has(string|int $offset): bool
     {
-        return is_int($offset) && null !== $this->filterIndex($offset);
+        return null !== $this->filterIndex($offset);
     }
 
     private function filterIndex(int|string $index): int|null
     {
         $max = count($this->members);
+        if (!is_int($index)) {
+            return null;
+        }
 
         return match (true) {
-            is_string($index) => null,
-            [] === $this->members, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            [] === $this->members,
+            0 > $max + $index,
+            0 > $max - $index - 1 => null,
             0 > $index => $max + $index,
             default => $index,
         };
@@ -141,7 +128,7 @@ final class OrderedList implements MemberList
             throw InvalidOffset::dueToIndexNotFound($offset);
         }
 
-        return self::filterForbiddenState($this->members[$index]);
+        return $this->members[$index];
     }
 
     /**

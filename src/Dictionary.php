@@ -73,16 +73,18 @@ final class Dictionary implements MemberOrderedMap
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        return self::fromAssociative(array_map(
-            fn (mixed $value): mixed => is_array($value) ? InnerList::fromList(...$value) : $value,
-            Parser::parseDictionary($httpValue)
-        ));
+        $instance = new self();
+        foreach (Parser::parseDictionary($httpValue) as $key => $value) {
+            $instance->set($key, is_array($value) ? InnerList::fromList(...$value) : $value);
+        }
+
+        return $instance;
     }
 
     public function toHttpValue(): string
     {
         $formatter = fn (Item|InnerList $member, string $key): string => match (true) {
-            $member instanceof Item && true === $member->value() => $key.$member->parameters->toHttpValue(),
+            $member instanceof Item && true === $member->value() => $key.$member->parameters()->toHttpValue(),
             default => $key.'='.$member->toHttpValue(),
         };
 
@@ -149,7 +151,7 @@ final class Dictionary implements MemberOrderedMap
             throw InvalidOffset::dueToKeyNotFound($offset);
         }
 
-        return self::filterForbiddenState($this->members[$offset]);
+        return $this->members[$offset];
     }
 
     /**
@@ -218,29 +220,10 @@ final class Dictionary implements MemberOrderedMap
     private static function filterMember(StructuredField|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
     {
         return match (true) {
-            $member instanceof InnerList, $member instanceof Item => self::filterForbiddenState($member),
+            $member instanceof InnerList, $member instanceof Item => $member,
             $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
-    }
-
-    private static function filterForbiddenState(InnerList|Item $member): InnerList|Item
-    {
-        foreach ($member->parameters as $offset => $item) {
-            if ($item->parameters->hasMembers()) {
-                throw new ForbiddenStateError('Parameter member "'.$offset.'" is in invalid state; Parameters instances can only contain bare items.');
-            }
-        }
-
-        if ($member instanceof Item) {
-            return $member;
-        }
-
-        foreach ($member as $item) {
-            self::filterForbiddenState($item);
-        }
-
-        return $member;
     }
 
     /**

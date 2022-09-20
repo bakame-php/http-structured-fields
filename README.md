@@ -25,7 +25,7 @@ use Bakame\Http\StructuredFields;
 $field = StructuredFields\Item::from("/terms", ['rel' => 'copyright', 'anchor' => '#foo']);
 echo $field->toHttpValue();              // display "/terms";rel="copyright";anchor="#foo"
 echo $field->value();                    // display "/terms"
-echo $field->parameters['rel']->value(); // display "copyright"
+echo $field->parameters()['rel']->value(); // display "copyright"
 ```
 
 System Requirements

@@ -69,7 +69,7 @@ $item = StructuredFields\Item::from("hello world", ["a" => true]);
 $item->value();    // returns "hello world"
 $item->isString(); // returns true
 $item->isToken();  // returns false
-$item->parameters["a"]->value(); //returns true
+$item->parameters()['a']->value(); //returns true
 ```
 
 Instantiation via type recognition is done using the `Item::from` named constructor.
@@ -84,7 +84,7 @@ It is possible to use
 - `Item::fromEncodedByteSequence` internally use `ByteSequence::fromEncoded`
 - `Item::fromDecodedByteSequence` internally use `ByteSequence::fromDecoded`
 
-Those listed named constructores expect a string or a stringable object as its first argument and the
+Those listed named constructors expect a string or a stringable object as its first argument and the
 same argument definition as in `Item::from` for parameters argument.
 
 ```php
@@ -97,8 +97,8 @@ $item = StructuredFields\Item::fromPair([
 ]);
 $item->value();    // returns "hello world"
 $item->isString(); // returns true
-$item->parameters["a"]->isByteSequence(); // returns true
-$item->parameters["a"]->value(); // returns the decoded value 'Hello World'
+$item->parameters()["a"]->isByteSequence(); // returns true
+$item->parameters()["a"]->value(); // returns the decoded value 'Hello World'
 echo $item->toHttpValue();       // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
 
@@ -112,7 +112,7 @@ a tuple composed by an array as a list where:
 Once instantiated, accessing `Item` properties is done via:
 
 - the method `Item::value` which returns the instance underlying value fully decoded;
-- the readonly property `Item::parameters` which returns the parameters associated to the `Item` as a distinct `Parameters` object
+- the method `Item::parameters` which returns the parameters associated to the `Item` as a distinct `Parameters` object
 
 ```php
 use Bakame\Http\StructuredFields;

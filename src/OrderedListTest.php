@@ -156,22 +156,6 @@ final class OrderedListTest extends StructuredFieldTest
     }
 
     /** @test */
-    public function it_fails_http_conversion_with_invalid_parameters(): void
-    {
-        $this->expectException(StructuredFieldError::class);
-
-        $structuredField = OrderedList::from();
-        $structuredField[] = 42;
-        $item = $structuredField[0];
-        $item->parameters->append('forty-two', '42');
-        $wrongUpdatedItem = $item->parameters->get('forty-two');
-        $wrongUpdatedItem->parameters->append('invalid-value', 'not-valid');
-        self::assertCount(1, $wrongUpdatedItem->parameters);
-
-        $structuredField->toHttpValue();
-    }
-
-    /** @test */
     public function it_fails_to_fetch_an_value_using_an_integer(): void
     {
         $this->expectException(InvalidOffset::class);
@@ -192,17 +176,8 @@ final class OrderedListTest extends StructuredFieldTest
         self::assertFalse($structuredField[2]->value());
 
         self::assertInstanceOf(InnerList::class, $structuredField[-1]);
-    }
-
-    /** @test */
-    public function it_will_strip_invalid_state_object_via_values_methods(): void
-    {
-        $this->expectException(ForbiddenStateError::class);
-        $bar = Item::from(Token::fromString('bar'));
-        $bar->parameters->set('baz', 42);
-        $structuredField = OrderedList::from(false, $bar);
-        $structuredField[1]->parameters['baz']->parameters->set('error', 'error');
-
-        $structuredField->toHttpValue();
+        self::assertArrayNotHasKey('foobar', $structuredField);
+        $structuredField[] = 'barbaz';
+        self::assertEquals(Item::from('barbaz'), $structuredField[-1]);
     }
 }

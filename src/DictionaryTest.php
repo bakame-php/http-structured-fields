@@ -216,22 +216,6 @@ final class DictionaryTest extends StructuredFieldTest
     }
 
     /** @test */
-    public function it_fails_http_conversion_with_invalid_parameters(): void
-    {
-        $this->expectException(StructuredFieldError::class);
-
-        $structuredField = Dictionary::fromPairs();
-        $structuredField->append('item', 42);
-        $item = $structuredField->get('item');
-        $item->parameters->append('forty-two', '42');
-        $wrongUpdatedItem = $item->parameters->get('forty-two');
-        $wrongUpdatedItem->parameters->append('invalid-value', 'not-valid');
-        self::assertCount(1, $wrongUpdatedItem->parameters);
-
-        $structuredField->toHttpValue();
-    }
-
-    /** @test */
     public function it_fails_to_add_an_integer_via_array_access(): void
     {
         $this->expectException(StructuredFieldError::class);
@@ -275,21 +259,5 @@ final class DictionaryTest extends StructuredFieldTest
 
         self::assertInstanceOf(Item::class, $structuredField->get('false'));
         self::assertFalse($structuredField->get('false')->value());
-    }
-
-    /** @test */
-    public function it_will_strip_invalid_state_object_via_values_methods(): void
-    {
-        $this->expectException(StructuredFieldError::class);
-        $bar = Item::from(Token::fromString('bar'));
-        $bar->parameters->set('baz', 42);
-        $innerList = InnerList::from('foobar');
-        $structuredField = Dictionary::fromAssociative()
-            ->set('b', false)
-            ->set('a', $bar)
-            ->set('c', $innerList);
-
-        $structuredField->get('a')->parameters['baz']->parameters->set('error', 'error');
-        $structuredField->toHttpValue();
     }
 }

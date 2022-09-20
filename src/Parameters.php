@@ -32,18 +32,13 @@ final class Parameters implements MemberOrderedMap
      * @throws ForbiddenStateError If the bare item contains parameters
      * @throws InvalidArgument If the structured field is not supported
      */
-    private static function filterMember(Item $item, string|int $offset = null): Item
+    private static function filterMember(Item $item): Item
     {
-        if (!$item->parameters->hasMembers()) {
+        if (!$item->parameters()->hasMembers()) {
             return $item;
         }
 
-        $message = 'Parameters instances can only contain bare items.';
-        if (null !== $offset) {
-            $message = 'Parameter member "'.$offset.'" is in invalid state; '.$message;
-        }
-
-        throw new ForbiddenStateError($message);
+        throw new ForbiddenStateError('Parameters instances can only contain bare items.');
     }
 
     private static function formatMember(StructuredField|ByteSequence|Token|bool|int|float|string $member): Item
@@ -120,7 +115,7 @@ final class Parameters implements MemberOrderedMap
         foreach (explode(';', $httpValue) as $pair) {
             [$key, $value] = explode('=', $pair, 2) + [1 => '?1'];
             if (rtrim($key) !== $key || ltrim($value) !== $value) {
-                throw new SyntaxError("The HTTP textual representation \"$pair\" for a parameter pair contains invalid characters.");
+                throw new SyntaxError('The HTTP textual representation "'.$pair.'" for a parameter pair contains invalid characters.');
             }
 
             $key = trim($key);
@@ -138,7 +133,7 @@ final class Parameters implements MemberOrderedMap
     public function toHttpValue(): string
     {
         $formatter = fn (Item $member, string $offset): string => match (true) {
-            $member->parameters->hasMembers() => throw new ForbiddenStateError('Parameter member "'.$offset.'" is in invalid state; Parameters instances can only contain bare items.'),
+            $member->parameters()->hasMembers() => throw new ForbiddenStateError('Parameter member "'.$offset.'" is in invalid state; Parameters instances can only contain bare items.'),
             true === $member->value() => ';'.$offset,
             default => ';'.$offset.'='.$member->toHttpValue(),
         };
@@ -176,7 +171,7 @@ final class Parameters implements MemberOrderedMap
     public function toPairs(): Iterator
     {
         foreach ($this->members as $index => $member) {
-            yield [$index, self::filterMember($member, $index)];
+            yield [$index, self::filterMember($member)];
         }
     }
 
@@ -210,7 +205,7 @@ final class Parameters implements MemberOrderedMap
             throw InvalidOffset::dueToKeyNotFound($offset);
         }
 
-        return self::filterMember($this->members[$offset], $offset);
+        return self::filterMember($this->members[$offset]);
     }
 
     /**
@@ -256,7 +251,7 @@ final class Parameters implements MemberOrderedMap
         $i = 0;
         foreach ($this->members as $key => $member) {
             if ($i === $offset) {
-                return [$key, self::filterMember($member, $index)];
+                return [$key, self::filterMember($member)];
             }
             ++$i;
         }

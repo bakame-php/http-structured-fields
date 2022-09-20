@@ -24,7 +24,7 @@ final class Item implements StructuredField, ParameterAccess
 {
     private function __construct(
         private readonly Token|ByteSequence|int|float|string|bool $value,
-        public readonly Parameters $parameters
+        private readonly Parameters $parameters
     ) {
     }
 
@@ -51,51 +51,43 @@ final class Item implements StructuredField, ParameterAccess
     /**
      * Returns a new instance from a value type and an iterable of key-value parameters.
      *
-     * @param iterable<string,Item|DataType>|string|Stringable $parameters
+     * @param iterable<string,Item|DataType> $parameters
      */
     public static function from(
         Token|ByteSequence|int|float|string|bool $value,
-        iterable|string|Stringable $parameters = []
+        iterable $parameters = []
     ): self {
-        return new self(match (true) {
-            is_int($value) => self::filterInteger($value),
-            is_float($value) => self::filterDecimal($value),
-            is_string($value) => self::filterString($value),
-            default => $value,
-        }, match (true) {
-            is_string($parameters) || $parameters instanceof Stringable => Parameters::fromHttpValue($parameters),
-            default => Parameters::fromAssociative($parameters),
-        });
+        return new self(self::filterValue($value), Parameters::fromAssociative($parameters));
     }
 
     /**
      * Returns a new instance from an encoded byte sequence and an iterable of key-value parameters.
      *
-     * @param iterable<string,Item|DataType>|Stringable|string|null $parameters
+     * @param iterable<string,Item|DataType> $parameters
      */
-    public static function fromEncodedByteSequence(string|Stringable $value, iterable|Stringable|string $parameters = null): self
+    public static function fromEncodedByteSequence(string|Stringable $value, iterable $parameters = []): self
     {
-        return self::from(ByteSequence::fromEncoded($value), $parameters ?? []);
+        return self::from(ByteSequence::fromEncoded($value), $parameters);
     }
 
     /**
      * Returns a new instance from a decoded byte sequence and an iterable of key-value parameters.
      *
-     * @param iterable<string,Item|DataType>|Stringable|string|null $parameters
+     * @param iterable<string,Item|DataType> $parameters
      */
-    public static function fromDecodedByteSequence(string|Stringable $value, iterable|Stringable|string $parameters = null): self
+    public static function fromDecodedByteSequence(string|Stringable $value, iterable $parameters = []): self
     {
-        return self::from(ByteSequence::fromDecoded($value), $parameters ?? []);
+        return self::from(ByteSequence::fromDecoded($value), $parameters);
     }
 
     /**
      * Returns a new instance from a Token and an iterable of key-value parameters.
      *
-     * @param iterable<string,Item|DataType>|Stringable|string|null $parameters
+     * @param iterable<string,Item|DataType> $parameters
      */
-    public static function fromToken(string|Stringable $value, iterable|Stringable|string $parameters = null): self
+    public static function fromToken(string|Stringable $value, iterable $parameters = []): self
     {
-        return self::from(Token::fromString($value), $parameters ?? []);
+        return self::from(Token::fromString($value), $parameters);
     }
 
     /**
@@ -307,6 +299,35 @@ final class Item implements StructuredField, ParameterAccess
         };
     }
 
+    public function withValue(Token|ByteSequence|int|float|string|bool $value): self
+    {
+        $newValue = self::filterValue($value);
+
+        if (
+            ($newValue === $this->value)
+            || ($newValue instanceof Token && $this->value instanceof Token && $this->value->value === $newValue->value)
+            || ($newValue instanceof ByteSequence && $this->value instanceof ByteSequence && $this->value->encoded() === $newValue->encoded())
+        ) {
+            return $this;
+        }
+
+        return self::from($newValue, $this->parameters);
+    }
+
+    public function parameters(): Parameters
+    {
+        return clone $this->parameters;
+    }
+
+    public function withParameters(Parameters $parameters): static
+    {
+        if ($this->parameters->toHttpValue() === $parameters->toHttpValue()) {
+            return $this;
+        }
+
+        return new self($this->value, $parameters);
+    }
+
     /**
      * Serialize the Item value according to RFC8941.
      *
@@ -352,5 +373,15 @@ final class Item implements StructuredField, ParameterAccess
     public function isByteSequence(): bool
     {
         return $this->value instanceof ByteSequence;
+    }
+
+    private static function filterValue(float|bool|int|string|Token|ByteSequence $value): ByteSequence|string|Token|int|bool|float
+    {
+        return match (true) {
+            is_int($value) => self::filterInteger($value),
+            is_float($value) => self::filterDecimal($value),
+            is_string($value) => self::filterString($value),
+            default => $value,
+        };
     }
 }

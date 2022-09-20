@@ -13,6 +13,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Token::value` is a readonly property.
 - `Item::value` method returns the decoded value of an Item (returns value can be `float|int|string|bool`).
 - `Item::fromToken`, `Item::fromDecodedByteSequence` , `Item::fromEncodedByteSequence` to ease `Item` creation. 
+- `Item::withValue` to ease `Item` value update.
 - `Parser` methods also accepts `Stringable` objects.
 
 ### Fixed
@@ -35,6 +36,9 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - **[BC Break]** `isEmpty` method is removed use `hasMembers` method instead.
 - **[BC Break]** `Parameters::value` use `Item::value` method instead.
 - **[BC Break]** `Parameters::values` use `Parameters::getIterator` instead.
+- **[BC Break]** `Item::value` public readonly property use `Item::value` method instead.
+- **[BC Break]** `Item::parameters` public readonly property use `Item::parameters` method instead.
+- **[BC Break]** `InnerList::parameters` public readonly property use `InnerList::parameters` method instead.
 
 ## [0.5.0] - 2022-05-13
 

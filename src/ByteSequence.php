@@ -28,7 +28,7 @@ final class ByteSequence
 
         $decoded = base64_decode($encodedValue, true);
         if (false === $decoded) {
-            throw new SyntaxError('Invalid character in byte sequence');
+            throw new SyntaxError('Unable to base64 decode the byte sequence');
         }
 
         return new self($decoded);
