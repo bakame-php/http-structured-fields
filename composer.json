@@ -30,11 +30,11 @@
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^v3.10.0",
         "httpwg/structured-field-tests": "*@dev",
-        "phpstan/phpstan": "^1.8.2",
-        "phpstan/phpstan-strict-rules": "^1.4.2",
-        "phpstan/phpstan-phpunit": "^1.1.1",
+        "phpstan/phpstan": "^1.9.2",
+        "phpstan/phpstan-strict-rules": "^1.4.4",
+        "phpstan/phpstan-phpunit": "^1.2.2",
         "phpstan/phpstan-deprecation-rules": "^1.0",
-        "phpunit/phpunit": "^9.5.23"
+        "phpunit/phpunit": "^9.5.26"
     },
     "autoload": {
         "psr-4": {
@@ -48,7 +48,7 @@
     "scripts": {
         "phpcs": "php-cs-fixer fix --dry-run --diff -vvv --allow-risky=yes --ansi",
         "phpcs:fix": "php-cs-fixer fix -vvv --allow-risky=yes --ansi",
-        "phpstan": "phpstan analyse -c phpstan.neon --ansi --memory-limit 192M",
+        "phpstan": "phpstan analyse -c phpstan.neon --ansi --xdebug --memory-limit 192M",
         "phpunit": "XDEBUG_MODE=coverage phpunit --coverage-text",
         "test": [
             "@phpunit",
