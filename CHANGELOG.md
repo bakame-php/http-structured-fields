@@ -2,7 +2,7 @@
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file
 
-## [Next] - TBD
+## [0.6.0] - 2022-11-12
 
 ### Added
 
