@@ -81,9 +81,11 @@ final class ItemTest extends StructuredFieldTest
     /** @test */
     public function it_instantiates_a_binary(): void
     {
-        self::assertSame('foobar', Item::from(ByteSequence::fromDecoded('foobar'))->value());
-        self::assertSame('foobar', Item::fromDecodedByteSequence('foobar')->value());
-        self::assertSame('foobar', Item::fromEncodedByteSequence('Zm9vYmFy')->value());
+        $byteSequence = ByteSequence::fromDecoded('foobar');
+
+        self::assertEquals($byteSequence, Item::from(ByteSequence::fromDecoded('foobar'))->value());
+        self::assertEquals($byteSequence, Item::fromDecodedByteSequence('foobar')->value());
+        self::assertEquals($byteSequence, Item::fromEncodedByteSequence('Zm9vYmFy')->value());
     }
 
     /** @test */

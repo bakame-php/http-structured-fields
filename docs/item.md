@@ -98,8 +98,8 @@ $item = StructuredFields\Item::fromPair([
 $item->value();    // returns "hello world"
 $item->isString(); // returns true
 $item->parameters()["a"]->isByteSequence(); // returns true
-$item->parameters()["a"]->value(); // returns the decoded value 'Hello World'
-echo $item->toHttpValue();       // returns "hello world";a=:SGVsbG8gV29ybGQ=:
+$item->parameters()["a"]->value(); // returns StructuredFields\ByteSequence::fromDecoded('Hello World');
+echo $item->toHttpValue();         // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
 
 `Item::fromPair` is an alternative to the `Item::from` named constructor, it expects
@@ -117,9 +117,9 @@ Once instantiated, accessing `Item` properties is done via:
 ```php
 use Bakame\Http\StructuredFields;
 
-$item = StructuredFields\Item::from(StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29ybGQ=")]);
+$item = StructuredFields\Item::from(StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29ybGQ="));
 $item->isByteSequence(); // returns true
-echo $item->value();     // returns the decoded value 'Hello World'
+echo $item->value();     // returns StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29ybGQ=");
 ```
 
 **Of note: to instantiate a decimal number type a float MUST be used as the first argument of `Item::from`.**

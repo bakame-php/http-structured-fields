@@ -290,13 +290,9 @@ final class Item implements StructuredField, ParameterAccess
     /**
      * Returns the underlying value decoded.
      */
-    public function value(): string|int|float|bool
+    public function value(): Token|ByteSequence|int|float|string|bool
     {
-        return match (true) {
-            $this->value instanceof Token => $this->value->value,
-            $this->value instanceof ByteSequence => $this->value->decoded(),
-            default => $this->value,
-        };
+        return $this->value;
     }
 
     public function withValue(Token|ByteSequence|int|float|string|bool $value): self

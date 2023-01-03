@@ -130,7 +130,7 @@ final class InnerListTest extends TestCase
         self::assertSame('hello)world', $instance->get(0)->value());
         self::assertSame(42, $instance->get(1)->value());
         self::assertSame(42.0, $instance->get(2)->value());
-        self::assertSame('doe', $instance->get(2)->parameters()['john']->value());
+        self::assertEquals(Token::fromString('doe'), $instance->get(2)->parameters()['john']->value());
     }
 
     /** @test */
@@ -194,7 +194,7 @@ final class InnerListTest extends TestCase
         $structuredField = InnerList::fromList($input);
 
         self::assertFalse($structuredField[2]->value());
-        self::assertSame('token', $structuredField[-1]->value());
+        self::assertEquals($token, $structuredField[-1]->value());
     }
 
     /** @test */

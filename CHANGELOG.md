@@ -1,6 +1,24 @@
 # Changelog
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file
+ 
+## [Next] - TBD
+
+### Added
+
+- None
+
+### Fixed
+
+- **[BC Break]** `Item::value` method returns the Item (returns value can be `float|int|string|bool|ByteSequence|Token`).
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
 
 ## [0.6.0] - 2022-11-12
 
