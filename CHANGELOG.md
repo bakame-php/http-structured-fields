@@ -11,6 +11,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Fixed
 
 - **[BC Break]** `Item::value` method returns the Item (returns value can be `float|int|string|bool|ByteSequence|Token`).
+- `InnerList::parameters` is no longer accessible as a public readonly property.
 
 ### Deprecated
 

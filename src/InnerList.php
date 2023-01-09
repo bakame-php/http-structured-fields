@@ -20,7 +20,7 @@ final class InnerList implements MemberList, ParameterAccess
     /** @var array<int, Item> */
     private array $members = [];
 
-    private function __construct(public readonly Parameters $parameters)
+    private function __construct(private readonly Parameters $parameters)
     {
     }
 

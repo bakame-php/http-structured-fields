@@ -22,13 +22,13 @@ final class InnerListTest extends TestCase
 
         self::assertSame($stringItem, $instance->get(0));
         self::assertTrue($instance->hasMembers());
-        self::assertTrue($instance->parameters->hasMembers());
+        self::assertTrue($instance->parameters()->hasMembers());
         self::assertEquals($arrayParams, iterator_to_array($instance));
 
         $instance->clear();
 
         self::assertFalse($instance->hasMembers());
-        self::assertTrue($instance->parameters->hasMembers());
+        self::assertTrue($instance->parameters()->hasMembers());
     }
 
     /** @test */
@@ -41,7 +41,7 @@ final class InnerListTest extends TestCase
 
         self::assertCount(2, $instance);
         self::assertTrue($instance->has(1));
-        self::assertFalse($instance->parameters->hasMembers());
+        self::assertFalse($instance->parameters()->hasMembers());
 
         $instance->remove(1);
 
@@ -108,7 +108,7 @@ final class InnerListTest extends TestCase
     {
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
 
-        self::assertSame('bar', $instance->parameters['foo']->value());
+        self::assertSame('bar', $instance->parameters()['foo']->value());
     }
 
     /** @test */
@@ -116,7 +116,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        InnerList::fromList([false], ['foo' => 'bar'])->parameters['bar']->value();
+        InnerList::fromList([false], ['foo' => 'bar'])->parameters()['bar']->value();
     }
 
     /** @test */
@@ -125,8 +125,8 @@ final class InnerListTest extends TestCase
         $instance = InnerList::fromHttpValue('("hello)world" 42 42.0;john=doe);foo="bar("');
 
         self::assertCount(3, $instance);
-        self::assertCount(1, $instance->parameters);
-        self::assertSame('bar(', $instance->parameters['foo']->value());
+        self::assertCount(1, $instance->parameters());
+        self::assertSame('bar(', $instance->parameters()['foo']->value());
         self::assertSame('hello)world', $instance->get(0)->value());
         self::assertSame(42, $instance->get(1)->value());
         self::assertSame(42.0, $instance->get(2)->value());
