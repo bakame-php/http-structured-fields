@@ -98,7 +98,7 @@ final class Item implements StructuredField, ParameterAccess
     private static function filterDecimal(float $value): float
     {
         if (abs(floor($value)) > 999_999_999_999) {
-            throw new SyntaxError('Integer portion of decimals is limited to 12 digits');
+            throw new SyntaxError('Integer portion of decimals is limited to 12 digits.');
         }
 
         return $value;
@@ -126,7 +126,7 @@ final class Item implements StructuredField, ParameterAccess
     private static function filterInteger(int $value): int
     {
         if ($value > 999_999_999_999_999 || $value < -999_999_999_999_999) {
-            throw new SyntaxError('Integers are limited to 15 digits');
+            throw new SyntaxError('Integers are limited to 15 digits.');
         }
 
         return $value;
@@ -186,7 +186,7 @@ final class Item implements StructuredField, ParameterAccess
     private static function parseBoolean(string $string): array
     {
         if (1 !== preg_match('/^\?[01]/', $string)) {
-            throw new SyntaxError("The HTTP textual representation \"$string\" for a boolean contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation \"$string\" for a Boolean contains invalid characters.");
         }
 
         return [$string[1] === '1', substr($string, 2)];
@@ -200,7 +200,7 @@ final class Item implements StructuredField, ParameterAccess
     private static function parseBytesSequence(string $string): array
     {
         if (1 !== preg_match('/^:(?<bytes>[a-z\d+\/=]*):/i', $string, $matches)) {
-            throw new SyntaxError("The HTTP textual representation \"$string\" for a byte sequence contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation \"$string\" for a Byte sequence contains invalid characters.");
         }
 
         return [ByteSequence::fromEncoded($matches['bytes']), substr($string, strlen($matches[0]))];
@@ -219,13 +219,13 @@ final class Item implements StructuredField, ParameterAccess
         }
 
         if (1 !== preg_match('/'.$regexp.'/', $string, $found)) {
-            throw new SyntaxError("The HTTP textual representation \"$string\" for a number contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation \"$string\" for a Number contains invalid characters.");
         }
 
         $number = match (true) {
             1 === preg_match('/^-?\d{1,12}\.\d{1,3}$/', $found['number']) => (float) $found['number'],
             1 === preg_match('/^-?\d{1,15}$/', $found['number']) => (int) $found['number'],
-            default => throw new SyntaxError("The HTTP textual representation \"$string\" for a number contain too many digits."),
+            default => throw new SyntaxError("The HTTP textual representation \"$string\" for a Number contain too many digits."),
         };
 
         return [$number, substr($string, strlen($found['number']))];
@@ -256,19 +256,19 @@ final class Item implements StructuredField, ParameterAccess
             }
 
             if ($string === '') {
-                throw new SyntaxError("The HTTP textual representation \"$originalString\" for a string contains an invalid end string.");
+                throw new SyntaxError("The HTTP textual representation \"$originalString\" for a String contains an invalid end string.");
             }
 
             $char = $string[0];
             $string = substr($string, 1);
             if (!in_array($char, ['"', '\\'], true)) {
-                throw new SyntaxError("The HTTP textual representation \"$originalString\" for a string contains invalid characters.");
+                throw new SyntaxError("The HTTP textual representation \"$originalString\" for a String contains invalid characters.");
             }
 
             $returnValue .= $char;
         }
 
-        throw new SyntaxError("The HTTP textual representation \"$originalString\" for a string contains an invalid end string.");
+        throw new SyntaxError("The HTTP textual representation \"$originalString\" for a String contains an invalid end string.");
     }
 
     /**

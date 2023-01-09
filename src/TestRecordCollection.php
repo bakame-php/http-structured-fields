@@ -30,7 +30,7 @@ final class TestRecordCollection implements IteratorAggregate
     public function add(TestRecord $test): void
     {
         if (isset($this->elements[$test->name])) {
-            throw new RuntimeException('Already existing test name `'.$test->name.'`');
+            throw new RuntimeException('Already existing test name `'.$test->name.'`.');
         }
 
         $this->elements[$test->name] = $test;

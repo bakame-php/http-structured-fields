@@ -115,7 +115,7 @@ final class Parameters implements MemberOrderedMap
         foreach (explode(';', $httpValue) as $pair) {
             [$key, $value] = explode('=', $pair, 2) + [1 => '?1'];
             if (rtrim($key) !== $key || ltrim($value) !== $value) {
-                throw new SyntaxError('The HTTP textual representation "'.$pair.'" for a parameter pair contains invalid characters.');
+                throw new SyntaxError('The HTTP textual representation "'.$pair.'" for a Parameter pair contains invalid characters.');
             }
 
             $key = trim($key);
@@ -382,7 +382,7 @@ final class Parameters implements MemberOrderedMap
     public function offsetSet(mixed $offset, mixed $value): void
     {
         if (!is_string($offset)) {
-            throw new SyntaxError('The offset for a parameter member is expected to be a string; "'.gettype($offset).'" given.');
+            throw new SyntaxError('The offset for a Parameter member is expected to be a string; "'.gettype($offset).'" given.');
         }
 
         $this->set($offset, $value);

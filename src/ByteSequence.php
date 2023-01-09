@@ -23,12 +23,12 @@ final class ByteSequence
     {
         $encodedValue = (string) $encodedValue;
         if (1 !== preg_match('/^[a-z\d+\/=]*$/i', $encodedValue)) {
-            throw new SyntaxError('Invalid character in byte sequence');
+            throw new SyntaxError('Invalid character in byte sequence.');
         }
 
         $decoded = base64_decode($encodedValue, true);
         if (false === $decoded) {
-            throw new SyntaxError('Unable to base64 decode the byte sequence');
+            throw new SyntaxError('Unable to base64 decode the byte sequence.');
         }
 
         return new self($decoded);

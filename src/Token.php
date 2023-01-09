@@ -12,7 +12,7 @@ final class Token
     private function __construct(public readonly string $value)
     {
         if (1 !== preg_match("/^([a-z*][a-z\d:\/!#\$%&'*+\-.^_`|~]*)$/i", $this->value)) {
-            throw new SyntaxError('Invalid characters in token');
+            throw new SyntaxError('Invalid characters in token.');
         }
     }
 
