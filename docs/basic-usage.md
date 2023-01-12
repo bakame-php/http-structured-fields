@@ -14,15 +14,17 @@ representation of the field and to serialize the value object back to the textua
 - Serializing is done via a common `toHttpValue` public method. The method returns the **normalized string** representation suited for HTTP textual representation.
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\Dictionary;
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\OrderedList;
 
-$dictionary = StructuredFields\Dictionary::fromHttpValue("a=?0,   b,   c=?1; foo=bar");
+$dictionary = Dictionary::fromHttpValue("a=?0,   b,   c=?1; foo=bar");
 echo $dictionary->toHttpValue(); // 'a=?0, b, c;foo=bar'
 
-$list = StructuredFields\OrderedList::fromHttpValue('("foo"; a=1;b=2);lvl=5, ("bar" "baz");lvl=1');
+$list = OrderedList::fromHttpValue('("foo"; a=1;b=2);lvl=5, ("bar" "baz");lvl=1');
 echo $list->toHttpValue(); // '("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1'
 
-$item = StructuredFields\Item::fromHttpValue('"foo";a=1;b=2');
+$item = Item::fromHttpValue('"foo";a=1;b=2');
 echo $item->toHttpValue(); // "foo";a=1;b=2
 ```
 

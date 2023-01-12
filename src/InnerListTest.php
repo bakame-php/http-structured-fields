@@ -51,11 +51,13 @@ final class InnerListTest extends TestCase
         $instance->push('BarBaz');
         $instance->insert(1);
         $member = $instance->get(1);
+
         self::assertCount(2, $instance);
         self::assertIsString($member->value());
         self::assertStringContainsString('BarBaz', $member->value());
 
         $instance->remove(0, 1);
+
         self::assertCount(0, $instance);
         self::assertFalse($instance->hasMembers());
     }
@@ -63,7 +65,7 @@ final class InnerListTest extends TestCase
     /** @test */
     public function it_can_unshift_insert_and_replace(): void
     {
-        $container = InnerList::fromList();
+        $container = InnerList::new();
         $container->unshift('42');
         $container->push(42);
         $container->insert(1, 42.0);
@@ -79,8 +81,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        $container = InnerList::from();
-        $container->replace(0, ByteSequence::fromDecoded('Hello World'));
+        InnerList::new()->replace(0, ByteSequence::fromDecoded('Hello World'));
     }
 
     /** @test */
@@ -88,17 +89,17 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        $container = InnerList::from();
-        $container->insert(3, ByteSequence::fromDecoded('Hello World'));
+        InnerList::new()->insert(3, ByteSequence::fromDecoded('Hello World'));
     }
 
     /** @test */
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
-        $this->expectException(InvalidOffset::class);
+        $instance = InnerList::new();
 
-        $instance = InnerList::fromList();
         self::assertFalse($instance->has(3));
+
+        $this->expectException(InvalidOffset::class);
 
         $instance->get(3);
     }
@@ -145,7 +146,7 @@ final class InnerListTest extends TestCase
     /** @test */
     public function it_implements_the_array_access_interface(): void
     {
-        $sequence = InnerList::fromList();
+        $sequence = InnerList::new();
         $sequence[] = 42;
 
         self::assertTrue(isset($sequence[0]));
@@ -164,14 +165,13 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        $sequence = InnerList::fromList();
-        $sequence[0] = Item::from(42.0);
+        InnerList::new()[0] = Item::from(42.0);
     }
 
     /** @test */
     public function testArrayAccessThrowsInvalidIndex2(): void
     {
-        $sequence = InnerList::from();
+        $sequence = InnerList::new();
         unset($sequence[0]);
 
         self::assertCount(0, $sequence);
@@ -182,8 +182,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        $structuredField = InnerList::from();
-        $structuredField->get('zero');
+        InnerList::new()->get('zero');
     }
 
     /** @test */
@@ -207,5 +206,21 @@ final class InnerListTest extends TestCase
         self::assertSame($instance1, $instance2);
         self::assertNotSame($instance1->parameters(), $instance3->parameters());
         self::assertEquals(iterator_to_array($instance1), iterator_to_array($instance3));
+    }
+
+    /** @test */
+    public function it_can_create_via_parameters_access_methods_a_new_object(): void
+    {
+        $instance1 = InnerList::fromList([Token::fromString('babayaga'), 'a', true], ['a' => true]);
+        $instance2 = $instance1->appendParameter('a', true);
+        $instance3 = $instance1->prependParameter('a', false);
+        $instance4 = $instance1->withoutParameter('b');
+        $instance5 = $instance1->withoutParameter('a');
+
+        self::assertSame($instance1, $instance2);
+        self::assertNotSame($instance1->parameters(), $instance3->parameters());
+        self::assertEquals(iterator_to_array($instance1), iterator_to_array($instance3));
+        self::assertSame($instance1, $instance4);
+        self::assertFalse($instance5->parameters()->hasMembers());
     }
 }

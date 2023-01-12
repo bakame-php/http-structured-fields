@@ -8,5 +8,11 @@ interface ParameterAccess
 {
     public function parameters(): Parameters;
 
+    public function prependParameter(string $name, Item|ByteSequence|Token|bool|int|float|string $member): static;
+
+    public function appendParameter(string $name, Item|ByteSequence|Token|bool|int|float|string $member): static;
+
+    public function withoutParameter(string $name): static;
+
     public function withParameters(Parameters $parameters): static;
 }

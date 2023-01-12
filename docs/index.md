@@ -1,5 +1,5 @@
-Structured Field Values for PHP
-=======================================
+HTTP Structured Fields For PHP
+=====================
 
 [![Author](http://img.shields.io/badge/author-@nyamsprod-blue.svg?style=flat-square)](https://twitter.com/nyamsprod)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
@@ -20,9 +20,9 @@ The package can be used to:
 - build or update HTTP Structured Fields in a predicable way;
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\Item;
 
-$field = StructuredFields\Item::from("/terms", ['rel' => 'copyright', 'anchor' => '#foo']);
+$field = Item::from("/terms", ['rel' => 'copyright', 'anchor' => '#foo']);
 echo $field->toHttpValue();              // display "/terms";rel="copyright";anchor="#foo"
 echo $field->value();                    // display "/terms"
 echo $field->parameters['rel']->value(); // display "copyright"
@@ -50,9 +50,9 @@ or download the library and:
 ~~~php
 require 'path/to/http-structured-fields/repo/autoload.php';
 
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\OrderedList;
 
-$list = StructuredFields\OrderedList::fromHttpValue('"/member/*/author", "/member/*/comments"');
+$list = OrderedList::fromHttpValue('"/member/*/author", "/member/*/comments"');
 echo $list[-1]->value(); // returns '/member/*/comments'
 ~~~
 

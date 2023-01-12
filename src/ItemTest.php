@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayObject;
+use Stringable;
 
 final class ItemTest extends StructuredFieldTest
 {
@@ -146,6 +147,15 @@ final class ItemTest extends StructuredFieldTest
                 'item' => Item::from(ByteSequence::fromDecoded('😊')),
                 'expectedType' => 'byte',
             ],
+            'stringable object' => [
+                'item' => Item::from(new class() implements Stringable {
+                    public function __toString(): string
+                    {
+                        return '42';
+                    }
+                }),
+                'expectedType' => 'string',
+            ],
         ];
     }
 
@@ -194,8 +204,7 @@ final class ItemTest extends StructuredFieldTest
     {
         $this->expectException(StructuredFieldError::class);
 
-        $instance = Item::fromHttpValue('1; a; b=?0');
-        $instance->parameters()['bar']->value();
+        Item::fromHttpValue('1; a; b=?0')->parameters()['bar']->value();
     }
 
     /** @test */
@@ -278,5 +287,21 @@ final class ItemTest extends StructuredFieldTest
         self::assertSame($instance1, $instance2);
         self::assertNotSame($instance1, $instance3);
         self::assertEquals($instance1->value(), $instance3->value());
+    }
+
+    /** @test */
+    public function it_can_create_via_parameters_access_methods_a_new_object(): void
+    {
+        $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);
+        $instance2 = $instance1->appendParameter('a', true);
+        $instance3 = $instance1->prependParameter('a', false);
+        $instance4 = $instance1->withoutParameter('b');
+        $instance5 = $instance1->withoutParameter('a');
+
+        self::assertSame($instance1, $instance2);
+        self::assertNotSame($instance1, $instance3);
+        self::assertEquals($instance1->value(), $instance3->value());
+        self::assertSame($instance1, $instance4);
+        self::assertFalse($instance5->parameters()->hasMembers());
     }
 }

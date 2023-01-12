@@ -29,25 +29,11 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @throws ForbiddenStateError If the bare item contains parameters
-     * @throws InvalidArgument If the structured field is not supported
+     * Returns a new instance.
      */
-    private static function filterMember(Item $item): Item
+    public static function new(): self
     {
-        if (!$item->parameters()->hasMembers()) {
-            return $item;
-        }
-
-        throw new ForbiddenStateError('Parameters instances can only contain bare items.');
-    }
-
-    private static function formatMember(StructuredField|ByteSequence|Token|bool|int|float|string $member): Item
-    {
-        return match (true) {
-            $member instanceof Item => self::filterMember($member),
-            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" instance; received "'.$member::class.'" instead.'),
-            default => Item::from($member),
-        };
+        return new self();
     }
 
     /**
@@ -56,12 +42,12 @@ final class Parameters implements MemberOrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<array-key, Item|Token|ByteSequence|float|int|bool|string> $members
+     * @param iterable<array-key, Item|Token|ByteSequence|Stringable|float|int|bool|string> $members
      *
      * @throws SyntaxError         If the string is not a valid
      * @throws ForbiddenStateError If the bare item contains parameters
      */
-    public static function fromAssociative(iterable $members = []): self
+    public static function fromAssociative(iterable $members): self
     {
         $instance = new self();
         foreach ($members as $key => $member) {
@@ -78,11 +64,11 @@ final class Parameters implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|bool|int|float|string}> $pairs
+     * @param MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|Stringable|bool|int|float|string}> $pairs
      *
      * @throws ForbiddenStateError If the bare item contains parameters
      */
-    public static function fromPairs(MemberOrderedMap|iterable $pairs = []): self
+    public static function fromPairs(MemberOrderedMap|iterable $pairs): self
     {
         if ($pairs instanceof MemberOrderedMap) {
             $pairs = $pairs->toPairs();
@@ -94,6 +80,28 @@ final class Parameters implements MemberOrderedMap
         }
 
         return $instance;
+    }
+
+    /**
+     * @throws ForbiddenStateError If the bare item contains parameters
+     * @throws InvalidArgument If the structured field is not supported
+     */
+    private static function filterMember(Item $item): Item
+    {
+        if (!$item->parameters()->hasMembers()) {
+            return $item;
+        }
+
+        throw new ForbiddenStateError('Parameters instances can only contain bare items.');
+    }
+
+    private static function formatMember(StructuredField|ByteSequence|Token|Stringable|bool|int|float|string $member): Item
+    {
+        return match (true) {
+            $member instanceof Item => self::filterMember($member),
+            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" instance; received "'.$member::class.'" instead.'),
+            default => Item::from($member),
+        };
     }
 
     /**
@@ -267,7 +275,7 @@ final class Parameters implements MemberOrderedMap
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
      */
-    public function set(string $key, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
+    public function set(string $key, StructuredField|ByteSequence|Token|Stringable|bool|int|float|string $member): self
     {
         $this->members[MapKey::fromString($key)->value] = self::formatMember($member);
 
@@ -299,7 +307,7 @@ final class Parameters implements MemberOrderedMap
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
      */
-    public function append(string $key, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
+    public function append(string $key, StructuredField|ByteSequence|Token|Stringable|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 
@@ -314,7 +322,7 @@ final class Parameters implements MemberOrderedMap
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
      */
-    public function prepend(string $key, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
+    public function prepend(string $key, StructuredField|ByteSequence|Token|Stringable|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 

@@ -24,7 +24,10 @@ final class InnerList implements MemberList, ParameterAccess
     {
     }
 
-    public static function from(Item|ByteSequence|Token|bool|int|float|string ...$members): self
+    /**
+     * Returns a new instance.
+     */
+    public static function new(Item|ByteSequence|Token|Stringable|bool|int|float|string ...$members): self
     {
         return self::fromList($members);
     }
@@ -33,7 +36,7 @@ final class InnerList implements MemberList, ParameterAccess
      * @param iterable<Item|DataType> $members
      * @param iterable<string, Item|DataType> $parameters
      */
-    public static function fromList(iterable $members = [], iterable $parameters = []): self
+    public static function fromList(iterable $members, iterable $parameters = []): self
     {
         $instance = new self(Parameters::fromAssociative($parameters));
         foreach ($members as $member) {
@@ -43,7 +46,7 @@ final class InnerList implements MemberList, ParameterAccess
         return $instance;
     }
 
-    private static function filterMember(StructuredField|ByteSequence|Token|bool|int|float|string $member): Item
+    private static function filterMember(StructuredField|ByteSequence|Token|Stringable|bool|int|float|string $member): Item
     {
         return match (true) {
             $member instanceof Item => $member,
@@ -60,6 +63,31 @@ final class InnerList implements MemberList, ParameterAccess
     public function parameters(): Parameters
     {
         return clone $this->parameters;
+    }
+
+    public function prependParameter(string $name, Item|ByteSequence|Token|Stringable|bool|int|float|string $member): static
+    {
+        $parameters = clone $this->parameters;
+
+        return $this->withParameters($parameters->prepend($name, $member));
+    }
+
+    public function appendParameter(string $name, Item|ByteSequence|Token|Stringable|bool|int|float|string $member): static
+    {
+        $parameters = clone $this->parameters;
+
+        return $this->withParameters($parameters->set($name, $member));
+    }
+
+    public function withoutParameter(string $name): static
+    {
+        if (!$this->parameters->has($name)) {
+            return $this;
+        }
+
+        $parameters = clone $this->parameters;
+
+        return $this->withParameters($parameters->delete($name));
     }
 
     public function withParameters(Parameters $parameters): static
@@ -133,7 +161,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Insert members at the beginning of the list.
      */
-    public function unshift(StructuredField|ByteSequence|Token|bool|int|float|string ...$members): self
+    public function unshift(StructuredField|ByteSequence|Token|Stringable|bool|int|float|string ...$members): self
     {
         $this->members = [...array_map(self::filterMember(...), array_values($members)), ...$this->members];
 
@@ -143,7 +171,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Insert members at the end of the list.
      */
-    public function push(StructuredField|ByteSequence|Token|bool|int|float|string ...$members): self
+    public function push(StructuredField|ByteSequence|Token|Stringable|bool|int|float|string ...$members): self
     {
         $this->members =  [...$this->members, ...array_map(self::filterMember(...), array_values($members))];
 
@@ -155,7 +183,7 @@ final class InnerList implements MemberList, ParameterAccess
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $index, StructuredField|ByteSequence|Token|bool|int|float|string ...$members): self
+    public function insert(int $index, StructuredField|ByteSequence|Token|Stringable|bool|int|float|string ...$members): self
     {
         $offset = $this->filterIndex($index);
         match (true) {
@@ -168,7 +196,7 @@ final class InnerList implements MemberList, ParameterAccess
         return $this;
     }
 
-    public function replace(int $index, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
+    public function replace(int $index, StructuredField|ByteSequence|Token|Stringable|bool|int|float|string $member): self
     {
         if (null === ($offset = $this->filterIndex($index))) {
             throw InvalidOffset::dueToIndexNotFound($index);

@@ -22,9 +22,9 @@ The table below summarizes the item value type.
 ### Token
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\Token;
 
-$token = StructuredFields\Token::fromString('bar');
+$token = Token::fromString('bar');
 
 echo $token->value; // displays 'bar'
 ```
@@ -38,10 +38,10 @@ The class also exposes its value via the public readonly property `value` to ena
 ### Byte Sequence
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\ByteSequence;
 
-$sequenceFromDecoded = StructuredFields\ByteSequence::fromDecoded("Hello World");
-$sequenceFromEncoded = StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29ybGQ=");
+$sequenceFromDecoded = ByteSequence::fromDecoded("Hello World");
+$sequenceFromEncoded = ByteSequence::fromEncoded("SGVsbG8gV29ybGQ=");
 
 echo $sequenceFromEncoded->decoded(); // displays 'Hello World'
 echo $sequenceFromDecoded->encoded(); // displays 'SGVsbG8gV29ybGQ='
@@ -63,9 +63,9 @@ keys are strings and the value are bare items. Their public API is covered in th
 **Exception will be thrown when trying to access or serialize a parameter object containing non-bare items.**
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\Item;
 
-$item = StructuredFields\Item::from("hello world", ["a" => true]);
+$item = Item::from("hello world", ["a" => true]);
 $item->value();    // returns "hello world"
 $item->isString(); // returns true
 $item->isToken();  // returns false
@@ -88,11 +88,12 @@ Those listed named constructors expect a string or a stringable object as its fi
 same argument definition as in `Item::from` for parameters argument.
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Item;
 
-$item = StructuredFields\Item::fromPair([
+$item = Item::fromPair([
     "hello world", [
-        ["a", StructuredFields\ByteSequence::fromDecoded("Hello World")],
+        ["a", ByteSequence::fromDecoded("Hello World")],
     ]
 ]);
 $item->value();    // returns "hello world"
@@ -115,9 +116,10 @@ Once instantiated, accessing `Item` properties is done via:
 - the method `Item::parameters` which returns the parameters associated to the `Item` as a distinct `Parameters` object
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Item;
 
-$item = StructuredFields\Item::from(StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29ybGQ="));
+$item = Item::from(ByteSequence::fromEncoded("SGVsbG8gV29ybGQ="));
 $item->isByteSequence(); // returns true
 echo $item->value();     // returns StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29ybGQ=");
 ```
@@ -125,13 +127,13 @@ echo $item->value();     // returns StructuredFields\ByteSequence::fromEncoded("
 **Of note: to instantiate a decimal number type a float MUST be used as the first argument of `Item::from`.**
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\Item;
 
-$decimal = StructuredFields\Item::from(42.0);
+$decimal = Item::from(42.0);
 $decimal->isDecimal(); //return true
 $decimal->isInteger(); //return false
 
-$item = StructuredFields\Item::fromPair([42]);
+$item = Item::fromPair([42]);
 $item->isDecimal(); //return false
 $item->isInteger(); //return true
 ```

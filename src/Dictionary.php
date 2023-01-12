@@ -26,6 +26,14 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
+     * Returns a new instance.
+     */
+    public static function new(): self
+    {
+        return new self();
+    }
+
+    /**
      * Returns a new instance from an associative iterable construct.
      *
      * its keys represent the dictionary entry key
@@ -33,7 +41,7 @@ final class Dictionary implements MemberOrderedMap
      *
      * @param iterable<string, InnerList<int, Item>|Item|DataType> $members
      */
-    public static function fromAssociative(iterable $members = []): self
+    public static function fromAssociative(iterable $members): self
     {
         $instance = new self();
         foreach ($members as $key => $member) {
@@ -52,7 +60,7 @@ final class Dictionary implements MemberOrderedMap
      *
      * @param MemberOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|DataType}> $pairs
      */
-    public static function fromPairs(MemberOrderedMap|iterable $pairs = []): self
+    public static function fromPairs(MemberOrderedMap|iterable $pairs): self
     {
         if ($pairs instanceof MemberOrderedMap) {
             $pairs = $pairs->toPairs();
@@ -210,14 +218,14 @@ final class Dictionary implements MemberOrderedMap
      *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function set(string $key, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
+    public function set(string $key, StructuredField|ByteSequence|Token|Stringable|bool|int|float|string $member): self
     {
         $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
 
         return $this;
     }
 
-    private static function filterMember(StructuredField|ByteSequence|Token|bool|int|float|string $member): InnerList|Item
+    private static function filterMember(StructuredField|ByteSequence|Token|Stringable|bool|int|float|string $member): InnerList|Item
     {
         return match (true) {
             $member instanceof InnerList, $member instanceof Item => $member,

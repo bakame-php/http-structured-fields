@@ -30,8 +30,8 @@
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^v3.13.2",
         "httpwg/structured-field-tests": "*@dev",
-        "phpstan/phpstan": "^1.9.8",
-        "phpstan/phpstan-strict-rules": "^1.4.4",
+        "phpstan/phpstan": "^1.9.9",
+        "phpstan/phpstan-strict-rules": "^1.4.5",
         "phpstan/phpstan-phpunit": "^1.3.3",
         "phpstan/phpstan-deprecation-rules": "^1.1.1",
         "phpunit/phpunit": "^9.5.27"

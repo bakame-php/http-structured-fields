@@ -54,7 +54,7 @@ final class Item implements StructuredField, ParameterAccess
      * @param iterable<string,Item|DataType> $parameters
      */
     public static function from(
-        Token|ByteSequence|int|float|string|bool $value,
+        Token|ByteSequence|Stringable|int|float|string|bool $value,
         iterable $parameters = []
     ): self {
         return new self(self::filterValue($value), Parameters::fromAssociative($parameters));
@@ -65,7 +65,7 @@ final class Item implements StructuredField, ParameterAccess
      *
      * @param iterable<string,Item|DataType> $parameters
      */
-    public static function fromEncodedByteSequence(string|Stringable $value, iterable $parameters = []): self
+    public static function fromEncodedByteSequence(Stringable|string $value, iterable $parameters = []): self
     {
         return self::from(ByteSequence::fromEncoded($value), $parameters);
     }
@@ -75,7 +75,7 @@ final class Item implements StructuredField, ParameterAccess
      *
      * @param iterable<string,Item|DataType> $parameters
      */
-    public static function fromDecodedByteSequence(string|Stringable $value, iterable $parameters = []): self
+    public static function fromDecodedByteSequence(Stringable|string $value, iterable $parameters = []): self
     {
         return self::from(ByteSequence::fromDecoded($value), $parameters);
     }
@@ -85,7 +85,7 @@ final class Item implements StructuredField, ParameterAccess
      *
      * @param iterable<string,Item|DataType> $parameters
      */
-    public static function fromToken(string|Stringable $value, iterable $parameters = []): self
+    public static function fromToken(Stringable|string $value, iterable $parameters = []): self
     {
         return self::from(Token::fromString($value), $parameters);
     }
@@ -109,10 +109,11 @@ final class Item implements StructuredField, ParameterAccess
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.3
      */
-    private static function filterString(string $value): string
+    private static function filterString(Stringable|string $value): string
     {
+        $value = (string) $value;
         if (1 === preg_match('/[^\x20-\x7E]/i', $value)) {
-            throw new SyntaxError('The string "'.$value.'" contains invalid characters.');
+            throw new SyntaxError('The string contains invalid characters.');
         }
 
         return $value;
@@ -295,7 +296,7 @@ final class Item implements StructuredField, ParameterAccess
         return $this->value;
     }
 
-    public function withValue(Token|ByteSequence|int|float|string|bool $value): self
+    public function withValue(Token|ByteSequence|Stringable|int|float|string|bool $value): self
     {
         $newValue = self::filterValue($value);
 
@@ -313,6 +314,31 @@ final class Item implements StructuredField, ParameterAccess
     public function parameters(): Parameters
     {
         return clone $this->parameters;
+    }
+
+    public function prependParameter(string $name, Item|ByteSequence|Token|bool|int|float|string $member): static
+    {
+        $parameters = clone $this->parameters;
+
+        return $this->withParameters($parameters->prepend($name, $member));
+    }
+
+    public function appendParameter(string $name, Item|ByteSequence|Token|Stringable|bool|int|float|string $member): static
+    {
+        $parameters = clone $this->parameters;
+
+        return $this->withParameters($parameters->append($name, $member));
+    }
+
+    public function withoutParameter(string $name): static
+    {
+        if (!$this->parameters->has($name)) {
+            return $this;
+        }
+
+        $parameters = clone $this->parameters;
+
+        return $this->withParameters($parameters->delete($name));
     }
 
     public function withParameters(Parameters $parameters): static
@@ -371,12 +397,12 @@ final class Item implements StructuredField, ParameterAccess
         return $this->value instanceof ByteSequence;
     }
 
-    private static function filterValue(float|bool|int|string|Token|ByteSequence $value): ByteSequence|string|Token|int|bool|float
+    private static function filterValue(float|bool|int|string|Token|ByteSequence|Stringable $value): ByteSequence|string|Token|int|bool|float
     {
         return match (true) {
             is_int($value) => self::filterInteger($value),
             is_float($value) => self::filterDecimal($value),
-            is_string($value) => self::filterString($value),
+            is_string($value) || $value instanceof Stringable => self::filterString($value),
             default => $value,
         };
     }

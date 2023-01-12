@@ -6,10 +6,16 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
-- None
+- `ParameterAccess` interface updated with 3 new methods to ease parameter members modification.
+- Support for `Stringable` instance to `Item::from`, the instances will be converted to the string data type.
+- `Parameter::new` named constructor to create a new instance without any parameter.
+- `Dictionnary::new` named constructor to create a new instance without any parameter.
+- `InnerList::new` named constructor to create a new instance with members as variadic arguments.
+- `OrderedList::new` named constructor to create a new instance with members as variadic arguments.
 
 ### Fixed
 
+- **[BC Break]** `::fromAssociative`, `::fromList`, `::fromPairs` methods require iterable arguments without default value.
 - **[BC Break]** `Item::value` method returns the Item (returns value can be `float|int|string|bool|ByteSequence|Token`).
 - `InnerList::parameters` is no longer accessible as a public readonly property.
 
@@ -19,7 +25,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- None
+- **[BC Break]** `InnerList::from` named constructor use `InnerList::new` method instead.
+- **[BC Break]** `OrderedList::from` named constructor use `OrderedList::new` method instead.
 
 ## [0.6.0] - 2022-11-12
 
@@ -176,7 +183,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 **Initial release!**
 
-[Next]: https://github.com/bakame-php/http-structured-fields/compare/0.5.0...master
+[Next]: https://github.com/bakame-php/http-structured-fields/compare/0.6.0...master
+[0.6.0]: https://github.com/bakame-php/http-structured-fields/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/bakame-php/http-structured-fields/compare/0.4.0...0.5.0
 [0.4.0]: https://github.com/bakame-php/http-structured-fields/compare/0.3.0...0.4.0
 [0.3.0]: https://github.com/bakame-php/http-structured-fields/compare/0.2.0...0.3.0

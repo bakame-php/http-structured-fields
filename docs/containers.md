@@ -1,9 +1,9 @@
 # Containers
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\Parameters;
 
-$parameters = StructuredFields\Parameters::fromAssociative(['a' => 1, 'b' => 2, 'c' => "hello world"]);
+$parameters = Parameters::fromAssociative(['a' => 1, 'b' => 2, 'c' => "hello world"]);
 count($parameters); // returns 3
 $parameters->hasMembers(); // returns true
 $parameters->toHttpValue(); // returns ';a=1;b=2;c="hello world"'

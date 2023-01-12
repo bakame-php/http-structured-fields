@@ -116,7 +116,7 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = Parameters::fromAssociative();
+        $instance = Parameters::new();
         self::assertFalse($instance->has('foobar'));
 
         $instance->get('foobar');
@@ -125,10 +125,11 @@ final class ParametersTest extends StructuredFieldTest
     /** @test */
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
-        $this->expectException(InvalidOffset::class);
+        $instance = Parameters::new();
 
-        $instance = Parameters::fromAssociative();
         self::assertFalse($instance->hasPair(3));
+
+        $this->expectException(InvalidOffset::class);
 
         $instance->pair(3);
     }
@@ -136,7 +137,7 @@ final class ParametersTest extends StructuredFieldTest
     /** @test */
     public function it_can_prepend_a_new_member(): void
     {
-        $instance = Parameters::fromAssociative();
+        $instance = Parameters::new();
         $instance->append('a', Item::from(false));
         $instance->prepend('b', Item::from(true));
 
@@ -146,8 +147,10 @@ final class ParametersTest extends StructuredFieldTest
     /** @test */
     public function it_can_returns_the_container_member_keys(): void
     {
-        $instance = Parameters::fromAssociative();
+        $instance = Parameters::new();
+
         self::assertSame([], $instance->keys());
+
         $instance->append('a', Item::from(false));
         $instance->prepend('b', Item::from(true));
 
@@ -185,6 +188,7 @@ final class ParametersTest extends StructuredFieldTest
     {
         $instance = Parameters::fromAssociative(['a' => Item::from(false)]);
         $instance->mergeAssociative();
+
         self::assertCount(1, $instance);
     }
 
@@ -196,8 +200,8 @@ final class ParametersTest extends StructuredFieldTest
         $instance3 = Parameters::fromPairs([['a', Item::from(42)]]);
 
         $instance3->mergePairs($instance2, $instance1);
-        self::assertCount(2, $instance3);
 
+        self::assertCount(2, $instance3);
         self::assertEquals(Item::from(false), $instance3['a']);
         self::assertEquals(Item::from(true), $instance3['b']);
     }
@@ -255,15 +259,15 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(StructuredFieldError::class);
 
-        $structuredField = Parameters::fromPairs();
-        $structuredField[0] = 23; // @phpstan-ignore-line
+        Parameters::new()[0] = 23; // @phpstan-ignore-line
     }
 
     /** @test */
     public function it_can_delete_a_member_via_array_access(): void
     {
-        $structuredField = Parameters::fromPairs();
+        $structuredField = Parameters::new();
         $structuredField['foo'] = 'bar';
+
         self::assertTrue($structuredField->hasMembers());
 
         unset($structuredField['foo']);
@@ -276,8 +280,7 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $structuredField = Parameters::fromPairs();
-        $structuredField->get(0);
+        Parameters::new()->get(0);
     }
 
     /** @test */
@@ -285,6 +288,6 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(InvalidArgument::class);
 
-        Parameters::fromPairs([['foo', InnerList::from(42)]]); // @phpstan-ignore-line
+        Parameters::fromPairs([['foo', InnerList::new(42)]]); // @phpstan-ignore-line
     }
 }

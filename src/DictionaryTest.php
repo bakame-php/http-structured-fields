@@ -30,7 +30,9 @@ final class DictionaryTest extends StructuredFieldTest
         );
 
         self::assertEquals($arrayParams, iterator_to_array($instance));
+
         $instance->clear();
+
         self::assertFalse($instance->hasMembers());
     }
 
@@ -63,6 +65,7 @@ final class DictionaryTest extends StructuredFieldTest
 
         self::assertCount(2, $instance);
         self::assertTrue($instance->hasMembers());
+
         $instance->delete('boolean');
 
         self::assertCount(1, $instance);
@@ -80,6 +83,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertStringContainsString('BarBaz', $foundItem[1]->value());
 
         $instance->delete('foobar', 'string');
+
         self::assertCount(0, $instance);
         self::assertFalse($instance->hasMembers());
     }
@@ -87,10 +91,11 @@ final class DictionaryTest extends StructuredFieldTest
     /** @test */
     public function it_fails_to_return_an_member_with_invalid_key(): void
     {
-        $this->expectException(InvalidOffset::class);
+        $instance = Dictionary::new();
 
-        $instance = Dictionary::fromAssociative();
         self::assertFalse($instance->has('foobar'));
+
+        $this->expectException(InvalidOffset::class);
 
         $instance->get('foobar');
     }
@@ -98,10 +103,11 @@ final class DictionaryTest extends StructuredFieldTest
     /** @test */
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
-        $this->expectException(InvalidOffset::class);
+        $instance = Dictionary::new();
 
-        $instance = Dictionary::fromAssociative();
         self::assertFalse($instance->hasPair(3));
+
+        $this->expectException(InvalidOffset::class);
 
         $instance->pair(3);
     }
@@ -117,7 +123,7 @@ final class DictionaryTest extends StructuredFieldTest
     /** @test */
     public function it_can_prepend_a_new_member(): void
     {
-        $instance = Dictionary::fromAssociative();
+        $instance = Dictionary::new();
         $instance->append('a', Item::from(false));
         $instance->prepend('b', Item::from(true));
 
@@ -127,8 +133,10 @@ final class DictionaryTest extends StructuredFieldTest
     /** @test */
     public function it_can_returns_the_container_member_keys(): void
     {
-        $instance = Dictionary::fromAssociative();
+        $instance = Dictionary::new();
+
         self::assertSame([], $instance->keys());
+
         $instance->append('a', Item::from(false));
         $instance->prepend('b', Item::from(true));
 
@@ -143,8 +151,8 @@ final class DictionaryTest extends StructuredFieldTest
         $instance3 = Dictionary::fromAssociative(['a' => Item::from(42)]);
 
         $instance1->mergeAssociative($instance2, $instance3);
-        self::assertCount(2, $instance1);
 
+        self::assertCount(2, $instance1);
         self::assertEquals(Item::from(42), $instance1->get('a'));
         self::assertEquals(Item::from(true), $instance1->get('b'));
     }
@@ -157,8 +165,8 @@ final class DictionaryTest extends StructuredFieldTest
         $instance3 = Dictionary::fromAssociative(['a' => Item::from(42)]);
 
         $instance3->mergeAssociative($instance2, $instance1);
-        self::assertCount(2, $instance3);
 
+        self::assertCount(2, $instance3);
         self::assertEquals(Item::from(false), $instance3->get('a'));
         self::assertEquals(Item::from(true), $instance3->get('b'));
     }
@@ -166,9 +174,7 @@ final class DictionaryTest extends StructuredFieldTest
     /** @test */
     public function it_can_merge_without_argument_and_not_throw(): void
     {
-        $instance = Dictionary::fromAssociative(['a' => Item::from(false)]);
-        $instance->mergeAssociative();
-        self::assertCount(1, $instance);
+        self::assertCount(1, Dictionary::fromAssociative(['a' => Item::from(false)])->mergeAssociative());
     }
 
     /** @test */
@@ -179,6 +185,7 @@ final class DictionaryTest extends StructuredFieldTest
         $instance3 = Dictionary::fromPairs([['a', Item::from(42)]]);
 
         $instance3->mergePairs($instance2, $instance1);
+
         self::assertCount(2, $instance3);
 
         self::assertEquals(Item::from(false), $instance3->get('a'));
@@ -220,15 +227,15 @@ final class DictionaryTest extends StructuredFieldTest
     {
         $this->expectException(StructuredFieldError::class);
 
-        $structuredField = Dictionary::fromPairs();
-        $structuredField[0] = 23; // @phpstan-ignore-line
+        Dictionary::new()[0] = 23; // @phpstan-ignore-line
     }
 
     /** @test */
     public function it_can_delete_a_member_via_array_access(): void
     {
-        $structuredField = Dictionary::fromPairs();
+        $structuredField = Dictionary::new();
         $structuredField['foo'] = 'bar';
+
         self::assertTrue($structuredField->hasMembers());
 
         unset($structuredField['foo']);
@@ -241,8 +248,7 @@ final class DictionaryTest extends StructuredFieldTest
     {
         $this->expectException(StructuredFieldError::class);
 
-        $structuredField = Dictionary::fromPairs();
-        $structuredField->get(0);
+        Dictionary::new()->get(0);
     }
 
     /** @test */

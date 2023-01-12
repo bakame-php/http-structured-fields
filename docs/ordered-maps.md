@@ -15,6 +15,7 @@ named constructors:
 
 - `fromAssociative` instantiates the container with an iterable construct of associative value;
 - `fromPairs` instantiates the container with a list of key-value pairs;
+- `new` instantiates the container with no members;
 
 getter methods:
 
@@ -33,13 +34,15 @@ setter methods:
 - `mergePairs` merge multiple instances of iterable structure as pairs constructs;
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\Dictionary;
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Token;
 
-$dictionary = StructuredFields\Dictionary::fromPairs([
+$dictionary = Dictionary::fromPairs([
     ['b', true],
 ]);
 $dictionary
-    ->append('c', StructuredFields\Item::from(true, ['foo' => StructuredFields\Token::fromString('bar')]))
+    ->append('c', Item::from(true, ['foo' => Token::fromString('bar')]))
     ->prepend('a', false)
     ->toHttpValue(); //returns "a=?0, b, c;foo=bar"
 
@@ -61,9 +64,9 @@ In addition to `StructuredField` specific interfaces, both classes implements:
 - PHP `ArrayAccess` interface.
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\Parameters;
 
-$parameters = StructuredFields\Parameters::fromAssociative(['b' => true, 'foo' => 'bar']);
+$parameters = Parameters::fromAssociative(['b' => true, 'foo' => 'bar']);
 $parameters->keys();       // returns ['b', 'foo']
 $parameters->get('b');     // returns Item::from(true)
 $parameters['b'];          // returns Item::from(true)
@@ -71,7 +74,7 @@ $parameters['b']->value(); // returns true
 iterator_to_array($parameters->toPairs(), true); // returns [['b', Item::from(true)], ['foo', Item::from('bar')]]
 iterator_to_array($parameters, true); // returns ['b' => Item::from(true), 'foo' => Item::from('bar')]
 $parameters->mergeAssociative(
-    StructuredFields\Parameters::fromPairs([['b', true], ['foo', 'foo']]),
+    Parameters::fromPairs([['b', true], ['foo', 'foo']]),
     ['b' => 'false']
 );
 $parameters->toHttpValue(); // returns ;b="false";foo="foo"

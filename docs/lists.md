@@ -17,7 +17,7 @@ Both classes expose the following:
 named constructors:
 
 - `fromList` instantiates the container with a list of members in an iterable construct;
-- `from` instantiates the container with a list of members as variadic;
+- `new` instantiates the container with a list of members as variadic;
 
 setter methods
 
@@ -34,17 +34,20 @@ In addition to `StructuredField` specific interfaces, both classes implements:
 - PHP `ArrayAccess` interface.
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\InnerList;
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\OrderedList;
+use Bakame\Http\StructuredFields\Token;
 
-$innerList = StructuredFields\InnerList::fromList([42, 42.0, "42"], ["a" => true]);
+$innerList = InnerList::fromList([42, 42.0, "42"], ["a" => true]);
 $innerList->has(2); //return true
 $innerList->has(42); //return false
-$innerList->push(StructuredFields\Token::fromString('forty-two'));
+$innerList->push(Token::fromString('forty-two'));
 $innerList->remove(0, 2);
 echo $innerList->toHttpValue(); //returns '(42.0 forty-two);a'
 
-$orderedList = StructuredFields\OrderedList::from(
-    StructuredFields\Item::from("42", ["foo" => "bar"]), 
+$orderedList = OrderedList::new(
+    Item::from("42", ["foo" => "bar"]), 
     $innerList
 );
 echo $orderedList->toHttpValue(); //returns '"42";foo="bar", (42.0 forty-two);a'
@@ -53,12 +56,13 @@ echo $orderedList->toHttpValue(); //returns '"42";foo="bar", (42.0 forty-two);a'
 Same example using the `ArrayAccess` interface.
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\InnerList;
+use Bakame\Http\StructuredFields\Token;
 
-$innerList = StructuredFields\InnerList::fromList([42, 42.0, "42"], ["a" => true]);
+$innerList = InnerList::fromList([42, 42.0, "42"], ["a" => true]);
 isset($innerList[2]); //return true
 isset($innerList[42]); //return false
-$innerList[] = StructuredFields\Token::fromString('forty-two');
+$innerList[] = Token::fromString('forty-two');
 unset($innerList[0], $innerList[2]);
 echo $innerList->toHttpValue(); //returns '(42.0 forty-two);a'
 ```
@@ -69,9 +73,10 @@ keys. Be aware that re-indexation behaviour may affect
 your logic**
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\OrderedList;
+use Bakame\Http\StructuredFields\Token;
 
-$innerList = StructuredFields\OrderedList::fromList([42, 42.0]);
-$innerList[2] = StructuredFields\Token::fromString('forty-two'); // will throw
+$innerList = OrderedList::fromList([42, 42.0]);
+$innerList[2] = Token::fromString('forty-two'); // will throw
 echo $innerList->toHttpValue(), PHP_EOL;
 ```

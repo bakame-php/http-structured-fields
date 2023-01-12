@@ -1,5 +1,4 @@
-Structured Field Values for PHP
-=======================================
+# HTTP Structured Fields for PHP
 
 [![Author](http://img.shields.io/badge/author-@nyamsprod-blue.svg?style=flat-square)](https://twitter.com/nyamsprod)
 [![Software License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
@@ -20,21 +19,19 @@ The package can be used to:
 - build or update HTTP Structured Fields in a predicable way;
 
 ```php
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\Item;
 
-$field = StructuredFields\Item::from("/terms", ['rel' => 'copyright', 'anchor' => '#foo']);
+$field = Item::from("/terms", ['rel' => 'copyright', 'anchor' => '#foo']);
 echo $field->toHttpValue();              // display "/terms";rel="copyright";anchor="#foo"
 echo $field->value();                    // display "/terms"
 echo $field->parameters()['rel']->value(); // display "copyright"
 ```
 
-System Requirements
--------
+## System Requirements
 
 **PHP >= 8.1** is required but the latest stable version of PHP is recommended.
 
-Installation
-------------
+## Installation
 
 Use composer:
 
@@ -50,24 +47,21 @@ or download the library and:
 ~~~php
 require 'path/to/http-structured-fields/repo/autoload.php';
 
-use Bakame\Http\StructuredFields;
+use Bakame\Http\StructuredFields\OrderedList;
 
-$list = StructuredFields\OrderedList::fromHttpValue('"/member/*/author", "/member/*/comments"');
+$list = OrderedList::fromHttpValue('"/member/*/author", "/member/*/comments"');
 echo $list[-1]->value(); // returns '/member/*/comments'
 ~~~
 
-Documentation
-------------
+## Documentation
 
 Full documentation can be found in the [docs](/docs).
 
-Contributing
--------
+## Contributing
 
 Contributions are welcome and will be fully credited. Please see [CONTRIBUTING](.github/CONTRIBUTING.md) and [CODE OF CONDUCT](.github/CODE_OF_CONDUCT.md) for details.
 
-Testing
--------
+## Testing
 
 The library:
 
@@ -79,27 +73,23 @@ The library:
 To run the tests, run the following command from the project folder.
 
 ``` bash
-$ composer test
+composer test
 ```
 
-Security
--------
+## Security
 
 If you discover any security related issues, please email nyamsprod@gmail.com instead of using the issue tracker.
 
-Credits
--------
+## Credits
 
 - [ignace nyamagana butera](https://github.com/nyamsprod)
 - [All Contributors](https://github.com/bakame-php/http-structured-fields/contributors)
 
-Attribution
--------
+## Attribution
 
 The package internal parser is heavily inspired by previous work done by [Gapple](https://twitter.com/gappleca) on [Structured Field Values for PHP](https://github.com/gapple/structured-fields/).
 
-License
--------
+## License
 
 The MIT License (MIT). Please see [License File](LICENSE) for more information.
 

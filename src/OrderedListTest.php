@@ -53,6 +53,7 @@ final class OrderedListTest extends StructuredFieldTest
         self::assertStringContainsString('BarBaz', $member->value());
 
         $instance->remove(0, 1);
+
         self::assertCount(0, $instance);
         self::assertFalse($instance->hasMembers());
     }
@@ -60,7 +61,7 @@ final class OrderedListTest extends StructuredFieldTest
     /** @test */
     public function it_can_unshift_insert_and_replace(): void
     {
-        $instance = OrderedList::from();
+        $instance = OrderedList::new();
         $instance->unshift(Item::from('42'));
         $instance->push(Item::from(42));
         $instance->insert(1, Item::from(42.0));
@@ -79,8 +80,7 @@ final class OrderedListTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $container = OrderedList::from();
-        $container->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
+        OrderedList::new()->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
     }
 
     /** @test */
@@ -88,17 +88,17 @@ final class OrderedListTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $container = OrderedList::from();
-        $container->insert(3, Item::from(ByteSequence::fromDecoded('Hello World')));
+        OrderedList::new()->insert(3, Item::from(ByteSequence::fromDecoded('Hello World')));
     }
 
     /** @test */
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
-        $this->expectException(InvalidOffset::class);
+        $instance = OrderedList::new();
 
-        $instance = OrderedList::from();
         self::assertFalse($instance->has(3));
+
+        $this->expectException(InvalidOffset::class);
 
         $instance->get(3);
     }
@@ -121,8 +121,8 @@ final class OrderedListTest extends StructuredFieldTest
     /** @test */
     public function it_implements_the_array_access_interface(): void
     {
-        $sequence = OrderedList::from();
-        $sequence->push(InnerList::from(42, 69));
+        $sequence = OrderedList::new();
+        $sequence->push(InnerList::new(42, 69));
 
         self::assertTrue(isset($sequence[0]));
         self::assertInstanceOf(InnerList::class, $sequence[0]);
@@ -142,14 +142,13 @@ final class OrderedListTest extends StructuredFieldTest
     {
         $this->expectException(StructuredFieldError::class);
 
-        $sequence = OrderedList::from();
-        $sequence[0] = Item::from(42.0);
+        OrderedList::new()[0] = Item::from(42.0);
     }
 
     /** @test */
     public function testArrayAccessThrowsInvalidIndex2(): void
     {
-        $sequence = OrderedList::from();
+        $sequence = OrderedList::new();
         unset($sequence[0]);
 
         self::assertCount(0, $sequence);
@@ -160,15 +159,14 @@ final class OrderedListTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $structuredField = OrderedList::from();
-        $structuredField->get('zero');
+        OrderedList::new()->get('zero');
     }
 
     /** @test */
     public function it_can_access_the_item_value(): void
     {
         $token = Token::fromString('token');
-        $innerList = InnerList::from('test');
+        $innerList = InnerList::new('test');
         $input = ['foobar', 0, false, $token, $innerList];
         $structuredField = OrderedList::fromList($input);
 
