@@ -27,7 +27,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance.
      */
-    public static function new(Item|ByteSequence|Token|Stringable|bool|int|float|string ...$members): self
+    public static function from(Item|ByteSequence|Token|Stringable|bool|int|float|string ...$members): self
     {
         return self::fromList($members);
     }

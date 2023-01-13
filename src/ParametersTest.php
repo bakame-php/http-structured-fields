@@ -116,7 +116,7 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = Parameters::new();
+        $instance = Parameters::create();
         self::assertFalse($instance->has('foobar'));
 
         $instance->get('foobar');
@@ -125,7 +125,7 @@ final class ParametersTest extends StructuredFieldTest
     /** @test */
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
-        $instance = Parameters::new();
+        $instance = Parameters::create();
 
         self::assertFalse($instance->hasPair(3));
 
@@ -137,7 +137,7 @@ final class ParametersTest extends StructuredFieldTest
     /** @test */
     public function it_can_prepend_a_new_member(): void
     {
-        $instance = Parameters::new();
+        $instance = Parameters::create();
         $instance->append('a', Item::from(false));
         $instance->prepend('b', Item::from(true));
 
@@ -147,7 +147,7 @@ final class ParametersTest extends StructuredFieldTest
     /** @test */
     public function it_can_returns_the_container_member_keys(): void
     {
-        $instance = Parameters::new();
+        $instance = Parameters::create();
 
         self::assertSame([], $instance->keys());
 
@@ -259,13 +259,13 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(StructuredFieldError::class);
 
-        Parameters::new()[0] = 23; // @phpstan-ignore-line
+        Parameters::create()[0] = 23; // @phpstan-ignore-line
     }
 
     /** @test */
     public function it_can_delete_a_member_via_array_access(): void
     {
-        $structuredField = Parameters::new();
+        $structuredField = Parameters::create();
         $structuredField['foo'] = 'bar';
 
         self::assertTrue($structuredField->hasMembers());
@@ -280,7 +280,7 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(InvalidOffset::class);
 
-        Parameters::new()->get(0);
+        Parameters::create()->get(0);
     }
 
     /** @test */
@@ -288,6 +288,6 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(InvalidArgument::class);
 
-        Parameters::fromPairs([['foo', InnerList::new(42)]]); // @phpstan-ignore-line
+        Parameters::fromPairs([['foo', InnerList::from(42)]]); // @phpstan-ignore-line
     }
 }

@@ -91,7 +91,7 @@ final class DictionaryTest extends StructuredFieldTest
     /** @test */
     public function it_fails_to_return_an_member_with_invalid_key(): void
     {
-        $instance = Dictionary::new();
+        $instance = Dictionary::create();
 
         self::assertFalse($instance->has('foobar'));
 
@@ -103,7 +103,7 @@ final class DictionaryTest extends StructuredFieldTest
     /** @test */
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
-        $instance = Dictionary::new();
+        $instance = Dictionary::create();
 
         self::assertFalse($instance->hasPair(3));
 
@@ -123,7 +123,7 @@ final class DictionaryTest extends StructuredFieldTest
     /** @test */
     public function it_can_prepend_a_new_member(): void
     {
-        $instance = Dictionary::new();
+        $instance = Dictionary::create();
         $instance->append('a', Item::from(false));
         $instance->prepend('b', Item::from(true));
 
@@ -133,7 +133,7 @@ final class DictionaryTest extends StructuredFieldTest
     /** @test */
     public function it_can_returns_the_container_member_keys(): void
     {
-        $instance = Dictionary::new();
+        $instance = Dictionary::create();
 
         self::assertSame([], $instance->keys());
 
@@ -227,13 +227,13 @@ final class DictionaryTest extends StructuredFieldTest
     {
         $this->expectException(StructuredFieldError::class);
 
-        Dictionary::new()[0] = 23; // @phpstan-ignore-line
+        Dictionary::create()[0] = 23; // @phpstan-ignore-line
     }
 
     /** @test */
     public function it_can_delete_a_member_via_array_access(): void
     {
-        $structuredField = Dictionary::new();
+        $structuredField = Dictionary::create();
         $structuredField['foo'] = 'bar';
 
         self::assertTrue($structuredField->hasMembers());
@@ -248,7 +248,7 @@ final class DictionaryTest extends StructuredFieldTest
     {
         $this->expectException(StructuredFieldError::class);
 
-        Dictionary::new()->get(0);
+        Dictionary::create()->get(0);
     }
 
     /** @test */

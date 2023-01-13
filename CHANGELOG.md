@@ -7,17 +7,15 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Added
 
 - `ParameterAccess` interface updated with 3 new methods to ease parameter members modification.
-- Support for `Stringable` instance to `Item::from`, the instances will be converted to the string data type.
-- `Parameter::new` named constructor to create a new instance without any parameter.
-- `Dictionnary::new` named constructor to create a new instance without any parameter.
-- `InnerList::new` named constructor to create a new instance with members as variadic arguments.
-- `OrderedList::new` named constructor to create a new instance with members as variadic arguments.
+- Support for `Stringable` instance added to `Item::from`, the instances will be converted to the string data type.
+- `Parameter::create` named constructor to create a new instance without any parameter.
+- `Dictionnary::create` named constructor to create a new instance without any parameter.
 
 ### Fixed
 
 - **[BC Break]** `::fromAssociative`, `::fromList`, `::fromPairs` methods require iterable arguments without default value.
 - **[BC Break]** `Item::value` method returns the Item (returns value can be `float|int|string|bool|ByteSequence|Token`).
-- `InnerList::parameters` is no longer accessible as a public readonly property.
+- **[BC Break]** `InnerList::parameters` is no longer accessible as a public readonly property.
 
 ### Deprecated
 
@@ -25,8 +23,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- **[BC Break]** `InnerList::from` named constructor use `InnerList::new` method instead.
-- **[BC Break]** `OrderedList::from` named constructor use `OrderedList::new` method instead.
+- None
 
 ## [0.6.0] - 2022-11-12
 

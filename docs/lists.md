@@ -46,7 +46,7 @@ $innerList->push(Token::fromString('forty-two'));
 $innerList->remove(0, 2);
 echo $innerList->toHttpValue(); //returns '(42.0 forty-two);a'
 
-$orderedList = OrderedList::new(
+$orderedList = OrderedList::from(
     Item::from("42", ["foo" => "bar"]), 
     $innerList
 );

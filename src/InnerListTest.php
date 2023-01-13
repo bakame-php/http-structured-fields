@@ -65,7 +65,7 @@ final class InnerListTest extends TestCase
     /** @test */
     public function it_can_unshift_insert_and_replace(): void
     {
-        $container = InnerList::new();
+        $container = InnerList::from();
         $container->unshift('42');
         $container->push(42);
         $container->insert(1, 42.0);
@@ -81,7 +81,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        InnerList::new()->replace(0, ByteSequence::fromDecoded('Hello World'));
+        InnerList::from()->replace(0, ByteSequence::fromDecoded('Hello World'));
     }
 
     /** @test */
@@ -89,13 +89,13 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        InnerList::new()->insert(3, ByteSequence::fromDecoded('Hello World'));
+        InnerList::from()->insert(3, ByteSequence::fromDecoded('Hello World'));
     }
 
     /** @test */
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
-        $instance = InnerList::new();
+        $instance = InnerList::from();
 
         self::assertFalse($instance->has(3));
 
@@ -146,7 +146,7 @@ final class InnerListTest extends TestCase
     /** @test */
     public function it_implements_the_array_access_interface(): void
     {
-        $sequence = InnerList::new();
+        $sequence = InnerList::from();
         $sequence[] = 42;
 
         self::assertTrue(isset($sequence[0]));
@@ -165,13 +165,13 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        InnerList::new()[0] = Item::from(42.0);
+        InnerList::from()[0] = Item::from(42.0);
     }
 
     /** @test */
     public function testArrayAccessThrowsInvalidIndex2(): void
     {
-        $sequence = InnerList::new();
+        $sequence = InnerList::from();
         unset($sequence[0]);
 
         self::assertCount(0, $sequence);
@@ -182,7 +182,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        InnerList::new()->get('zero');
+        InnerList::from()->get('zero');
     }
 
     /** @test */

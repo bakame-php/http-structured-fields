@@ -31,7 +31,7 @@ final class OrderedList implements MemberList
      *
      * @return static
      */
-    public static function new(InnerList|Item|ByteSequence|Token|Stringable|bool|int|float|string ...$members): self
+    public static function from(InnerList|Item|ByteSequence|Token|Stringable|bool|int|float|string ...$members): self
     {
         return self::fromList($members);
     }
@@ -65,7 +65,7 @@ final class OrderedList implements MemberList
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        return self::new()
+        return self::from()
             ->push(...array_map(
                 fn ($value) => is_array($value) ? InnerList::fromList(...$value) : $value,
                 Parser::parseList($httpValue)
