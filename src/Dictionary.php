@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use DateTimeInterface;
 use Iterator;
 use Stringable;
 use function array_key_exists;
@@ -218,14 +219,14 @@ final class Dictionary implements MemberOrderedMap
      *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function set(string $key, StructuredField|ByteSequence|Token|Stringable|bool|int|float|string $member): self
+    public function set(string $key, StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): self
     {
         $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
 
         return $this;
     }
 
-    private static function filterMember(StructuredField|ByteSequence|Token|Stringable|bool|int|float|string $member): InnerList|Item
+    private static function filterMember(StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): InnerList|Item
     {
         return match (true) {
             $member instanceof InnerList, $member instanceof Item => $member,
@@ -258,7 +259,7 @@ final class Dictionary implements MemberOrderedMap
      *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function append(string $key, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
+    public function append(string $key, StructuredField|ByteSequence|DateTimeInterface|Token|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 
@@ -272,7 +273,7 @@ final class Dictionary implements MemberOrderedMap
      *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function prepend(string $key, StructuredField|ByteSequence|Token|bool|int|float|string $member): self
+    public function prepend(string $key, StructuredField|ByteSequence|DateTimeInterface|Token|bool|int|float|string $member): self
     {
         unset($this->members[$key]);
 
@@ -284,7 +285,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * Merges multiple instances using iterable associative structures.
      *
-     * @param iterable<string, InnerList<int, Item>|Item|ByteSequence|Token|bool|int|float|string> ...$others
+     * @param iterable<string, InnerList<int, Item>|Item|ByteSequence|DateTimeInterface|Token|bool|int|float|string> ...$others
      */
     public function mergeAssociative(iterable ...$others): self
     {

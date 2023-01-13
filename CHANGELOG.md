@@ -6,8 +6,9 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
-- `ParameterAccess` interface updated with 3 new methods to ease parameter members modification.
 - Support for `Stringable` instance added to `Item::from`, the instances will be converted to the string data type.
+- Support for the upcoming `Date` data type in `Item`. It is represented as a `DateTimeImmutable` object.
+- `ParameterAccess` interface updated with 3 new methods to ease parameter members modification.
 - `Parameter::create` named constructor to create a new instance without any parameter.
 - `Dictionnary::create` named constructor to create a new instance without any parameter.
 

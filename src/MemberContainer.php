@@ -23,7 +23,7 @@ interface MemberContainer extends Countable, ArrayAccess, IteratorAggregate, Str
     public function hasMembers(): bool;
 
     /**
-     * Remove all members from the instance.
+     * Removes all members from the instance.
      *
      * @return self<TKey, TValue>
      */

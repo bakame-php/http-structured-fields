@@ -12,7 +12,7 @@ namespace Bakame\Http\StructuredFields;
 interface MemberList extends MemberContainer
 {
     /**
-     * Insert members at the beginning of the list.
+     * Inserts members at the beginning of the list.
      *
      * @param TValue ...$members
      *
@@ -21,7 +21,7 @@ interface MemberList extends MemberContainer
     public function unshift(StructuredField ...$members): self;
 
     /**
-     * Insert members at the end of the list.
+     * Inserts members at the end of the list.
      *
      * @param TValue ...$members
      *
@@ -30,7 +30,7 @@ interface MemberList extends MemberContainer
     public function push(StructuredField ...$members): self;
 
     /**
-     * Replace the member associated with the index.
+     * Inserts members at the index.
      *
      * @param TValue ...$members
      *
@@ -41,6 +41,8 @@ interface MemberList extends MemberContainer
     public function insert(int $index, StructuredField ...$members): self;
 
     /**
+     * Replaces the member associated with the index.
+     *
      * @param TValue $member
      *
      * @return MemberList<TKey, TValue>
@@ -48,7 +50,7 @@ interface MemberList extends MemberContainer
     public function replace(int $index, StructuredField $member): self;
 
     /**
-     * Delete members associated with the list of instance indexes.
+     * Deletes members associated with the given indexes.
      *
      * @return MemberList<TKey, TValue>
      */

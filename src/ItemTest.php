@@ -5,8 +5,13 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayObject;
+use DateTime;
+use DateTimeImmutable;
 use Stringable;
 
+/**
+ * @coversDefaultClass \Bakame\Http\StructuredFields\Item
+ */
 final class ItemTest extends StructuredFieldTest
 {
     /** @var array|string[] */
@@ -80,6 +85,24 @@ final class ItemTest extends StructuredFieldTest
     }
 
     /** @test */
+    public function it_instantiates_a_date(): void
+    {
+        $item = Item::fromHttpValue('@1583349795');
+
+        self::assertEquals($item, Item::from(new DateTimeImmutable('2020-03-04 19:23:15')));
+        self::assertEquals($item, Item::from(new DateTime('2020-03-04 19:23:15')));
+        self::assertSame('@1583349795', $item->toHttpValue());
+    }
+
+    /** @test */
+    public function it_fails_to_instantiate_an_invalid_date_format(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::fromHttpValue('@112345.678');
+    }
+
+    /** @test */
     public function it_instantiates_a_binary(): void
     {
         $byteSequence = ByteSequence::fromDecoded('foobar');
@@ -115,6 +138,7 @@ final class ItemTest extends StructuredFieldTest
         self::assertSame($expectedType === 'string', $item->isString());
         self::assertSame($expectedType === 'token', $item->isToken());
         self::assertSame($expectedType === 'byte', $item->isByteSequence());
+        self::assertSame($expectedType === 'date', $item->isDate());
     }
 
     /**
@@ -156,6 +180,10 @@ final class ItemTest extends StructuredFieldTest
                 }),
                 'expectedType' => 'string',
             ],
+            'date' => [
+                'item' => Item::from(new DateTimeImmutable('2020-07-12 13:37:00')),
+                'expectedType' => 'date',
+            ],
         ];
     }
 
@@ -169,6 +197,7 @@ final class ItemTest extends StructuredFieldTest
             'boolean' => true,
             'token' => Token::fromString('forty-two'),
             'byte-sequence' => ByteSequence::fromDecoded('a42'),
+            'date' => new DateTimeImmutable('2020-12-01 11:43:17'),
         ]);
 
         $item2 = Item::from('/terms', new ArrayObject([
@@ -178,6 +207,7 @@ final class ItemTest extends StructuredFieldTest
             'boolean' => Item::from(true),
             'token' => Item::from(Token::fromString('forty-two')),
             'byte-sequence' => Item::from(ByteSequence::fromDecoded('a42')),
+            'date' => Item::from(new DateTimeImmutable('2020-12-01 11:43:17')),
         ]));
 
         self::assertEquals($item2, $item1);

@@ -10,14 +10,15 @@ Items can have different types that are translated to PHP using:
 
 The table below summarizes the item value type.
 
-| HTTP DataType | Package Data Type    | validation method      |
-|---------------|----------------------|------------------------|
-| Integer       | `int`                | `Item::isInteger`      |
-| Decimal       | `float`              | `Item::isDecimal`      |
-| String        | `string`             | `Item::isString`       |
-| Boolean       | `bool`               | `Item::isBoolean`      |
-| Token         | class `Token`        | `Item::isToken`        |
-| Byte Sequence | class `ByteSequence` | `Item::isByteSequence` |
+| HTTP DataType | Package Data Type         | validation method      |
+|---------------|---------------------------|------------------------|
+| Integer       | `int`                     | `Item::isInteger`      |
+| Decimal       | `float`                   | `Item::isDecimal`      |
+| String        | `string`                  | `Item::isString`       |
+| Boolean       | `bool`                    | `Item::isBoolean`      |
+| Token         | class `Token`             | `Item::isToken`        |
+| Byte Sequence | class `ByteSequence`      | `Item::isByteSequence` |
+| Date          | class `DateTimeImmutable` | `Item::isDate`         |
 
 ### Token
 

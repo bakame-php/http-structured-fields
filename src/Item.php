@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use DateTimeImmutable;
+use DateTimeInterface;
+use DateTimeZone;
 use Stringable;
 use function count;
 use function in_array;
@@ -23,7 +26,7 @@ use function trim;
 final class Item implements StructuredField, ParameterAccess
 {
     private function __construct(
-        private readonly Token|ByteSequence|int|float|string|bool $value,
+        private readonly Token|ByteSequence|DateTimeImmutable|int|float|string|bool $value,
         private readonly Parameters $parameters
     ) {
     }
@@ -54,7 +57,7 @@ final class Item implements StructuredField, ParameterAccess
      * @param iterable<string,Item|DataType> $parameters
      */
     public static function from(
-        Token|ByteSequence|Stringable|int|float|string|bool $value,
+        Token|ByteSequence|Stringable|DateTimeInterface|int|float|string|bool $value,
         iterable $parameters = []
     ): self {
         return new self(self::filterValue($value), Parameters::fromAssociative($parameters));
@@ -149,6 +152,7 @@ final class Item implements StructuredField, ParameterAccess
             '"' === $itemString[0] => self::parseString($itemString),
             ':' === $itemString[0] => self::parseBytesSequence($itemString),
             '?' === $itemString[0] => self::parseBoolean($itemString),
+            '@' === $itemString[0] => self::parseDate($itemString),
             1 === preg_match('/^(-?\d)/', $itemString) => self::parseNumber($itemString),
             1 === preg_match('/^([a-z*])/i', $itemString) => self::parseToken($itemString),
             default => throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item is unknown or unsupported.'),
@@ -233,6 +237,24 @@ final class Item implements StructuredField, ParameterAccess
     }
 
     /**
+     * Parses an HTTP textual representation of an Item as a Data Type number.
+     *
+     * @return array{0:DateTimeImmutable, 1:string}
+     */
+    private static function parseDate(string $string): array
+    {
+        [$timestamp, $parameters] = self::parseNumber(substr($string, 1));
+        if (!is_int($timestamp)) {
+            throw new SyntaxError("The HTTP textual representation \"$string\" for a date contains invalid characters.");
+        }
+
+        return [
+            (new DateTimeImmutable('NOW', new DateTimeZone('UTC')))->setTimestamp($timestamp),
+            $parameters,
+        ];
+    }
+
+    /**
      * Parses an HTTP textual representation of an Item as a String Data Type.
      *
      * @return array{0:string, 1:string}
@@ -291,17 +313,18 @@ final class Item implements StructuredField, ParameterAccess
     /**
      * Returns the underlying value decoded.
      */
-    public function value(): Token|ByteSequence|int|float|string|bool
+    public function value(): Token|ByteSequence|DateTimeImmutable|int|float|string|bool
     {
         return $this->value;
     }
 
-    public function withValue(Token|ByteSequence|Stringable|int|float|string|bool $value): self
+    public function withValue(Token|ByteSequence|DateTimeInterface|Stringable|int|float|string|bool $value): self
     {
         $newValue = self::filterValue($value);
 
         if (
             ($newValue === $this->value)
+            || ($newValue instanceof DateTimeImmutable && $this->value instanceof DateTimeImmutable && $this->value == $newValue)
             || ($newValue instanceof Token && $this->value instanceof Token && $this->value->value === $newValue->value)
             || ($newValue instanceof ByteSequence && $this->value instanceof ByteSequence && $this->value->encoded() === $newValue->encoded())
         ) {
@@ -316,29 +339,19 @@ final class Item implements StructuredField, ParameterAccess
         return clone $this->parameters;
     }
 
-    public function prependParameter(string $name, Item|ByteSequence|Token|bool|int|float|string $member): static
+    public function prependParameter(string $name, Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): static
     {
-        $parameters = clone $this->parameters;
-
-        return $this->withParameters($parameters->prepend($name, $member));
+        return $this->withParameters($this->parameters()->prepend($name, $member));
     }
 
-    public function appendParameter(string $name, Item|ByteSequence|Token|Stringable|bool|int|float|string $member): static
+    public function appendParameter(string $name, Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): static
     {
-        $parameters = clone $this->parameters;
-
-        return $this->withParameters($parameters->append($name, $member));
+        return $this->withParameters($this->parameters()->append($name, $member));
     }
 
-    public function withoutParameter(string $name): static
+    public function withoutParameter(string ...$name): static
     {
-        if (!$this->parameters->has($name)) {
-            return $this;
-        }
-
-        $parameters = clone $this->parameters;
-
-        return $this->withParameters($parameters->delete($name));
+        return $this->withParameters($this->parameters()->delete(...$name));
     }
 
     public function withParameters(Parameters $parameters): static
@@ -363,6 +376,7 @@ final class Item implements StructuredField, ParameterAccess
             is_float($this->value) => $this->serializeDecimal($this->value),
             is_bool($this->value) => '?'.($this->value ? '1' : '0'),
             $this->value instanceof Token => $this->value->value,
+            $this->value instanceof DateTimeImmutable => '@'.$this->value->getTimestamp(),
             default => ':'.$this->value->encoded().':',
         }.$this->parameters->toHttpValue();
     }
@@ -397,12 +411,19 @@ final class Item implements StructuredField, ParameterAccess
         return $this->value instanceof ByteSequence;
     }
 
-    private static function filterValue(float|bool|int|string|Token|ByteSequence|Stringable $value): ByteSequence|string|Token|int|bool|float
+    public function isDate(): bool
+    {
+        return $this->value instanceof DateTimeImmutable;
+    }
+
+    private static function filterValue(float|bool|int|string|Token|ByteSequence|DateTimeInterface|Stringable $value): ByteSequence|DateTimeImmutable|Token|string|int|bool|float
     {
         return match (true) {
             is_int($value) => self::filterInteger($value),
             is_float($value) => self::filterDecimal($value),
             is_string($value) || $value instanceof Stringable => self::filterString($value),
+            $value instanceof DateTimeImmutable => $value,
+            $value instanceof DateTimeInterface => DateTimeImmutable::createFromInterface($value),
             default => $value,
         };
     }

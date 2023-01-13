@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Stringable;
 use function in_array;
 use function ltrim;
@@ -29,9 +31,9 @@ final class Parser
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1
      *
      * @return array<array{
-     *     0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     *     1:array<string,Item|ByteSequence|Token|bool|int|float|string>
-     * }|Item|ByteSequence|Token|bool|int|float|string>
+     *     0:array<Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>,
+     *     1:array<string,Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>
+     * }|Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>
      */
     public static function parseList(Stringable|string $httpValue): array
     {
@@ -50,9 +52,9 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.2
      *
-     * @return array<string, Item|ByteSequence|Token|array{
-     *     0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     *     1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * @return array<string, Item|ByteSequence|Token|DateTimeImmutable|array{
+     *     0:array<Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>,
+     *     1:array<string,Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>
      * }|bool|int|float|string>
      */
     public static function parseDictionary(Stringable|string $httpValue): array
@@ -79,8 +81,8 @@ final class Parser
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
      * @return array{
-     *     0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     *     1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     *     0:array<Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>,
+     *     1:array<string,Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>
      * }
      */
     public static function parseInnerList(Stringable|string $httpValue): array
@@ -139,8 +141,8 @@ final class Parser
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
      *
      * @return array{0: array{
-     *     0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     *     1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     *     0:array<Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>,
+     *     1:array<string,Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>
      * }|Item, 1:int}
      */
     private static function parseItemOrInnerList(string $httpValue): array
@@ -164,8 +166,8 @@ final class Parser
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
      * @return array{0:array{
-     * 0:array<Item|ByteSequence|Token|bool|int|float|string>,
-     * 1:array<string,Item|ByteSequence|Token|bool|int|float|string>
+     * 0:array<Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>,
+     * 1:array<string,Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>
      * }, 1:int}
      */
     private static function parseInnerListValue(string $httpValue): array
@@ -203,7 +205,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.1
      *
-     * @return array{0:bool|float|int|string|ByteSequence|Token, 1:int}
+     * @return array{0:bool|float|int|string|ByteSequence|Token|DateTimeImmutable, 1:int}
      */
     private static function parseBareItem(string $httpValue): array
     {
@@ -211,6 +213,7 @@ final class Parser
             '"' === $httpValue[0] => self::parseString($httpValue),
             ':' === $httpValue[0] => self::parseByteSequence($httpValue),
             '?' === $httpValue[0] => self::parseBoolean($httpValue),
+            '@' === $httpValue[0] => self::parseDate($httpValue),
             1 === preg_match('/^(-|\d)/', $httpValue) => self::parseNumber($httpValue),
             1 === preg_match('/^([a-z*])/i', $httpValue) => self::parseToken($httpValue),
             default => throw new SyntaxError('Unknown or unsupported string for The HTTP textual representation of an item.'),
@@ -222,7 +225,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.2
      *
-     * @return array{0:array<string, Token|ByteSequence|float|int|bool|string>, 1:int}
+     * @return array{0:array<string, Token|ByteSequence|float|int|bool|DateTimeImmutable|string>, 1:int}
      */
     private static function parseParameters(string $httpValue): array
     {
@@ -279,6 +282,26 @@ final class Parser
             default => throw new SyntaxError("The number format in the HTTP textual representation \"$httpValue\" contains too much digit."),
         };
     }
+
+    /**
+     * Returns DateTimeImmutable instance from an HTTP textual representation and the consumed offset in a tuple.
+     *
+     * @see https://httpwg.org/http-extensions/draft-ietf-httpbis-sfbis.html#name-dates
+     *
+     * @return array{0:DateTimeImmutable, 1:int}
+     */
+    private static function parseDate(string $httpValue): array
+    {
+        $number = substr($httpValue, 1);
+
+        [$timestamp, $characters] = self::parseNumber($number);
+        if (!is_int($timestamp)) {
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a date contains invalid characters.");
+        }
+
+        return [(new DateTimeImmutable('NOW', new DateTimeZone('UTC')))->setTimestamp($timestamp), ++$characters];
+    }
+
 
     /**
      * Returns a string from an HTTP textual representation and the consumed offset in a tuple.

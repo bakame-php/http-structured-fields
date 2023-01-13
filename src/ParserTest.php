@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use DateTimeImmutable;
+
 final class ParserTest extends StructuredFieldTest
 {
     /** @var array|string[] */
@@ -35,6 +37,23 @@ final class ParserTest extends StructuredFieldTest
         $this->expectException(SyntaxError::class);
 
         Parser::parseDictionary('a=:toto89é:');
+    }
+
+    /** @test */
+    public function it_parse_a_date_item(): void
+    {
+        $field = Parser::parseDictionary('a=@12345678;key=1');
+
+        self::assertInstanceOf(Item::class, $field['a']);
+        self::assertInstanceOf(DateTimeImmutable::class, $field['a']->value());
+    }
+
+    /** @test */
+    public function it_will_fail_with_wrong_date(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Parser::parseDictionary('a=@12345.678');
     }
 
     /** @test */
