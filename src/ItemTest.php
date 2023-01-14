@@ -103,6 +103,22 @@ final class ItemTest extends StructuredFieldTest
     }
 
     /** @test */
+    public function it_fails_to_instantiate_an_out_of_range_date_in_the_future(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::from(new DateTime('@'. 1_000_000_000_000_000));
+    }
+
+    /** @test */
+    public function it_fails_to_instantiate_an_out_of_range_date_in_the_past(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::from(new DateTime('@'.-1_000_000_000_000_000));
+    }
+
+    /** @test */
     public function it_instantiates_a_binary(): void
     {
         $byteSequence = ByteSequence::fromDecoded('foobar');

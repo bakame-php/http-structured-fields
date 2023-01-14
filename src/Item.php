@@ -127,13 +127,29 @@ final class Item implements StructuredField, ParameterAccess
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.1
      */
-    private static function filterInteger(int $value): int
+    private static function filterInteger(int $value, string $type): int
     {
         if ($value > 999_999_999_999_999 || $value < -999_999_999_999_999) {
-            throw new SyntaxError('Integers are limited to 15 digits.');
+            throw new SyntaxError($type.' are limited to 15 digits.');
         }
 
         return $value;
+    }
+
+    /**
+     * Filter a date according to draft-ietf-httpbis-sfbis-latest.
+     *
+     * @see https://httpwg.org/http-extensions/draft-ietf-httpbis-sfbis.html#section-3.3.7
+     */
+    private static function filterDate(DateTimeInterface $value): DateTimeImmutable
+    {
+        self::filterInteger($value->getTimestamp(), 'Date timestamp');
+
+        if ($value instanceof DateTimeImmutable) {
+            return $value;
+        }
+
+        return DateTimeImmutable::createFromInterface($value);
     }
 
     /**
@@ -339,19 +355,19 @@ final class Item implements StructuredField, ParameterAccess
         return clone $this->parameters;
     }
 
-    public function prependParameter(string $name, Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): static
+    public function prependParameter(string $key, Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): static
     {
-        return $this->withParameters($this->parameters()->prepend($name, $member));
+        return $this->withParameters($this->parameters()->prepend($key, $member));
     }
 
-    public function appendParameter(string $name, Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): static
+    public function appendParameter(string $key, Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): static
     {
-        return $this->withParameters($this->parameters()->append($name, $member));
+        return $this->withParameters($this->parameters()->append($key, $member));
     }
 
-    public function withoutParameter(string ...$name): static
+    public function withoutParameter(string ...$keys): static
     {
-        return $this->withParameters($this->parameters()->delete(...$name));
+        return $this->withParameters($this->parameters()->delete(...$keys));
     }
 
     public function withParameters(Parameters $parameters): static
@@ -419,11 +435,10 @@ final class Item implements StructuredField, ParameterAccess
     private static function filterValue(float|bool|int|string|Token|ByteSequence|DateTimeInterface|Stringable $value): ByteSequence|DateTimeImmutable|Token|string|int|bool|float
     {
         return match (true) {
-            is_int($value) => self::filterInteger($value),
+            is_int($value) => self::filterInteger($value, 'Integer'),
             is_float($value) => self::filterDecimal($value),
             is_string($value) || $value instanceof Stringable => self::filterString($value),
-            $value instanceof DateTimeImmutable => $value,
-            $value instanceof DateTimeInterface => DateTimeImmutable::createFromInterface($value),
+            $value instanceof DateTimeInterface => self::filterDate($value),
             default => $value,
         };
     }

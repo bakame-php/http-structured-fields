@@ -49,11 +49,19 @@ final class ParserTest extends StructuredFieldTest
     }
 
     /** @test */
-    public function it_will_fail_with_wrong_date(): void
+    public function it_will_fail_with_wrong_date_format(): void
     {
         $this->expectException(SyntaxError::class);
 
         Parser::parseDictionary('a=@12345.678');
+    }
+
+    /** @test */
+    public function it_will_fail_with_out_of_range_date_format(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Parser::parseDictionary('a=@'. 1_000_000_000_000_000);
     }
 
     /** @test */

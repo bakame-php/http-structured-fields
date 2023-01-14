@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-use DateTimeInterface;
-use Stringable;
-
 interface ParameterAccess
 {
     /**
@@ -22,7 +19,7 @@ interface ParameterAccess
      *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function prependParameter(string $name, Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): static;
+    public function prependParameter(string $key, Item $member): static;
 
     /**
      * Adds a member at the end of the associated parameter instance and deletes any previous reference to the key if present.
@@ -32,7 +29,7 @@ interface ParameterAccess
      *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function appendParameter(string $name, Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): static;
+    public function appendParameter(string $key, Item $member): static;
 
     /**
      * Deletes members associated with the list of submitted keys in the associated parameter intance.
@@ -40,7 +37,7 @@ interface ParameterAccess
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      */
-    public function withoutParameter(string ...$name): static;
+    public function withoutParameter(string ...$keys): static;
 
     /**
      * Returns a new instance with the newly associated parameter instance.
