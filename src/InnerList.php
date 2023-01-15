@@ -47,11 +47,10 @@ final class InnerList implements MemberList, ParameterAccess
         return $instance;
     }
 
-    private static function filterMember(StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): Item
+    private static function filterMember(Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): Item
     {
         return match (true) {
             $member instanceof Item => $member,
-            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" instance; received a "'.$member::class.'" instance instead.'),
             default => Item::from($member),
         };
     }

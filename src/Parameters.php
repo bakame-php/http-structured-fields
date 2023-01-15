@@ -96,11 +96,10 @@ final class Parameters implements MemberOrderedMap
         throw new ForbiddenStateError('Parameters instances can only contain bare items.');
     }
 
-    private static function formatMember(StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): Item
+    private static function formatMember(Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): Item
     {
         return match (true) {
             $member instanceof Item => self::filterMember($member),
-            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" instance; received "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
     }

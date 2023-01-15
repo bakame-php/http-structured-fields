@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use TypeError;
 use function iterator_to_array;
 
 /**
@@ -286,7 +287,7 @@ final class ParametersTest extends StructuredFieldTest
     /** @test */
     public function it_throws_if_the_structured_field_is_not_supported(): void
     {
-        $this->expectException(InvalidArgument::class);
+        $this->expectException(TypeError::class);
 
         Parameters::fromPairs([['foo', InnerList::from(42)]]); // @phpstan-ignore-line
     }

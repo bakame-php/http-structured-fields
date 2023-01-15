@@ -151,13 +151,9 @@ final class Parser
             return self::parseInnerListValue($httpValue);
         }
 
-        [$value, $offset] = self::parseBareItem($httpValue);
-        $remainder = substr($httpValue, $offset);
+        [$item, $remainder] = self::parseItem($httpValue);
 
-        [$parameters, $offset] = self::parseParameters($remainder);
-        $remainder = substr($remainder, $offset);
-
-        return [Item::from($value, $parameters), strlen($httpValue) - strlen($remainder)];
+        return [$item, strlen($httpValue) - strlen($remainder)];
     }
 
     /**
@@ -185,13 +181,8 @@ final class Parser
                 return [[$list, $parameters], strlen($httpValue) - strlen($remainder)];
             }
 
-            [$value, $offset] = self::parseBareItem($remainder);
-            $remainder = substr($remainder, $offset);
+            [$list[], $remainder] = self::parseItem($remainder);
 
-            [$parameters, $offset] = self::parseParameters($remainder);
-            $remainder = substr($remainder, $offset);
-
-            $list[] = Item::from($value, $parameters);
             if ('' !== $remainder && !in_array($remainder[0], [' ', ')'], true)) {
                 throw new SyntaxError("The HTTP textual representation \"$remainder\" for a inner list is using invalid characters.");
             }
@@ -256,10 +247,10 @@ final class Parser
      *
      * @return array{0:bool, 1:int}
      */
-    private static function parseBoolean(string $httpValue): array
+    public static function parseBoolean(string $httpValue): array
     {
         if (1 !== preg_match('/^\?[01]/', $httpValue)) {
-            throw new SyntaxError("Invalid character in the HTTP textual representation of a boolean value \"$httpValue\".");
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Boolean contains invalid characters.");
         }
 
         return ['1' === $httpValue[1], 2];
@@ -354,7 +345,7 @@ final class Parser
      *
      * @return array{0:Token, 1:int}
      */
-    private static function parseToken(string $httpValue): array
+    public static function parseToken(string $httpValue): array
     {
         preg_match("/^(?<token>[a-z*][a-z\d:\/!#\$%&'*+\-.^_`|~]*)/i", $httpValue, $found);
 
@@ -368,12 +359,24 @@ final class Parser
      *
      * @return array{0:ByteSequence, 1:int}
      */
-    private static function parseByteSequence(string $httpValue): array
+    public static function parseByteSequence(string $httpValue): array
     {
         if (1 !== preg_match('/^(?<sequence>:(?<byte>[a-z\d+\/=]*):)/i', $httpValue, $matches)) {
             throw new SyntaxError("Invalid characters in the HTTP textual representation of a Byte Sequence \"$httpValue\".");
         }
 
         return [ByteSequence::fromEncoded($matches['byte']), strlen($matches['sequence'])];
+    }
+
+/**
+ * @return array{0:Item, 1:string}
+ */
+    public static function parseItem(string $remainder): array
+    {
+        [$value, $offset] = self::parseBareItem($remainder);
+        $remainder = substr($remainder, $offset);
+        [$parameters, $offset] = self::parseParameters($remainder);
+
+        return [Item::from($value, $parameters), substr($remainder, $offset)];
     }
 }

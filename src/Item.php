@@ -162,25 +162,25 @@ final class Item implements StructuredField, ParameterAccess
     {
         $itemString = trim((string) $httpValue, ' ');
 
-        [$value, $parameters] = match (true) {
+        [$value, $offset] = match (true) {
             1 === preg_match("/[\r\t\n]|[^\x20-\x7E]/", $itemString),
             '' === $itemString => throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.'),
             '"' === $itemString[0] => self::parseString($itemString),
-            ':' === $itemString[0] => self::parseBytesSequence($itemString),
-            '?' === $itemString[0] => self::parseBoolean($itemString),
+            ':' === $itemString[0] => self::parseByteSequence($itemString),
+            '?' === $itemString[0] => Parser::parseBoolean($itemString),
             '@' === $itemString[0] => self::parseDate($itemString),
             1 === preg_match('/^(-?\d)/', $itemString) => self::parseNumber($itemString),
             1 === preg_match('/^([a-z*])/i', $itemString) => self::parseToken($itemString),
             default => throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item is unknown or unsupported.'),
         };
 
-        return new self($value, Parameters::fromHttpValue($parameters));
+        return new self($value, Parameters::fromHttpValue(substr($itemString, $offset)));
     }
 
     /**
      * Parses an HTTP textual representation of an Item as a Token Data Type.
      *
-     * @return array{0:Token, 1:string}
+     * @return array{0:Token, 1:int}
      */
     private static function parseToken(string $string): array
     {
@@ -195,42 +195,28 @@ final class Item implements StructuredField, ParameterAccess
 
         return [
             Token::fromString($found['token']),
-            substr($string, strlen($found['token'])),
+            strlen($found['token']),
         ];
-    }
-
-    /**
-     * Parses an HTTP textual representation of an Item as a Boolean Data Type.
-     *
-     * @return array{0:bool, 1:string}
-     */
-    private static function parseBoolean(string $string): array
-    {
-        if (1 !== preg_match('/^\?[01]/', $string)) {
-            throw new SyntaxError("The HTTP textual representation \"$string\" for a Boolean contains invalid characters.");
-        }
-
-        return [$string[1] === '1', substr($string, 2)];
     }
 
     /**
      * Parses an HTTP textual representation of an Item as a Byte Sequence Type.
      *
-     * @return array{0:ByteSequence, 1:string}
+     * @return array{0:ByteSequence, 1:int}
      */
-    private static function parseBytesSequence(string $string): array
+    private static function parseByteSequence(string $string): array
     {
         if (1 !== preg_match('/^:(?<bytes>[a-z\d+\/=]*):/i', $string, $matches)) {
             throw new SyntaxError("The HTTP textual representation \"$string\" for a Byte sequence contains invalid characters.");
         }
 
-        return [ByteSequence::fromEncoded($matches['bytes']), substr($string, strlen($matches[0]))];
+        return [ByteSequence::fromEncoded($matches['bytes']), strlen($matches[0])];
     }
 
     /**
      * Parses an HTTP textual representation of an Item as a Data Type number.
      *
-     * @return array{0:int|float, 1:string}
+     * @return array{0:int|float, 1:int}
      */
     private static function parseNumber(string $string): array
     {
@@ -249,31 +235,35 @@ final class Item implements StructuredField, ParameterAccess
             default => throw new SyntaxError("The HTTP textual representation \"$string\" for a Number contain too many digits."),
         };
 
-        return [$number, substr($string, strlen($found['number']))];
+        return [$number, strlen($found['number'])];
     }
 
     /**
      * Parses an HTTP textual representation of an Item as a Data Type number.
      *
-     * @return array{0:DateTimeImmutable, 1:string}
+     * @throws SyntaxError
+     *
+     * @return array{0:DateTimeImmutable, 1:int}
      */
     private static function parseDate(string $string): array
     {
-        [$timestamp, $parameters] = self::parseNumber(substr($string, 1));
+        [$timestamp, $offset] = self::parseNumber(substr($string, 1));
         if (!is_int($timestamp)) {
-            throw new SyntaxError("The HTTP textual representation \"$string\" for a date contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation \"$string\" for a Date contains invalid characters.");
         }
 
         return [
             (new DateTimeImmutable('NOW', new DateTimeZone('UTC')))->setTimestamp($timestamp),
-            $parameters,
+            ++$offset,
         ];
     }
 
     /**
      * Parses an HTTP textual representation of an Item as a String Data Type.
      *
-     * @return array{0:string, 1:string}
+     * @throws SyntaxError
+     *
+     * @return array{0:string, 1:int}
      */
     private static function parseString(string $string): array
     {
@@ -286,7 +276,7 @@ final class Item implements StructuredField, ParameterAccess
             $string = substr($string, 1);
 
             if ($char === '"') {
-                return [$returnValue, $string];
+                return [$returnValue, strlen($originalString) - strlen($string)];
             }
 
             if ($char !== '\\') {
