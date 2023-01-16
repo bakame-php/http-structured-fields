@@ -21,7 +21,8 @@ use function substr;
  *
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2
  *
- * @internal Use Dictionary::fromHttpValue(), OrderedList::fromHttpValue(), InnerList::fromHttpValue() or Item::fromHttpValue() instead
+ * @internal Use Dictionary::fromHttpValue(), Parameters::fromHttpValue(),
+ *               OrderedList::fromHttpValue(), InnerList::fromHttpValue() or Item::fromHttpValue() instead
  */
 final class Parser
 {
@@ -31,9 +32,9 @@ final class Parser
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1
      *
      * @return array<array{
-     *     0:array<Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>,
-     *     1:array<string,Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>
-     * }|Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>
+     *     0:array<Item|DataType>,
+     *     1:array<string,Item|DataType>
+     * }|Item|DataType>
      */
     public static function parseList(Stringable|string $httpValue): array
     {
@@ -52,10 +53,10 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.2
      *
-     * @return array<string, Item|ByteSequence|Token|DateTimeImmutable|array{
-     *     0:array<Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>,
-     *     1:array<string,Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>
-     * }|bool|int|float|string>
+     * @return array<string, Item|DataType|array{
+     *     0:array<Item|DataType>,
+     *     1:array<string,Item|DataType>
+     * }>
      */
     public static function parseDictionary(Stringable|string $httpValue): array
     {
@@ -80,10 +81,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
-     * @return array{
-     *     0:array<Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>,
-     *     1:array<string,Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>
-     * }
+     * @return array{0:array<Item|DataType>, 1:array<string,Item|DataType>}
      */
     public static function parseInnerList(Stringable|string $httpValue): array
     {
@@ -140,10 +138,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
      *
-     * @return array{0: array{
-     *     0:array<Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>,
-     *     1:array<string,Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>
-     * }|Item, 1:int}
+     * @return array{0: array{0:array<Item|DataType>, 1:array<string,Item|DataType>}|Item, 1:int}
      */
     private static function parseItemOrInnerList(string $httpValue): array
     {
@@ -161,10 +156,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
-     * @return array{0:array{
-     * 0:array<Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>,
-     * 1:array<string,Item|ByteSequence|Token|DateTimeImmutable|bool|int|float|string>
-     * }, 1:int}
+     * @return array{0:array{0:array<Item|DataType>, 1:array<string,Item|DataType>}, 1:int}
      */
     private static function parseInnerListValue(string $httpValue): array
     {
@@ -196,9 +188,9 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.1
      *
-     * @return array{0:bool|float|int|string|ByteSequence|Token|DateTimeImmutable, 1:int}
+     * @return array{0:Token|ByteSequence|DateTimeImmutable|string|int|float|bool, 1:int}
      */
-    private static function parseBareItem(string $httpValue): array
+    public static function parseBareItem(string $httpValue): array
     {
         return match (true) {
             '"' === $httpValue[0] => self::parseString($httpValue),
@@ -212,11 +204,11 @@ final class Parser
     }
 
     /**
-     * Returns an parameters container represented as a PHP associative array from an HTTP textual representation and the consumed offset in a tuple.
+     * Returns a parameters container represented as a PHP associative array from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.2
      *
-     * @return array{0:array<string, Token|ByteSequence|float|int|bool|DateTimeImmutable|string>, 1:int}
+     * @return array{0:array<string, DataType>, 1:int}
      */
     private static function parseParameters(string $httpValue): array
     {
@@ -247,7 +239,7 @@ final class Parser
      *
      * @return array{0:bool, 1:int}
      */
-    public static function parseBoolean(string $httpValue): array
+    private static function parseBoolean(string $httpValue): array
     {
         if (1 !== preg_match('/^\?[01]/', $httpValue)) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Boolean contains invalid characters.");
@@ -257,7 +249,7 @@ final class Parser
     }
 
     /**
-     * Returns a int or a float from an HTTP textual representation and the consumed offset in a tuple.
+     * Returns an int or a float from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.4
      *
@@ -265,7 +257,9 @@ final class Parser
      */
     private static function parseNumber(string $httpValue): array
     {
-        preg_match('/^(?<number>-?\d+(?:\.\d+)?)(?:[^\d.]|$)/', $httpValue, $found);
+        if (1 !== preg_match('/^(?<number>-?\d+(?:\.\d+)?)(?:[^\d.]|$)/', $httpValue, $found)) {
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Number contains invalid characters.");
+        }
 
         return match (true) {
             1 === preg_match('/^-?\d{1,12}\.\d{1,3}$/', $found['number']) => [(float) $found['number'], strlen($found['number'])],
@@ -283,16 +277,15 @@ final class Parser
      */
     private static function parseDate(string $httpValue): array
     {
-        $number = substr($httpValue, 1);
-
-        [$timestamp, $characters] = self::parseNumber($number);
-        if (!is_int($timestamp)) {
-            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a date contains invalid characters.");
+        if (1 !== preg_match('/^@(?<date>-?\d{1,15})(?:[^\d.]|$)/', $httpValue, $found)) {
+            throw new SyntaxError("The Date format in the HTTP textual representation \"$httpValue\" contains invalid characters.");
         }
 
-        return [(new DateTimeImmutable('NOW', new DateTimeZone('UTC')))->setTimestamp($timestamp), ++$characters];
+        return [
+            (new DateTimeImmutable('NOW', new DateTimeZone('UTC')))->setTimestamp((int) $found['date']),
+            strlen($found['date']) + 1,
+        ];
     }
-
 
     /**
      * Returns a string from an HTTP textual representation and the consumed offset in a tuple.
@@ -304,6 +297,7 @@ final class Parser
     private static function parseString(string $httpValue): array
     {
         $offset = 1;
+        $originalHttpValue = $httpValue;
         $httpValue = substr($httpValue, $offset);
         $output = '';
 
@@ -316,26 +310,28 @@ final class Parser
             }
 
             if (1 === preg_match("/[^\x20-\x7E]/", $char)) {
-                throw new SyntaxError("Invalid character in the HTTP textual representation of a string \"$httpValue\".");
+                throw new SyntaxError("The HTTP textual representation \"$originalHttpValue\" for a String contains an invalid end string.");
             }
 
             $httpValue = substr($httpValue, 1);
+
             if ('\\' !== $char) {
                 $output .= $char;
                 continue;
             }
 
-            $char = $httpValue[0];
+            $char = $httpValue[0] ?? '';
             $offset += 1;
             $httpValue = substr($httpValue, 1);
+
             if (!in_array($char, ['"', '\\'], true)) {
-                throw new SyntaxError("Invalid characters in the HTTP textual representation of a string \"$httpValue\".");
+                throw new SyntaxError("The HTTP textual representation \"$originalHttpValue\" for a String contains an invalid end string.");
             }
 
             $output .= $char;
         }
 
-        throw new SyntaxError("Invalid end of string in the HTTP textual representation of a string \"$httpValue\".");
+        throw new SyntaxError("The HTTP textual representation \"$originalHttpValue\" for a String contains an invalid end string.");
     }
 
     /**
@@ -345,7 +341,7 @@ final class Parser
      *
      * @return array{0:Token, 1:int}
      */
-    public static function parseToken(string $httpValue): array
+    private static function parseToken(string $httpValue): array
     {
         preg_match("/^(?<token>[a-z*][a-z\d:\/!#\$%&'*+\-.^_`|~]*)/i", $httpValue, $found);
 
@@ -359,7 +355,7 @@ final class Parser
      *
      * @return array{0:ByteSequence, 1:int}
      */
-    public static function parseByteSequence(string $httpValue): array
+    private static function parseByteSequence(string $httpValue): array
     {
         if (1 !== preg_match('/^(?<sequence>:(?<byte>[a-z\d+\/=]*):)/i', $httpValue, $matches)) {
             throw new SyntaxError("Invalid characters in the HTTP textual representation of a Byte Sequence \"$httpValue\".");
@@ -368,10 +364,10 @@ final class Parser
         return [ByteSequence::fromEncoded($matches['byte']), strlen($matches['sequence'])];
     }
 
-/**
- * @return array{0:Item, 1:string}
- */
-    public static function parseItem(string $remainder): array
+    /**
+     * @return array{0:Item, 1:string}
+     */
+    private static function parseItem(string $remainder): array
     {
         [$value, $offset] = self::parseBareItem($remainder);
         $remainder = substr($remainder, $offset);

@@ -6,10 +6,8 @@ namespace Bakame\Http\StructuredFields;
 
 use DateTimeImmutable;
 use DateTimeInterface;
-use DateTimeZone;
 use Stringable;
 use function count;
-use function in_array;
 use function is_bool;
 use function is_float;
 use function is_int;
@@ -22,6 +20,7 @@ use function str_contains;
 use function strlen;
 use function substr;
 use function trim;
+use const PHP_ROUND_HALF_EVEN;
 
 final class Item implements StructuredField, ParameterAccess
 {
@@ -32,35 +31,24 @@ final class Item implements StructuredField, ParameterAccess
     }
 
     /**
-     * @param array{
-     *     0:DataType,
-     *     1?:MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|DataType}>
-     * } $pair
-     */
-    public static function fromPair(array $pair): self
-    {
-        if (!array_is_list($pair)) { /* @phpstan-ignore-line */
-            throw new SyntaxError('The pair must be represented by an array as a list.');
-        }
-
-        $pair[1] = $pair[1] ?? [];
-        if (2 !== count($pair)) { /* @phpstan-ignore-line */
-            throw new SyntaxError('The pair first value should be the item value and the optional second value the item parameters.');
-        }
-
-        return self::from($pair[0], Parameters::fromPairs($pair[1]));
-    }
-
-    /**
-     * Returns a new instance from a value type and an iterable of key-value parameters.
+     * Returns a new instance from an HTTP Header or Trailer value string
+     * in compliance with RFC8941.
      *
-     * @param iterable<string,Item|DataType> $parameters
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
      */
-    public static function from(
-        Token|ByteSequence|Stringable|DateTimeInterface|int|float|string|bool $value,
-        iterable $parameters = []
-    ): self {
-        return new self(self::filterValue($value), Parameters::fromAssociative($parameters));
+    public static function fromHttpValue(Stringable|string $httpValue): self
+    {
+        $itemString = trim((string) $httpValue, ' ');
+        if ('' === $itemString || 1 === preg_match("/[\r\t\n]|[^\x20-\x7E]/", $itemString)) {
+            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
+        }
+
+        [$value, $offset] = Parser::parseBareItem($itemString);
+        if (!str_contains($itemString, ';') && $offset !== strlen($itemString)) {
+            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
+        }
+
+        return new self($value, Parameters::fromHttpValue(substr($itemString, $offset)));
     }
 
     /**
@@ -94,6 +82,58 @@ final class Item implements StructuredField, ParameterAccess
     }
 
     /**
+     * @param array{
+     *     0:DataType,
+     *     1?:MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|DataType}>
+     * } $pair
+     */
+    public static function fromPair(array $pair): self
+    {
+        if (!array_is_list($pair)) { /* @phpstan-ignore-line */
+            throw new SyntaxError('The pair must be represented by an array as a list.');
+        }
+
+        $pair[1] = $pair[1] ?? [];
+        if (2 !== count($pair)) { /* @phpstan-ignore-line */
+            throw new SyntaxError('The pair first value should be the item value and the optional second value the item parameters.');
+        }
+
+        return self::from($pair[0], Parameters::fromPairs($pair[1]));
+    }
+
+    /**
+     * Returns a new instance from a value type and an iterable of key-value parameters.
+     *
+     * @param iterable<string,Item|DataType> $parameters
+     */
+    public static function from(
+        ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool $value,
+        iterable $parameters = []
+    ): self {
+        return new self(match (true) {
+            is_int($value) => self::filterIntegerRange($value, 'Integer'),
+            is_float($value) => self::filterDecimal($value),
+            is_string($value) || $value instanceof Stringable => self::filterString($value),
+            $value instanceof DateTimeInterface => self::filterDate($value),
+            default => $value,
+        }, Parameters::fromAssociative($parameters));
+    }
+
+    /**
+     * Filter a decimal according to RFC8941.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.1
+     */
+    private static function filterIntegerRange(int $value, string $type): int
+    {
+        if (abs($value) > 999_999_999_999_999) {
+            throw new SyntaxError($type.' are limited to 15 digits.');
+        }
+
+        return $value;
+    }
+
+    /**
      * Filter a decimal according to RFC8941.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.2
@@ -123,221 +163,40 @@ final class Item implements StructuredField, ParameterAccess
     }
 
     /**
-     * Filter a decimal according to RFC8941.
-     *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.1
-     */
-    private static function filterInteger(int $value, string $type): int
-    {
-        if ($value > 999_999_999_999_999 || $value < -999_999_999_999_999) {
-            throw new SyntaxError($type.' are limited to 15 digits.');
-        }
-
-        return $value;
-    }
-
-    /**
      * Filter a date according to draft-ietf-httpbis-sfbis-latest.
      *
      * @see https://httpwg.org/http-extensions/draft-ietf-httpbis-sfbis.html#section-3.3.7
      */
     private static function filterDate(DateTimeInterface $value): DateTimeImmutable
     {
-        self::filterInteger($value->getTimestamp(), 'Date timestamp');
+        self::filterIntegerRange($value->getTimestamp(), 'Date timestamp');
 
-        if ($value instanceof DateTimeImmutable) {
-            return $value;
-        }
-
-        return DateTimeImmutable::createFromInterface($value);
-    }
-
-    /**
-     * Returns a new instance from an HTTP Header or Trailer value string
-     * in compliance with RFC8941.
-     *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
-     */
-    public static function fromHttpValue(Stringable|string $httpValue): self
-    {
-        $itemString = trim((string) $httpValue, ' ');
-
-        [$value, $offset] = match (true) {
-            1 === preg_match("/[\r\t\n]|[^\x20-\x7E]/", $itemString),
-            '' === $itemString => throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.'),
-            '"' === $itemString[0] => self::parseString($itemString),
-            ':' === $itemString[0] => self::parseByteSequence($itemString),
-            '?' === $itemString[0] => Parser::parseBoolean($itemString),
-            '@' === $itemString[0] => self::parseDate($itemString),
-            1 === preg_match('/^(-?\d)/', $itemString) => self::parseNumber($itemString),
-            1 === preg_match('/^([a-z*])/i', $itemString) => self::parseToken($itemString),
-            default => throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item is unknown or unsupported.'),
-        };
-
-        return new self($value, Parameters::fromHttpValue(substr($itemString, $offset)));
-    }
-
-    /**
-     * Parses an HTTP textual representation of an Item as a Token Data Type.
-     *
-     * @return array{0:Token, 1:int}
-     */
-    private static function parseToken(string $string): array
-    {
-        $regexp = "^(?<token>[a-z*][a-z0-9:\/\!\#\$%&'\*\+\-\.\^_`\|~]*)";
-        if (!str_contains($string, ';')) {
-            $regexp .= '$';
-        }
-
-        if (1 !== preg_match('/'.$regexp.'/i', $string, $found)) {
-            throw new SyntaxError("The HTTP textual representation \"$string\" for a Token contains invalid characters.");
-        }
-
-        return [
-            Token::fromString($found['token']),
-            strlen($found['token']),
-        ];
-    }
-
-    /**
-     * Parses an HTTP textual representation of an Item as a Byte Sequence Type.
-     *
-     * @return array{0:ByteSequence, 1:int}
-     */
-    private static function parseByteSequence(string $string): array
-    {
-        if (1 !== preg_match('/^:(?<bytes>[a-z\d+\/=]*):/i', $string, $matches)) {
-            throw new SyntaxError("The HTTP textual representation \"$string\" for a Byte sequence contains invalid characters.");
-        }
-
-        return [ByteSequence::fromEncoded($matches['bytes']), strlen($matches[0])];
-    }
-
-    /**
-     * Parses an HTTP textual representation of an Item as a Data Type number.
-     *
-     * @return array{0:int|float, 1:int}
-     */
-    private static function parseNumber(string $string): array
-    {
-        $regexp = '^(?<number>-?\d+(?:\.\d+)?)(?:[^\d.]|$)';
-        if (!str_contains($string, ';')) {
-            $regexp = '^(?<number>-?\d+(?:\.\d+)?)$';
-        }
-
-        if (1 !== preg_match('/'.$regexp.'/', $string, $found)) {
-            throw new SyntaxError("The HTTP textual representation \"$string\" for a Number contains invalid characters.");
-        }
-
-        $number = match (true) {
-            1 === preg_match('/^-?\d{1,12}\.\d{1,3}$/', $found['number']) => (float) $found['number'],
-            1 === preg_match('/^-?\d{1,15}$/', $found['number']) => (int) $found['number'],
-            default => throw new SyntaxError("The HTTP textual representation \"$string\" for a Number contain too many digits."),
-        };
-
-        return [$number, strlen($found['number'])];
-    }
-
-    /**
-     * Parses an HTTP textual representation of an Item as a Data Type number.
-     *
-     * @throws SyntaxError
-     *
-     * @return array{0:DateTimeImmutable, 1:int}
-     */
-    private static function parseDate(string $string): array
-    {
-        [$timestamp, $offset] = self::parseNumber(substr($string, 1));
-        if (!is_int($timestamp)) {
-            throw new SyntaxError("The HTTP textual representation \"$string\" for a Date contains invalid characters.");
-        }
-
-        return [
-            (new DateTimeImmutable('NOW', new DateTimeZone('UTC')))->setTimestamp($timestamp),
-            ++$offset,
-        ];
-    }
-
-    /**
-     * Parses an HTTP textual representation of an Item as a String Data Type.
-     *
-     * @throws SyntaxError
-     *
-     * @return array{0:string, 1:int}
-     */
-    private static function parseString(string $string): array
-    {
-        $originalString = $string;
-        $string = substr($string, 1);
-        $returnValue = '';
-
-        while ('' !== $string) {
-            $char = $string[0];
-            $string = substr($string, 1);
-
-            if ($char === '"') {
-                return [$returnValue, strlen($originalString) - strlen($string)];
-            }
-
-            if ($char !== '\\') {
-                $returnValue .= $char;
-                continue;
-            }
-
-            if ($string === '') {
-                throw new SyntaxError("The HTTP textual representation \"$originalString\" for a String contains an invalid end string.");
-            }
-
-            $char = $string[0];
-            $string = substr($string, 1);
-            if (!in_array($char, ['"', '\\'], true)) {
-                throw new SyntaxError("The HTTP textual representation \"$originalString\" for a String contains invalid characters.");
-            }
-
-            $returnValue .= $char;
-        }
-
-        throw new SyntaxError("The HTTP textual representation \"$originalString\" for a String contains an invalid end string.");
-    }
-
-    /**
-     * Serialize the Item decimal value according to RFC8941.
-     *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.1.5
-     */
-    private function serializeDecimal(float $value): string
-    {
-        /** @var string $result */
-        $result = json_encode(round($value, 3, PHP_ROUND_HALF_EVEN));
-        if (str_contains($result, '.')) {
-            return $result;
-        }
-
-        return $result.'.0';
+        return $value instanceof DateTimeImmutable ? $value : DateTimeImmutable::createFromInterface($value);
     }
 
     /**
      * Returns the underlying value decoded.
      */
-    public function value(): Token|ByteSequence|DateTimeImmutable|int|float|string|bool
+    public function value(): Token|ByteSequence|DateTimeImmutable|string|int|float|bool
     {
         return $this->value;
     }
 
-    public function withValue(Token|ByteSequence|DateTimeInterface|Stringable|int|float|string|bool $value): self
+    public function withValue(Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $value): self
     {
-        $newValue = self::filterValue($value);
+        if ($value instanceof Stringable) {
+            $value = (string) $value;
+        }
 
-        if (
-            ($newValue === $this->value)
-            || ($newValue instanceof DateTimeImmutable && $this->value instanceof DateTimeImmutable && $this->value == $newValue)
-            || ($newValue instanceof Token && $this->value instanceof Token && $this->value->value === $newValue->value)
-            || ($newValue instanceof ByteSequence && $this->value instanceof ByteSequence && $this->value->encoded() === $newValue->encoded())
+        if (($value instanceof ByteSequence && $this->value instanceof ByteSequence && $value->encoded() === $this->value->encoded())
+            || ($value instanceof Token && $this->value instanceof Token && $value->value === $this->value->value)
+            || ($value instanceof DateTimeInterface && $this->value instanceof DateTimeInterface && $value == $this->value)
+            || $value === $this->value
         ) {
             return $this;
         }
 
-        return self::from($newValue, $this->parameters);
+        return self::from($value, $this->parameters);
     }
 
     public function parameters(): Parameters
@@ -345,12 +204,12 @@ final class Item implements StructuredField, ParameterAccess
         return clone $this->parameters;
     }
 
-    public function prependParameter(string $key, Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): static
+    public function prependParameter(string $key, Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->prepend($key, $member));
     }
 
-    public function appendParameter(string $key, Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): static
+    public function appendParameter(string $key, Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->append($key, $member));
     }
@@ -362,11 +221,7 @@ final class Item implements StructuredField, ParameterAccess
 
     public function withParameters(Parameters $parameters): static
     {
-        if ($this->parameters->toHttpValue() === $parameters->toHttpValue()) {
-            return $this;
-        }
-
-        return new self($this->value, $parameters);
+        return $this->parameters->toHttpValue() === $parameters->toHttpValue() ? $this : new self($this->value, $parameters);
     }
 
     /**
@@ -385,6 +240,19 @@ final class Item implements StructuredField, ParameterAccess
             $this->value instanceof DateTimeImmutable => '@'.$this->value->getTimestamp(),
             default => ':'.$this->value->encoded().':',
         }.$this->parameters->toHttpValue();
+    }
+
+    /**
+     * Serialize the Item decimal value according to RFC8941.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.1.5
+     */
+    private function serializeDecimal(float $value): string
+    {
+        /** @var string $result */
+        $result = json_encode(round($value, 3, PHP_ROUND_HALF_EVEN));
+
+        return str_contains($result, '.') ? $result : $result.'.0';
     }
 
     public function isInteger(): bool
@@ -419,17 +287,6 @@ final class Item implements StructuredField, ParameterAccess
 
     public function isDate(): bool
     {
-        return $this->value instanceof DateTimeImmutable;
-    }
-
-    private static function filterValue(float|bool|int|string|Token|ByteSequence|DateTimeInterface|Stringable $value): ByteSequence|DateTimeImmutable|Token|string|int|bool|float
-    {
-        return match (true) {
-            is_int($value) => self::filterInteger($value, 'Integer'),
-            is_float($value) => self::filterDecimal($value),
-            is_string($value) || $value instanceof Stringable => self::filterString($value),
-            $value instanceof DateTimeInterface => self::filterDate($value),
-            default => $value,
-        };
+        return $this->value instanceof DateTimeInterface;
     }
 }
