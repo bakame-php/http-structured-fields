@@ -43,7 +43,7 @@ final class Parameters implements MemberOrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<array-key, Item|Token|ByteSequence|DateTimeInterface|Stringable|float|int|bool|string> $members
+     * @param iterable<array-key, Item|DataType> $members
      *
      * @throws SyntaxError         If the string is not a valid
      * @throws ForbiddenStateError If the bare item contains parameters
@@ -65,7 +65,7 @@ final class Parameters implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string}> $pairs
+     * @param MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|DataType}> $pairs
      *
      * @throws ForbiddenStateError If the bare item contains parameters
      */
@@ -85,7 +85,6 @@ final class Parameters implements MemberOrderedMap
 
     /**
      * @throws ForbiddenStateError If the bare item contains parameters
-     * @throws InvalidArgument If the structured field is not supported
      */
     private static function filterMember(Item $item): Item
     {
@@ -96,7 +95,7 @@ final class Parameters implements MemberOrderedMap
         throw new ForbiddenStateError('Parameters instances can only contain bare items.');
     }
 
-    private static function formatMember(Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): Item
+    private static function formatMember(Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Item
     {
         return match (true) {
             $member instanceof Item => self::filterMember($member),
@@ -109,8 +108,7 @@ final class Parameters implements MemberOrderedMap
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.2
      *
-     * @throws SyntaxError         If the string is not a valid
-     * @throws ForbiddenStateError If the bare item contains parameters
+     * @throws SyntaxError If the string is not a valid
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
@@ -141,7 +139,6 @@ final class Parameters implements MemberOrderedMap
     public function toHttpValue(): string
     {
         $formatter = fn (Item $member, string $offset): string => match (true) {
-            $member->parameters()->hasMembers() => throw new ForbiddenStateError('Parameter member "'.$offset.'" is in invalid state; Parameters instances can only contain bare items.'),
             true === $member->value() => ';'.$offset,
             default => ';'.$offset.'='.$member->toHttpValue(),
         };
@@ -275,7 +272,7 @@ final class Parameters implements MemberOrderedMap
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
      */
-    public function set(string $key, StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): self
+    public function set(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
     {
         $this->members[MapKey::fromString($key)->value] = self::formatMember($member);
 
@@ -307,7 +304,7 @@ final class Parameters implements MemberOrderedMap
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
      */
-    public function append(string $key, StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): self
+    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
     {
         unset($this->members[$key]);
 
@@ -322,7 +319,7 @@ final class Parameters implements MemberOrderedMap
      * @throws SyntaxError         If the string key is not a valid
      * @throws ForbiddenStateError if the found item is in invalid state
      */
-    public function prepend(string $key, StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): self
+    public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
     {
         unset($this->members[$key]);
 

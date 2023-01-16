@@ -32,7 +32,7 @@ final class OrderedList implements MemberList
      *
      * @return static
      */
-    public static function from(InnerList|Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string ...$members): self
+    public static function from(InnerList|Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         return self::fromList($members);
     }
@@ -50,7 +50,7 @@ final class OrderedList implements MemberList
         return $instance;
     }
 
-    private static function filterMember(Item|InnerList|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): InnerList|Item
+    private static function filterMember(InnerList|Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Item
     {
         return match (true) {
             $member instanceof InnerList, $member instanceof Item => $member,
@@ -135,7 +135,7 @@ final class OrderedList implements MemberList
      *
      * @param InnerList<int, Item>|Item|DataType ...$members
      */
-    public function unshift(StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string ...$members): self
+    public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         $this->members = [...array_map(self::filterMember(...), array_values($members)), ...$this->members];
 
@@ -147,7 +147,7 @@ final class OrderedList implements MemberList
      *
      * @param InnerList<int, Item>|Item|DataType ...$members
      */
-    public function push(StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string ...$members): self
+    public function push(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         $this->members = [...$this->members, ...array_map(self::filterMember(...), array_values($members))];
 
@@ -161,7 +161,7 @@ final class OrderedList implements MemberList
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $index, StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string ...$members): self
+    public function insert(int $index, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         $offset = $this->filterIndex($index);
         match (true) {
@@ -181,7 +181,7 @@ final class OrderedList implements MemberList
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function replace(int $index, StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): self
+    public function replace(int $index, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
     {
         if (null === ($offset = $this->filterIndex($index))) {
             throw InvalidOffset::dueToIndexNotFound($index);

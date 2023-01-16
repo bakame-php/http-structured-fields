@@ -28,7 +28,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance.
      */
-    public static function from(Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string ...$members): self
+    public static function from(Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         return self::fromList($members);
     }
@@ -47,7 +47,7 @@ final class InnerList implements MemberList, ParameterAccess
         return $instance;
     }
 
-    private static function filterMember(Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): Item
+    private static function filterMember(Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Item
     {
         return match (true) {
             $member instanceof Item => $member,
@@ -65,12 +65,12 @@ final class InnerList implements MemberList, ParameterAccess
         return clone $this->parameters;
     }
 
-    public function prependParameter(string $key, Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): static
+    public function prependParameter(string $key, Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->prepend($key, $member));
     }
 
-    public function appendParameter(string $key, Item|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): static
+    public function appendParameter(string $key, Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->append($key, $member));
     }
@@ -151,7 +151,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Insert members at the beginning of the list.
      */
-    public function unshift(StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string ...$members): self
+    public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         $this->members = [...array_map(self::filterMember(...), array_values($members)), ...$this->members];
 
@@ -161,7 +161,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Insert members at the end of the list.
      */
-    public function push(StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string ...$members): self
+    public function push(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         $this->members =  [...$this->members, ...array_map(self::filterMember(...), array_values($members))];
 
@@ -173,7 +173,7 @@ final class InnerList implements MemberList, ParameterAccess
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $index, StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string ...$members): self
+    public function insert(int $index, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         $offset = $this->filterIndex($index);
         match (true) {
@@ -186,7 +186,7 @@ final class InnerList implements MemberList, ParameterAccess
         return $this;
     }
 
-    public function replace(int $index, StructuredField|ByteSequence|Token|DateTimeInterface|Stringable|bool|int|float|string $member): self
+    public function replace(int $index, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
     {
         if (null === ($offset = $this->filterIndex($index))) {
             throw InvalidOffset::dueToIndexNotFound($index);

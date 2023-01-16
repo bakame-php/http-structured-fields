@@ -315,7 +315,12 @@ final class ItemTest extends StructuredFieldTest
     {
         $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);
         $instance2 = $instance1->withValue(Token::fromString('babayaga'));
-        $instance3 = $instance1->withValue('babayaga');
+        $instance3 = $instance1->withValue(new class() implements Stringable {
+            public function __toString(): string
+            {
+                return 'babayaga';
+            }
+        });
 
         self::assertSame($instance1, $instance2);
         self::assertNotSame($instance1, $instance3);
