@@ -7,15 +7,18 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Added
 
 - Support for `Stringable` instance added to `Item::from`, the instances will be converted to the string data type.
-- Support for the upcoming `Date` data type in `Item`. It is represented as a `DateTimeImmutable` object. (see https://httpwg.org/http-extensions/draft-ietf-httpbis-sfbis.html)
+- Support for the upcoming `Date` data type in `Item`. (see https://httpwg.org/http-extensions/draft-ietf-httpbis-sfbis.html)
+  - Represented as a `DateTimeImmutable` object.
+  - `Item::isDate` tells whether the instance represents a `Date` DataType.
 - `ParameterAccess` interface updated with 3 new methods to ease parameter members modification.
 - `Parameter::create` named constructor to create a new instance without any parameter.
 - `Dictionnary::create` named constructor to create a new instance without any parameter.
 
 ### Fixed
 
+- `Item::fromHttpValue` now internally uses the `Parser` previously it was using its own parsing rules.
 - **[BC Break]** `::fromAssociative`, `::fromList`, `::fromPairs` methods require iterable arguments without default value.
-- **[BC Break]** `Item::value` method returns the Item (returns value can be `float|int|string|bool|ByteSequence|Token`).
+- **[BC Break]** `Item::value` method returns the Item (returns value can be `float|int|string|bool|ByteSequence|DateTimeImmutable|Token`).
 - **[BC Break]** `InnerList::parameters` is no longer accessible as a public readonly property.
 
 ### Deprecated

@@ -10,4 +10,4 @@ parameters:
     ignoreErrors:
     reportUnmatchedIgnoredErrors: true
     typeAliases:
-        DataType: '\Bakame\Http\StructuredFields\ByteSequence|\Bakame\Http\StructuredFields\Token|\DateTimeInterface|\Stringable|bool|int|float|string'
+        DataType: '\Bakame\Http\StructuredFields\ByteSequence|\Bakame\Http\StructuredFields\Token|\DateTimeInterface|\Stringable|string|int|float|bool'
