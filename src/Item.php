@@ -48,7 +48,7 @@ final class Item implements StructuredField, ParameterAccess
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
         }
 
-        return new self($value, Parameters::fromHttpValue(substr($itemString, $offset)));
+        return self::from($value, Parameters::fromHttpValue(substr($itemString, $offset)));
     }
 
     /**

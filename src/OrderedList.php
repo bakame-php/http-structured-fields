@@ -27,11 +27,6 @@ final class OrderedList implements MemberList
     {
     }
 
-    /**
-     * @param InnerList<int, Item>|Item|DataType ...$members
-     *
-     * @return static
-     */
     public static function from(InnerList|Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         return self::fromList($members);
@@ -80,6 +75,11 @@ final class OrderedList implements MemberList
     public function count(): int
     {
         return count($this->members);
+    }
+
+    public function hasNoMembers(): bool
+    {
+        return !$this->hasMembers();
     }
 
     public function hasMembers(): bool
@@ -132,8 +132,6 @@ final class OrderedList implements MemberList
 
     /**
      * Inserts members at the beginning of the list.
-     *
-     * @param InnerList<int, Item>|Item|DataType ...$members
      */
     public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
@@ -144,8 +142,6 @@ final class OrderedList implements MemberList
 
     /**
      * Inserts members at the end of the list.
-     *
-     * @param InnerList<int, Item>|Item|DataType ...$members
      */
     public function push(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
@@ -156,8 +152,6 @@ final class OrderedList implements MemberList
 
     /**
      * Inserts members starting at the given index.
-     *
-     * @param InnerList<int, Item>|Item|DataType $members
      *
      * @throws InvalidOffset If the index does not exist
      */
@@ -176,8 +170,6 @@ final class OrderedList implements MemberList
 
     /**
      * Replaces the member associated with the index.
-     *
-     * @param InnerList<int, Item>|Item|DataType $member
      *
      * @throws InvalidOffset If the index does not exist
      */

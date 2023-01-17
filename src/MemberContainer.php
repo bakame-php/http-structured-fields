@@ -18,6 +18,11 @@ use IteratorAggregate;
 interface MemberContainer extends Countable, ArrayAccess, IteratorAggregate, StructuredField
 {
     /**
+     * Tells whether the instance contains no members.
+     */
+    public function hasNoMembers(): bool;
+
+    /**
      * Tells whether the instance contains members.
      */
     public function hasMembers(): bool;

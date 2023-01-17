@@ -34,6 +34,7 @@ final class DictionaryTest extends StructuredFieldTest
         $instance->clear();
 
         self::assertFalse($instance->hasMembers());
+        self::assertTrue($instance->hasNoMembers());
     }
 
     /** @test */
@@ -65,6 +66,7 @@ final class DictionaryTest extends StructuredFieldTest
 
         self::assertCount(2, $instance);
         self::assertTrue($instance->hasMembers());
+        self::assertFalse($instance->hasNoMembers());
 
         $instance->delete('boolean');
 

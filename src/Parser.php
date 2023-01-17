@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use DateTimeImmutable;
+use DateTimeInterface;
 use DateTimeZone;
 use Stringable;
 use function in_array;
@@ -31,10 +32,10 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1
      *
-     * @return array<array{
+     * @return array<Item|DataType|array{
      *     0:array<Item|DataType>,
      *     1:array<string,Item|DataType>
-     * }|Item|DataType>
+     * }>
      */
     public static function parseList(Stringable|string $httpValue): array
     {
@@ -117,7 +118,7 @@ final class Parser
 
         $httpValue = substr($httpValue, strlen($found['space']));
         if ('' === $httpValue) {
-            throw new SyntaxError('Unexpected end of line for The HTTP textual representation.');
+            throw new SyntaxError('The HTTP textual representation has an unexpected end of line.');
         }
 
         return $httpValue;
@@ -180,7 +181,7 @@ final class Parser
             }
         }
 
-        throw new SyntaxError("Unexpected end of line for The HTTP textual representation \"$remainder\" for a inner list.");
+        throw new SyntaxError("The HTTP textual representation \"$remainder\" for a inner list has an unexpected end of line.");
     }
 
     /**
@@ -188,7 +189,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.1
      *
-     * @return array{0:Token|ByteSequence|DateTimeImmutable|string|int|float|bool, 1:int}
+     * @return array{0:DataType, 1:int}
      */
     public static function parseBareItem(string $httpValue): array
     {
@@ -199,7 +200,7 @@ final class Parser
             '@' === $httpValue[0] => self::parseDate($httpValue),
             1 === preg_match('/^(-|\d)/', $httpValue) => self::parseNumber($httpValue),
             1 === preg_match('/^([a-z*])/i', $httpValue) => self::parseToken($httpValue),
-            default => throw new SyntaxError('Unknown or unsupported string for The HTTP textual representation of an item.'),
+            default => throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an Item is unknown or unsupported."),
         };
     }
 
@@ -264,7 +265,7 @@ final class Parser
         return match (true) {
             1 === preg_match('/^-?\d{1,12}\.\d{1,3}$/', $found['number']) => [(float) $found['number'], strlen($found['number'])],
             1 === preg_match('/^-?\d{1,15}$/', $found['number']) => [(int) $found['number'], strlen($found['number'])],
-            default => throw new SyntaxError("The number format in the HTTP textual representation \"$httpValue\" contains too much digit."),
+            default => throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Number contains too much digit."),
         };
     }
 
@@ -273,12 +274,12 @@ final class Parser
      *
      * @see https://httpwg.org/http-extensions/draft-ietf-httpbis-sfbis.html#name-dates
      *
-     * @return array{0:DateTimeImmutable, 1:int}
+     * @return array{0:DateTimeInterface, 1:int}
      */
     private static function parseDate(string $httpValue): array
     {
         if (1 !== preg_match('/^@(?<date>-?\d{1,15})(?:[^\d.]|$)/', $httpValue, $found)) {
-            throw new SyntaxError("The Date format in the HTTP textual representation \"$httpValue\" contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Date contains invalid characters.");
         }
 
         return [
@@ -358,7 +359,7 @@ final class Parser
     private static function parseByteSequence(string $httpValue): array
     {
         if (1 !== preg_match('/^(?<sequence>:(?<byte>[a-z\d+\/=]*):)/i', $httpValue, $matches)) {
-            throw new SyntaxError("Invalid characters in the HTTP textual representation of a Byte Sequence \"$httpValue\".");
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Byte sequence contains invalid characters.");
         }
 
         return [ByteSequence::fromEncoded($matches['byte']), strlen($matches['sequence'])];

@@ -22,12 +22,14 @@ final class InnerListTest extends TestCase
 
         self::assertSame($stringItem, $instance->get(0));
         self::assertTrue($instance->hasMembers());
+        self::assertFalse($instance->hasNoMembers());
         self::assertTrue($instance->parameters()->hasMembers());
         self::assertEquals($arrayParams, iterator_to_array($instance));
 
         $instance->clear();
 
         self::assertFalse($instance->hasMembers());
+        self::assertTrue($instance->hasNoMembers());
         self::assertTrue($instance->parameters()->hasMembers());
     }
 

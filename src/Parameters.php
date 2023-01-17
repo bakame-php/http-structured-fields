@@ -44,9 +44,6 @@ final class Parameters implements MemberOrderedMap
      * its values represent the dictionary entry value
      *
      * @param iterable<array-key, Item|DataType> $members
-     *
-     * @throws SyntaxError         If the string is not a valid
-     * @throws ForbiddenStateError If the bare item contains parameters
      */
     public static function fromAssociative(iterable $members): self
     {
@@ -66,8 +63,6 @@ final class Parameters implements MemberOrderedMap
      * the second member represents the instance entry value
      *
      * @param MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|DataType}> $pairs
-     *
-     * @throws ForbiddenStateError If the bare item contains parameters
      */
     public static function fromPairs(MemberOrderedMap|iterable $pairs): self
     {
@@ -88,7 +83,7 @@ final class Parameters implements MemberOrderedMap
      */
     private static function filterMember(Item $item): Item
     {
-        if (!$item->parameters()->hasMembers()) {
+        if ($item->parameters()->hasNoMembers()) {
             return $item;
         }
 
@@ -133,9 +128,6 @@ final class Parameters implements MemberOrderedMap
         return $instance;
     }
 
-    /**
-     * @throws ForbiddenStateError if the bare item contains parameters itself
-     */
     public function toHttpValue(): string
     {
         $formatter = fn (Item $member, string $offset): string => match (true) {
@@ -151,14 +143,17 @@ final class Parameters implements MemberOrderedMap
         return count($this->members);
     }
 
+    public function hasNoMembers(): bool
+    {
+        return !$this->hasMembers();
+    }
+
     public function hasMembers(): bool
     {
         return [] !== $this->members;
     }
 
     /**
-     * @throws ForbiddenStateError if the bare item contains parameters itself
-     *
      * @return Iterator<array-key, Item>
      */
     public function getIterator(): Iterator
@@ -169,14 +164,12 @@ final class Parameters implements MemberOrderedMap
     /**
      * Returns an iterable construct of dictionary pairs.
      *
-     * @throws ForbiddenStateError if the bare item contains parameters itself
-     *
      * @return Iterator<array{0:string, 1:Item}>
      */
     public function toPairs(): Iterator
     {
         foreach ($this->members as $index => $member) {
-            yield [$index, self::filterMember($member)];
+            yield [$index, $member];
         }
     }
 
@@ -201,8 +194,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * Returns the Item associated to the key.
      *
-     * @throws InvalidOffset       if the key is not found
-     * @throws ForbiddenStateError if the bare item contains parameters itself
+     * @throws InvalidOffset if the key is not found
      */
     public function get(string|int $offset): Item
     {
@@ -244,8 +236,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * Returns the key-item pair found at a given index.
      *
-     * @throws InvalidOffset       if the index is not found
-     * @throws ForbiddenStateError if the found item is in invalid state
+     * @throws InvalidOffset if the index is not found
      *
      * @return array{0:string, 1:Item}
      */
@@ -268,9 +259,6 @@ final class Parameters implements MemberOrderedMap
 
     /**
      * Adds a member at the end of the instance otherwise updates the value associated with the key if already present.
-     *
-     * @throws SyntaxError         If the string key is not a valid
-     * @throws ForbiddenStateError if the found item is in invalid state
      */
     public function set(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
     {
@@ -300,9 +288,6 @@ final class Parameters implements MemberOrderedMap
 
     /**
      * Adds a member at the end of the instance and deletes any previous reference to the key if present.
-     *
-     * @throws SyntaxError         If the string key is not a valid
-     * @throws ForbiddenStateError if the found item is in invalid state
      */
     public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
     {
@@ -315,9 +300,6 @@ final class Parameters implements MemberOrderedMap
 
     /**
      * Adds a member at the beginning of the instance and deletes any previous reference to the key if present.
-     *
-     * @throws SyntaxError         If the string key is not a valid
-     * @throws ForbiddenStateError if the found item is in invalid state
      */
     public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
     {

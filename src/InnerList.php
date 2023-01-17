@@ -105,6 +105,11 @@ final class InnerList implements MemberList, ParameterAccess
         return count($this->members);
     }
 
+    public function hasNoMembers(): bool
+    {
+        return !$this->hasMembers();
+    }
+
     public function hasMembers(): bool
     {
         return [] !== $this->members;

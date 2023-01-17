@@ -38,6 +38,7 @@ final class ParametersTest extends StructuredFieldTest
 
         self::assertFalse(isset($instance['foobar']));
         self::assertFalse($instance->hasMembers());
+        self::assertTrue($instance->hasNoMembers());
     }
 
     /** @test */
@@ -102,6 +103,7 @@ final class ParametersTest extends StructuredFieldTest
         $instance->delete('foobar', 'string');
         self::assertCount(0, $instance);
         self::assertFalse($instance->hasMembers());
+        self::assertTrue($instance->hasNoMembers());
     }
 
     /** @test */

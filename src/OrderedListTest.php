@@ -25,6 +25,7 @@ final class OrderedListTest extends StructuredFieldTest
 
         self::assertSame($stringItem, $instance->get(0));
         self::assertTrue($instance->hasMembers());
+        self::assertFalse($instance->hasNoMembers());
         self::assertEquals($arrayParams, iterator_to_array($instance));
     }
 
@@ -55,6 +56,7 @@ final class OrderedListTest extends StructuredFieldTest
         $instance->remove(0, 1);
 
         self::assertCount(0, $instance);
+        self::assertTrue($instance->hasNoMembers());
         self::assertFalse($instance->hasMembers());
     }
 
