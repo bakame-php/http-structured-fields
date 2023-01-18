@@ -75,23 +75,12 @@ final class Parameters implements MemberOrderedMap
         return $instance;
     }
 
-    /**
-     * @throws SyntaxError If the bare item contains parameters
-     */
-    private static function filterMember(Item $item): Item
-    {
-        if ($item->parameters()->hasMembers()) {
-            throw new InvalidArgument('Parameters instances can only contain bare items.');
-        }
-
-        return $item;
-    }
-
-    private static function formatMember(Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Item
+    private static function filterMember(Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Item
     {
         return match (true) {
-            $member instanceof Item => self::filterMember($member),
-            default => Item::from($member),
+            $member instanceof Item && $member->parameters()->hasNoMembers() => $member,
+            !$member instanceof Item => Item::from($member),
+            default => throw new InvalidArgument('Parameters instances can only contain bare items.'),
         };
     }
 
@@ -187,7 +176,7 @@ final class Parameters implements MemberOrderedMap
             throw InvalidOffset::dueToKeyNotFound($offset);
         }
 
-        return self::filterMember($this->members[$offset]);
+        return $this->members[$offset];
     }
 
     /**
@@ -232,7 +221,7 @@ final class Parameters implements MemberOrderedMap
         $i = 0;
         foreach ($this->members as $key => $member) {
             if ($i === $offset) {
-                return [$key, self::filterMember($member)];
+                return [$key, $member];
             }
             ++$i;
         }
@@ -247,7 +236,7 @@ final class Parameters implements MemberOrderedMap
      */
     public function set(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
     {
-        $this->members[MapKey::fromString($key)->value] = self::formatMember($member);
+        $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
 
         return $this;
     }
@@ -288,7 +277,7 @@ final class Parameters implements MemberOrderedMap
     {
         unset($this->members[$key]);
 
-        $this->members = [...[MapKey::fromString($key)->value => self::formatMember($member)], ...$this->members];
+        $this->members = [...[MapKey::fromString($key)->value => self::filterMember($member)], ...$this->members];
 
         return $this;
     }
