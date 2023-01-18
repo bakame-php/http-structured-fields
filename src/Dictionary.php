@@ -68,8 +68,8 @@ final class Dictionary implements MemberOrderedMap
         }
 
         $instance = new self();
-        foreach ($pairs as [$key, $member]) {
-            $instance->set($key, $member);
+        foreach ($pairs as $pair) {
+            $instance->set(...$pair);
         }
 
         return $instance;
@@ -231,10 +231,11 @@ final class Dictionary implements MemberOrderedMap
         return $this;
     }
 
-    private static function filterMember(InnerList|Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Item
+    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Item
     {
         return match (true) {
             $member instanceof InnerList, $member instanceof Item => $member,
+            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
     }
@@ -267,9 +268,7 @@ final class Dictionary implements MemberOrderedMap
     {
         unset($this->members[$key]);
 
-        $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
-
-        return $this;
+        return $this->set($key, $member);
     }
 
     /**

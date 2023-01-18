@@ -40,6 +40,14 @@ interface ParameterAccess
     public function withoutParameter(string ...$keys): static;
 
     /**
+     * Removes all parameters members associated with the list of submitted keys in the associated parameter intance.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified parameter change.
+     */
+    public function clearParameters(): static;
+
+    /**
      * Returns a new instance with the newly associated parameter instance.
      *
      * This method MUST retain the state of the current instance, and return

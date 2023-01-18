@@ -11,10 +11,7 @@ use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function count;
-use function explode;
 use function is_string;
-use function ltrim;
-use function rtrim;
 use function trim;
 
 /**
@@ -71,23 +68,23 @@ final class Parameters implements MemberOrderedMap
         }
 
         $instance = new self();
-        foreach ($pairs as [$key, $member]) {
-            $instance->set($key, $member);
+        foreach ($pairs as $pair) {
+            $instance->set(...$pair);
         }
 
         return $instance;
     }
 
     /**
-     * @throws ForbiddenStateError If the bare item contains parameters
+     * @throws SyntaxError If the bare item contains parameters
      */
     private static function filterMember(Item $item): Item
     {
-        if ($item->parameters()->hasNoMembers()) {
-            return $item;
+        if ($item->parameters()->hasMembers()) {
+            throw new InvalidArgument('Parameters instances can only contain bare items.');
         }
 
-        throw new ForbiddenStateError('Parameters instances can only contain bare items.');
+        return $item;
     }
 
     private static function formatMember(Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Item
@@ -107,25 +104,13 @@ final class Parameters implements MemberOrderedMap
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        $instance = new self();
-        $httpValue = ltrim((string) $httpValue, ' ');
-        if ('' === $httpValue) {
-            return $instance;
+        $httpValue = trim((string) $httpValue);
+        [$parameters, $offset] = Parser::parseParameters($httpValue);
+        if (strlen($httpValue) !== $offset) {
+            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for a paramater contains invalid characters.');
         }
 
-        foreach (explode(';', $httpValue) as $pair) {
-            [$key, $value] = explode('=', $pair, 2) + [1 => '?1'];
-            if (rtrim($key) !== $key || ltrim($value) !== $value) {
-                throw new SyntaxError('The HTTP textual representation "'.$pair.'" for a Parameter pair contains invalid characters.');
-            }
-
-            $key = trim($key);
-            if ('' !== $key) {
-                $instance->set($key, Item::fromHttpValue($value));
-            }
-        }
-
-        return $instance;
+        return self::fromAssociative($parameters);
     }
 
     public function toHttpValue(): string
@@ -293,9 +278,7 @@ final class Parameters implements MemberOrderedMap
     {
         unset($this->members[$key]);
 
-        $this->members[MapKey::fromString($key)->value] = self::formatMember($member);
-
-        return $this;
+        return $this->set($key, $member);
     }
 
     /**
@@ -305,7 +288,7 @@ final class Parameters implements MemberOrderedMap
     {
         unset($this->members[$key]);
 
-        $this->members = [...[MapKey::fromString($key)->value =>  self::formatMember($member)], ...$this->members];
+        $this->members = [...[MapKey::fromString($key)->value => self::formatMember($member)], ...$this->members];
 
         return $this;
     }

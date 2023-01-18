@@ -21,15 +21,16 @@ use function is_array;
 final class OrderedList implements MemberList
 {
     /** @var array<int, Item|InnerList<int, Item>>  */
-    private array $members = [];
+    private array $members;
 
-    private function __construct()
+    private function __construct(InnerList|Item ...$members)
     {
+        $this->members = array_values($members);
     }
 
     public static function from(InnerList|Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
-        return self::fromList($members);
+        return new self(...array_map(self::filterMember(...), $members));
     }
 
     /**

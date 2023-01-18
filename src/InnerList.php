@@ -30,7 +30,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function from(Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
-        return self::fromList($members);
+        return (new self(Parameters::create()))->push(...array_map(self::filterMember(...), $members));
     }
 
     /**
@@ -47,10 +47,11 @@ final class InnerList implements MemberList, ParameterAccess
         return $instance;
     }
 
-    private static function filterMember(Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Item
+    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Item
     {
         return match (true) {
             $member instanceof Item => $member,
+            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" instance; received a "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
     }
@@ -78,6 +79,11 @@ final class InnerList implements MemberList, ParameterAccess
     public function withoutParameter(string ...$keys): static
     {
         return $this->withParameters($this->parameters()->delete(...$keys));
+    }
+
+    public function clearParameters(): static
+    {
+        return $this->withParameters($this->parameters()->clear());
     }
 
     public function withParameters(Parameters $parameters): static

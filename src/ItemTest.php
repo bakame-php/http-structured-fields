@@ -348,11 +348,13 @@ final class ItemTest extends StructuredFieldTest
         $instance3 = $instance1->prependParameter('a', false);
         $instance4 = $instance1->withoutParameter('b');
         $instance5 = $instance1->withoutParameter('a');
+        $instance6 = $instance1->clearParameters();
 
         self::assertSame($instance1, $instance2);
         self::assertNotSame($instance1, $instance3);
         self::assertEquals($instance1->value(), $instance3->value());
         self::assertSame($instance1, $instance4);
-        self::assertFalse($instance5->parameters()->hasMembers());
+        self::assertTrue($instance5->parameters()->hasNoMembers());
+        self::assertTrue($instance6->parameters()->hasNoMembers());
     }
 }

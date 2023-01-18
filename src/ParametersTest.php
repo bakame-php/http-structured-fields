@@ -61,7 +61,7 @@ final class ParametersTest extends StructuredFieldTest
     /** @test */
     public function it_fails_to_instantiate_with_an_item_containing_already_parameters(): void
     {
-        $this->expectException(ForbiddenStateError::class);
+        $this->expectException(InvalidArgument::class);
 
         Parameters::fromAssociative([
             'foo' => Item::from(

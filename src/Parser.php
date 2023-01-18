@@ -211,7 +211,7 @@ final class Parser
      *
      * @return array{0:array<string, DataType>, 1:int}
      */
-    private static function parseParameters(string $httpValue): array
+    public static function parseParameters(string $httpValue): array
     {
         $map = [];
         $remainder = $httpValue;

@@ -214,6 +214,11 @@ final class Item implements StructuredField, ParameterAccess
         return $this->withParameters($this->parameters()->append($key, $member));
     }
 
+    public function clearParameters(): static
+    {
+        return $this->withParameters($this->parameters()->clear());
+    }
+
     public function withoutParameter(string ...$keys): static
     {
         return $this->withParameters($this->parameters()->delete(...$keys));
