@@ -40,16 +40,17 @@ final class OrderedList implements MemberList
     {
         $instance = new self();
         foreach ($members as $member) {
-            $instance->push(self::filterMember($member));
+            $instance->push($member);
         }
 
         return $instance;
     }
 
-    private static function filterMember(InnerList|Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Item
+    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Item
     {
         return match (true) {
             $member instanceof InnerList, $member instanceof Item => $member,
+            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
     }

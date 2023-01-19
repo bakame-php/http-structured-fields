@@ -75,15 +75,6 @@ final class Parameters implements MemberOrderedMap
         return $instance;
     }
 
-    private static function filterMember(Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Item
-    {
-        return match (true) {
-            $member instanceof Item && $member->parameters()->hasNoMembers() => $member,
-            !$member instanceof Item => Item::from($member),
-            default => throw new InvalidArgument('Parameters instances can only contain bare items.'),
-        };
-    }
-
     /**
      * Returns an instance from an HTTP textual representation.
      *
@@ -239,6 +230,15 @@ final class Parameters implements MemberOrderedMap
         $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
 
         return $this;
+    }
+
+    private static function filterMember(Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Item
+    {
+        return match (true) {
+            $member instanceof Item && $member->parameters()->hasNoMembers() => $member,
+            !$member instanceof Item => Item::from($member),
+            default => throw new InvalidArgument('Parameters instances can only contain bare items.'),
+        };
     }
 
     /**

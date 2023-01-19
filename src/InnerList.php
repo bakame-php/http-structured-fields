@@ -30,7 +30,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function from(Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
-        return (new self(Parameters::create()))->push(...array_map(self::filterMember(...), $members));
+        return (new self(Parameters::create()))->push(...$members);
     }
 
     /**
@@ -41,7 +41,7 @@ final class InnerList implements MemberList, ParameterAccess
     {
         $instance = new self(Parameters::fromAssociative($parameters));
         foreach ($members as $member) {
-            $instance->push(self::filterMember($member));
+            $instance->push($member);
         }
 
         return $instance;
