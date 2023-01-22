@@ -15,7 +15,7 @@ named constructors:
 
 - `fromAssociative` instantiates the container with an iterable construct of associative value;
 - `fromPairs` instantiates the container with a list of key-value pairs;
-- `new` instantiates the container with no members;
+- `create` instantiates the container with no members;
 
 getter methods:
 

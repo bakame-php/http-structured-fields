@@ -71,7 +71,7 @@ final class OrderedList implements MemberList
 
     public function toHttpValue(): string
     {
-        return implode(', ', array_map(fn (InnerList|Item $member): string => $member->toHttpValue(), $this->members));
+        return implode(', ', array_map(fn (StructuredField $member): string => $member->toHttpValue(), $this->members));
     }
 
     public function count(): int

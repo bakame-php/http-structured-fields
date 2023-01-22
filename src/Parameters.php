@@ -87,7 +87,7 @@ final class Parameters implements MemberOrderedMap
         $httpValue = trim((string) $httpValue);
         [$parameters, $offset] = Parser::parseParameters($httpValue);
         if (strlen($httpValue) !== $offset) {
-            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for a paramater contains invalid characters.');
+            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for Parameters contains invalid characters.');
         }
 
         return self::fromAssociative($parameters);
@@ -95,7 +95,7 @@ final class Parameters implements MemberOrderedMap
 
     public function toHttpValue(): string
     {
-        $formatter = fn (Item $member, string $offset): string => match (true) {
+        $formatter = static fn (Item $member, string $offset): string => match (true) {
             true === $member->value() => ';'.$offset,
             default => ';'.$offset.'='.$member->toHttpValue(),
         };

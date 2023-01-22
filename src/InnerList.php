@@ -47,15 +47,6 @@ final class InnerList implements MemberList, ParameterAccess
         return $instance;
     }
 
-    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Item
-    {
-        return match (true) {
-            $member instanceof Item => $member,
-            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" instance; received a "'.$member::class.'" instead.'),
-            default => Item::from($member),
-        };
-    }
-
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
         return InnerList::fromList(...Parser::parseInnerList($httpValue));
@@ -100,10 +91,7 @@ final class InnerList implements MemberList, ParameterAccess
 
     public function toHttpValue(): string
     {
-        return '('.implode(' ', array_map(
-            fn (Item $value): string => $value->toHttpValue(),
-            $this->members
-        )).')'.$this->parameters->toHttpValue();
+        return '('.implode(' ', array_map(fn (Item $value): string => $value->toHttpValue(), $this->members)).')'.$this->parameters->toHttpValue();
     }
 
     public function count(): int
@@ -177,6 +165,15 @@ final class InnerList implements MemberList, ParameterAccess
         $this->members =  [...$this->members, ...array_map(self::filterMember(...), array_values($members))];
 
         return $this;
+    }
+
+    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Item
+    {
+        return match (true) {
+            $member instanceof Item => $member,
+            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" instance; received a "'.$member::class.'" instead.'),
+            default => Item::from($member),
+        };
     }
 
     /**

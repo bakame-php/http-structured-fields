@@ -92,7 +92,7 @@ final class Dictionary implements MemberOrderedMap
 
     public function toHttpValue(): string
     {
-        $formatter = fn (Item|InnerList $member, string $key): string => match (true) {
+        $formatter = static fn (Item|InnerList $member, string $key): string => match (true) {
             $member instanceof Item && true === $member->value() => $key.$member->parameters()->toHttpValue(),
             default => $key.'='.$member->toHttpValue(),
         };
