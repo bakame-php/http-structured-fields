@@ -22,6 +22,9 @@ use function substr;
 use function trim;
 use const PHP_ROUND_HALF_EVEN;
 
+/**
+ * @phpstan-type DataType ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
+ */
 final class Item implements StructuredField, ParameterAccess
 {
     private function __construct(
@@ -188,15 +191,13 @@ final class Item implements StructuredField, ParameterAccess
             $value = (string) $value;
         }
 
-        if (($value instanceof ByteSequence && $this->value instanceof ByteSequence && $value->encoded() === $this->value->encoded())
-            || ($value instanceof Token && $this->value instanceof Token && $value->value === $this->value->value)
-            || ($value instanceof DateTimeInterface && $this->value instanceof DateTimeInterface && $value == $this->value)
-            || $value === $this->value
-        ) {
-            return $this;
-        }
-
-        return self::from($value, $this->parameters);
+        return match (true) {
+            $value instanceof ByteSequence && $this->value instanceof ByteSequence && $value->encoded() === $this->value->encoded(),
+            $value instanceof Token && $this->value instanceof Token && $value->value === $this->value->value,
+            $value instanceof DateTimeInterface && $this->value instanceof DateTimeInterface && $value == $this->value,
+            $value === $this->value => $this,
+            default => self::from($value, $this->parameters),
+        };
     }
 
     public function parameters(): Parameters
@@ -238,7 +239,7 @@ final class Item implements StructuredField, ParameterAccess
     {
         return match (true) {
             is_string($this->value) => '"'.preg_replace('/(["\\\])/', '\\\$1', $this->value).'"',
-            is_int($this->value) => (string)$this->value,
+            is_int($this->value) => (string) $this->value,
             is_float($this->value) => $this->serializeDecimal($this->value),
             is_bool($this->value) => '?'.($this->value ? '1' : '0'),
             $this->value instanceof Token => $this->value->value,

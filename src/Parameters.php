@@ -16,14 +16,21 @@ use function trim;
 
 /**
  * @implements MemberOrderedMap<string, Item>
+ * @phpstan-import-type DataType from Item
  */
 final class Parameters implements MemberOrderedMap
 {
     /** @var array<string, Item> */
     private array $members = [];
 
-    private function __construct()
+    /**
+     * @param iterable<string, Item|DataType> $members
+     */
+    private function __construct(iterable $members = [])
     {
+        foreach ($members as $key => $member) {
+            $this->set($key, $member);
+        }
     }
 
     /**
@@ -44,12 +51,7 @@ final class Parameters implements MemberOrderedMap
      */
     public static function fromAssociative(iterable $members): self
     {
-        $instance = new self();
-        foreach ($members as $key => $member) {
-            $instance->set($key, $member);
-        }
-
-        return $instance;
+        return new self($members);
     }
 
     /**

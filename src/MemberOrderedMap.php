@@ -21,7 +21,7 @@ interface MemberOrderedMap extends MemberContainer
     public function toPairs(): Iterator;
 
     /**
-     * Tells whether an item or an inner-list and a key are attached to the given index position.
+     * Tells whether a pair is attached to the given index position.
      */
     public function hasPair(int $index): bool;
 

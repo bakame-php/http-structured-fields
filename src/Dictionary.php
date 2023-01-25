@@ -16,14 +16,21 @@ use function is_array;
 
 /**
  * @implements MemberOrderedMap<string, Item|InnerList<int, Item>>
+ * @phpstan-import-type DataType from Item
  */
 final class Dictionary implements MemberOrderedMap
 {
     /** @var array<string, Item|InnerList<int, Item>> */
     private array $members = [];
 
-    private function __construct()
+    /**
+     * @param iterable<string, InnerList<int, Item>|Item|DataType> $members
+     */
+    private function __construct(iterable $members = [])
     {
+        foreach ($members as $key => $member) {
+            $this->set($key, $member);
+        }
     }
 
     /**
@@ -44,12 +51,7 @@ final class Dictionary implements MemberOrderedMap
      */
     public static function fromAssociative(iterable $members): self
     {
-        $instance = new self();
-        foreach ($members as $key => $member) {
-            $instance->set($key, $member);
-        }
-
-        return $instance;
+        return new self($members);
     }
 
     /**
@@ -124,8 +126,6 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * Returns an iterable construct of dictionary pairs.
-     *
      * @return Iterator<array{0:string, 1:Item|InnerList<int, Item>}>
      */
     public function toPairs(): Iterator
@@ -136,8 +136,6 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * Returns an ordered list of the instance keys.
-     *
      * @return array<string>
      */
     public function keys(): array
@@ -145,17 +143,12 @@ final class Dictionary implements MemberOrderedMap
         return array_keys($this->members);
     }
 
-    /**
-     * Tells whether an item or an inner-list is attached to the given key.
-     */
     public function has(string|int $offset): bool
     {
         return is_string($offset) && array_key_exists($offset, $this->members);
     }
 
     /**
-     * Returns the item or the inner-list is attached to the given key otherwise throw.
-     *
      * @throws SyntaxError   If the key is invalid
      * @throws InvalidOffset If the key is not found
      */
@@ -168,9 +161,6 @@ final class Dictionary implements MemberOrderedMap
         return $this->members[$offset];
     }
 
-    /**
-     * Tells whether an item or an inner-list and a key are attached to the given index position.
-     */
     public function hasPair(int $index): bool
     {
         try {
@@ -197,9 +187,6 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * Returns the item or the inner-list and its key as attached to the given
-     * collection according to their index position otherwise throw.
-     *
      * @throws InvalidOffset If the key is not found
      *
      * @return array{0:string, 1:Item|InnerList<int, Item>}
@@ -220,8 +207,6 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * Adds a member at the end of the instance otherwise updates the value associated with the key if already present.
-     *
      * @throws SyntaxError If the string key is not a valid
      */
     public function set(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
@@ -240,9 +225,6 @@ final class Dictionary implements MemberOrderedMap
         };
     }
 
-    /**
-     * Deletes members associated with the list of submitted keys.
-     */
     public function delete(string ...$keys): self
     {
         foreach ($keys as $key) {
@@ -259,11 +241,6 @@ final class Dictionary implements MemberOrderedMap
         return $this;
     }
 
-    /**
-     * Adds a member at the end of the instance and deletes any previous reference to the key if present.
-     *
-     * @throws SyntaxError If the string key is not a valid
-     */
     public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
     {
         unset($this->members[$key]);
@@ -271,11 +248,6 @@ final class Dictionary implements MemberOrderedMap
         return $this->set($key, $member);
     }
 
-    /**
-     * Adds a member at the beginning of the instance and deletes any previous reference to the key if present.
-     *
-     * @throws SyntaxError If the string key is not a valid
-     */
     public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
     {
         unset($this->members[$key]);
@@ -286,8 +258,6 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * Merges multiple instances using iterable associative structures.
-     *
      * @param iterable<string, InnerList<int, Item>|Item|DataType> ...$others
      */
     public function mergeAssociative(iterable ...$others): self
@@ -300,8 +270,6 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * Merges multiple instances using iterable pairs.
-     *
      * @param MemberOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|DataType}> ...$others
      */
     public function mergePairs(MemberOrderedMap|iterable ...$others): self

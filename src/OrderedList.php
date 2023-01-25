@@ -17,10 +17,11 @@ use function is_array;
 
 /**
  * @implements MemberList<int, Item|InnerList<int, Item>>
+ * @phpstan-import-type DataType from Item
  */
 final class OrderedList implements MemberList
 {
-    /** @var array<int, Item|InnerList<int, Item>>  */
+    /** @var list<Item|InnerList<int, Item>>  */
     private array $members;
 
     private function __construct(InnerList|Item ...$members)
@@ -36,14 +37,9 @@ final class OrderedList implements MemberList
     /**
      * @param iterable<InnerList<int, Item>|Item|DataType> $members
      */
-    public static function fromList(iterable $members): self
+    public static function fromList(iterable $members = []): self
     {
-        $instance = new self();
-        foreach ($members as $member) {
-            $instance->push($member);
-        }
-
-        return $instance;
+        return new self(...array_map(self::filterMember(...), [...$members]));
     }
 
     private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Item
@@ -62,11 +58,10 @@ final class OrderedList implements MemberList
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        return self::from()
-            ->push(...array_map(
-                fn ($value) => is_array($value) ? InnerList::fromList(...$value) : $value,
-                Parser::parseList($httpValue)
-            ));
+        return self::from(...array_map(
+            fn ($value) => is_array($value) ? InnerList::fromList(...$value) : $value,
+            Parser::parseList($httpValue)
+        ));
     }
 
     public function toHttpValue(): string

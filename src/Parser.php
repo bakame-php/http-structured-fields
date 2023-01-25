@@ -24,6 +24,8 @@ use function substr;
  *
  * @internal Use Dictionary::fromHttpValue(), Parameters::fromHttpValue(),
  *               OrderedList::fromHttpValue(), InnerList::fromHttpValue() or Item::fromHttpValue() instead
+ *
+ * @phpstan-import-type DataType from Item
  */
 final class Parser
 {

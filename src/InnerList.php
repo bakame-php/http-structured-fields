@@ -15,14 +15,19 @@ use function count;
 
 /**
  * @implements MemberList<int, Item>
+ * @phpstan-import-type DataType from Item
  */
 final class InnerList implements MemberList, ParameterAccess
 {
-    /** @var array<int, Item> */
-    private array $members = [];
+    /** @var list<Item> */
+    private array $members;
 
-    private function __construct(private readonly Parameters $parameters)
+    /**
+     * @param iterable<Item|DataType> $members
+     */
+    private function __construct(private readonly Parameters $parameters, iterable $members)
     {
+        $this->members = array_map(self::filterMember(...), array_values([...$members]));
     }
 
     /**
@@ -30,21 +35,16 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function from(Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
-        return (new self(Parameters::create()))->push(...$members);
+        return new self(Parameters::create(), $members);
     }
 
     /**
      * @param iterable<Item|DataType> $members
      * @param iterable<string, Item|DataType> $parameters
      */
-    public static function fromList(iterable $members, iterable $parameters = []): self
+    public static function fromList(iterable $members = [], iterable $parameters = []): self
     {
-        $instance = new self(Parameters::fromAssociative($parameters));
-        foreach ($members as $member) {
-            $instance->push($member);
-        }
-
-        return $instance;
+        return new self(Parameters::fromAssociative($parameters), $members);
     }
 
     public static function fromHttpValue(Stringable|string $httpValue): self
@@ -83,10 +83,7 @@ final class InnerList implements MemberList, ParameterAccess
             return $this;
         }
 
-        $newInstance = new self($parameters);
-        $newInstance->members = $this->members;
-
-        return $newInstance;
+        return new self($parameters, $this->members);
     }
 
     public function toHttpValue(): string
@@ -162,7 +159,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public function push(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
-        $this->members =  [...$this->members, ...array_map(self::filterMember(...), array_values($members))];
+        $this->members = [...$this->members, ...array_map(self::filterMember(...), array_values($members))];
 
         return $this;
     }
