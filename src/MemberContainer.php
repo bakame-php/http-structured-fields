@@ -29,10 +29,8 @@ interface MemberContainer extends Countable, ArrayAccess, IteratorAggregate, Str
 
     /**
      * Removes all members from the instance.
-     *
-     * @return self<TKey, TValue>
      */
-    public function clear(): self;
+    public function clear(): static;
 
     /**
      * @return Iterator<TKey, TValue>

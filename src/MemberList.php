@@ -13,38 +13,28 @@ interface MemberList extends MemberContainer
 {
     /**
      * Inserts members at the beginning of the list.
-     *
-     * @return MemberList<TKey, TValue>
      */
-    public function unshift(StructuredField ...$members): self;
+    public function unshift(StructuredField ...$members): static;
 
     /**
      * Inserts members at the end of the list.
-     *
-     * @return MemberList<TKey, TValue>
      */
-    public function push(StructuredField ...$members): self;
+    public function push(StructuredField ...$members): static;
 
     /**
      * Inserts members at the index.
      *
      * @throws InvalidOffset If the index does not exist
-     *
-     * @return MemberList<TKey, TValue>
      */
-    public function insert(int $index, StructuredField ...$members): self;
+    public function insert(int $index, StructuredField ...$members): static;
 
     /**
      * Replaces the member associated with the index.
-     *
-     * @return MemberList<TKey, TValue>
      */
-    public function replace(int $index, StructuredField $member): self;
+    public function replace(int $index, StructuredField $member): static;
 
     /**
      * Deletes members associated with the given indexes.
-     *
-     * @return MemberList<TKey, TValue>
      */
-    public function remove(int ...$indexes): self;
+    public function remove(int ...$indexes): static;
 }

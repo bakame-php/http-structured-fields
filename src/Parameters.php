@@ -227,7 +227,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * Adds a member at the end of the instance otherwise updates the value associated with the key if already present.
      */
-    public function set(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
+    public function set(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
 
@@ -246,7 +246,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * Deletes members associated with the list of submitted keys.
      */
-    public function delete(string ...$keys): self
+    public function delete(string ...$keys): static
     {
         foreach ($keys as $key) {
             unset($this->members[$key]);
@@ -255,7 +255,7 @@ final class Parameters implements MemberOrderedMap
         return $this;
     }
 
-    public function clear(): self
+    public function clear(): static
     {
         $this->members = [];
 
@@ -265,7 +265,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * Adds a member at the end of the instance and deletes any previous reference to the key if present.
      */
-    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
+    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         unset($this->members[$key]);
 
@@ -275,7 +275,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * Adds a member at the beginning of the instance and deletes any previous reference to the key if present.
      */
-    public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
+    public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         unset($this->members[$key]);
 
@@ -289,7 +289,7 @@ final class Parameters implements MemberOrderedMap
      *
      * @param iterable<string, Value|DataType> ...$others
      */
-    public function mergeAssociative(iterable ...$others): self
+    public function mergeAssociative(iterable ...$others): static
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromAssociative($other)->members];
@@ -303,7 +303,7 @@ final class Parameters implements MemberOrderedMap
      *
      * @param MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}> ...$others
      */
-    public function mergePairs(MemberOrderedMap|iterable ...$others): self
+    public function mergePairs(MemberOrderedMap|iterable ...$others): static
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromPairs($other)->members];

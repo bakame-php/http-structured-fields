@@ -46,51 +46,39 @@ interface MemberOrderedMap extends MemberContainer
      * Adds a member at the end of the instance otherwise updates the value associated with the key if already present.
      *
      * @throws SyntaxError If the string key is not a valid
-     *
-     * @return MemberOrderedMap<TKey, TValue>
      */
-    public function set(string $key, StructuredField $member): self;
+    public function set(string $key, StructuredField $member): static;
 
     /**
      * Deletes members associated with the list of submitted keys.
-     *
-     * @return MemberOrderedMap<TKey, TValue>
      */
-    public function delete(string ...$keys): self;
+    public function delete(string ...$keys): static;
 
     /**
      * Adds a member at the end of the instance and deletes any previous reference to the key if present.
      *
      * @throws SyntaxError If the string key is not a valid
-     *
-     * @return MemberOrderedMap<TKey, TValue>
      */
-    public function append(string $key, StructuredField $member): self;
+    public function append(string $key, StructuredField $member): static;
 
     /**
      * Adds a member at the beginning of the instance and deletes any previous reference to the key if present.
      *
      * @throws SyntaxError If the string key is not a valid
-     *
-     * @return MemberOrderedMap<TKey, TValue>
      */
-    public function prepend(string $key, StructuredField $member): self;
+    public function prepend(string $key, StructuredField $member): static;
 
     /**
      * Merges multiple instances using iterable associative structures.
      *
      * @param iterable<TKey, TValue> ...$others
-     *
-     * @return MemberOrderedMap<TKey, TValue>
      */
-    public function mergeAssociative(iterable ...$others): self;
+    public function mergeAssociative(iterable ...$others): static;
 
     /**
      * Merges multiple instances using iterable pairs.
      *
      * @param MemberOrderedMap<TKey, TValue>|iterable<array{0:TKey, 1:TValue}> ...$others
-     *
-     * @return MemberOrderedMap<TKey, TValue>
      */
-    public function mergePairs(MemberOrderedMap|iterable ...$others): self;
+    public function mergePairs(MemberOrderedMap|iterable ...$others): static;
 }

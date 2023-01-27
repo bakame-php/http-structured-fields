@@ -209,7 +209,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @throws SyntaxError If the string key is not a valid
      */
-    public function set(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
+    public function set(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
 
@@ -225,7 +225,7 @@ final class Dictionary implements MemberOrderedMap
         };
     }
 
-    public function delete(string ...$keys): self
+    public function delete(string ...$keys): static
     {
         foreach ($keys as $key) {
             unset($this->members[$key]);
@@ -234,21 +234,21 @@ final class Dictionary implements MemberOrderedMap
         return $this;
     }
 
-    public function clear(): self
+    public function clear(): static
     {
         $this->members = [];
 
         return $this;
     }
 
-    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
+    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         unset($this->members[$key]);
 
         return $this->set($key, $member);
     }
 
-    public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): self
+    public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         unset($this->members[$key]);
 
@@ -260,7 +260,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @param iterable<string, InnerList<int, Value>|Value|DataType> ...$others
      */
-    public function mergeAssociative(iterable ...$others): self
+    public function mergeAssociative(iterable ...$others): static
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromAssociative($other)->members];
@@ -272,7 +272,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @param MemberOrderedMap<string, Value|InnerList<int, Value>>|iterable<array{0:string, 1:InnerList<int, Value>|Value|DataType}> ...$others
      */
-    public function mergePairs(MemberOrderedMap|iterable ...$others): self
+    public function mergePairs(MemberOrderedMap|iterable ...$others): static
     {
         foreach ($others as $other) {
             $this->members = [...$this->members, ...self::fromPairs($other)->members];
