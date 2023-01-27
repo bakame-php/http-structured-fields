@@ -14,8 +14,6 @@ interface MemberList extends MemberContainer
     /**
      * Inserts members at the beginning of the list.
      *
-     * @param TValue ...$members
-     *
      * @return MemberList<TKey, TValue>
      */
     public function unshift(StructuredField ...$members): self;
@@ -23,16 +21,12 @@ interface MemberList extends MemberContainer
     /**
      * Inserts members at the end of the list.
      *
-     * @param TValue ...$members
-     *
      * @return MemberList<TKey, TValue>
      */
     public function push(StructuredField ...$members): self;
 
     /**
      * Inserts members at the index.
-     *
-     * @param TValue ...$members
      *
      * @throws InvalidOffset If the index does not exist
      *
@@ -42,8 +36,6 @@ interface MemberList extends MemberContainer
 
     /**
      * Replaces the member associated with the index.
-     *
-     * @param TValue $member
      *
      * @return MemberList<TKey, TValue>
      */

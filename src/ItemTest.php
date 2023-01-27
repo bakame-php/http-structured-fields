@@ -146,46 +146,40 @@ final class ItemTest extends StructuredFieldTest
      * @dataProvider itemTypeProvider
      * @test
      */
-    public function it_can_tell_the_item_type(Item $item, string $expectedType): void
+    public function it_can_tell_the_item_type(Item $item, Type $expectedType): void
     {
-        self::assertSame($expectedType === 'boolean', $item->isBoolean());
-        self::assertSame($expectedType === 'integer', $item->isInteger());
-        self::assertSame($expectedType === 'decimal', $item->isDecimal());
-        self::assertSame($expectedType === 'string', $item->isString());
-        self::assertSame($expectedType === 'token', $item->isToken());
-        self::assertSame($expectedType === 'byte', $item->isByteSequence());
-        self::assertSame($expectedType === 'date', $item->isDate());
+        self::assertSame($expectedType, $item->type());
     }
 
     /**
-     * @return iterable<string, array{item:Item, expectedType:string}>
+     * @return iterable<string, array{item:Item, expectedType:Type}>
      */
     public function itemTypeProvider(): iterable
     {
         return [
             'boolean' => [
                 'item' => Item::from(false),
-                'expectedType' => 'boolean',
+                'expectedType' => Type::Boolean,
             ],
             'integer' => [
                 'item' => Item::from(42),
-                'expectedType' => 'integer',
+                'expectedType' => Type::Integer,
             ],
             'decimal' => [
                 'item' => Item::from(42.0),
-                'expectedType' => 'decimal',
+                'expectedType' => Type::Decimal,
             ],
             'string' => [
                 'item' => Item::from('42'),
-                'expectedType' => 'string',
+                'expectedType' => Type::String,
             ],
             'token' => [
                 'item' => Item::from(Token::fromString('forty-two')),
-                'expectedType' => 'token',
+                'expectedType' => Type::Token,
             ],
             'byte' => [
                 'item' => Item::from(ByteSequence::fromDecoded('😊')),
-                'expectedType' => 'byte',
+                'expectedType' => Type::ByteSequence,
             ],
             'stringable object' => [
                 'item' => Item::from(new class() implements Stringable {
@@ -194,11 +188,11 @@ final class ItemTest extends StructuredFieldTest
                         return '42';
                     }
                 }),
-                'expectedType' => 'string',
+                'expectedType' => Type::String,
             ],
             'date' => [
                 'item' => Item::from(new DateTimeImmutable('2020-07-12 13:37:00')),
-                'expectedType' => 'date',
+                'expectedType' => Type::Date,
             ],
         ];
     }

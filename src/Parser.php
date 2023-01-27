@@ -34,9 +34,9 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1
      *
-     * @return array<Item|DataType|array{
-     *     0:array<Item|DataType>,
-     *     1:array<string,Item|DataType>
+     * @return array<Value|DataType|array{
+     *     0:array<Value|DataType>,
+     *     1:array<string,Value|DataType>
      * }>
      */
     public static function parseList(Stringable|string $httpValue): array
@@ -56,9 +56,9 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.2
      *
-     * @return array<string, Item|DataType|array{
-     *     0:array<Item|DataType>,
-     *     1:array<string,Item|DataType>
+     * @return array<string, Value|DataType|array{
+     *     0:array<Value|DataType>,
+     *     1:array<string,Value|DataType>
      * }>
      */
     public static function parseDictionary(Stringable|string $httpValue): array
@@ -84,7 +84,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
-     * @return array{0:array<Item|DataType>, 1:array<string,Item|DataType>}
+     * @return array{0:array<Value|DataType>, 1:array<string,Value|DataType>}
      */
     public static function parseInnerList(Stringable|string $httpValue): array
     {
@@ -141,7 +141,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
      *
-     * @return array{0: array{0:array<Item|DataType>, 1:array<string,Item|DataType>}|Item, 1:int}
+     * @return array{0: array{0:array<Value|DataType>, 1:array<string,Value|DataType>}|Value, 1:int}
      */
     private static function parseItemOrInnerList(string $httpValue): array
     {
@@ -159,7 +159,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
-     * @return array{0:array{0:array<Item|DataType>, 1:array<string,Item|DataType>}, 1:int}
+     * @return array{0:array{0:array<Value|DataType>, 1:array<string,Value|DataType>}, 1:int}
      */
     private static function parseInnerListValue(string $httpValue): array
     {
@@ -368,7 +368,7 @@ final class Parser
     }
 
     /**
-     * @return array{0:Item, 1:string}
+     * @return array{0:Value, 1:string}
      */
     private static function parseItem(string $remainder): array
     {

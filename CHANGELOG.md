@@ -13,6 +13,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `ParameterAccess` interface updated with 4 new methods to ease parameter members modification.
 - `Parameter::create` named constructor to create a new instance without any parameter.
 - `Dictionnary::create` named constructor to create a new instance without any parameter.
+- `Type` Enum to list all possible Item Type supported.
+- `Value` Interface is introduced with `Item` being the only available implementation.
 
 ### Fixed
 
@@ -29,6 +31,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Removed
 
 - **[BC Break]** `ForbiddenStateError` exception is removed, the `InvalidArgument` exception is used instead.
+- **[BC Break]** `Item::is*` methods are removed, the enum `Type` is used instead.
 
 ## [0.6.0] - 2022-11-12
 

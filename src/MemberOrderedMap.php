@@ -45,8 +45,6 @@ interface MemberOrderedMap extends MemberContainer
     /**
      * Adds a member at the end of the instance otherwise updates the value associated with the key if already present.
      *
-     * @param TValue $member
-     *
      * @throws SyntaxError If the string key is not a valid
      *
      * @return MemberOrderedMap<TKey, TValue>
@@ -63,8 +61,6 @@ interface MemberOrderedMap extends MemberContainer
     /**
      * Adds a member at the end of the instance and deletes any previous reference to the key if present.
      *
-     * @param TValue $member
-     *
      * @throws SyntaxError If the string key is not a valid
      *
      * @return MemberOrderedMap<TKey, TValue>
@@ -73,8 +69,6 @@ interface MemberOrderedMap extends MemberContainer
 
     /**
      * Adds a member at the beginning of the instance and deletes any previous reference to the key if present.
-     *
-     * @param TValue $member
      *
      * @throws SyntaxError If the string key is not a valid
      *

@@ -14,16 +14,16 @@ use function array_values;
 use function count;
 
 /**
- * @implements MemberList<int, Item>
+ * @implements MemberList<int, Value>
  * @phpstan-import-type DataType from Item
  */
 final class InnerList implements MemberList, ParameterAccess
 {
-    /** @var list<Item> */
+    /** @var list<Value> */
     private array $members;
 
     /**
-     * @param iterable<Item|DataType> $members
+     * @param iterable<Value|DataType> $members
      */
     private function __construct(private readonly Parameters $parameters, iterable $members)
     {
@@ -33,14 +33,14 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance.
      */
-    public static function from(Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
+    public static function from(Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         return new self(Parameters::create(), $members);
     }
 
     /**
-     * @param iterable<Item|DataType> $members
-     * @param iterable<string, Item|DataType> $parameters
+     * @param iterable<Value|DataType> $members
+     * @param iterable<string, Value|DataType> $parameters
      */
     public static function fromList(iterable $members = [], iterable $parameters = []): self
     {
@@ -57,12 +57,12 @@ final class InnerList implements MemberList, ParameterAccess
         return clone $this->parameters;
     }
 
-    public function prependParameter(string $key, Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function prependParameter(string $key, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->prepend($key, $member));
     }
 
-    public function appendParameter(string $key, Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function appendParameter(string $key, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->append($key, $member));
     }
@@ -88,7 +88,7 @@ final class InnerList implements MemberList, ParameterAccess
 
     public function toHttpValue(): string
     {
-        return '('.implode(' ', array_map(fn (Item $value): string => $value->toHttpValue(), $this->members)).')'.$this->parameters->toHttpValue();
+        return '('.implode(' ', array_map(fn (Value $value): string => $value->toHttpValue(), $this->members)).')'.$this->parameters->toHttpValue();
     }
 
     public function count(): int
@@ -107,7 +107,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @return Iterator<array-key, Item>
+     * @return Iterator<array-key, Value>
      */
     public function getIterator(): Iterator
     {
@@ -130,7 +130,7 @@ final class InnerList implements MemberList, ParameterAccess
         };
     }
 
-    public function get(string|int $offset): Item
+    public function get(string|int $offset): Value
     {
         if (!is_int($offset)) {
             throw InvalidOffset::dueToIndexNotFound($offset);
@@ -164,11 +164,11 @@ final class InnerList implements MemberList, ParameterAccess
         return $this;
     }
 
-    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Item
+    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Value
     {
         return match (true) {
-            $member instanceof Item => $member,
-            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" instance; received a "'.$member::class.'" instead.'),
+            $member instanceof Value => $member,
+            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Value::class.'" instance; received a "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
     }
@@ -237,7 +237,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param int $offset
      */
-    public function offsetGet($offset): Item
+    public function offsetGet($offset): Value
     {
         return $this->get($offset);
     }
@@ -251,7 +251,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param Item|DataType $value the member to add
+     * @param Value|DataType $value the member to add
      *
      * @see ::push
      * @see ::replace

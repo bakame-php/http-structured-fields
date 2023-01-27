@@ -25,12 +25,20 @@ use const PHP_ROUND_HALF_EVEN;
 /**
  * @phpstan-type DataType ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
  */
-final class Item implements StructuredField, ParameterAccess
+final class Item implements Value
 {
+    private readonly Type $type;
+
     private function __construct(
         private readonly Token|ByteSequence|DateTimeImmutable|int|float|string|bool $value,
         private readonly Parameters $parameters
     ) {
+        $this->type = Type::from($this->value);
+    }
+
+    public function type(): Type
+    {
+        return $this->type;
     }
 
     /**
@@ -57,7 +65,7 @@ final class Item implements StructuredField, ParameterAccess
     /**
      * Returns a new instance from an encoded byte sequence and an iterable of key-value parameters.
      *
-     * @param iterable<string,Item|DataType> $parameters
+     * @param iterable<string,Value|DataType> $parameters
      */
     public static function fromEncodedByteSequence(Stringable|string $value, iterable $parameters = []): self
     {
@@ -67,7 +75,7 @@ final class Item implements StructuredField, ParameterAccess
     /**
      * Returns a new instance from a decoded byte sequence and an iterable of key-value parameters.
      *
-     * @param iterable<string,Item|DataType> $parameters
+     * @param iterable<string,Value|DataType> $parameters
      */
     public static function fromDecodedByteSequence(Stringable|string $value, iterable $parameters = []): self
     {
@@ -77,7 +85,7 @@ final class Item implements StructuredField, ParameterAccess
     /**
      * Returns a new instance from a Token and an iterable of key-value parameters.
      *
-     * @param iterable<string,Item|DataType> $parameters
+     * @param iterable<string,Value|DataType> $parameters
      */
     public static function fromToken(Stringable|string $value, iterable $parameters = []): self
     {
@@ -87,7 +95,7 @@ final class Item implements StructuredField, ParameterAccess
     /**
      * @param array{
      *     0:DataType,
-     *     1?:MemberOrderedMap<string, Item>|iterable<array{0:string, 1:Item|DataType}>
+     *     1?:MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}>
      * } $pair
      */
     public static function fromPair(array $pair): self
@@ -107,18 +115,19 @@ final class Item implements StructuredField, ParameterAccess
     /**
      * Returns a new instance from a value type and an iterable of key-value parameters.
      *
-     * @param iterable<string,Item|DataType> $parameters
+     * @param iterable<string,Value|DataType> $parameters
      */
-    public static function from(
-        ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool $value,
-        iterable $parameters = []
-    ): self {
+    public static function from(mixed $value, iterable $parameters = []): self
+    {
         return new self(match (true) {
             is_int($value) => self::filterIntegerRange($value, 'Integer'),
             is_float($value) => self::filterDecimal($value),
             is_string($value) || $value instanceof Stringable => self::filterString($value),
             $value instanceof DateTimeInterface => self::filterDate($value),
-            default => $value,
+            is_bool($value),
+            $value instanceof Token,
+            $value instanceof ByteSequence => $value,
+            default => throw new SyntaxError('The type "'.(is_object($value) ? $value::class : gettype($value)).'" is not supported.')
         }, Parameters::fromAssociative($parameters));
     }
 
@@ -177,24 +186,18 @@ final class Item implements StructuredField, ParameterAccess
         return $value instanceof DateTimeImmutable ? $value : DateTimeImmutable::createFromInterface($value);
     }
 
-    /**
-     * Returns the underlying value decoded.
-     */
     public function value(): Token|ByteSequence|DateTimeImmutable|string|int|float|bool
     {
         return $this->value;
     }
 
-    public function withValue(Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $value): self
+    public function withValue(mixed $value): static
     {
-        if ($value instanceof Stringable) {
-            $value = (string) $value;
-        }
-
         return match (true) {
             $value instanceof ByteSequence && $this->value instanceof ByteSequence && $value->encoded() === $this->value->encoded(),
             $value instanceof Token && $this->value instanceof Token && $value->value === $this->value->value,
             $value instanceof DateTimeInterface && $this->value instanceof DateTimeInterface && $value == $this->value,
+            $value instanceof Stringable && $this->type === Type::String && $value->__toString() === $this->value,
             $value === $this->value => $this,
             default => self::from($value, $this->parameters),
         };
@@ -205,12 +208,12 @@ final class Item implements StructuredField, ParameterAccess
         return clone $this->parameters;
     }
 
-    public function prependParameter(string $key, Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function prependParameter(string $key, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->prepend($key, $member));
     }
 
-    public function appendParameter(string $key, Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function appendParameter(string $key, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->append($key, $member));
     }
@@ -259,40 +262,5 @@ final class Item implements StructuredField, ParameterAccess
         $result = json_encode(round($value, 3, PHP_ROUND_HALF_EVEN));
 
         return str_contains($result, '.') ? $result : $result.'.0';
-    }
-
-    public function isInteger(): bool
-    {
-        return is_int($this->value);
-    }
-
-    public function isDecimal(): bool
-    {
-        return is_float($this->value);
-    }
-
-    public function isBoolean(): bool
-    {
-        return is_bool($this->value);
-    }
-
-    public function isString(): bool
-    {
-        return is_string($this->value);
-    }
-
-    public function isToken(): bool
-    {
-        return $this->value instanceof Token;
-    }
-
-    public function isByteSequence(): bool
-    {
-        return $this->value instanceof ByteSequence;
-    }
-
-    public function isDate(): bool
-    {
-        return $this->value instanceof DateTimeInterface;
     }
 }

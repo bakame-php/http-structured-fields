@@ -15,16 +15,16 @@ use function implode;
 use function is_array;
 
 /**
- * @implements MemberOrderedMap<string, Item|InnerList<int, Item>>
+ * @implements MemberOrderedMap<string, Value|InnerList<int, Value>>
  * @phpstan-import-type DataType from Item
  */
 final class Dictionary implements MemberOrderedMap
 {
-    /** @var array<string, Item|InnerList<int, Item>> */
+    /** @var array<string, Value|InnerList<int, Value>> */
     private array $members = [];
 
     /**
-     * @param iterable<string, InnerList<int, Item>|Item|DataType> $members
+     * @param iterable<string, InnerList<int, Value>|Value|DataType> $members
      */
     private function __construct(iterable $members = [])
     {
@@ -47,7 +47,7 @@ final class Dictionary implements MemberOrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<string, InnerList<int, Item>|Item|DataType> $members
+     * @param iterable<string, InnerList<int, Value>|Value|DataType> $members
      */
     public static function fromAssociative(iterable $members): self
     {
@@ -61,7 +61,7 @@ final class Dictionary implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|DataType}> $pairs
+     * @param MemberOrderedMap<string, Value|InnerList<int, Value>>|iterable<array{0:string, 1:InnerList<int, Value>|Value|DataType}> $pairs
      */
     public static function fromPairs(MemberOrderedMap|iterable $pairs): self
     {
@@ -94,8 +94,8 @@ final class Dictionary implements MemberOrderedMap
 
     public function toHttpValue(): string
     {
-        $formatter = static fn (Item|InnerList $member, string $key): string => match (true) {
-            $member instanceof Item && true === $member->value() => $key.$member->parameters()->toHttpValue(),
+        $formatter = static fn (Value|InnerList $member, string $key): string => match (true) {
+            $member instanceof Value && true === $member->value() => $key.$member->parameters()->toHttpValue(),
             default => $key.'='.$member->toHttpValue(),
         };
 
@@ -118,7 +118,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @return Iterator<string, Item|InnerList<int, Item>>
+     * @return Iterator<string, Value|InnerList<int, Value>>
      */
     public function getIterator(): Iterator
     {
@@ -126,7 +126,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @return Iterator<array{0:string, 1:Item|InnerList<int, Item>}>
+     * @return Iterator<array{0:string, 1:Value|InnerList<int, Value>}>
      */
     public function toPairs(): Iterator
     {
@@ -152,7 +152,7 @@ final class Dictionary implements MemberOrderedMap
      * @throws SyntaxError   If the key is invalid
      * @throws InvalidOffset If the key is not found
      */
-    public function get(string|int $offset): Item|InnerList
+    public function get(string|int $offset): Value|InnerList
     {
         if (is_int($offset) || !array_key_exists($offset, $this->members)) {
             throw InvalidOffset::dueToKeyNotFound($offset);
@@ -189,7 +189,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @throws InvalidOffset If the key is not found
      *
-     * @return array{0:string, 1:Item|InnerList<int, Item>}
+     * @return array{0:string, 1:Value|InnerList<int, Value>}
      */
     public function pair(int $index): array
     {
@@ -216,11 +216,11 @@ final class Dictionary implements MemberOrderedMap
         return $this;
     }
 
-    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Item
+    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Value
     {
         return match (true) {
-            $member instanceof InnerList, $member instanceof Item => $member,
-            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
+            $member instanceof InnerList, $member instanceof Value => $member,
+            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Value::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
     }
@@ -258,7 +258,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param iterable<string, InnerList<int, Item>|Item|DataType> ...$others
+     * @param iterable<string, InnerList<int, Value>|Value|DataType> ...$others
      */
     public function mergeAssociative(iterable ...$others): self
     {
@@ -270,7 +270,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param MemberOrderedMap<string, Item|InnerList<int, Item>>|iterable<array{0:string, 1:InnerList<int, Item>|Item|DataType}> ...$others
+     * @param MemberOrderedMap<string, Value|InnerList<int, Value>>|iterable<array{0:string, 1:InnerList<int, Value>|Value|DataType}> ...$others
      */
     public function mergePairs(MemberOrderedMap|iterable ...$others): self
     {
@@ -292,9 +292,9 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @param string $offset
      *
-     * @return Item|InnerList<int, Item>
+     * @return Value|InnerList<int, Value>
      */
-    public function offsetGet(mixed $offset): InnerList|Item
+    public function offsetGet(mixed $offset): InnerList|Value
     {
         return $this->get($offset);
     }
@@ -308,7 +308,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param InnerList<int, Item>|Item|DataType $value
+     * @param InnerList<int, Value>|Value|DataType $value
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {

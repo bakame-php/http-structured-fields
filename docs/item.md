@@ -10,15 +10,15 @@ Items can have different types that are translated to PHP using:
 
 The table below summarizes the item value type.
 
-| HTTP DataType | Package Data Type         | validation method      |
-|---------------|---------------------------|------------------------|
-| Integer       | `int`                     | `Item::isInteger`      |
-| Decimal       | `float`                   | `Item::isDecimal`      |
-| String        | `string`                  | `Item::isString`       |
-| Boolean       | `bool`                    | `Item::isBoolean`      |
-| Token         | class `Token`             | `Item::isToken`        |
-| Byte Sequence | class `ByteSequence`      | `Item::isByteSequence` |
-| Date          | class `DateTimeImmutable` | `Item::isDate`         |
+| HTTP DataType | Package Data Type         | Package Enum Type    |
+|---------------|---------------------------|----------------------|
+| Integer       | `int`                     | `Type::Integer`      |
+| Decimal       | `float`                   | `Type::Decimal`      |
+| String        | `string`                  | `Tyoe::String`       |
+| Boolean       | `bool`                    | `Type::Boolean`      |
+| Token         | class `Token`             | `Type::Token`        |
+| Byte Sequence | class `ByteSequence`      | `Type::ByteSequence` |
+| Date          | class `DateTimeImmutable` | `Type::Date`         |
 
 ### Token
 
@@ -67,9 +67,8 @@ keys are strings and the value are bare items. Their public API is covered in th
 use Bakame\Http\StructuredFields\Item;
 
 $item = Item::from("hello world", ["a" => true]);
-$item->value();    // returns "hello world"
-$item->isString(); // returns true
-$item->isToken();  // returns false
+$item->value(); // returns "hello world"
+$item->type();  // returns Type::String
 $item->parameters()['a']->value(); //returns true
 ```
 
@@ -97,9 +96,9 @@ $item = Item::fromPair([
         ["a", ByteSequence::fromDecoded("Hello World")],
     ]
 ]);
-$item->value();    // returns "hello world"
-$item->isString(); // returns true
-$item->parameters()["a"]->isByteSequence(); // returns true
+$item->value(); // returns "hello world"
+$item->type();  // returns Type::String
+$item->parameters()["a"]->type();  // returns Type::ByteSequence
 $item->parameters()["a"]->value(); // returns StructuredFields\ByteSequence::fromDecoded('Hello World');
 echo $item->toHttpValue();         // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
@@ -121,8 +120,8 @@ use Bakame\Http\StructuredFields\ByteSequence;
 use Bakame\Http\StructuredFields\Item;
 
 $item = Item::from(ByteSequence::fromEncoded("SGVsbG8gV29ybGQ="));
-$item->isByteSequence(); // returns true
-echo $item->value();     // returns StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29ybGQ=");
+$item->type();       // returns Type::ByteSequence
+echo $item->value(); // returns StructuredFields\ByteSequence::fromEncoded("SGVsbG8gV29ybGQ=");
 ```
 
 **Of note: to instantiate a decimal number type a float MUST be used as the first argument of `Item::from`.**
@@ -131,10 +130,8 @@ echo $item->value();     // returns StructuredFields\ByteSequence::fromEncoded("
 use Bakame\Http\StructuredFields\Item;
 
 $decimal = Item::from(42.0);
-$decimal->isDecimal(); //return true
-$decimal->isInteger(); //return false
+$decimal->type(); //Type::Decimal
 
-$item = Item::fromPair([42]);
-$item->isDecimal(); //return false
-$item->isInteger(); //return true
+$integer = Item::fromPair([42]);
+$integer->type(); //return Type::Integer
 ```

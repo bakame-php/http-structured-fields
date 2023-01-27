@@ -16,37 +16,37 @@ use function implode;
 use function is_array;
 
 /**
- * @implements MemberList<int, Item|InnerList<int, Item>>
+ * @implements MemberList<int, Value|InnerList<int, Value>>
  * @phpstan-import-type DataType from Item
  */
 final class OrderedList implements MemberList
 {
-    /** @var list<Item|InnerList<int, Item>>  */
+    /** @var list<Value|InnerList<int, Value>> */
     private array $members;
 
-    private function __construct(InnerList|Item ...$members)
+    private function __construct(InnerList|Value ...$members)
     {
         $this->members = array_values($members);
     }
 
-    public static function from(InnerList|Item|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
+    public static function from(InnerList|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         return new self(...array_map(self::filterMember(...), $members));
     }
 
     /**
-     * @param iterable<InnerList<int, Item>|Item|DataType> $members
+     * @param iterable<InnerList<int, Value>|Value|DataType> $members
      */
     public static function fromList(iterable $members = []): self
     {
         return new self(...array_map(self::filterMember(...), [...$members]));
     }
 
-    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Item
+    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Value
     {
         return match (true) {
-            $member instanceof InnerList, $member instanceof Item => $member,
-            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Item::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
+            $member instanceof InnerList, $member instanceof Value => $member,
+            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Value::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
             default => Item::from($member),
         };
     }
@@ -85,7 +85,7 @@ final class OrderedList implements MemberList
     }
 
     /**
-     * @return Iterator<int, Item|InnerList<int, Item>>
+     * @return Iterator<int, Value|InnerList<int, Value>>
      */
     public function getIterator(): Iterator
     {
@@ -113,7 +113,7 @@ final class OrderedList implements MemberList
         };
     }
 
-    public function get(string|int $offset): Item|InnerList
+    public function get(string|int $offset): Value|InnerList
     {
         if (!is_int($offset)) {
             throw InvalidOffset::dueToIndexNotFound($offset);
@@ -216,9 +216,9 @@ final class OrderedList implements MemberList
     /**
      * @param int $offset
      *
-     * @return Item|InnerList<int, Item>
+     * @return Value|InnerList<int, Value>
      */
-    public function offsetGet(mixed $offset): Item|InnerList
+    public function offsetGet(mixed $offset): Value|InnerList
     {
         return $this->get($offset);
     }
@@ -230,7 +230,7 @@ final class OrderedList implements MemberList
 
     /**
      * @param int|null $offset
-     * @param InnerList<int, Item>|Item|DataType $value  the member to add
+     * @param InnerList<int, Value>|Value|DataType $value
      *
      * @see ::push
      * @see ::replace
