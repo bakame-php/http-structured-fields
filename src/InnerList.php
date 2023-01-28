@@ -57,12 +57,12 @@ final class InnerList implements MemberList, ParameterAccess
         return clone $this->parameters;
     }
 
-    public function prependParameter(string $key, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function prependParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->prepend($key, $member));
     }
 
-    public function appendParameter(string $key, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function appendParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->append($key, $member));
     }

@@ -197,7 +197,7 @@ final class Item implements Value
             $value instanceof ByteSequence && $this->value instanceof ByteSequence && $value->encoded() === $this->value->encoded(),
             $value instanceof Token && $this->value instanceof Token && $value->value === $this->value->value,
             $value instanceof DateTimeInterface && $this->value instanceof DateTimeInterface && $value == $this->value,
-            $value instanceof Stringable && $this->type === Type::String && $value->__toString() === $this->value,
+            $value instanceof Stringable && $value->__toString() === $this->value,
             $value === $this->value => $this,
             default => self::from($value, $this->parameters),
         };
@@ -208,12 +208,12 @@ final class Item implements Value
         return clone $this->parameters;
     }
 
-    public function prependParameter(string $key, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function prependParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->prepend($key, $member));
     }
 
-    public function appendParameter(string $key, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function appendParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->append($key, $member));
     }
