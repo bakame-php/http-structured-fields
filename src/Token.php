@@ -7,6 +7,9 @@ namespace Bakame\Http\StructuredFields;
 use Stringable;
 use function preg_match;
 
+/**
+ * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.4
+ */
 final class Token
 {
     private function __construct(public readonly string $value)
@@ -16,7 +19,7 @@ final class Token
         }
     }
 
-    public static function fromString(string|Stringable $value): self
+    public static function fromString(Stringable|string $value): self
     {
         return new self((string) $value);
     }

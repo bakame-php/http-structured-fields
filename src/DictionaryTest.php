@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use LogicException;
 use function iterator_to_array;
 
 final class DictionaryTest extends StructuredFieldTest
@@ -30,11 +31,6 @@ final class DictionaryTest extends StructuredFieldTest
         );
 
         self::assertEquals($arrayParams, iterator_to_array($instance));
-
-        $instance->clear();
-
-        self::assertFalse($instance->hasMembers());
-        self::assertTrue($instance->hasNoMembers());
     }
 
     /** @test */
@@ -47,8 +43,6 @@ final class DictionaryTest extends StructuredFieldTest
 
         self::assertSame(['string', $stringItem], $instance->pair(0));
         self::assertSame($stringItem, $instance->get('string'));
-        self::assertTrue(isset($instance['string']));
-        self::assertSame($stringItem, $instance['string']);
         self::assertTrue($instance->has('string'));
         self::assertEquals(
             [['string', $stringItem], ['boolean', $booleanItem]],
@@ -68,26 +62,25 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertTrue($instance->hasMembers());
         self::assertFalse($instance->hasNoMembers());
 
-        $instance->delete('boolean');
+        $deletedInstance = $instance->remove('boolean');
 
-        self::assertCount(1, $instance);
-        self::assertFalse($instance->has('boolean'));
-        self::assertFalse(isset($instance['boolean']));
-        self::assertFalse($instance->hasPair(1));
+        self::assertCount(1, $deletedInstance);
+        self::assertFalse($deletedInstance->has('boolean'));
+        self::assertFalse($deletedInstance->hasPair(1));
 
-        $instance->append('foobar', Item::from('BarBaz'));
-        self::assertTrue($instance->hasPair(1));
+        $appendInstance = $deletedInstance->append('foobar', Item::from('BarBaz'));
+        self::assertTrue($appendInstance->hasPair(1));
 
         /** @var array{0:string, 1:Item} $foundItem */
-        $foundItem = $instance->pair(1);
+        $foundItem = $appendInstance->pair(1);
 
         self::assertIsString($foundItem[1]->value());
         self::assertStringContainsString('BarBaz', $foundItem[1]->value());
 
-        $instance->delete('foobar', 'string');
+        $deleteAgain = $appendInstance->remove('foobar', 'string');
 
-        self::assertCount(0, $instance);
-        self::assertFalse($instance->hasMembers());
+        self::assertCount(0, $deleteAgain);
+        self::assertFalse($deleteAgain->hasMembers());
     }
 
     /** @test */
@@ -125,9 +118,9 @@ final class DictionaryTest extends StructuredFieldTest
     /** @test */
     public function it_can_prepend_a_new_member(): void
     {
-        $instance = Dictionary::create();
-        $instance->append('a', Item::from(false));
-        $instance->prepend('b', Item::from(true));
+        $instance = Dictionary::create()
+            ->append('a', Item::from(false))
+            ->prepend('b', Item::from(true));
 
         self::assertSame('b, a=?0', $instance->toHttpValue());
     }
@@ -139,10 +132,11 @@ final class DictionaryTest extends StructuredFieldTest
 
         self::assertSame([], $instance->keys());
 
-        $instance->append('a', Item::from(false));
-        $instance->prepend('b', Item::from(true));
+        $newInstance = $instance
+            ->append('a', Item::from(false))
+            ->prepend('b', Item::from(true));
 
-        self::assertSame(['b', 'a'], $instance->keys());
+        self::assertSame(['b', 'a'], $newInstance->keys());
     }
 
     /** @test */
@@ -152,11 +146,11 @@ final class DictionaryTest extends StructuredFieldTest
         $instance2 = Dictionary::fromAssociative(['b' => Item::from(true)]);
         $instance3 = Dictionary::fromAssociative(['a' => Item::from(42)]);
 
-        $instance1->mergeAssociative($instance2, $instance3);
+        $instance4 = $instance1->mergeAssociative($instance2, $instance3);
 
-        self::assertCount(2, $instance1);
-        self::assertEquals(Item::from(42), $instance1->get('a'));
-        self::assertEquals(Item::from(true), $instance1->get('b'));
+        self::assertCount(2, $instance4);
+        self::assertEquals(Item::from(42), $instance4->get('a'));
+        self::assertEquals(Item::from(true), $instance4->get('b'));
     }
 
     /** @test */
@@ -166,11 +160,11 @@ final class DictionaryTest extends StructuredFieldTest
         $instance2 = Dictionary::fromAssociative(['b' => Item::from(true)]);
         $instance3 = Dictionary::fromAssociative(['a' => Item::from(42)]);
 
-        $instance3->mergeAssociative($instance2, $instance1);
+        $instance4 = $instance3->mergeAssociative($instance2, $instance1);
 
-        self::assertCount(2, $instance3);
-        self::assertEquals(Item::from(false), $instance3->get('a'));
-        self::assertEquals(Item::from(true), $instance3->get('b'));
+        self::assertCount(2, $instance4);
+        self::assertEquals(Item::from(false), $instance4->get('a'));
+        self::assertEquals(Item::from(true), $instance4->get('b'));
     }
 
     /** @test */
@@ -186,12 +180,12 @@ final class DictionaryTest extends StructuredFieldTest
         $instance2 = Dictionary::fromPairs([['b', Item::from(true)]]);
         $instance3 = Dictionary::fromPairs([['a', Item::from(42)]]);
 
-        $instance3->mergePairs($instance2, $instance1);
+        $instance4 = $instance3->mergePairs($instance2, $instance1);
 
-        self::assertCount(2, $instance3);
+        self::assertCount(2, $instance4);
 
-        self::assertEquals(Item::from(false), $instance3->get('a'));
-        self::assertEquals(Item::from(true), $instance3->get('b'));
+        self::assertEquals(Item::from(false), $instance4->get('a'));
+        self::assertEquals(Item::from(true), $instance4->get('b'));
     }
 
     /** @test */
@@ -225,24 +219,13 @@ final class DictionaryTest extends StructuredFieldTest
     }
 
     /** @test */
-    public function it_fails_to_add_an_integer_via_array_access(): void
-    {
-        $this->expectException(StructuredFieldError::class);
-
-        Dictionary::create()[0] = 23; // @phpstan-ignore-line
-    }
-
-    /** @test */
     public function it_can_delete_a_member_via_array_access(): void
     {
         $structuredField = Dictionary::create();
-        $structuredField['foo'] = 'bar';
+        $newInstance = $structuredField->add('foo', 'bar');
 
-        self::assertTrue($structuredField->hasMembers());
-
-        unset($structuredField['foo']);
-
-        self::assertFalse($structuredField->hasMembers());
+        self::assertTrue($newInstance->hasMembers());
+        self::assertFalse($newInstance->remove('foo')->hasMembers());
     }
 
     /** @test */
@@ -267,5 +250,41 @@ final class DictionaryTest extends StructuredFieldTest
 
         self::assertInstanceOf(Item::class, $structuredField->get('false'));
         self::assertFalse($structuredField->get('false')->value());
+    }
+
+    /** @test */
+    public function it_implements_the_array_access_interface(): void
+    {
+        $token = Token::fromString('token');
+
+        $structuredField = Dictionary::fromPairs([
+            ['foobar', 'foobar'],
+            ['zero', 0],
+            ['false', false],
+            ['token', $token],
+        ]);
+
+        self::assertInstanceOf(Item::class, $structuredField->get('false'));
+        self::assertInstanceOf(Item::class, $structuredField['false']);
+
+        self::assertFalse($structuredField->get('false')->value());
+        self::assertFalse($structuredField['false']->value());
+        self::assertFalse(isset($structuredField['toto']));
+    }
+
+    /** @test */
+    public function it_forbids_removing_members_using_the_array_access_interface(): void
+    {
+        $this->expectException(LogicException::class);
+
+        unset(Dictionary::fromPairs([['foobar', 'foobar'], ['zero', 0]])['foobar']);
+    }
+
+    /** @test */
+    public function it_forbids_adding_members_using_the_array_access_interface(): void
+    {
+        $this->expectException(LogicException::class);
+
+        Dictionary::fromPairs([['foobar', 'foobar'], ['zero', 0]])['foobar'] = Item::from(false);
     }
 }

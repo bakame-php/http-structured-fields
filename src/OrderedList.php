@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use ArrayAccess;
 use DateTimeInterface;
 use Iterator;
+use LogicException;
 use Stringable;
 use function array_filter;
 use function array_map;
@@ -16,10 +18,11 @@ use function implode;
 use function is_array;
 
 /**
+ * @implements ArrayAccess<int, Value|InnerList<int, Value>>
  * @implements MemberList<int, Value|InnerList<int, Value>>
  * @phpstan-import-type DataType from Item
  */
-final class OrderedList implements MemberList
+final class OrderedList implements ArrayAccess, MemberList
 {
     /** @var list<Value|InnerList<int, Value>> */
     private array $members;
@@ -29,24 +32,30 @@ final class OrderedList implements MemberList
         $this->members = array_values($members);
     }
 
-    public static function from(InnerList|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
+    /**
+     * @param StructuredField|iterable<Value|DataType>|DataType ...$members
+     */
+    public static function from(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         return new self(...array_map(self::filterMember(...), $members));
     }
 
     /**
-     * @param iterable<InnerList<int, Value>|Value|DataType> $members
+     * @param iterable<InnerList<int, Value>|list<Value|DataType>|Value|DataType> $members
      */
     public static function fromList(iterable $members = []): self
     {
         return new self(...array_map(self::filterMember(...), [...$members]));
     }
 
-    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Value
+    /**
+     * @param StructuredField|iterable<Value|DataType>|DataType $member
+     */
+    private static function filterMember(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Value
     {
         return match (true) {
             $member instanceof InnerList, $member instanceof Value => $member,
-            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Value::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
+            is_iterable($member) => InnerList::fromList($member),
             default => Item::from($member),
         };
     }
@@ -132,9 +141,7 @@ final class OrderedList implements MemberList
      */
     public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
-        $this->members = [...array_map(self::filterMember(...), array_values($members)), ...$this->members];
-
-        return $this;
+        return new self(...[...array_map(self::filterMember(...), array_values($members)), ...$this->members]);
     }
 
     /**
@@ -142,9 +149,7 @@ final class OrderedList implements MemberList
      */
     public function push(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
-        $this->members = [...$this->members, ...array_map(self::filterMember(...), array_values($members))];
-
-        return $this;
+        return new self(...[...$this->members, ...array_map(self::filterMember(...), array_values($members))]);
     }
 
     /**
@@ -155,14 +160,17 @@ final class OrderedList implements MemberList
     public function insert(int $index, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
         $offset = $this->filterIndex($index);
-        match (true) {
+
+        return match (true) {
             null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
             0 === $offset => $this->unshift(...$members),
             count($this->members) === $offset => $this->push(...$members),
-            default => array_splice($this->members, $offset, 0, array_map(self::filterMember(...), $members)),
-        };
+            default => (function (array $newMembers) use ($offset, $members) {
+                array_splice($newMembers, $offset, 0, array_map(self::filterMember(...), $members));
 
-        return $this;
+                return new self(...$newMembers);
+            })($this->members),
+        };
     }
 
     /**
@@ -176,9 +184,10 @@ final class OrderedList implements MemberList
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        $this->members[$offset] = self::filterMember($member);
+        $members = $this->members;
+        $members[$offset] = self::filterMember($member);
 
-        return $this;
+        return new self(...$members);
     }
 
     /**
@@ -191,24 +200,18 @@ final class OrderedList implements MemberList
             fn (int|null $index): bool => null !== $index
         );
 
+        $members = $this->members;
         foreach ($offsets as $offset) {
-            unset($this->members[$offset]);
+            unset($members[$offset]);
         }
 
-        return $this;
-    }
-
-    public function clear(): static
-    {
-        $this->members = [];
-
-        return $this;
+        return new self(...$members);
     }
 
     /**
      * @param int $offset
      */
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return $this->has($offset);
     }
@@ -218,31 +221,18 @@ final class OrderedList implements MemberList
      *
      * @return Value|InnerList<int, Value>
      */
-    public function offsetGet(mixed $offset): Value|InnerList
+    public function offsetGet(mixed $offset): InnerList|Value
     {
         return $this->get($offset);
     }
 
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
-        $this->remove($offset);
+        throw new LogicException(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 
-    /**
-     * @param int|null $offset
-     * @param InnerList<int, Value>|Value|DataType $value
-     *
-     * @see ::push
-     * @see ::replace
-     */
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        if (null !== $offset) {
-            $this->replace($offset, $value);
-
-            return;
-        }
-
-        $this->push($value);
+        throw new LogicException(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 }

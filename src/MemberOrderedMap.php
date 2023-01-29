@@ -45,17 +45,26 @@ interface MemberOrderedMap extends MemberContainer
     /**
      * Adds a member at the end of the instance otherwise updates the value associated with the key if already present.
      *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function set(string $key, StructuredField $member): static;
+    public function add(string $key, StructuredField $member): static;
 
     /**
      * Deletes members associated with the list of submitted keys.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
      */
-    public function delete(string ...$keys): static;
+    public function remove(string ...$keys): static;
 
     /**
      * Adds a member at the end of the instance and deletes any previous reference to the key if present.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
      *
      * @throws SyntaxError If the string key is not a valid
      */
@@ -64,12 +73,18 @@ interface MemberOrderedMap extends MemberContainer
     /**
      * Adds a member at the beginning of the instance and deletes any previous reference to the key if present.
      *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
      * @throws SyntaxError If the string key is not a valid
      */
     public function prepend(string $key, StructuredField $member): static;
 
     /**
      * Merges multiple instances using iterable associative structures.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
      *
      * @param iterable<TKey, TValue> ...$others
      */
@@ -78,7 +93,10 @@ interface MemberOrderedMap extends MemberContainer
     /**
      * Merges multiple instances using iterable pairs.
      *
-     * @param MemberOrderedMap<TKey, TValue>|iterable<array{0:TKey, 1:TValue}> ...$others
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param iterable<array{0:TKey, 1:TValue}> ...$others
      */
-    public function mergePairs(MemberOrderedMap|iterable ...$others): static;
+    public function mergePairs(iterable ...$others): static;
 }

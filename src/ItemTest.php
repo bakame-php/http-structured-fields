@@ -236,7 +236,7 @@ final class ItemTest extends StructuredFieldTest
     {
         $instance = Item::fromHttpValue('1; a; b=?0');
 
-        self::assertTrue($instance->parameters()['a']->value());
+        self::assertTrue($instance->parameters()->get('a')->value());
     }
 
     /** @test */
@@ -244,22 +244,7 @@ final class ItemTest extends StructuredFieldTest
     {
         $this->expectException(StructuredFieldError::class);
 
-        Item::fromHttpValue('1; a; b=?0')->parameters()['bar']->value();
-    }
-
-    /** @test */
-    public function it_can_exchange_parameters(): void
-    {
-        $instance = Item::from(Token::fromString('babayaga'));
-
-        self::assertCount(0, $instance->parameters());
-
-        $parameters = $instance->parameters();
-        $parameters->clear();
-        $parameters->mergeAssociative(['foo' => 'bar']);
-
-        self::assertCount(0, $instance->parameters());
-        self::assertSame('bar', $parameters['foo']->value());
+        Item::fromHttpValue('1; a; b=?0')->parameters()->get('bar')->value();
     }
 
     /** @test */
@@ -338,6 +323,7 @@ final class ItemTest extends StructuredFieldTest
     public function it_can_create_via_parameters_access_methods_a_new_object(): void
     {
         $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);
+        $instance7 = $instance1->addParameter('a', true);
         $instance2 = $instance1->appendParameter('a', true);
         $instance3 = $instance1->prependParameter('a', false);
         $instance4 = $instance1->withoutParameter('b');
@@ -345,6 +331,7 @@ final class ItemTest extends StructuredFieldTest
         $instance6 = $instance1->clearParameters();
 
         self::assertSame($instance1, $instance2);
+        self::assertSame($instance1, $instance7);
         self::assertNotSame($instance1, $instance3);
         self::assertEquals($instance1->value(), $instance3->value());
         self::assertSame($instance1, $instance4);

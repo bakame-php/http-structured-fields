@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use LogicException;
+
 /**
  * @coversDefaultClass \Bakame\Http\StructuredFields\OrderedList
  */
@@ -40,41 +42,38 @@ final class OrderedListTest extends StructuredFieldTest
         self::assertCount(2, $instance);
         self::assertSame($booleanItem, $instance->get(1));
 
-        $instance->remove(1);
+        $deletedInstance = $instance->remove(1);
 
-        self::assertCount(1, $instance);
-        self::assertFalse($instance->has(1));
+        self::assertCount(1, $deletedInstance);
+        self::assertFalse($deletedInstance->has(1));
 
-        $instance->push(Item::from('BarBaz'));
-        $member = $instance->get(1);
+        $newInstance = $deletedInstance->push(Item::from('BarBaz'));
+        $member = $newInstance->get(1);
 
-        self::assertCount(2, $instance);
+        self::assertCount(2, $newInstance);
         self::assertInstanceOf(Item::class, $member);
         self::assertIsString($member->value());
         self::assertStringContainsString('BarBaz', $member->value());
 
-        $instance->remove(0, 1);
+        $altInstance = $newInstance->remove(0, 1);
 
-        self::assertCount(0, $instance);
-        self::assertTrue($instance->hasNoMembers());
-        self::assertFalse($instance->hasMembers());
+        self::assertCount(0, $altInstance);
+        self::assertTrue($altInstance->hasNoMembers());
+        self::assertFalse($altInstance->hasMembers());
     }
 
     /** @test */
     public function it_can_unshift_insert_and_replace(): void
     {
-        $instance = OrderedList::from();
-        $instance->unshift(Item::from('42'));
-        $instance->push(Item::from(42));
-        $instance->insert(1, Item::from(42.0));
-        $instance->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
+        $instance = OrderedList::from()
+            ->unshift(Item::from('42'))
+            ->push(Item::from(42))
+            ->insert(1, Item::from(42.0))
+            ->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
 
         self::assertCount(3, $instance);
         self::assertTrue($instance->hasMembers());
         self::assertSame(':SGVsbG8gV29ybGQ=:, 42.0, 42', $instance->toHttpValue());
-
-        $instance->clear();
-        self::assertFalse($instance->hasMembers());
     }
 
     /** @test */
@@ -121,39 +120,17 @@ final class OrderedListTest extends StructuredFieldTest
     }
 
     /** @test */
-    public function it_implements_the_array_access_interface(): void
-    {
-        $sequence = OrderedList::from();
-        $sequence->push(InnerList::from(42, 69));
-
-        self::assertTrue(isset($sequence[0]));
-        self::assertInstanceOf(InnerList::class, $sequence[0]);
-        self::assertEquals(42, $sequence[0]->get(0)->value());
-
-        $sequence[0] = false;
-
-        self::assertEquals(Item::from(false), $sequence[0]);
-        unset($sequence[0]);
-
-        self::assertCount(0, $sequence);
-        self::assertFalse(isset($sequence[0]));
-    }
-
-    /** @test */
     public function it_fails_to_insert_unknown_index_via_the_array_access_interface(): void
     {
         $this->expectException(StructuredFieldError::class);
 
-        OrderedList::from()[0] = Item::from(42.0);
+        OrderedList::from()->insert(0, Item::from(42.0));
     }
 
     /** @test */
     public function testArrayAccessThrowsInvalidIndex2(): void
     {
-        $sequence = OrderedList::from();
-        unset($sequence[0]);
-
-        self::assertCount(0, $sequence);
+        self::assertCount(0, OrderedList::from()->remove(0));
     }
 
     /** @test */
@@ -172,12 +149,39 @@ final class OrderedListTest extends StructuredFieldTest
         $input = ['foobar', 0, false, $token, $innerList];
         $structuredField = OrderedList::fromList($input);
 
-        self::assertInstanceOf(Item::class, $structuredField[2]);
-        self::assertFalse($structuredField[2]->value());
+        self::assertInstanceOf(Item::class, $structuredField->get(2));
+        self::assertFalse($structuredField->get(2)->value());
 
-        self::assertInstanceOf(InnerList::class, $structuredField[-1]);
-        self::assertArrayNotHasKey('foobar', $structuredField);
-        $structuredField[] = 'barbaz';
-        self::assertEquals(Item::from('barbaz'), $structuredField[-1]);
+        self::assertInstanceOf(InnerList::class, $structuredField->get(-1));
+        self::assertFalse($structuredField->has('foobar'));
+
+        self::assertEquals(Item::from('barbaz'), $structuredField->push('barbaz')->get(-1));
+    }
+
+    /** @test */
+    public function it_implements_the_array_access_interface(): void
+    {
+        $structuredField = OrderedList::from('foobar', 'foobar', 'zero', 0);
+
+        self::assertInstanceOf(Item::class, $structuredField->get(0));
+        self::assertInstanceOf(Item::class, $structuredField[0]);
+
+        self::assertFalse(isset($structuredField[42]));
+    }
+
+    /** @test */
+    public function it_forbids_removing_members_using_the_array_access_interface(): void
+    {
+        $this->expectException(LogicException::class);
+
+        unset(OrderedList::from('foobar', 'foobar', 'zero', 0)[0]);
+    }
+
+    /** @test */
+    public function it_forbids_adding_members_using_the_array_access_interface(): void
+    {
+        $this->expectException(LogicException::class);
+
+        OrderedList::from('foobar', 'foobar', 'zero', 0)[0] = Item::from(false);
     }
 }

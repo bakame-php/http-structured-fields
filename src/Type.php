@@ -7,6 +7,9 @@ namespace Bakame\Http\StructuredFields;
 use DateTimeInterface;
 use Stringable;
 
+/**
+ * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
+ */
 enum Type
 {
     case Integer;
@@ -17,14 +20,13 @@ enum Type
     case Boolean;
     case Date;
 
-    public static function from(mixed $value): self
+    public static function fromValue(mixed $value): self
     {
         return match (true) {
             $value instanceof Token => self::Token,
             $value instanceof ByteSequence => self::ByteSequence,
             $value instanceof DateTimeInterface => self::Date,
-            $value instanceof Stringable,
-            is_string($value) => self::String,
+            $value instanceof Stringable, is_string($value) => self::String,
             is_bool($value) => self::Boolean,
             is_int($value) => self::Integer,
             is_float($value) => self::Decimal,

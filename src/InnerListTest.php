@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use LogicException;
 use PHPUnit\Framework\TestCase;
 use function iterator_to_array;
 
@@ -25,12 +26,6 @@ final class InnerListTest extends TestCase
         self::assertFalse($instance->hasNoMembers());
         self::assertTrue($instance->parameters()->hasMembers());
         self::assertEquals($arrayParams, iterator_to_array($instance));
-
-        $instance->clear();
-
-        self::assertFalse($instance->hasMembers());
-        self::assertTrue($instance->hasNoMembers());
-        self::assertTrue($instance->parameters()->hasMembers());
     }
 
     /** @test */
@@ -38,27 +33,28 @@ final class InnerListTest extends TestCase
     {
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
-        $arrayParams = [$stringItem, $booleanItem];
-        $instance = InnerList::fromList($arrayParams);
+        $instance = InnerList::fromList([$stringItem, $booleanItem]);
 
         self::assertCount(2, $instance);
         self::assertTrue($instance->has(1));
         self::assertFalse($instance->parameters()->hasMembers());
 
-        $instance->remove(1);
+        $instance = $instance->remove(1);
 
         self::assertCount(1, $instance);
         self::assertFalse($instance->has(1));
 
-        $instance->push('BarBaz');
-        $instance->insert(1);
+        $instance = $instance
+            ->push('BarBaz')
+            ->insert(0, 'foo');
+
         $member = $instance->get(1);
 
-        self::assertCount(2, $instance);
+        self::assertCount(3, $instance);
         self::assertIsString($member->value());
-        self::assertStringContainsString('BarBaz', $member->value());
+        self::assertStringContainsString('helloWorld', $member->value());
 
-        $instance->remove(0, 1);
+        $instance = $instance->remove(0, 1, 2);
 
         self::assertCount(0, $instance);
         self::assertFalse($instance->hasMembers());
@@ -67,11 +63,11 @@ final class InnerListTest extends TestCase
     /** @test */
     public function it_can_unshift_insert_and_replace(): void
     {
-        $container = InnerList::from();
-        $container->unshift('42');
-        $container->push(42);
-        $container->insert(1, 42.0);
-        $container->replace(0, ByteSequence::fromDecoded('Hello World'));
+        $container = InnerList::from()
+            ->unshift('42')
+            ->push(42)
+            ->insert(1, 42.0)
+            ->replace(0, ByteSequence::fromDecoded('Hello World'));
 
         self::assertCount(3, $container);
         self::assertTrue($container->hasMembers());
@@ -111,7 +107,7 @@ final class InnerListTest extends TestCase
     {
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
 
-        self::assertSame('bar', $instance->parameters()['foo']->value());
+        self::assertSame('bar', $instance->parameters()->get('foo')->value());
     }
 
     /** @test */
@@ -119,7 +115,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        InnerList::fromList([false], ['foo' => 'bar'])->parameters()['bar']->value();
+        InnerList::fromList([false], ['foo' => 'bar'])->parameters()->get('bar')->value();
     }
 
     /** @test */
@@ -129,11 +125,11 @@ final class InnerListTest extends TestCase
 
         self::assertCount(3, $instance);
         self::assertCount(1, $instance->parameters());
-        self::assertSame('bar(', $instance->parameters()['foo']->value());
+        self::assertSame('bar(', $instance->parameters()->get('foo')->value());
         self::assertSame('hello)world', $instance->get(0)->value());
         self::assertSame(42, $instance->get(1)->value());
         self::assertSame(42.0, $instance->get(2)->value());
-        self::assertEquals(Token::fromString('doe'), $instance->get(2)->parameters()['john']->value());
+        self::assertEquals(Token::fromString('doe'), $instance->get(2)->parameters()->get('john')->value());
     }
 
     /** @test */
@@ -146,37 +142,17 @@ final class InnerListTest extends TestCase
     }
 
     /** @test */
-    public function it_implements_the_array_access_interface(): void
-    {
-        $sequence = InnerList::from();
-        $sequence[] = 42;
-
-        self::assertTrue(isset($sequence[0]));
-        self::assertEquals(42, $sequence[0]->value());
-
-        $sequence[0] = false;
-
-        self::assertNotEquals(42, $sequence[0]->value());
-        unset($sequence[0]);
-
-        self::assertCount(0, $sequence);
-    }
-
-    /** @test */
     public function it_fails_to_insert_unknown_index_via_the_array_access_interface(): void
     {
         $this->expectException(StructuredFieldError::class);
 
-        InnerList::from()[0] = Item::from(42.0);
+        InnerList::from()->insert(0, Item::from(42.0));
     }
 
     /** @test */
     public function testArrayAccessThrowsInvalidIndex2(): void
     {
-        $sequence = InnerList::from();
-        unset($sequence[0]);
-
-        self::assertCount(0, $sequence);
+        self::assertCount(0, InnerList::from()->remove(0));
     }
 
     /** @test */
@@ -194,8 +170,8 @@ final class InnerListTest extends TestCase
         $input = ['foobar', 0, false, $token];
         $structuredField = InnerList::fromList($input);
 
-        self::assertFalse($structuredField[2]->value());
-        self::assertEquals($token, $structuredField[-1]->value());
+        self::assertFalse($structuredField->get(2)->value());
+        self::assertEquals($token, $structuredField->get(-1)->value());
     }
 
     /** @test */
@@ -215,16 +191,45 @@ final class InnerListTest extends TestCase
     {
         $instance1 = InnerList::fromList([Token::fromString('babayaga'), 'a', true], ['a' => true]);
         $instance2 = $instance1->appendParameter('a', true);
+        $instance7 = $instance1->addParameter('a', true);
         $instance3 = $instance1->prependParameter('a', false);
         $instance4 = $instance1->withoutParameter('b');
         $instance5 = $instance1->withoutParameter('a');
         $instance6 = $instance1->clearParameters();
 
         self::assertSame($instance1, $instance2);
+        self::assertSame($instance1, $instance7);
         self::assertNotSame($instance1->parameters(), $instance3->parameters());
         self::assertEquals(iterator_to_array($instance1), iterator_to_array($instance3));
         self::assertSame($instance1, $instance4);
         self::assertFalse($instance5->parameters()->hasMembers());
         self::assertTrue($instance6->parameters()->hasNoMembers());
+    }
+
+    /** @test */
+    public function it_implements_the_array_access_interface(): void
+    {
+        $structuredField = InnerList::from('foobar', 'foobar', 'zero', 0);
+
+        self::assertInstanceOf(Item::class, $structuredField->get(0));
+        self::assertInstanceOf(Item::class, $structuredField[0]);
+
+        self::assertFalse(isset($structuredField[42]));
+    }
+
+    /** @test */
+    public function it_forbids_removing_members_using_the_array_access_interface(): void
+    {
+        $this->expectException(LogicException::class);
+
+        unset(InnerList::from('foobar', 'foobar', 'zero', 0)[0]);
+    }
+
+    /** @test */
+    public function it_forbids_adding_members_using_the_array_access_interface(): void
+    {
+        $this->expectException(LogicException::class);
+
+        InnerList::from('foobar', 'foobar', 'zero', 0)[0] = Item::from(false);
     }
 }

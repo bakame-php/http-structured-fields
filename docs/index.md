@@ -23,9 +23,9 @@ The package can be used to:
 use Bakame\Http\StructuredFields\Item;
 
 $field = Item::from("/terms", ['rel' => 'copyright', 'anchor' => '#foo']);
-echo $field->toHttpValue();              // display "/terms";rel="copyright";anchor="#foo"
-echo $field->value();                    // display "/terms"
-echo $field->parameters['rel']->value(); // display "copyright"
+echo $field->toHttpValue();                   // display "/terms";rel="copyright";anchor="#foo"
+echo $field->value();                         // display "/terms"
+echo $field->parameters->get('rel')->value(); // display "copyright"
 ```
 
 System Requirements
@@ -53,7 +53,7 @@ require 'path/to/http-structured-fields/repo/autoload.php';
 use Bakame\Http\StructuredFields\OrderedList;
 
 $list = OrderedList::fromHttpValue('"/member/*/author", "/member/*/comments"');
-echo $list[-1]->value(); // returns '/member/*/comments'
+echo $list->get(-1)->value(); // returns '/member/*/comments'
 ~~~
 
 Documentation

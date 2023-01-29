@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use ArrayAccess;
 use DateTimeInterface;
 use Iterator;
+use LogicException;
 use Stringable;
 use function array_filter;
 use function array_map;
@@ -14,10 +16,12 @@ use function array_values;
 use function count;
 
 /**
+ * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.1
+ * @implements ArrayAccess<int, Value>
  * @implements MemberList<int, Value>
  * @phpstan-import-type DataType from Item
  */
-final class InnerList implements MemberList, ParameterAccess
+final class InnerList implements ArrayAccess, MemberList, ParameterAccess
 {
     /** @var list<Value> */
     private array $members;
@@ -57,6 +61,11 @@ final class InnerList implements MemberList, ParameterAccess
         return clone $this->parameters;
     }
 
+    public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    {
+        return $this->withParameters($this->parameters()->add($key, $member));
+    }
+
     public function prependParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->prepend($key, $member));
@@ -69,12 +78,12 @@ final class InnerList implements MemberList, ParameterAccess
 
     public function withoutParameter(string ...$keys): static
     {
-        return $this->withParameters($this->parameters()->delete(...$keys));
+        return $this->withParameters($this->parameters()->remove(...$keys));
     }
 
     public function clearParameters(): static
     {
-        return $this->withParameters($this->parameters()->clear());
+        return $this->withParameters(Parameters::create());
     }
 
     public function withParameters(Parameters $parameters): static
@@ -149,9 +158,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
-        $this->members = [...array_map(self::filterMember(...), array_values($members)), ...$this->members];
-
-        return $this;
+        return new self($this->parameters, [...array_map(self::filterMember(...), array_values($members)), ...$this->members]);
     }
 
     /**
@@ -159,9 +166,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public function push(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
-        $this->members = [...$this->members, ...array_map(self::filterMember(...), array_values($members))];
-
-        return $this;
+        return new self($this->parameters, [...$this->members, ...array_map(self::filterMember(...), array_values($members))]);
     }
 
     private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Value
@@ -181,14 +186,17 @@ final class InnerList implements MemberList, ParameterAccess
     public function insert(int $index, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
         $offset = $this->filterIndex($index);
-        match (true) {
+
+        return match (true) {
             null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
             0 === $offset => $this->unshift(...$members),
             count($this->members) === $offset => $this->push(...$members),
-            default => array_splice($this->members, $offset, 0, array_map(self::filterMember(...), $members)),
-        };
+            default => (function (array $newMembers) use ($offset, $members) {
+                array_splice($newMembers, $offset, 0, array_map(self::filterMember(...), $members));
 
-        return $this;
+                return new self($this->parameters, $newMembers);
+            })($this->members),
+        };
     }
 
     public function replace(int $index, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
@@ -197,9 +205,10 @@ final class InnerList implements MemberList, ParameterAccess
             throw InvalidOffset::dueToIndexNotFound($index);
         }
 
-        $this->members[$offset] = self::filterMember($member);
+        $members = $this->members;
+        $members[$offset] = self::filterMember($member);
 
-        return $this;
+        return new self($this->parameters, $members);
     }
 
     /**
@@ -212,24 +221,18 @@ final class InnerList implements MemberList, ParameterAccess
             fn (int|null $index): bool => null !== $index
         );
 
+        $members = $this->members;
         foreach ($offsets as $offset) {
-            unset($this->members[$offset]);
+            unset($members[$offset]);
         }
 
-        return $this;
-    }
-
-    public function clear(): static
-    {
-        $this->members = [];
-
-        return $this;
+        return new self($this->parameters, $members);
     }
 
     /**
      * @param int $offset
      */
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return $this->has($offset);
     }
@@ -237,33 +240,18 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param int $offset
      */
-    public function offsetGet($offset): Value
+    public function offsetGet(mixed $offset): Value
     {
         return $this->get($offset);
     }
 
-    /**
-     * @param int $offset
-     */
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
-        $this->remove($offset);
+        throw new LogicException(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 
-    /**
-     * @param Value|DataType $value the member to add
-     *
-     * @see ::push
-     * @see ::replace
-     */
-    public function offsetSet(mixed $offset, $value): void
+    public function offsetSet(mixed $offset, mixed $value): void
     {
-        if (null !== $offset) {
-            $this->replace($offset, $value);
-
-            return;
-        }
-
-        $this->push($value);
+        throw new LogicException(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 }

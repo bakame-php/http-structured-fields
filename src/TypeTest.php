@@ -16,7 +16,7 @@ final class TypeTest extends TestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Type::from([]);
+        Type::fromValue([]);
     }
 
     /**
@@ -25,7 +25,7 @@ final class TypeTest extends TestCase
      */
     public function it_can_tell_the_item_type(mixed $value, Type $expectedType): void
     {
-        self::assertSame($expectedType, Type::from($value));
+        self::assertSame($expectedType, Type::fromValue($value));
     }
 
     /**

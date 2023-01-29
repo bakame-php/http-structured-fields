@@ -53,20 +53,6 @@ $orderedList = OrderedList::from(
 echo $orderedList->toHttpValue(); //returns '"42";foo="bar", (42.0 forty-two);a'
 ```
 
-Same example using the `ArrayAccess` interface.
-
-```php
-use Bakame\Http\StructuredFields\InnerList;
-use Bakame\Http\StructuredFields\Token;
-
-$innerList = InnerList::fromList([42, 42.0, "42"], ["a" => true]);
-isset($innerList[2]); //return true
-isset($innerList[42]); //return false
-$innerList[] = Token::fromString('forty-two');
-unset($innerList[0], $innerList[2]);
-echo $innerList->toHttpValue(); //returns '(42.0 forty-two);a'
-```
-
 **if you try to set a key which does not exist an exception will be
 thrown as both classes must remain valid lists with no empty
 keys. Be aware that re-indexation behaviour may affect
@@ -77,6 +63,6 @@ use Bakame\Http\StructuredFields\OrderedList;
 use Bakame\Http\StructuredFields\Token;
 
 $innerList = OrderedList::fromList([42, 42.0]);
-$innerList[2] = Token::fromString('forty-two'); // will throw
+$innerList->insert(2, Token::fromString('forty-two')); // will throw
 echo $innerList->toHttpValue(), PHP_EOL;
 ```

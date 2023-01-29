@@ -23,6 +23,7 @@ use function trim;
 use const PHP_ROUND_HALF_EVEN;
 
 /**
+ * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
  * @phpstan-type DataType ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
  */
 final class Item implements Value
@@ -33,7 +34,7 @@ final class Item implements Value
         private readonly Token|ByteSequence|DateTimeImmutable|int|float|string|bool $value,
         private readonly Parameters $parameters
     ) {
-        $this->type = Type::from($this->value);
+        $this->type = Type::fromValue($this->value);
     }
 
     public function type(): Type
@@ -208,6 +209,11 @@ final class Item implements Value
         return clone $this->parameters;
     }
 
+    public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    {
+        return $this->withParameters($this->parameters()->add($key, $member));
+    }
+
     public function prependParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->prepend($key, $member));
@@ -220,12 +226,12 @@ final class Item implements Value
 
     public function clearParameters(): static
     {
-        return $this->withParameters($this->parameters()->clear());
+        return $this->withParameters(Parameters::create());
     }
 
     public function withoutParameter(string ...$keys): static
     {
-        return $this->withParameters($this->parameters()->delete(...$keys));
+        return $this->withParameters($this->parameters()->remove(...$keys));
     }
 
     public function withParameters(Parameters $parameters): static

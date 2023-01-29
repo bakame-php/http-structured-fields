@@ -9,6 +9,9 @@ use function base64_decode;
 use function base64_encode;
 use function preg_match;
 
+/**
+ * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.5
+ */
 final class ByteSequence
 {
     private function __construct(

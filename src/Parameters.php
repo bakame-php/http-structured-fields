@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use ArrayAccess;
 use DateTimeInterface;
 use Iterator;
+use LogicException;
 use Stringable;
 use function array_key_exists;
 use function array_keys;
@@ -15,10 +17,12 @@ use function is_string;
 use function trim;
 
 /**
+ * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.2
+ * @implements ArrayAccess<string, Value>
  * @implements MemberOrderedMap<string, Value>
  * @phpstan-import-type DataType from Item
  */
-final class Parameters implements MemberOrderedMap
+final class Parameters implements ArrayAccess, MemberOrderedMap
 {
     /** @var array<string, Value> */
     private array $members = [];
@@ -29,8 +33,17 @@ final class Parameters implements MemberOrderedMap
     private function __construct(iterable $members = [])
     {
         foreach ($members as $key => $member) {
-            $this->set($key, $member);
+            $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
         }
+    }
+
+    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Value
+    {
+        return match (true) {
+            $member instanceof Value && $member->parameters()->hasNoMembers() => $member,
+            !$member instanceof StructuredField => Item::from($member),
+            default => throw new InvalidArgument('Parameters instances can only contain bare items.'),
+        };
     }
 
     /**
@@ -69,12 +82,11 @@ final class Parameters implements MemberOrderedMap
             $pairs = $pairs->toPairs();
         }
 
-        $instance = new self();
-        foreach ($pairs as $pair) {
-            $instance->set(...$pair);
-        }
-
-        return $instance;
+        return new self((function (iterable $pairs) {
+            foreach ($pairs as [$key, $member]) {
+                yield $key => $member;
+            }
+        })($pairs));
     }
 
     /**
@@ -224,42 +236,22 @@ final class Parameters implements MemberOrderedMap
         // @codeCoverageIgnoreEnd
     }
 
-    /**
-     * Adds a member at the end of the instance otherwise updates the value associated with the key if already present.
-     */
-    public function set(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
+        $members = $this->members;
+        $members[$key] = self::filterMember($member);
 
-        return $this;
+        return new self($members);
     }
 
-    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Value
+    public function remove(string ...$keys): static
     {
-        return match (true) {
-            $member instanceof Value && $member->parameters()->hasNoMembers() => $member,
-            !$member instanceof StructuredField => Item::from($member),
-            default => throw new InvalidArgument('Parameters instances can only contain bare items.'),
-        };
-    }
-
-    /**
-     * Deletes members associated with the list of submitted keys.
-     */
-    public function delete(string ...$keys): static
-    {
+        $members = $this->members;
         foreach ($keys as $key) {
-            unset($this->members[$key]);
+            unset($members[$key]);
         }
 
-        return $this;
-    }
-
-    public function clear(): static
-    {
-        $this->members = [];
-
-        return $this;
+        return new self($members);
     }
 
     /**
@@ -267,9 +259,10 @@ final class Parameters implements MemberOrderedMap
      */
     public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        unset($this->members[$key]);
+        $members = $this->members;
+        unset($members[$key]);
 
-        return $this->set($key, $member);
+        return new self([...$members, $key => self::filterMember($member)]);
     }
 
     /**
@@ -277,11 +270,10 @@ final class Parameters implements MemberOrderedMap
      */
     public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        unset($this->members[$key]);
+        $members = $this->members;
+        unset($members[$key]);
 
-        $this->members = [...[MapKey::fromString($key)->value => self::filterMember($member)], ...$this->members];
-
-        return $this;
+        return new self([$key => self::filterMember($member), ...$members]);
     }
 
     /**
@@ -291,11 +283,12 @@ final class Parameters implements MemberOrderedMap
      */
     public function mergeAssociative(iterable ...$others): static
     {
+        $members = $this->members;
         foreach ($others as $other) {
-            $this->members = [...$this->members, ...self::fromAssociative($other)->members];
+            $members = [...$members, ...self::fromAssociative($other)->members];
         }
 
-        return $this;
+        return new self($members);
     }
 
     /**
@@ -305,17 +298,18 @@ final class Parameters implements MemberOrderedMap
      */
     public function mergePairs(MemberOrderedMap|iterable ...$others): static
     {
+        $members = $this->members;
         foreach ($others as $other) {
-            $this->members = [...$this->members, ...self::fromPairs($other)->members];
+            $members = [...$members, ...self::fromPairs($other)->members];
         }
 
-        return $this;
+        return new self($members);
     }
 
     /**
      * @param string $offset
      */
-    public function offsetExists($offset): bool
+    public function offsetExists(mixed $offset): bool
     {
         return $this->has($offset);
     }
@@ -323,29 +317,18 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param string $offset
      */
-    public function offsetGet($offset): Value
+    public function offsetGet(mixed $offset): Value
     {
         return $this->get($offset);
     }
 
-    /**
-     * @param string $offset
-     */
-    public function offsetUnset($offset): void
+    public function offsetUnset(mixed $offset): void
     {
-        $this->delete($offset);
+        throw new LogicException(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 
-    /**
-     * @param string|null $offset
-     * @param Value|DataType $value  the member value
-     */
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        if (!is_string($offset)) {
-            throw new SyntaxError('The offset for a Parameter member is expected to be a string; "'.gettype($offset).'" given.');
-        }
-
-        $this->set($offset, $value);
+        throw new LogicException(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 }

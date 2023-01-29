@@ -26,10 +26,10 @@ getter methods:
 
 setter methods:
 
-- `set` add an element at the end of the container if the key is new otherwise only the value is updated;
+- `add` add an element at the end of the container if the key is new otherwise only the value is updated;
 - `append` always add an element at the end of the container, if already present the previous value is removed;
 - `prepend` always add an element at the beginning of the container, if already present the previous value is removed;
-- `delete` to remove elements based on their associated keys;
+- `remove` to remove elements based on their associated keys;
 - `mergeAssociative` merge multiple instances of iterable structure as associative constructs;
 - `mergePairs` merge multiple instances of iterable structure as pairs constructs;
 
@@ -53,7 +53,7 @@ $dictionary->hasPair(-1); //return true
 
 echo $dictionary
     ->append('z', 42.0)
-    ->delete('b', 'c')
+    ->remove('b', 'c')
     ->toHttpValue(); // returns "a=?0, z=42.0"
 ```
 
@@ -61,16 +61,14 @@ In addition to `StructuredField` specific interfaces, both classes implements:
 
 - PHP `Countable` interface.
 - PHP `IteratorAggregate` interface.
-- PHP `ArrayAccess` interface.
 
 ```php
 use Bakame\Http\StructuredFields\Parameters;
 
 $parameters = Parameters::fromAssociative(['b' => true, 'foo' => 'bar']);
-$parameters->keys();       // returns ['b', 'foo']
-$parameters->get('b');     // returns Item::from(true)
-$parameters['b'];          // returns Item::from(true)
-$parameters['b']->value(); // returns true
+$parameters->keys();            // returns ['b', 'foo']
+$parameters->get('b');          // returns Item::from(true)
+$parameters->get('b')->value(); // returns true
 iterator_to_array($parameters->toPairs(), true); // returns [['b', Item::from(true)], ['foo', Item::from('bar')]]
 iterator_to_array($parameters, true); // returns ['b' => Item::from(true), 'foo' => Item::from('bar')]
 $parameters->mergeAssociative(

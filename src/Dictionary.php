@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use ArrayAccess;
 use DateTimeInterface;
 use Iterator;
+use LogicException;
 use Stringable;
 use function array_key_exists;
 use function array_keys;
@@ -15,22 +17,37 @@ use function implode;
 use function is_array;
 
 /**
+ * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
+ *
  * @implements MemberOrderedMap<string, Value|InnerList<int, Value>>
+ * @implements ArrayAccess<string, Value|InnerList<int, Value>>
  * @phpstan-import-type DataType from Item
  */
-final class Dictionary implements MemberOrderedMap
+final class Dictionary implements MemberOrderedMap, ArrayAccess
 {
     /** @var array<string, Value|InnerList<int, Value>> */
     private array $members = [];
 
     /**
-     * @param iterable<string, InnerList<int, Value>|Value|DataType> $members
+     * @param iterable<string, InnerList<int, Value>|iterable<Value|DataType>|Value|DataType> $members
      */
     private function __construct(iterable $members = [])
     {
         foreach ($members as $key => $member) {
-            $this->set($key, $member);
+            $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
         }
+    }
+
+    /**
+     * @param StructuredField|iterable<Value|DataType>|DataType $member
+     */
+    private static function filterMember(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Value
+    {
+        return match (true) {
+            $member instanceof InnerList, $member instanceof Value => $member,
+            is_iterable($member) => InnerList::fromList($member),
+            default => Item::from($member),
+        };
     }
 
     /**
@@ -47,7 +64,7 @@ final class Dictionary implements MemberOrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<string, InnerList<int, Value>|Value|DataType> $members
+     * @param iterable<string, InnerList<int, Value>|list<Value|DataType>|Value|DataType> $members
      */
     public static function fromAssociative(iterable $members): self
     {
@@ -61,20 +78,19 @@ final class Dictionary implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, Value|InnerList<int, Value>>|iterable<array{0:string, 1:InnerList<int, Value>|Value|DataType}> $pairs
+     * @param MemberOrderedMap<string, Value|InnerList<int, Value>>|iterable<array{0:string, 1:InnerList<int, Value>|list<Value|DataType>|Value|DataType}> $pairs
      */
-    public static function fromPairs(MemberOrderedMap|iterable $pairs): self
+    public static function fromPairs(iterable $pairs): self
     {
         if ($pairs instanceof MemberOrderedMap) {
             $pairs = $pairs->toPairs();
         }
 
-        $instance = new self();
-        foreach ($pairs as $pair) {
-            $instance->set(...$pair);
-        }
-
-        return $instance;
+        return new self((function (iterable $pairs) {
+            foreach ($pairs as [$key, $member]) {
+                yield $key => $member;
+            }
+        })($pairs));
     }
 
     /**
@@ -84,12 +100,11 @@ final class Dictionary implements MemberOrderedMap
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        $instance = new self();
-        foreach (Parser::parseDictionary($httpValue) as $key => $value) {
-            $instance->set($key, is_array($value) ? InnerList::fromList(...$value) : $value);
-        }
-
-        return $instance;
+        return new self((function (iterable $pairs) {
+            foreach ($pairs as $key => $value) {
+                yield $key => is_array($value) ? InnerList::fromList(...$value) : $value;
+            }
+        })(Parser::parseDictionary($httpValue)));
     }
 
     public function toHttpValue(): string
@@ -206,55 +221,38 @@ final class Dictionary implements MemberOrderedMap
         // @codeCoverageIgnoreEnd
     }
 
-    /**
-     * @throws SyntaxError If the string key is not a valid
-     */
-    public function set(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
+        $members = $this->members;
+        $members[MapKey::fromString($key)->value] = self::filterMember($member);
 
-        return $this;
+        return new self($members);
     }
 
-    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Value
+    public function remove(string ...$keys): static
     {
-        return match (true) {
-            $member instanceof InnerList, $member instanceof Value => $member,
-            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Value::class.'" or a "'.InnerList::class.'" instance; received a "'.$member::class.'" instead.'),
-            default => Item::from($member),
-        };
-    }
-
-    public function delete(string ...$keys): static
-    {
+        $members = $this->members;
         foreach ($keys as $key) {
-            unset($this->members[$key]);
+            unset($members[$key]);
         }
 
-        return $this;
-    }
-
-    public function clear(): static
-    {
-        $this->members = [];
-
-        return $this;
+        return new self($members);
     }
 
     public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        unset($this->members[$key]);
+        $members = $this->members;
+        unset($members[$key]);
 
-        return $this->set($key, $member);
+        return new self([...$members, $key => self::filterMember($member)]);
     }
 
     public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        unset($this->members[$key]);
+        $members = $this->members;
+        unset($members[$key]);
 
-        $this->members = [...[MapKey::fromString($key)->value => self::filterMember($member)], ...$this->members];
-
-        return $this;
+        return new self([$key => self::filterMember($member), ...$members]);
     }
 
     /**
@@ -262,11 +260,12 @@ final class Dictionary implements MemberOrderedMap
      */
     public function mergeAssociative(iterable ...$others): static
     {
+        $members = $this->members;
         foreach ($others as $other) {
-            $this->members = [...$this->members, ...self::fromAssociative($other)->members];
+            $members = [...$members, ...self::fromAssociative($other)->members];
         }
 
-        return $this;
+        return new self($members);
     }
 
     /**
@@ -274,11 +273,12 @@ final class Dictionary implements MemberOrderedMap
      */
     public function mergePairs(MemberOrderedMap|iterable ...$others): static
     {
+        $members = $this->members;
         foreach ($others as $other) {
-            $this->members = [...$this->members, ...self::fromPairs($other)->members];
+            $members = [...$members, ...self::fromPairs($other)->members];
         }
 
-        return $this;
+        return new self($members);
     }
 
     /**
@@ -299,23 +299,13 @@ final class Dictionary implements MemberOrderedMap
         return $this->get($offset);
     }
 
-    /**
-     * @param string $offset
-     */
     public function offsetUnset(mixed $offset): void
     {
-        $this->delete($offset);
+        throw new LogicException(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 
-    /**
-     * @param InnerList<int, Value>|Value|DataType $value
-     */
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        if (!is_string($offset)) {
-            throw new SyntaxError('The offset for a dictionary member is expected to be a string; "'.gettype($offset).'" given.');
-        }
-
-        $this->set($offset, $value);
+        throw new LogicException(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 }

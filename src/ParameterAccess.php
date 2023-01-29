@@ -12,6 +12,16 @@ interface ParameterAccess
     public function parameters(): Parameters;
 
     /**
+     * Adds a member if its key is not present at the of the associated parameter instance or update the instance at the given key.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified parameter change.
+     *
+     * @throws SyntaxError If the string key is not a valid
+     */
+    public function addParameter(string $key, Item $member): static;
+
+    /**
      * Adds a member at the start of the associated parameter instance and deletes any previous reference to the key if present.
      *
      * This method MUST retain the state of the current instance, and return

@@ -15,6 +15,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Dictionnary::create` named constructor to create a new instance without any parameter.
 - `Type` Enum to list all possible Item Type supported.
 - `Value` Interface is introduced with `Item` being the only available implementation.
+- `MemberOrderedMap::add` and `MemberOrderedMap::remove` methods
 
 ### Fixed
 
@@ -23,6 +24,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - **[BC Break]** `::fromAssociative`, `::fromList`, `::fromPairs` methods require iterable arguments without default value.
 - **[BC Break]** `Item::value` method returns the Item (returns value can be `float|int|string|bool|ByteSequence|DateTimeImmutable|Token`).
 - **[BC Break]** `InnerList::parameters` is no longer accessible as a public readonly property.
+- **[BC Break]** Modifying container instances with `ArrayAccess` modifying methods is forbidden and will trigger a `LogicException` exception.
 
 ### Deprecated
 
@@ -32,6 +34,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - **[BC Break]** `ForbiddenStateError` exception is removed, the `InvalidArgument` exception is used instead.
 - **[BC Break]** `Item::is*` methods are removed, the enum `Type` is used instead.
+- **[BC Break]**  `MemberContainer::clear` method is removed without replacement.
+- **[BC Break]** - `MemberOrderedMap::set` and `MemberOrderedMap::delete` methods; use `MemberOrderedMap::add` and `MemberOrderedMap::remove` instead
 
 ## [0.6.0] - 2022-11-12
 
