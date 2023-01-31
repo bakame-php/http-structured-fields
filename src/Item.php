@@ -195,9 +195,8 @@ final class Item implements Value
     public function withValue(mixed $value): static
     {
         return match (true) {
-            $value instanceof ByteSequence && $this->value instanceof ByteSequence && $value->encoded() === $this->value->encoded(),
-            $value instanceof Token && $this->value instanceof Token && $value->value === $this->value->value,
-            $value instanceof DateTimeInterface && $this->value instanceof DateTimeInterface && $value == $this->value,
+            ($this->value instanceof ByteSequence || $this->value instanceof Token) && $this->value->equals($value),
+            $this->value instanceof DateTimeInterface && $value instanceof DateTimeInterface && $value == $this->value,
             $value instanceof Stringable && $value->__toString() === $this->value,
             $value === $this->value => $this,
             default => self::from($value, $this->parameters),
@@ -249,7 +248,7 @@ final class Item implements Value
         return match (true) {
             is_string($this->value) => '"'.preg_replace('/(["\\\])/', '\\\$1', $this->value).'"',
             is_int($this->value) => (string) $this->value,
-            is_float($this->value) => $this->serializeDecimal($this->value),
+            is_float($this->value) => self::serializeDecimal($this->value),
             is_bool($this->value) => '?'.($this->value ? '1' : '0'),
             $this->value instanceof Token => $this->value->value,
             $this->value instanceof DateTimeImmutable => '@'.$this->value->getTimestamp(),
@@ -262,7 +261,7 @@ final class Item implements Value
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.1.5
      */
-    private function serializeDecimal(float $value): string
+    private static function serializeDecimal(float $value): string
     {
         /** @var string $result */
         $result = json_encode(round($value, 3, PHP_ROUND_HALF_EVEN));

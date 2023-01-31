@@ -16,6 +16,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Type` Enum to list all possible Item Type supported.
 - `Value` Interface is introduced with `Item` being the only available implementation.
 - `MemberOrderedMap::add` and `MemberOrderedMap::remove` methods
+- `ByteSequence::equals` and `Token::equals` to easily compare type instances.
 
 ### Fixed
 

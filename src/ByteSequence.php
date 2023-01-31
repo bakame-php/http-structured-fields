@@ -60,4 +60,9 @@ final class ByteSequence
     {
         return base64_encode($this->value);
     }
+
+    public function equals(mixed $other): bool
+    {
+        return $other instanceof self && $other->value === $this->value;
+    }
 }

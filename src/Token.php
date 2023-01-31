@@ -23,4 +23,9 @@ final class Token
     {
         return new self((string) $value);
     }
+
+    public function equals(mixed $other): bool
+    {
+        return $other instanceof self && $other->value === $this->value;
+    }
 }

@@ -30,7 +30,7 @@ enum Type
             is_bool($value) => self::Boolean,
             is_int($value) => self::Integer,
             is_float($value) => self::Decimal,
-            default => throw new SyntaxError('Unknown or unsupported type.'),
+            default => throw new SyntaxError('The type "'.(is_object($value) ? $value::class : gettype($value)).'" is not supported.'),
         };
     }
 }
