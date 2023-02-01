@@ -7,7 +7,6 @@ namespace Bakame\Http\StructuredFields;
 use ArrayAccess;
 use DateTimeInterface;
 use Iterator;
-use LogicException;
 use Stringable;
 use function array_key_exists;
 use function array_keys;
@@ -306,11 +305,11 @@ final class Dictionary implements MemberOrderedMap, ArrayAccess
 
     public function offsetUnset(mixed $offset): void
     {
-        throw new LogicException(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
+        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        throw new LogicException(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
+        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 }
