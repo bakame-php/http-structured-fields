@@ -74,6 +74,7 @@ final class OrderedListTest extends StructuredFieldTest
         self::assertCount(3, $instance);
         self::assertTrue($instance->hasMembers());
         self::assertSame(':SGVsbG8gV29ybGQ=:, 42.0, 42', $instance->toHttpValue());
+        self::assertSame(':SGVsbG8gV29ybGQ=:, 42.0, 42', (string) $instance);
     }
 
     /** @test */

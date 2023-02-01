@@ -256,6 +256,11 @@ final class Item implements Value
         }.$this->parameters->toHttpValue();
     }
 
+    public function __toString(): string
+    {
+        return $this->toHttpValue();
+    }
+
     /**
      * Serialize the Item decimal value according to RFC8941.
      *

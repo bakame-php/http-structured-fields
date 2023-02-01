@@ -122,7 +122,7 @@ final class DictionaryTest extends StructuredFieldTest
             ->append('a', Item::from(false))
             ->prepend('b', Item::from(true));
 
-        self::assertSame('b, a=?0', $instance->toHttpValue());
+        self::assertSame('b, a=?0', (string) $instance);
     }
 
     /** @test */

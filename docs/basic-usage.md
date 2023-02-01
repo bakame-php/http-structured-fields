@@ -20,11 +20,14 @@ use Bakame\Http\StructuredFields\OrderedList;
 
 $dictionary = Dictionary::fromHttpValue("a=?0,   b,   c=?1; foo=bar");
 echo $dictionary->toHttpValue(); // 'a=?0, b, c;foo=bar'
+echo $dictionary; // 'a=?0, b, c;foo=bar'
 
 $list = OrderedList::fromHttpValue('("foo"; a=1;b=2);lvl=5, ("bar" "baz");lvl=1');
 echo $list->toHttpValue(); // '("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1'
+echo $list; // '("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1'
 
 $item = Item::fromHttpValue('"foo";a=1;b=2');
 echo $item->toHttpValue(); // "foo";a=1;b=2
+echo $item; // "foo";a=1;b=2
 ```
 

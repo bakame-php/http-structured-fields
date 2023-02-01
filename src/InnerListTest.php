@@ -72,6 +72,7 @@ final class InnerListTest extends TestCase
         self::assertCount(3, $container);
         self::assertTrue($container->hasMembers());
         self::assertSame('(:SGVsbG8gV29ybGQ=: 42.0 42)', $container->toHttpValue());
+        self::assertSame('(:SGVsbG8gV29ybGQ=: 42.0 42)', (string) $container);
     }
 
     /** @test */

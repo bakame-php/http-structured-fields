@@ -35,4 +35,17 @@ final class TokenTest extends TestCase
             'token contains comma' => ['a,a'],
         ];
     }
+
+    /** @test */
+    public function it_can_compare_instances(): void
+    {
+        $decoded = 'pretend';
+        $source = 'cHJldGVuZC';
+        $value1 = Token::fromString($source);
+        $value2 = Token::fromString($source);
+        $value3 = Token::fromString($decoded);
+
+        self::assertTrue($value1->equals($value2));
+        self::assertFalse($value1->equals($value3));
+    }
 }

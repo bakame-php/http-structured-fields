@@ -100,6 +100,11 @@ final class InnerList implements ArrayAccess, MemberList, ParameterAccess
         return '('.implode(' ', array_map(fn (Value $value): string => $value->toHttpValue(), $this->members)).')'.$this->parameters->toHttpValue();
     }
 
+    public function __toString(): string
+    {
+        return $this->toHttpValue();
+    }
+
     public function count(): int
     {
         return count($this->members);

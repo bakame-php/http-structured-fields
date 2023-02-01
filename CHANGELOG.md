@@ -17,6 +17,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Value` Interface is introduced with `Item` being the only available implementation.
 - `MemberOrderedMap::add` and `MemberOrderedMap::remove` methods
 - `ByteSequence::equals` and `Token::equals` to easily compare type instances.
+- `StructuredField` extends the `Stringable` interface
 
 ### Fixed
 

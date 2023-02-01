@@ -117,6 +117,11 @@ final class Dictionary implements MemberOrderedMap, ArrayAccess
         return implode(', ', array_map($formatter, $this->members, array_keys($this->members)));
     }
 
+    public function __toString(): string
+    {
+        return $this->toHttpValue();
+    }
+
     public function count(): int
     {
         return count($this->members);

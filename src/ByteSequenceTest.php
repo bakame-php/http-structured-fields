@@ -50,4 +50,17 @@ final class ByteSequenceTest extends StructuredFieldTest
         self::assertSame('pretend this is binary content.', $item->decoded());
         self::assertSame($source, $item->encoded());
     }
+
+    /** @test */
+    public function it_can_compare_instances(): void
+    {
+        $decoded = 'pretend this is binary content.';
+        $source = 'cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==';
+        $value1 = ByteSequence::fromDecoded($decoded);
+        $value2 = ByteSequence::fromEncoded($source);
+        $value3 = ByteSequence::fromDecoded($source);
+
+        self::assertTrue($value1->equals($value2));
+        self::assertFalse($value1->equals($value3));
+    }
 }

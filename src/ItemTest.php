@@ -46,6 +46,7 @@ final class ItemTest extends StructuredFieldTest
     public function it_instantiate_a_decimal(): void
     {
         self::assertSame('42.0', Item::from(42.0)->toHttpValue());
+        self::assertSame('42.0', (string) Item::from(42.0));
     }
 
     /** @test */

@@ -139,6 +139,7 @@ final class ParametersTest extends StructuredFieldTest
             ->prepend('b', Item::from(true));
 
         self::assertSame(';b;a=?0', $instance->toHttpValue());
+        self::assertSame(';b;a=?0', (string) $instance);
     }
 
     /** @test */
@@ -271,7 +272,7 @@ final class ParametersTest extends StructuredFieldTest
     {
         $this->expectException(InvalidArgument::class);
 
-        Parameters::fromPairs([['foo', InnerList::from(42)]]); // @phpstan-ignore-line
+        Parameters::fromPairs([['foo', InnerList::from(42)]]);
     }
 
 

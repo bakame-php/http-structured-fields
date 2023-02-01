@@ -78,6 +78,11 @@ final class OrderedList implements ArrayAccess, MemberList
         return implode(', ', array_map(fn (StructuredField $member): string => $member->toHttpValue(), $this->members));
     }
 
+    public function __toString(): string
+    {
+        return $this->toHttpValue();
+    }
+
     public function count(): int
     {
         return count($this->members);
