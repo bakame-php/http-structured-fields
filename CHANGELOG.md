@@ -7,12 +7,11 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Added
 
 - Support for `Stringable` instances added to `Item::from`, the instances will be converted to the string data type.
-- Support for the upcoming `Date` data type in `Item`. (see https://httpwg.org/http-extensions/draft-ietf-httpbis-sfbis.html)
-  - date type is represented as a `DateTimeImmutable` object.
+- Support for the upcoming `Date` data type in `Item` represented as a `DateTimeImmutable` object. (see https://httpwg.org/http-extensions/draft-ietf-httpbis-sfbis.html)
 - `ParameterAccess` interface updated with new methods to ease parameter members modification.
 - `Parameter::create` named constructor to create a new instance without any parameter.
 - `Dictionnary::create` named constructor to create a new instance without any parameter.
-- `Type` Enum to list all possible Item Type supported.
+- `Type` Enum of all supported datatype.
 - `Value` Interface is introduced with `Item` being the only available implementation.
 - `MemberOrderedMap::add` and `MemberOrderedMap::remove` methods
 - `ByteSequence::equals` and `Token::equals` to easily compare type instances.
@@ -34,10 +33,10 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- **[BC Break]** `ForbiddenStateError` exception is removed, the `InvalidArgument` exception is used instead.
-- **[BC Break]** `Item::is*` methods are removed, the enum `Type` is used instead.
-- **[BC Break]**  `MemberContainer::clear` method is removed without replacement.
-- **[BC Break]** - `MemberOrderedMap::set` and `MemberOrderedMap::delete` methods; use `MemberOrderedMap::add` and `MemberOrderedMap::remove` instead
+- **[BC Break]** `ForbiddenStateError` exception is removed; the `InvalidArgument` exception is used instead.
+- **[BC Break]** `Item::is*` methods are removed; the enum `Type` is used instead.
+- **[BC Break]** `MemberContainer::clear` method is removed without replacement.
+- **[BC Break]** `MemberOrderedMap::set` and `MemberOrderedMap::delete` methods remonved; use `MemberOrderedMap::add` and `MemberOrderedMap::remove` instead
 
 ## [0.6.0] - 2022-11-12
 

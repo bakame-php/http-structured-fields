@@ -33,4 +33,9 @@ enum Type
             default => throw new SyntaxError('The type "'.(is_object($value) ? $value::class : gettype($value)).'" is not supported.'),
         };
     }
+
+    public function equals(mixed $other): bool
+    {
+        return $other instanceof self && $other === $this;
+    }
 }
