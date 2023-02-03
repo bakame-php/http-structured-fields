@@ -17,7 +17,7 @@ Both classes expose the following:
 named constructors:
 
 - `fromList` instantiates the container with a list of members in an iterable construct;
-- `new` instantiates the container with a list of members as variadic;
+- `from` instantiates the container with a list of members as variadic;
 
 setter methods
 
@@ -26,6 +26,8 @@ setter methods
 - `insert` to add elements at a given position in the list;
 - `replace` to replace an element at a given position in the list;
 - `remove` to remove elements based on their position;
+
+**All container classes are immutable so change will only be applied on the new instance.**
 
 In addition to `StructuredField` specific interfaces, both classes implements:
 
@@ -42,15 +44,19 @@ use Bakame\Http\StructuredFields\Token;
 $innerList = InnerList::fromList([42, 42.0, "42"], ["a" => true]);
 $innerList->has(2); //return true
 $innerList->has(42); //return false
-$innerList->push(Token::fromString('forty-two'));
-$innerList->remove(0, 2);
-echo $innerList->toHttpValue(); //returns '(42.0 forty-two);a'
 
-$orderedList = OrderedList::from(
+$newList = $innerList
+    ->push(Token::fromString('forty-two'));
+    ->remove(0, 2);
+    
+echo $innerList;              //returns '(42 42.0 "42");a'
+echo $newList->toHttpValue(); //returns '(42.0 forty-two);a'
+
+$list = OrderedList::from(
     Item::from("42", ["foo" => "bar"]), 
-    $innerList
+    $newList
 );
-echo $orderedList->toHttpValue(); //returns '"42";foo="bar", (42.0 forty-two);a'
+echo $list->toHttpValue(); //returns '"42";foo="bar", (42.0 forty-two);a'
 ```
 
 **if you try to set a key which does not exist an exception will be
@@ -62,7 +68,15 @@ your logic**
 use Bakame\Http\StructuredFields\OrderedList;
 use Bakame\Http\StructuredFields\Token;
 
-$innerList = OrderedList::fromList([42, 42.0]);
-$innerList->insert(2, Token::fromString('forty-two')); // will throw
-echo $innerList->toHttpValue(), PHP_EOL;
+$list = OrderedList::fromList([42, 42.0]);
+$list->insert(2, Token::fromString('forty-two')); // will throw
+```
+
+**Updating using `ArrayAccess` methods is forbidden and will result in a `ForbiddenOperation` being emitted.**
+
+```php
+use Bakame\Http\StructuredFields\OrderedList;
+
+$list = OrderedList::fromList([42, 42.0]);
+$list[0] = false; // will throw a ForbiddenOperation exception
 ```

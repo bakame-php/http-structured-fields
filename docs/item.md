@@ -55,13 +55,30 @@ To instantiate the class you are required to use the `ByteSequence::fromDecoded`
 named constructors. The class also exposes the complementary public methods `ByteSequence::decoded`,
 `ByteSequence::encoded` to enable the correct textual representation.
 
+### Date
+
+The Date data type is a special integer as defined in the RFC to represent date as timestamp.
+They are represented in the package using PHP's `DateTimeImmutable` object. But the package
+supports any `DateTimeInterface` object as long as they are conforming to the RFC supported date range.
+
+```php
+use Bakame\Http\StructuredFields\Item;
+
+$date1 = Item::from(new DateTime('today'));
+$date2 = Item::from(new DateTimeImmutable('today'));
+
+$date1->value() == $date2->value();
+//in both cases the `value` method returns a DateTimeImmutable object.
+
+Item::from(new DateTimeImmutable('@'.PHP_INT_MAX)); // will throw
+```
+
 ## Usages
 
 Items can be associated with parameters that are an ordered maps of key-value pairs where the
 keys are strings and the value are bare items. Their public API is covered in the [ordered maps section](ordered-maps.md].
 
 **An item without any parameter associated to it is said to be a bare item.**
-**Exception will be thrown when trying to access or serialize a parameter object containing non-bare items.**
 
 ```php
 use Bakame\Http\StructuredFields\Item;
@@ -71,10 +88,9 @@ $item->value(); // returns "hello world"
 $item->type();  // returns Type::String
 $item->parameters()['a']->value(); //returns true
 ```
-
 Instantiation via type recognition is done using the `Item::from` named constructor.
 
-- The first argument represents one of the six (6) item type value;
+- The first argument represents one of the supported type value;
 - The second argument, which is optional, MUST be an iterable construct  
   where its index represents the parameter key and its value an item or an item type value;
 
@@ -96,8 +112,8 @@ $item = Item::fromPair([
         ["a", ByteSequence::fromDecoded("Hello World")],
     ]
 ]);
-$item->value(); // returns "hello world"
-$item->type();  // returns Type::String
+$item->value();                    // returns "hello world"
+$item->type();                     // returns Type::String
 $item->parameters()["a"]->type();  // returns Type::ByteSequence
 $item->parameters()["a"]->value(); // returns StructuredFields\ByteSequence::fromDecoded('Hello World');
 echo $item->toHttpValue();         // returns "hello world";a=:SGVsbG8gV29ybGQ=:
@@ -106,13 +122,13 @@ echo $item->toHttpValue();         // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 `Item::fromPair` is an alternative to the `Item::from` named constructor, it expects
 a tuple composed by an array as a list where:
 
-- The first member on index `0` represents one of the six (6) item type value;
-- The second optional member, on index `1`, **MUST** be an iterable construct containing
-  tuples of key-value pairs;
+- The first member on index `0` represents one of the supported item type value;
+- The second optional member, on index `1`, **MUST** be an iterable construct containing tuples of key-value pairs;
 
 Once instantiated, accessing `Item` properties is done via:
 
-- the method `Item::value` which returns the instance underlying value fully decoded;
+- the method `Item::type` which returns the instance type via the `Type` enum;
+- the method `Item::value` which returns the instance underlying value;
 - the method `Item::parameters` which returns the parameters associated to the `Item` as a distinct `Parameters` object
 
 ```php

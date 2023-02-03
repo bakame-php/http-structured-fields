@@ -8,7 +8,7 @@ HTTP Structured Fields For PHP
 [![Total Downloads](https://img.shields.io/packagist/dt/bakame/http-structured-fields.svg?style=flat-square)](https://packagist.org/packages/bakame/http-structured-fields)
 [![Sponsor development of this project](https://img.shields.io/badge/sponsor%20this%20package-%E2%9D%A4-ff69b4.svg?style=flat-square)](https://github.com/sponsors/nyamsprod)
 
-The package uses value objects to parse, serialize and build [HTTP Structured Fields][1] in PHP.
+The package uses value objects to parse, serialize, build and update [HTTP Structured Fields][1] in PHP.
 
 HTTP Structured fields are intended for use by specifications of new HTTP fields that wish to 
 use a common syntax that is more restrictive than traditional HTTP field values or could
@@ -23,9 +23,10 @@ The package can be used to:
 use Bakame\Http\StructuredFields\Item;
 
 $field = Item::from("/terms", ['rel' => 'copyright', 'anchor' => '#foo']);
-echo $field->toHttpValue();                   // display "/terms";rel="copyright";anchor="#foo"
-echo $field->value();                         // display "/terms"
-echo $field->parameters->get('rel')->value(); // display "copyright"
+echo $field->toHttpValue();                // display "/terms";rel="copyright";anchor="#foo"
+echo $field;                               // display "/terms";rel="copyright";anchor="#foo"
+echo $field->value();                      // display "/terms"
+echo $field->parameters()['rel']->value(); // display "copyright"
 ```
 
 System Requirements
@@ -46,15 +47,6 @@ or download the library and:
 
 - use any other [PSR-4](https://www.php-fig.org/psr/psr-4/) compatible autoloader.
 - use the bundle autoloader script as shown below:
-
-~~~php
-require 'path/to/http-structured-fields/repo/autoload.php';
-
-use Bakame\Http\StructuredFields\OrderedList;
-
-$list = OrderedList::fromHttpValue('"/member/*/author", "/member/*/comments"');
-echo $list->get(-1)->value(); // returns '/member/*/comments'
-~~~
 
 Documentation
 ------------

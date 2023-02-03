@@ -26,6 +26,8 @@ getter methods:
 
 setter methods:
 
+**All container classes are immutable so change will only be applied on the new instance.**
+
 - `add` add an element at the end of the container if the key is new otherwise only the value is updated;
 - `append` always add an element at the end of the container, if already present the previous value is removed;
 - `prepend` always add an element at the beginning of the container, if already present the previous value is removed;
@@ -66,9 +68,9 @@ In addition to `StructuredField` specific interfaces, both classes implements:
 use Bakame\Http\StructuredFields\Parameters;
 
 $parameters = Parameters::fromAssociative(['b' => true, 'foo' => 'bar']);
-$parameters->keys();            // returns ['b', 'foo']
-$parameters->get('b');          // returns Item::from(true)
-$parameters->get('b')->value(); // returns true
+$parameters->keys();       // returns ['b', 'foo']
+$parameters->get('b');     // returns Item::from(true)
+$parameters['b']->value(); // returns true
 iterator_to_array($parameters->toPairs(), true); // returns [['b', Item::from(true)], ['foo', Item::from('bar')]]
 iterator_to_array($parameters, true); // returns ['b' => Item::from(true), 'foo' => Item::from('bar')]
 $parameters->mergeAssociative(
@@ -79,3 +81,12 @@ $parameters->toHttpValue(); // returns ;b="false";foo="foo"
 ```
 
 **Both classes support negative indexes.**
+
+**Updating using `ArrayAccess` methods is forbidden and will result in a `ForbiddenOperation` being emitted.**
+
+```php
+use Bakame\Http\StructuredFields\Dictionary;
+
+$container = Dictionary::create();
+$container['zero'] = false; // will throw a ForbiddenOperation exception
+```
