@@ -14,7 +14,7 @@ use Stringable;
  */
 final class ItemTest extends StructuredFieldTest
 {
-    /** @var array|string[] */
+    /** @var array<string> */
     protected array $paths = [
         __DIR__.'/../vendor/httpwg/structured-field-tests/boolean.json',
         __DIR__.'/../vendor/httpwg/structured-field-tests/number.json',

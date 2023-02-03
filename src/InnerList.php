@@ -16,11 +16,10 @@ use function count;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.1
- * @implements ArrayAccess<int, Value>
  * @implements MemberList<int, Value>
  * @phpstan-import-type DataType from Item
  */
-final class InnerList implements ArrayAccess, MemberList, ParameterAccess
+final class InnerList implements MemberList, ParameterAccess
 {
     /** @var list<Value> */
     private array $members;

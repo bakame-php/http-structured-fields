@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use ArrayAccess;
 use Countable;
-use Iterator;
 use IteratorAggregate;
 
 /**
  * @template TKey
  * @template TValue of StructuredField
+ * @template-extends ArrayAccess<TKey, TValue>
  * @template-extends IteratorAggregate<TKey, TValue>
  */
-interface MemberContainer extends Countable, IteratorAggregate, StructuredField
+interface MemberContainer extends ArrayAccess, Countable, IteratorAggregate, StructuredField
 {
     /**
      * Tells whether the instance contains no members.
@@ -26,14 +27,12 @@ interface MemberContainer extends Countable, IteratorAggregate, StructuredField
     public function hasMembers(): bool;
 
     /**
-     * @return Iterator<TKey, TValue>
-     */
-    public function getIterator(): Iterator;
-
-    /**
      * @return TValue
      */
     public function get(string|int $offset): StructuredField;
 
+    /**
+     * Tells whether the instance contain a members at the specified offset.
+     */
     public function has(string|int $offset): bool;
 }

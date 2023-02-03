@@ -19,10 +19,9 @@ use function is_array;
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
  *
  * @implements MemberOrderedMap<string, Value|InnerList<int, Value>>
- * @implements ArrayAccess<string, Value|InnerList<int, Value>>
  * @phpstan-import-type DataType from Item
  */
-final class Dictionary implements MemberOrderedMap, ArrayAccess
+final class Dictionary implements MemberOrderedMap
 {
     /** @var array<string, Value|InnerList<int, Value>> */
     private array $members = [];

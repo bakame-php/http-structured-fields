@@ -17,11 +17,10 @@ use function trim;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.2
- * @implements ArrayAccess<string, Value>
  * @implements MemberOrderedMap<string, Value>
  * @phpstan-import-type DataType from Item
  */
-final class Parameters implements ArrayAccess, MemberOrderedMap
+final class Parameters implements MemberOrderedMap
 {
     /** @var array<string, Value> */
     private array $members = [];

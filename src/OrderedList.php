@@ -17,11 +17,10 @@ use function implode;
 use function is_array;
 
 /**
- * @implements ArrayAccess<int, Value|InnerList<int, Value>>
  * @implements MemberList<int, Value|InnerList<int, Value>>
  * @phpstan-import-type DataType from Item
  */
-final class OrderedList implements ArrayAccess, MemberList
+final class OrderedList implements MemberList
 {
     /** @var list<Value|InnerList<int, Value>> */
     private array $members;

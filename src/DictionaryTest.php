@@ -9,7 +9,7 @@ use function iterator_to_array;
 
 final class DictionaryTest extends StructuredFieldTest
 {
-    /** @var array|string[] */
+    /** @var array<string> */
     protected array $paths = [
         __DIR__.'/../vendor/httpwg/structured-field-tests/dictionary.json',
     ];

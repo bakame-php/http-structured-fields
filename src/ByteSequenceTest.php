@@ -9,7 +9,7 @@ namespace Bakame\Http\StructuredFields;
  */
 final class ByteSequenceTest extends StructuredFieldTest
 {
-    /** @var array|string[] */
+    /** @var array<string> */
     protected array $paths = [
         __DIR__.'/../vendor/httpwg/structured-field-tests/binary.json',
     ];
