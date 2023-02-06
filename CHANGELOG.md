@@ -8,7 +8,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - Support for `Stringable` instances added to `Item::from`, the instances will be converted to the string data type.
 - Support for the upcoming `Date` data type in `Item` represented as a `DateTimeImmutable` object. (see https://httpwg.org/http-extensions/draft-ietf-httpbis-sfbis.html)
-- `SupportsParameters` interface with new methods to ease parameter members modification.
+- `ParameterAccess` interface with new methods to ease parameter members modification.
 - `Parameter::create` named constructor to create a new instance without any parameter.
 - `Dictionnary::create` named constructor to create a new instance without any parameter.
 - `Type` Enum of all supported datatype.
@@ -37,7 +37,6 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - **[BC Break]** `Item::is*` methods are removed; the enum `Type` is used instead.
 - **[BC Break]** `MemberContainer::clear` method is removed without replacement.
 - **[BC Break]** `MemberOrderedMap::set` and `MemberOrderedMap::delete` methods remonved; use `MemberOrderedMap::add` and `MemberOrderedMap::remove` instead
-- **[BC Break]** `ParameterAccess` renamed `SupportsParameters`.
 
 ## [0.6.0] - 2022-11-12
 
