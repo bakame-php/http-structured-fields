@@ -329,7 +329,7 @@ final class ItemTest extends StructuredFieldTest
         $instance3 = $instance1->prependParameter('a', false);
         $instance4 = $instance1->withoutParameter('b');
         $instance5 = $instance1->withoutParameter('a');
-        $instance6 = $instance1->clearParameters();
+        $instance6 = $instance1->withoutAllParameters();
 
         self::assertSame($instance1, $instance2);
         self::assertSame($instance1, $instance7);

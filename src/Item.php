@@ -223,7 +223,7 @@ final class Item implements Value
         return $this->withParameters($this->parameters()->append($key, $member));
     }
 
-    public function clearParameters(): static
+    public function withoutAllParameters(): static
     {
         return $this->withParameters(Parameters::create());
     }
