@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use JsonException;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use function implode;
 
-abstract class StructuredFieldTest extends TestCase
+abstract class StructuredFieldTestCase extends TestCase
 {
     /** @var array<string> */
-    protected array $paths;
+    protected static array $paths;
 
-    /**
-     * @dataProvider httpWgDataProvider
-     * @test
-     */
+    #[Test]
+    #[DataProvider('httpWgDataProvider')]
     public function it_can_pass_http_wg_tests(TestRecord $test): void
     {
         if ($test->mustFail) {
@@ -34,9 +34,9 @@ abstract class StructuredFieldTest extends TestCase
      * @throws JsonException
      * @return iterable<string, array<TestRecord>>
      */
-    public function httpWgDataProvider(): iterable
+    public static function httpWgDataProvider(): iterable
     {
-        foreach ($this->paths as $path) {
+        foreach (static::$paths as $path) {
             foreach (TestRecordCollection::fromPath($path) as $test) {
                 yield $test->name => [$test];
             }

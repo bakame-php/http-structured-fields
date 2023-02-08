@@ -7,15 +7,14 @@ namespace Bakame\Http\StructuredFields;
 use ArrayObject;
 use DateTime;
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Stringable;
 
-/**
- * @coversDefaultClass \Bakame\Http\StructuredFields\Item
- */
-final class ItemTest extends StructuredFieldTest
+final class ItemTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
-    protected array $paths = [
+    protected static array $paths = [
         __DIR__.'/../vendor/httpwg/structured-field-tests/boolean.json',
         __DIR__.'/../vendor/httpwg/structured-field-tests/number.json',
         __DIR__.'/../vendor/httpwg/structured-field-tests/number-generated.json',
@@ -26,7 +25,7 @@ final class ItemTest extends StructuredFieldTest
         __DIR__.'/../vendor/httpwg/structured-field-tests/item.json',
     ];
 
-    /** @test */
+    #[Test]
     public function it_fails_to_instantiate_a_decimal_too_big(): void
     {
         $this->expectException(SyntaxError::class);
@@ -34,7 +33,7 @@ final class ItemTest extends StructuredFieldTest
         Item::from(1_000_000_000_000.0);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_instantiate_a_decimal_too_small(): void
     {
         $this->expectException(SyntaxError::class);
@@ -42,14 +41,14 @@ final class ItemTest extends StructuredFieldTest
         Item::from(-1_000_000_000_000.0);
     }
 
-    /** @test */
+    #[Test]
     public function it_instantiate_a_decimal(): void
     {
         self::assertSame('42.0', Item::from(42.0)->toHttpValue());
         self::assertSame('42.0', (string) Item::from(42.0));
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_instantiate_a_integer_too_big(): void
     {
         $this->expectException(SyntaxError::class);
@@ -57,7 +56,7 @@ final class ItemTest extends StructuredFieldTest
         Item::from(1_000_000_000_000_000);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_instantiate_a_integer_too_small(): void
     {
         $this->expectException(SyntaxError::class);
@@ -65,27 +64,27 @@ final class ItemTest extends StructuredFieldTest
         Item::from(-1_000_000_000_000_000);
     }
 
-    /** @test */
+    #[Test]
     public function it_instantiates_an_integer(): void
     {
         self::assertSame('42', Item::from(42)->toHttpValue());
     }
 
-    /** @test */
+    #[Test]
     public function it_instantiates_a_boolean(): void
     {
         self::assertSame('?1', Item::from(true)->toHttpValue());
         self::assertSame('?0', Item::from(false)->toHttpValue());
     }
 
-    /** @test */
+    #[Test]
     public function it_instantiates_a_token(): void
     {
         self::assertSame('helloworld', Item::from(Token::fromString('helloworld'))->toHttpValue());
         self::assertSame('helloworld', Item::fromToken('helloworld')->toHttpValue());
     }
 
-    /** @test */
+    #[Test]
     public function it_instantiates_a_date(): void
     {
         $item = Item::fromHttpValue('@1583349795');
@@ -95,7 +94,7 @@ final class ItemTest extends StructuredFieldTest
         self::assertSame('@1583349795', $item->toHttpValue());
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_instantiate_an_invalid_date_format(): void
     {
         $this->expectException(SyntaxError::class);
@@ -103,7 +102,7 @@ final class ItemTest extends StructuredFieldTest
         Item::fromHttpValue('@112345.678');
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_instantiate_an_out_of_range_date_in_the_future(): void
     {
         $this->expectException(SyntaxError::class);
@@ -111,7 +110,7 @@ final class ItemTest extends StructuredFieldTest
         Item::from(new DateTime('@'. 1_000_000_000_000_000));
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_instantiate_an_out_of_range_date_in_the_past(): void
     {
         $this->expectException(SyntaxError::class);
@@ -119,7 +118,7 @@ final class ItemTest extends StructuredFieldTest
         Item::from(new DateTime('@'.-1_000_000_000_000_000));
     }
 
-    /** @test */
+    #[Test]
     public function it_instantiates_a_binary(): void
     {
         $byteSequence = ByteSequence::fromDecoded('foobar');
@@ -129,13 +128,13 @@ final class ItemTest extends StructuredFieldTest
         self::assertEquals($byteSequence, Item::fromEncodedByteSequence('Zm9vYmFy')->value());
     }
 
-    /** @test */
+    #[Test]
     public function it_instantiates_a_string(): void
     {
         self::assertSame('"foobar"', Item::from('foobar')->toHttpValue());
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_instantiate_an_invalid_string(): void
     {
         $this->expectException(SyntaxError::class);
@@ -143,10 +142,8 @@ final class ItemTest extends StructuredFieldTest
         Item::from("\0foobar");
     }
 
-    /**
-     * @dataProvider itemTypeProvider
-     * @test
-     */
+    #[Test]
+    #[DataProvider('itemTypeProvider')]
     public function it_can_tell_the_item_type(Item $item, Type $expectedType): void
     {
         self::assertSame($expectedType, $item->type());
@@ -155,7 +152,7 @@ final class ItemTest extends StructuredFieldTest
     /**
      * @return iterable<string, array{item:Item, expectedType:Type}>
      */
-    public function itemTypeProvider(): iterable
+    public static function itemTypeProvider(): iterable
     {
         return [
             'boolean' => [
@@ -198,7 +195,7 @@ final class ItemTest extends StructuredFieldTest
         ];
     }
 
-    /** @test */
+    #[Test]
     public function test_in_can_be_instantiated_using_bare_items(): void
     {
         $item1 = Item::from('/terms', [
@@ -224,7 +221,7 @@ final class ItemTest extends StructuredFieldTest
         self::assertEquals($item2, $item1);
     }
 
-    /** @test */
+    #[Test]
     public function it_will_fail_with_wrong_token(): void
     {
         $this->expectException(SyntaxError::class);
@@ -232,7 +229,7 @@ final class ItemTest extends StructuredFieldTest
         Item::fromHttpValue('foo,bar;a=3');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_access_its_parameter_values(): void
     {
         $instance = Item::fromHttpValue('1; a; b=?0');
@@ -240,7 +237,7 @@ final class ItemTest extends StructuredFieldTest
         self::assertTrue($instance->parameters()->get('a')->value());
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_access_unknown_parameter_values(): void
     {
         $this->expectException(StructuredFieldError::class);
@@ -248,7 +245,7 @@ final class ItemTest extends StructuredFieldTest
         Item::fromHttpValue('1; a; b=?0')->parameters()->get('bar')->value();
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_an_item_from_a_array_of_pairs(): void
     {
         $instance1 = Item::from(Token::fromString('babayaga'));
@@ -260,10 +257,10 @@ final class ItemTest extends StructuredFieldTest
     }
 
     /**
-     * @test
-     * @dataProvider invalidPairProvider
      * @param array<mixed> $pair
      */
+    #[Test]
+    #[DataProvider('invalidPairProvider')]
     public function it_fails_to_create_an_item_from_an_array_of_pairs(array $pair): void
     {
         $this->expectException(SyntaxError::class);
@@ -274,14 +271,14 @@ final class ItemTest extends StructuredFieldTest
     /**
      * @return iterable<string, array{pair:array<mixed>}>
      */
-    public function invalidPairProvider(): iterable
+    public static function invalidPairProvider(): iterable
     {
         yield 'empty pair' => ['pair' => []];
         yield 'empty extra filled pair' => ['pair' => [1, [2], 3]];
         yield 'associative array' => ['pair' => ['value' => 'bar', 'parameters' => ['foo' => 'bar']]];
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_an_item_from_a_array_of_pairs_and_parameters(): void
     {
         $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);
@@ -290,7 +287,7 @@ final class ItemTest extends StructuredFieldTest
         self::assertEquals($instance2, $instance1);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_via_with_value_method_a_new_object(): void
     {
         $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);
@@ -308,7 +305,7 @@ final class ItemTest extends StructuredFieldTest
         self::assertEquals($instance1->parameters(), $instance3->parameters());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_via_with_parameters_method_a_new_object(): void
     {
         $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);
@@ -320,7 +317,7 @@ final class ItemTest extends StructuredFieldTest
         self::assertEquals($instance1->value(), $instance3->value());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_via_parameters_access_methods_a_new_object(): void
     {
         $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);

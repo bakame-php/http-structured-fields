@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use LogicException;
+use PHPUnit\Framework\Attributes\Test;
 use function iterator_to_array;
 
-final class DictionaryTest extends StructuredFieldTest
+final class DictionaryTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
-    protected array $paths = [
+    protected static array $paths = [
         __DIR__.'/../vendor/httpwg/structured-field-tests/dictionary.json',
     ];
 
-    /** @test */
+    #[Test]
     public function it_can_be_instantiated_with_an_collection_of_item_or_inner_list(): void
     {
         $stringItem = Item::from('helloWorld');
@@ -33,7 +34,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertEquals($arrayParams, iterator_to_array($instance));
     }
 
-    /** @test */
+    #[Test]
     public function test_it_can_be_instantiated_with_key_value_pairs(): void
     {
         $stringItem = Item::from('helloWorld');
@@ -50,7 +51,7 @@ final class DictionaryTest extends StructuredFieldTest
         );
     }
 
-    /** @test */
+    #[Test]
     public function it_can_add_or_remove_members(): void
     {
         $stringItem = Item::from('helloWorld');
@@ -83,7 +84,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertFalse($deleteAgain->hasMembers());
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_return_an_member_with_invalid_key(): void
     {
         $instance = Dictionary::create();
@@ -95,7 +96,7 @@ final class DictionaryTest extends StructuredFieldTest
         $instance->get('foobar');
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
         $instance = Dictionary::create();
@@ -107,7 +108,7 @@ final class DictionaryTest extends StructuredFieldTest
         $instance->pair(3);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_add_an_item_with_wrong_key(): void
     {
         $this->expectException(SyntaxError::class);
@@ -115,7 +116,7 @@ final class DictionaryTest extends StructuredFieldTest
         Dictionary::fromAssociative(['bébé'=> Item::from(false)]);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_prepend_a_new_member(): void
     {
         $instance = Dictionary::create()
@@ -125,7 +126,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertSame('b, a=?0', (string) $instance);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_returns_the_container_member_keys(): void
     {
         $instance = Dictionary::create();
@@ -139,7 +140,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertSame(['b', 'a'], $newInstance->keys());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_merge_one_or_more_instances_using_associative(): void
     {
         $instance1 = Dictionary::fromAssociative(['a' => Item::from(false)]);
@@ -153,7 +154,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertEquals(Item::from(true), $instance4->get('b'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_merge_two_or_more_instances_to_yield_different_result(): void
     {
         $instance1 = Dictionary::fromAssociative(['a' => Item::from(false)]);
@@ -167,13 +168,13 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertEquals(Item::from(true), $instance4->get('b'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_merge_without_argument_and_not_throw(): void
     {
         self::assertCount(1, Dictionary::fromAssociative(['a' => Item::from(false)])->mergeAssociative());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_merge_one_or_more_instances_using_pairs(): void
     {
         $instance1 = Dictionary::fromPairs([['a', Item::from(false)]]);
@@ -188,7 +189,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertEquals(Item::from(true), $instance4->get('b'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_merge_without_pairs_and_not_throw(): void
     {
         $instance = Dictionary::fromAssociative(['a' => Item::from(false)]);
@@ -196,7 +197,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertCount(1, $instance->mergePairs());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_merge_dictionary_instances_via_pairs_or_associative(): void
     {
         $instance1 = Dictionary::fromAssociative(['a' => Item::from(false)]);
@@ -208,7 +209,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertEquals($instance3->mergeAssociative($instance4), $instance1->mergePairs($instance2));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_handle_string_with_comma(): void
     {
         $expected = 'a=foobar;test="bar, baz", b=toto';
@@ -218,7 +219,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertCount(2, $instance);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_delete_a_member_via_array_access(): void
     {
         $structuredField = Dictionary::create();
@@ -228,7 +229,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertFalse($newInstance->remove('foo')->hasMembers());
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_fetch_an_value_using_an_integer(): void
     {
         $this->expectException(StructuredFieldError::class);
@@ -236,7 +237,7 @@ final class DictionaryTest extends StructuredFieldTest
         Dictionary::create()->get(0);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_access_the_item_value(): void
     {
         $token = Token::fromString('token');
@@ -252,7 +253,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertFalse($structuredField->get('false')->value());
     }
 
-    /** @test */
+    #[Test]
     public function it_implements_the_array_access_interface(): void
     {
         $token = Token::fromString('token');
@@ -272,7 +273,7 @@ final class DictionaryTest extends StructuredFieldTest
         self::assertFalse(isset($structuredField['toto']));
     }
 
-    /** @test */
+    #[Test]
     public function it_forbids_removing_members_using_the_array_access_interface(): void
     {
         $this->expectException(LogicException::class);
@@ -280,7 +281,7 @@ final class DictionaryTest extends StructuredFieldTest
         unset(Dictionary::fromPairs([['foobar', 'foobar'], ['zero', 0]])['foobar']);
     }
 
-    /** @test */
+    #[Test]
     public function it_forbids_adding_members_using_the_array_access_interface(): void
     {
         $this->expectException(LogicException::class);

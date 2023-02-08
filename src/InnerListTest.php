@@ -5,15 +5,13 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use LogicException;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use function iterator_to_array;
 
-/**
- * @coversDefaultClass \Bakame\Http\StructuredFields\InnerList
- */
 final class InnerListTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_can_be_instantiated_with_an_collection_of_item(): void
     {
         $stringItem = Item::from('helloWorld');
@@ -28,7 +26,7 @@ final class InnerListTest extends TestCase
         self::assertEquals($arrayParams, iterator_to_array($instance));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_add_or_remove_members(): void
     {
         $stringItem = Item::from('helloWorld');
@@ -60,7 +58,7 @@ final class InnerListTest extends TestCase
         self::assertFalse($instance->hasMembers());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_unshift_insert_and_replace(): void
     {
         $container = InnerList::from()
@@ -75,7 +73,7 @@ final class InnerListTest extends TestCase
         self::assertSame('(:SGVsbG8gV29ybGQ=: 42.0 42)', (string) $container);
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_replace_invalid_index(): void
     {
         $this->expectException(InvalidOffset::class);
@@ -83,7 +81,7 @@ final class InnerListTest extends TestCase
         InnerList::from()->replace(0, ByteSequence::fromDecoded('Hello World'));
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_insert_at_an_invalid_index(): void
     {
         $this->expectException(InvalidOffset::class);
@@ -91,7 +89,7 @@ final class InnerListTest extends TestCase
         InnerList::from()->insert(3, ByteSequence::fromDecoded('Hello World'));
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
         $instance = InnerList::from();
@@ -103,7 +101,7 @@ final class InnerListTest extends TestCase
         $instance->get(3);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_access_its_parameter_values(): void
     {
         $instance = InnerList::fromList([false], ['foo' => 'bar']);
@@ -111,7 +109,7 @@ final class InnerListTest extends TestCase
         self::assertSame('bar', $instance->parameters()->get('foo')->value());
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_access_unknown_parameter_values(): void
     {
         $this->expectException(StructuredFieldError::class);
@@ -119,7 +117,7 @@ final class InnerListTest extends TestCase
         InnerList::fromList([false], ['foo' => 'bar'])->parameters()->get('bar')->value();
     }
 
-    /** @test */
+    #[Test]
     public function it_successfully_parse_a_http_field(): void
     {
         $instance = InnerList::fromHttpValue('("hello)world" 42 42.0;john=doe);foo="bar("');
@@ -133,7 +131,7 @@ final class InnerListTest extends TestCase
         self::assertEquals(Token::fromString('doe'), $instance->get(2)->parameters()->get('john')->value());
     }
 
-    /** @test */
+    #[Test]
     public function it_successfully_parse_a_http_field_with_optional_white_spaces_in_front(): void
     {
         self::assertEquals(
@@ -142,7 +140,7 @@ final class InnerListTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_insert_unknown_index_via_the_array_access_interface(): void
     {
         $this->expectException(StructuredFieldError::class);
@@ -150,13 +148,13 @@ final class InnerListTest extends TestCase
         InnerList::from()->insert(0, Item::from(42.0));
     }
 
-    /** @test */
+    #[Test]
     public function testArrayAccessThrowsInvalidIndex2(): void
     {
         self::assertCount(0, InnerList::from()->remove(0));
     }
 
-    /** @test */
+    #[Test]
     public function it_fails_to_fetch_an_value_using_an_integer(): void
     {
         $this->expectException(InvalidOffset::class);
@@ -164,7 +162,7 @@ final class InnerListTest extends TestCase
         InnerList::from()->get('zero');
     }
 
-    /** @test */
+    #[Test]
     public function it_can_access_the_item_value(): void
     {
         $token = Token::fromString('token');
@@ -175,7 +173,7 @@ final class InnerListTest extends TestCase
         self::assertEquals($token, $structuredField->get(-1)->value());
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_via_with_parameters_method_a_new_object(): void
     {
         $instance1 = InnerList::fromList([Token::fromString('babayaga'), 'a', true], ['a' => true]);
@@ -187,7 +185,7 @@ final class InnerListTest extends TestCase
         self::assertEquals(iterator_to_array($instance1), iterator_to_array($instance3));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_via_parameters_access_methods_a_new_object(): void
     {
         $instance1 = InnerList::fromList([Token::fromString('babayaga'), 'a', true], ['a' => true]);
@@ -207,7 +205,7 @@ final class InnerListTest extends TestCase
         self::assertTrue($instance6->parameters()->hasNoMembers());
     }
 
-    /** @test */
+    #[Test]
     public function it_implements_the_array_access_interface(): void
     {
         $structuredField = InnerList::from('foobar', 'foobar', 'zero', 0);
@@ -218,7 +216,7 @@ final class InnerListTest extends TestCase
         self::assertFalse(isset($structuredField[42]));
     }
 
-    /** @test */
+    #[Test]
     public function it_forbids_removing_members_using_the_array_access_interface(): void
     {
         $this->expectException(LogicException::class);
@@ -226,7 +224,7 @@ final class InnerListTest extends TestCase
         unset(InnerList::from('foobar', 'foobar', 'zero', 0)[0]);
     }
 
-    /** @test */
+    #[Test]
     public function it_forbids_adding_members_using_the_array_access_interface(): void
     {
         $this->expectException(LogicException::class);

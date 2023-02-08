@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @coversDefaultClass \Bakame\Http\StructuredFields\Token
- */
 final class TokenTest extends TestCase
 {
-    /**
-     * @test
-     * @dataProvider invalidTokenString
-     */
+    #[Test]
+    #[DataProvider('invalidTokenString')]
     public function it_will_fail_on_invalid_token_string(string $httpValue): void
     {
         $this->expectException(SyntaxError::class);
@@ -25,7 +22,7 @@ final class TokenTest extends TestCase
     /**
      * @return array<array{0:string}>
      */
-    public function invalidTokenString(): array
+    public static function invalidTokenString(): array
     {
         return [
             'token contains spaces inside' => ['a a'],
@@ -36,7 +33,7 @@ final class TokenTest extends TestCase
         ];
     }
 
-    /** @test */
+    #[Test]
     public function it_can_compare_instances(): void
     {
         $decoded = 'pretend';

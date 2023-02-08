@@ -1,7 +1,25 @@
 # Changelog
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file.
- 
+
+## [Next] - TBD
+
+### Added
+
+- None
+
+### Fixed
+
+- Migrate to PHPUnit 10
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
+
 ## [0.7.0] - 2023-02-06
 
 ### Added
@@ -193,6 +211,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 **Initial release!**
 
+[Next]: https://github.com/bakame-php/http-structured-fields/compare/0.7.0...master
 [0.7.0]: https://github.com/bakame-php/http-structured-fields/compare/0.6.0...0.7.0
 [0.6.0]: https://github.com/bakame-php/http-structured-fields/compare/0.5.0...0.6.0
 [0.5.0]: https://github.com/bakame-php/http-structured-fields/compare/0.4.0...0.5.0

@@ -6,12 +6,14 @@ namespace Bakame\Http\StructuredFields;
 
 use DateTime;
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Stringable;
 
 final class TypeTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_will_throw_if_the_type_is_no_supported(): void
     {
         $this->expectException(SyntaxError::class);
@@ -19,10 +21,8 @@ final class TypeTest extends TestCase
         Type::fromValue([]);
     }
 
-    /**
-     * @dataProvider itemTypeProvider
-     * @test
-     */
+    #[Test]
+    #[DataProvider('itemTypeProvider')]
     public function it_can_tell_the_item_type(mixed $value, Type $expectedType): void
     {
         self::assertTrue($expectedType->equals(Type::fromValue($value)));
@@ -31,7 +31,7 @@ final class TypeTest extends TestCase
     /**
      * @return iterable<string, array{value:mixed, expectedType:Type}>
      */
-    public function itemTypeProvider(): iterable
+    public static function itemTypeProvider(): iterable
     {
         return [
             'boolean' => [
