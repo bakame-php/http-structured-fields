@@ -6,7 +6,6 @@ namespace Bakame\Http\StructuredFields;
 
 use LogicException;
 use PHPUnit\Framework\Attributes\Test;
-use function iterator_to_array;
 
 final class ParametersTest extends StructuredFieldTestCase
 {
@@ -30,7 +29,7 @@ final class ParametersTest extends StructuredFieldTestCase
         self::assertSame($stringItem, $instance->get('string'));
         self::assertTrue($instance->has('string'));
 
-        self::assertEquals($arrayParams, iterator_to_array($instance));
+        self::assertEquals($arrayParams, [...$instance]);
     }
 
     #[Test]
@@ -46,7 +45,7 @@ final class ParametersTest extends StructuredFieldTestCase
         self::assertTrue($instance->has('string'));
         self::assertEquals(
             [['string', $stringItem], ['boolean', $booleanItem]],
-            iterator_to_array($instance->toPairs(), false)
+            [...$instance->toPairs()]
         );
     }
 
@@ -74,7 +73,7 @@ final class ParametersTest extends StructuredFieldTestCase
         self::assertCount(2, $instance);
         self::assertEquals(
             [['string', $stringItem], ['boolean', $booleanItem]],
-            iterator_to_array($instance->toPairs(), false)
+            [...$instance->toPairs()]
         );
 
 

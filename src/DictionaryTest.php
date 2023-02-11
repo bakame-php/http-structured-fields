@@ -6,7 +6,6 @@ namespace Bakame\Http\StructuredFields;
 
 use LogicException;
 use PHPUnit\Framework\Attributes\Test;
-use function iterator_to_array;
 
 final class DictionaryTest extends StructuredFieldTestCase
 {
@@ -28,10 +27,10 @@ final class DictionaryTest extends StructuredFieldTestCase
         self::assertTrue($instance->has('string'));
         self::assertEquals(
             [['string', $stringItem], ['boolean', $booleanItem]],
-            iterator_to_array($instance->toPairs(), false)
+            [...$instance->toPairs()]
         );
 
-        self::assertEquals($arrayParams, iterator_to_array($instance));
+        self::assertEquals($arrayParams, [...$instance]);
     }
 
     #[Test]
@@ -45,10 +44,7 @@ final class DictionaryTest extends StructuredFieldTestCase
         self::assertSame(['string', $stringItem], $instance->pair(0));
         self::assertSame($stringItem, $instance->get('string'));
         self::assertTrue($instance->has('string'));
-        self::assertEquals(
-            [['string', $stringItem], ['boolean', $booleanItem]],
-            iterator_to_array($instance->toPairs(), false)
-        );
+        self::assertEquals($arrayParams, [...$instance->toPairs()]);
     }
 
     #[Test]

@@ -7,7 +7,6 @@ namespace Bakame\Http\StructuredFields;
 use LogicException;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use function iterator_to_array;
 
 final class InnerListTest extends TestCase
 {
@@ -23,7 +22,7 @@ final class InnerListTest extends TestCase
         self::assertTrue($instance->hasMembers());
         self::assertFalse($instance->hasNoMembers());
         self::assertTrue($instance->parameters()->hasMembers());
-        self::assertEquals($arrayParams, iterator_to_array($instance));
+        self::assertEquals($arrayParams, [...$instance]);
     }
 
     #[Test]
@@ -182,7 +181,7 @@ final class InnerListTest extends TestCase
 
         self::assertSame($instance1, $instance2);
         self::assertNotSame($instance1->parameters(), $instance3->parameters());
-        self::assertEquals(iterator_to_array($instance1), iterator_to_array($instance3));
+        self::assertEquals([...$instance1], [...$instance3]);
     }
 
     #[Test]
@@ -199,7 +198,7 @@ final class InnerListTest extends TestCase
         self::assertSame($instance1, $instance2);
         self::assertSame($instance1, $instance7);
         self::assertNotSame($instance1->parameters(), $instance3->parameters());
-        self::assertEquals(iterator_to_array($instance1), iterator_to_array($instance3));
+        self::assertEquals([...$instance1], [...$instance3]);
         self::assertSame($instance1, $instance4);
         self::assertFalse($instance5->parameters()->hasMembers());
         self::assertTrue($instance6->parameters()->hasNoMembers());
