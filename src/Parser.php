@@ -141,7 +141,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
      *
-     * @return array{0: array{0:array<Value|DataType>, 1:array<string,Value|DataType>}|Value, 1:int}
+     * @return array{0:array{0:array<Value|DataType>, 1:array<string,Value|DataType>}|Value, 1:int}
      */
     private static function parseItemOrInnerList(string $httpValue): array
     {

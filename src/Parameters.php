@@ -180,7 +180,7 @@ final class Parameters implements MemberOrderedMap
      */
     public function get(string|int $offset): Value
     {
-        if (is_int($offset) || !array_key_exists($offset, $this->members)) {
+        if (!$this->has($offset)) {
             throw InvalidOffset::dueToKeyNotFound($offset);
         }
 

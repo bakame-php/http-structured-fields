@@ -128,11 +128,15 @@ final class InnerList implements MemberList, ParameterAccess
 
     public function has(string|int $offset): bool
     {
-        return is_int($offset) && null !== $this->filterIndex($offset);
+        return null !== $this->filterIndex($offset);
     }
 
-    private function filterIndex(int $index): int|null
+    private function filterIndex(string|int $index): int|null
     {
+        if (!is_int($index)) {
+            return null;
+        }
+
         $max = count($this->members);
 
         return match (true) {
@@ -144,10 +148,6 @@ final class InnerList implements MemberList, ParameterAccess
 
     public function get(string|int $offset): Value
     {
-        if (!is_int($offset)) {
-            throw InvalidOffset::dueToIndexNotFound($offset);
-        }
-
         $index = $this->filterIndex($offset);
         if (null === $index) {
             throw InvalidOffset::dueToIndexNotFound($offset);

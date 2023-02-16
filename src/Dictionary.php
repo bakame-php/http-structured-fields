@@ -172,7 +172,7 @@ final class Dictionary implements MemberOrderedMap
      */
     public function get(string|int $offset): Value|InnerList
     {
-        if (is_int($offset) || !array_key_exists($offset, $this->members)) {
+        if (!$this->has($offset)) {
             throw InvalidOffset::dueToKeyNotFound($offset);
         }
 

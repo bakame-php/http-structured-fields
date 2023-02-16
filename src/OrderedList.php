@@ -111,10 +111,11 @@ final class OrderedList implements MemberList
 
     private function filterIndex(int|string $index): int|null
     {
-        $max = count($this->members);
         if (!is_int($index)) {
             return null;
         }
+
+        $max = count($this->members);
 
         return match (true) {
             [] === $this->members,
@@ -127,10 +128,6 @@ final class OrderedList implements MemberList
 
     public function get(string|int $offset): Value|InnerList
     {
-        if (!is_int($offset)) {
-            throw InvalidOffset::dueToIndexNotFound($offset);
-        }
-
         $index = $this->filterIndex($offset);
         if (null === $index) {
             throw InvalidOffset::dueToIndexNotFound($offset);
