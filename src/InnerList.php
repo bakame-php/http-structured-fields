@@ -56,7 +56,7 @@ final class InnerList implements MemberList, ParameterAccess
 
     public function parameters(): Parameters
     {
-        return clone $this->parameters;
+        return $this->parameters;
     }
 
     public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
