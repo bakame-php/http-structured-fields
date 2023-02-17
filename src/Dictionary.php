@@ -211,17 +211,7 @@ final class Dictionary implements MemberOrderedMap
      */
     public function pair(int $index): array
     {
-        $offset = $this->filterIndex($index);
-
-        foreach ($this->toPairs() as $k => $pair) {
-            if ($k === $offset) {
-                return $pair;
-            }
-        }
-
-        // @codeCoverageIgnoreStart
-        throw InvalidOffset::dueToIndexNotFound($index);
-        // @codeCoverageIgnoreEnd
+        return [...$this->toPairs()][$this->filterIndex($index)];
     }
 
     public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static

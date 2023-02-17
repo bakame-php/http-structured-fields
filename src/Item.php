@@ -101,16 +101,13 @@ final class Item implements Value
      */
     public static function fromPair(array $pair): self
     {
-        if (!array_is_list($pair)) { /* @phpstan-ignore-line */
-            throw new SyntaxError('The pair must be represented by an array as a list.');
-        }
-
         $pair[1] = $pair[1] ?? [];
-        if (2 !== count($pair)) { /* @phpstan-ignore-line */
-            throw new SyntaxError('The pair first value should be the item value and the optional second value the item parameters.');
-        }
 
-        return self::from($pair[0], Parameters::fromPairs($pair[1]));
+        return match (true) {
+            !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'),  /* @phpstan-ignore-line */
+            2 !== count($pair) => throw new SyntaxError('The pair first value should be the item value and the optional second value the item parameters.'), /* @phpstan-ignore-line */
+            default => self::from($pair[0], Parameters::fromPairs($pair[1])),
+        };
     }
 
     /**

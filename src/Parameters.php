@@ -224,19 +224,7 @@ final class Parameters implements MemberOrderedMap
      */
     public function pair(int $index): array
     {
-        $offset = $this->filterIndex($index);
-
-        $i = 0;
-        foreach ($this->members as $key => $member) {
-            if ($i === $offset) {
-                return [$key, $member];
-            }
-            ++$i;
-        }
-
-        // @codeCoverageIgnoreStart
-        throw InvalidOffset::dueToIndexNotFound($index);
-        // @codeCoverageIgnoreEnd
+        return [...$this->toPairs()][$this->filterIndex($index)];
     }
 
     public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
