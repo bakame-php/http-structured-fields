@@ -23,7 +23,7 @@ use function substr;
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2
  *
  * @internal Use Dictionary::fromHttpValue(), Parameters::fromHttpValue(),
- *               OrderedList::fromHttpValue(), InnerList::fromHttpValue() or Item::fromHttpValue() instead
+ *               OuterList::fromHttpValue(), InnerList::fromHttpValue() or Item::fromHttpValue() instead
  *
  * @phpstan-import-type DataType from Item
  */

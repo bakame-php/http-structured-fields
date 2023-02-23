@@ -17,7 +17,7 @@ The package exposes [ordered maps](ordered-maps.md)
 
 and [lists](lists.md) 
 
-- OrderedList,
+- OuterList,
 - and InnerList
 
 with different requirements.

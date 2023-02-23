@@ -14,7 +14,7 @@ enum TestDataType: string
     {
         return match ($this) {
             self::Dictionary => Dictionary::fromHttpValue($input),
-            self::List => OrderedList::fromHttpValue($input),
+            self::List => OuterList::fromHttpValue($input),
             self::Item => Item::fromHttpValue($input),
         };
     }

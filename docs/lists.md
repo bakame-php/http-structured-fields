@@ -2,11 +2,11 @@
 
 ## Definitions
 
-The `OrderedList` and the `InnerList` classes are list of members that act as containers
+The `OuterList` and the `InnerList` classes are list of members that act as containers
 
-The main distinction between `OrderedList` and `InnerList` are:
+The main distinction between `OuterList` and `InnerList` are:
 
-- `OrderedList` members must be `InnerList` or `Items`;
+- `OuterList` members must be `InnerList` or `Items`;
 - `InnerList` members must be `Items`;
 - `InnerList` can have a `Parameters` instance attached to it;
 
@@ -38,7 +38,7 @@ In addition to `StructuredField` specific interfaces, both classes implements:
 ```php
 use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\OrderedList;
+use Bakame\Http\StructuredFields\OuterList;
 use Bakame\Http\StructuredFields\Token;
 
 $innerList = InnerList::fromList([42, 42.0, "42"], ["a" => true]);
@@ -52,7 +52,7 @@ $newList = $innerList
 echo $innerList;              //returns '(42 42.0 "42");a'
 echo $newList->toHttpValue(); //returns '(42.0 forty-two);a'
 
-$list = OrderedList::from(
+$list = OuterList::from(
     Item::from("42", ["foo" => "bar"]), 
     $newList
 );
@@ -65,18 +65,18 @@ keys. Be aware that re-indexation behaviour may affect
 your logic**
 
 ```php
-use Bakame\Http\StructuredFields\OrderedList;
+use Bakame\Http\StructuredFields\OuterList;
 use Bakame\Http\StructuredFields\Token;
 
-$list = OrderedList::fromList([42, 42.0]);
+$list = OuterList::fromList([42, 42.0]);
 $list->insert(2, Token::fromString('forty-two')); // will throw
 ```
 
 **Updating using `ArrayAccess` methods is forbidden and will result in a `ForbiddenOperation` being emitted.**
 
 ```php
-use Bakame\Http\StructuredFields\OrderedList;
+use Bakame\Http\StructuredFields\OuterList;
 
-$list = OrderedList::fromList([42, 42.0]);
+$list = OuterList::fromList([42, 42.0]);
 $list[0] = false; // will throw a ForbiddenOperation exception
 ```

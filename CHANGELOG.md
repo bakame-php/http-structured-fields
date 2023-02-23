@@ -11,6 +11,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Fixed
 
 - Migrate to PHPUnit 10
+- **[BC Break]** `OrderedList` is renamed `OuterList`.
 
 ### Deprecated
 
@@ -18,7 +19,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- None
+- **[BC Break]** `OrderedList` is removed use `OuterList`.
 
 ## [0.7.0] - 2023-02-06
 

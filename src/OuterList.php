@@ -20,7 +20,7 @@ use function is_array;
  * @implements MemberList<int, Value|InnerList<int, Value>>
  * @phpstan-import-type DataType from Item
  */
-final class OrderedList implements MemberList
+final class OuterList implements MemberList
 {
     /** @var list<Value|InnerList<int, Value>> */
     private array $members;

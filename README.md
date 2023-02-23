@@ -47,9 +47,9 @@ or download the library and:
 ~~~php
 require 'path/to/http-structured-fields/repo/autoload.php';
 
-use Bakame\Http\StructuredFields\OrderedList;
+use Bakame\Http\StructuredFields\OuterList;
 
-$list = OrderedList::fromHttpValue('"/member/*/author", "/member/*/comments"');
+$list = OuterList::fromHttpValue('"/member/*/author", "/member/*/comments"');
 echo $list[-1]->value(); // returns '/member/*/comments'
 ~~~
 
