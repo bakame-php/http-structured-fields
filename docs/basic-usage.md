@@ -31,3 +31,60 @@ echo $item->toHttpValue(); // "foo";a=1;b=2
 echo $item;                // "foo";a=1;b=2
 ```
 
+Building and Updating Structured Fields 
+------------
+
+Updating or creating an HTTP field value can be achieved using any of our immutable value object as a starting point:
+
+```php
+use Bakame\Http\StructuredFields\Dictionary;
+
+$value = Dictionary::fromAssociative([
+    'b' => false,
+    'a' => Item::fromToken('bar', ['baz' => 42]),
+    'c' => new DateTimeImmutable('2022-12-23 13:00:23'),
+]);
+
+echo $value->toHttpValue(); //"b=?0, a=bar;baz=42;c=@1671800423"
+echo $value;  //"b=?0, a=bar;baz=42;c=@1671800423"
+```
+
+Because HTTP fields value are defined via tuples, the same result can be achieved using pairs:
+
+```php
+use Bakame\Http\StructuredFields\Dictionary;
+
+$dicTuple = Dictionary::fromPairs([
+    ['b', false],
+    ['a', Item::fromPair([
+        Token::fromString('bar'),
+        [['baz', 42]]
+    ])],
+    ['c', new DateTime('2022-12-23 13:00:23')]
+]);
+
+echo $dicTuple->toHttpValue(); //"b=?0, a=bar;baz=42;c=@1671800423"
+echo $dicTuple;  //"b=?0, a=bar;baz=42;c=@1671800423"
+```
+
+If you prefer builder methods, you can achieve the same result with the following steps:
+
+```php
+use Bakame\Http\StructuredFields\Dictionary;
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Token;
+
+$bar = Item::from(Token::fromString('bar'))
+    ->appendParameter('baz', Item::from(42));
+$dictBuilder = Dictionary::create()
+    ->append('b', Item::from(false))
+    ->append('a', $bar)
+    ->append('c', Item::from(new DateTimeImmutable('2022-12-23 13:00:23')))
+;
+
+echo $dictBuilder->toHttpValue(); //"b=?0, a=bar;baz=42;c=@1671800423"
+echo $dictBuilder;  //"b=?0, a=bar;baz=42;c=@1671800423"
+```
+
+In every scenario if the Data Type can be inferred from the PHP type it will get converted into it's
+correct data type behind the scene. It is possible to mix the different style if it suits the usage. 
