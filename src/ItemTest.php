@@ -23,6 +23,7 @@ final class ItemTest extends StructuredFieldTestCase
         __DIR__.'/../vendor/httpwg/structured-field-tests/token.json',
         __DIR__.'/../vendor/httpwg/structured-field-tests/token-generated.json',
         __DIR__.'/../vendor/httpwg/structured-field-tests/item.json',
+        __DIR__.'/../vendor/httpwg/structured-field-tests/date.json',
     ];
 
     #[Test]
