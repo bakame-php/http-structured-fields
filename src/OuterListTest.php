@@ -11,8 +11,8 @@ final class OuterListTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
     protected static array $paths = [
-        __DIR__.'/../vendor/httpwg/structured-field-tests/list.json',
-        __DIR__.'/../vendor/httpwg/structured-field-tests/listlist.json',
+        '/list.json',
+        '/listlist.json',
     ];
 
     #[Test]

@@ -11,9 +11,9 @@ final class ParametersTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
     protected static array $paths = [
-        __DIR__.'/../vendor/httpwg/structured-field-tests/param-dict.json',
-        __DIR__.'/../vendor/httpwg/structured-field-tests/param-list.json',
-        __DIR__.'/../vendor/httpwg/structured-field-tests/param-listlist.json',
+        '/param-dict.json',
+        '/param-list.json',
+        '/param-listlist.json',
     ];
 
     #[Test]

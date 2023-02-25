@@ -12,6 +12,8 @@ use function implode;
 
 abstract class StructuredFieldTestCase extends TestCase
 {
+    protected static string $rootPath = __DIR__.'/../vendor/httpwg/structured-field-tests';
+
     /** @var array<string> */
     protected static array $paths;
 
@@ -37,7 +39,7 @@ abstract class StructuredFieldTestCase extends TestCase
     public static function httpWgDataProvider(): iterable
     {
         foreach (static::$paths as $path) {
-            foreach (TestRecordCollection::fromPath($path) as $test) {
+            foreach (TestRecordCollection::fromPath(static::$rootPath.'/'.$path) as $test) {
                 yield $test->name => [$test];
             }
         }

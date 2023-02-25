@@ -10,7 +10,7 @@ final class ByteSequenceTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
     protected static array $paths = [
-        __DIR__.'/../vendor/httpwg/structured-field-tests/binary.json',
+        '/binary.json',
     ];
 
     #[Test]

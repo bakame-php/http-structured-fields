@@ -67,7 +67,7 @@ echo $dicTuple->toHttpValue(); //"b=?0, a=bar;baz=42;c=@1671800423"
 echo $dicTuple;  //"b=?0, a=bar;baz=42;c=@1671800423"
 ```
 
-If you prefer builder methods, you can achieve the same result with the following steps:
+If builder methods are preferred, the same result can be achieved with the following steps:
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;

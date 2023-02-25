@@ -11,7 +11,7 @@ final class DictionaryTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
     protected static array $paths = [
-        __DIR__.'/../vendor/httpwg/structured-field-tests/dictionary.json',
+        '/dictionary.json',
     ];
 
     #[Test]

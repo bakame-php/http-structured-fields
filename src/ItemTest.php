@@ -15,15 +15,15 @@ final class ItemTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
     protected static array $paths = [
-        __DIR__.'/../vendor/httpwg/structured-field-tests/boolean.json',
-        __DIR__.'/../vendor/httpwg/structured-field-tests/number.json',
-        __DIR__.'/../vendor/httpwg/structured-field-tests/number-generated.json',
-        __DIR__.'/../vendor/httpwg/structured-field-tests/string.json',
-        __DIR__.'/../vendor/httpwg/structured-field-tests/string-generated.json',
-        __DIR__.'/../vendor/httpwg/structured-field-tests/token.json',
-        __DIR__.'/../vendor/httpwg/structured-field-tests/token-generated.json',
-        __DIR__.'/../vendor/httpwg/structured-field-tests/item.json',
-        __DIR__.'/../vendor/httpwg/structured-field-tests/date.json',
+        '/boolean.json',
+        '/number.json',
+        '/number-generated.json',
+        '/string.json',
+        '/string-generated.json',
+        '/token.json',
+        '/token-generated.json',
+        '/item.json',
+        '/date.json',
     ];
 
     #[Test]
