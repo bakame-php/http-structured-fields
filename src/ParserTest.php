@@ -10,10 +10,10 @@ use PHPUnit\Framework\Attributes\Test;
 final class ParserTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
-    protected static array $paths = [
-        '/examples.json',
-        '/key-generated.json',
-        '/large-generated.json',
+    protected static array $httpWgTestFilenames = [
+        'examples.json',
+        'key-generated.json',
+        'large-generated.json',
     ];
 
     #[Test]

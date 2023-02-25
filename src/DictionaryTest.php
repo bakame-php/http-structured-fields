@@ -10,8 +10,8 @@ use PHPUnit\Framework\Attributes\Test;
 final class DictionaryTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
-    protected static array $paths = [
-        '/dictionary.json',
+    protected static array $httpWgTestFilenames = [
+        'dictionary.json',
     ];
 
     #[Test]

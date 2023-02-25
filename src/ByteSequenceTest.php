@@ -9,8 +9,8 @@ use PHPUnit\Framework\Attributes\Test;
 final class ByteSequenceTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
-    protected static array $paths = [
-        '/binary.json',
+    protected static array $httpWgTestFilenames = [
+        'binary.json',
     ];
 
     #[Test]

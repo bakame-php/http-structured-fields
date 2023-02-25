@@ -14,16 +14,16 @@ use Stringable;
 final class ItemTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
-    protected static array $paths = [
-        '/boolean.json',
-        '/number.json',
-        '/number-generated.json',
-        '/string.json',
-        '/string-generated.json',
-        '/token.json',
-        '/token-generated.json',
-        '/item.json',
-        '/date.json',
+    protected static array $httpWgTestFilenames = [
+        'boolean.json',
+        'number.json',
+        'number-generated.json',
+        'string.json',
+        'string-generated.json',
+        'token.json',
+        'token-generated.json',
+        'item.json',
+        'date.json',
     ];
 
     #[Test]
@@ -147,7 +147,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[DataProvider('itemTypeProvider')]
     public function it_can_tell_the_item_type(Item $item, Type $expectedType): void
     {
-        self::assertSame($expectedType, $item->type());
+        self::assertTrue($item->type()->equals($expectedType));
     }
 
     /**
@@ -189,8 +189,12 @@ final class ItemTest extends StructuredFieldTestCase
                 }),
                 'expectedType' => Type::String,
             ],
-            'date' => [
+            'date-immutable' => [
                 'item' => Item::from(new DateTimeImmutable('2020-07-12 13:37:00')),
+                'expectedType' => Type::Date,
+            ],
+            'date-interface' => [
+                'item' => Item::from(new DateTime('2020-07-12 13:37:00')),
                 'expectedType' => Type::Date,
             ],
         ];
@@ -199,7 +203,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     public function test_in_can_be_instantiated_using_bare_items(): void
     {
-        $item1 = Item::from('/terms', [
+        $parameters = [
             'string' => '42',
             'integer' => 42,
             'float' => 4.2,
@@ -207,19 +211,12 @@ final class ItemTest extends StructuredFieldTestCase
             'token' => Token::fromString('forty-two'),
             'byte-sequence' => ByteSequence::fromDecoded('a42'),
             'date' => new DateTimeImmutable('2020-12-01 11:43:17'),
-        ]);
+        ];
 
-        $item2 = Item::from('/terms', new ArrayObject([
-            'string' => Item::from('42'),
-            'integer' => Item::from(42),
-            'float' => Item::from(4.2),
-            'boolean' => Item::from(true),
-            'token' => Item::from(Token::fromString('forty-two')),
-            'byte-sequence' => Item::from(ByteSequence::fromDecoded('a42')),
-            'date' => Item::from(new DateTimeImmutable('2020-12-01 11:43:17')),
-        ]));
-
-        self::assertEquals($item2, $item1);
+        self::assertEquals(
+            Item::from('/terms', $parameters),
+            Item::from('/terms', new ArrayObject($parameters))
+        );
     }
 
     #[Test]
@@ -236,6 +233,7 @@ final class ItemTest extends StructuredFieldTestCase
         $instance = Item::fromHttpValue('1; a; b=?0');
 
         self::assertTrue($instance->parameters()->get('a')->value());
+        self::assertFalse($instance->parameters()->get('b')->value());
     }
 
     #[Test]

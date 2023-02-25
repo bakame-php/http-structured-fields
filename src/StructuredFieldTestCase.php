@@ -9,13 +9,14 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use function implode;
+use function ltrim;
 
 abstract class StructuredFieldTestCase extends TestCase
 {
     protected static string $rootPath = __DIR__.'/../vendor/httpwg/structured-field-tests';
 
     /** @var array<string> */
-    protected static array $paths;
+    protected static array $httpWgTestFilenames;
 
     #[Test]
     #[DataProvider('httpWgDataProvider')]
@@ -38,8 +39,8 @@ abstract class StructuredFieldTestCase extends TestCase
      */
     public static function httpWgDataProvider(): iterable
     {
-        foreach (static::$paths as $path) {
-            foreach (TestRecordCollection::fromPath(static::$rootPath.'/'.$path) as $test) {
+        foreach (static::$httpWgTestFilenames as $path) {
+            foreach (TestRecordCollection::fromPath(static::$rootPath.'/'.ltrim($path, '/')) as $test) {
                 yield $test->name => [$test];
             }
         }

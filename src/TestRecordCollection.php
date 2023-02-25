@@ -9,11 +9,8 @@ use IteratorAggregate;
 use JsonException;
 use RuntimeException;
 use function basename;
-use function fclose;
-use function fopen;
-use function is_resource;
+use function file_get_contents;
 use function json_decode;
-use function stream_get_contents;
 
 /**
  * @implements IteratorAggregate<string, TestRecord>
@@ -21,10 +18,8 @@ use function stream_get_contents;
  */
 final class TestRecordCollection implements IteratorAggregate
 {
-    /** @var array<string, TestRecord> */
-    private array $elements = [];
-
-    private function __construct()
+    /** @param array<string, TestRecord> $elements */
+    private function __construct(private array $elements = [])
     {
     }
 
@@ -38,30 +33,17 @@ final class TestRecordCollection implements IteratorAggregate
     }
 
     /**
-     * @param resource|null $context
-     *
      * @throws JsonException|RuntimeException
      */
-    public static function fromPath(string $path, $context = null): self
+    public static function fromPath(string $path): self
     {
-        $args = [$path, 'r'];
-        if (null !== $context) {
-            $args[] = false;
-            $args[] = $context;
-        }
-
-        $resource = @fopen(...$args);
-        if (!is_resource($resource)) {
+        if (false === $content = file_get_contents($path)) {
             throw new RuntimeException("unable to connect to the path `$path`.");
         }
 
-        /** @var string $content */
-        $content = stream_get_contents($resource);
-        fclose($resource);
-
+        $suite = new self();
         /** @var array<RecordData> $records */
         $records = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
-        $suite = new self();
         foreach ($records as $offset => $record) {
             $record['name'] = basename($path).' #'.($offset + 1).': '.$record['name'];
             $suite->add(TestRecord::fromDecoded($record));

@@ -10,10 +10,10 @@ use PHPUnit\Framework\Attributes\Test;
 final class ParametersTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
-    protected static array $paths = [
-        '/param-dict.json',
-        '/param-list.json',
-        '/param-listlist.json',
+    protected static array $httpWgTestFilenames = [
+        'param-dict.json',
+        'param-list.json',
+        'param-listlist.json',
     ];
 
     #[Test]

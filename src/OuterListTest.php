@@ -10,9 +10,9 @@ use PHPUnit\Framework\Attributes\Test;
 final class OuterListTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
-    protected static array $paths = [
-        '/list.json',
-        '/listlist.json',
+    protected static array $httpWgTestFilenames = [
+        'list.json',
+        'listlist.json',
     ];
 
     #[Test]
