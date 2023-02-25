@@ -17,6 +17,7 @@ use function stream_get_contents;
 
 /**
  * @implements IteratorAggregate<string, TestRecord>
+ * @phpstan-import-type RecordData from TestRecord
  */
 final class TestRecordCollection implements IteratorAggregate
 {
@@ -39,7 +40,7 @@ final class TestRecordCollection implements IteratorAggregate
     /**
      * @param resource|null $context
      *
-     * @throws JsonException
+     * @throws JsonException|RuntimeException
      */
     public static function fromPath(string $path, $context = null): self
     {
@@ -58,14 +59,7 @@ final class TestRecordCollection implements IteratorAggregate
         $content = stream_get_contents($resource);
         fclose($resource);
 
-        /** @var array<array{
-         *     name: string,
-         *     header_type: string,
-         *     raw: array<string>,
-         *     canonical?: array<string>,
-         *     must_fail?: bool,
-         *     can_fail?: bool
-         * }> $records */
+        /** @var array<RecordData> $records */
         $records = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
         $suite = new self();
         foreach ($records as $offset => $record) {

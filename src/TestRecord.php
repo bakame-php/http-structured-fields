@@ -4,6 +4,16 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+/**
+ * @phpstan-type RecordData array{
+ *     name:string,
+ *     header_type:string,
+ *     raw:array<string>,
+ *     canonical?: array<string>,
+ *     must_fail?: bool,
+ *     can_fail?: bool
+ * }
+ */
 final class TestRecord
 {
     private function __construct(
@@ -19,14 +29,7 @@ final class TestRecord
     }
 
     /**
-     * @param array{
-     *     name:string,
-     *     header_type:string,
-     *     raw:array<string>,
-     *     canonical?: array<string>,
-     *     must_fail?: bool,
-     *     can_fail?: bool
-     * } $data
+     * @param RecordData $data
      */
     public static function fromDecoded(array $data): self
     {
