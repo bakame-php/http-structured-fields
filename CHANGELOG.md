@@ -12,6 +12,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - Migrate to PHPUnit 10
 - **[BC Break]** `OrderedList` is renamed `OuterList`.
+- **[BC Break]** `ParameterAccess` interface signature updated to use the `Value` interface instead of the `Item` implementation.
 
 ### Deprecated
 
