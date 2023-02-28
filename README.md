@@ -50,7 +50,186 @@ echo $list[-1]->value(); // returns '/member/*/comments'
 
 ## Documentation
 
-Full documentation can be found in the [docs](/docs).
+### Parsing and Serializing Structured Fields
+
+To parse an HTTP field you may use the `fromHttpValue` named constructor provided by all the
+immutable value objects:
+
+```php
+use Bakame\Http\StructuredFields\Dictionary;
+
+$dictionary = Dictionary::fromHttpValue("a=?0,   b,   c=?1; foo=bar");
+```
+
+The `fromHttpValue` named constructor returns an instance of the `Bakame\Http\StructuredFields\StructuredField` interface
+which provides a way to serialize back the object into a normalized RFC compliant HTTP field using the `toHttpValue` method.
+
+To ease integration with current PHP frameworks and packages working with HTTP headers and trailers, each value object
+also exposes the `Stringable` interface method `__toString` which is an alias of the `toHttpValue` method.
+
+````php
+use Bakame\Http\StructuredFields\OuterList;
+
+$list = OuterList::fromHttpValue('("foo"; a=1;b=2);lvl=5, ("bar" "baz");lvl=1');
+echo $list->toHttpValue(); // '("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1'
+echo $list;                // '("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1'
+````
+
+The library provides currently five (5) immutable value objects define inside the `Bakame\Http\StructuredFields` namespace:
+
+- an [Item](item.md);
+- a [2 Ordered Map Containers](ordered-maps.md) `Dictionary` and `Parameters`;
+- a [2 List Containers](lists.md) `OuterList` and `InnerList`;
+
+All five of them implement the `StructuredField` interface and expose a `fromHttpValue` named constructor.
+
+### Building and Updating Structured Fields
+
+Creating or updating an HTTP field value can be achieved using any of our immutable value object as a starting point.
+
+For instance Ordered Map Containers can be build with an associative iterable as shown below
+
+```php
+use Bakame\Http\StructuredFields\Dictionary;
+
+$value = Dictionary::fromAssociative([
+    'b' => false,
+    'a' => Item::fromToken('bar', ['baz' => 42]),
+    'c' => new DateTimeImmutable('2022-12-23 13:00:23'),
+]);
+
+echo $value->toHttpValue(); //"b=?0, a=bar;baz=42, c=@1671800423"
+echo $value;                //"b=?0, a=bar;baz=42, c=@1671800423"
+```
+
+Or with an iterable of pairs as described in the RFC:
+
+```php
+use Bakame\Http\StructuredFields\Parameters;
+
+$value = Parameters::fromPairs([
+    ['b', false],
+    ['a', Item::fromPair([Token::fromString('bar')])],
+    ['c', new DateTime('2022-12-23 13:00:23')]
+]);
+
+echo $value->toHttpValue(); //;b=?0;a=bar;c=@1671800423
+echo $value;                //;b=?0;a=bar;c=@1671800423
+```
+
+If builder methods are preferred, the same result can be achieved with the following steps:
+
+```php
+use Bakame\Http\StructuredFields\Dictionary;
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Token;
+
+$bar = Item::fromToken('bar')
+    ->addParameter('baz', Item::from(42));
+$dictBuilder = Dictionary::create()
+    ->add('a', $bar)
+    ->prepend('b', Item::from(false))
+    ->append('c', Item::from(new DateTimeImmutable('2022-12-23 13:00:23')))
+;
+
+echo $value->toHttpValue(); //"b=?0, a=bar;baz=42, c=@1671800423"
+echo $value;                //"b=?0, a=bar;baz=42, c=@1671800423"
+```
+
+Because we are using immutable value object any change to the value object will return a new instance with
+the changes implemented and leave the original instance unchanged.
+
+The same changes can be applied to List Containers but with adapted methods around list handling:
+
+```php
+use Bakame\Http\StructuredFields\InnerList;
+use Bakame\Http\StructuredFields\Item;
+
+$list = InnerList::from()
+    ->unshift('42')
+    ->push(42)
+    ->insert(1, 42.0)
+    ->replace(0, Item::fromDecodedByteSequence('Hello World'));
+
+echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
+echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
+```
+
+### Item and RFC Data Types
+
+To handle an item, the package provide a specific `Item` value obhject with additional named constructors
+Items can have different types that are translated to PHP using:
+
+- native type where possible
+- specific classes defined in the package namespace to represent non-native type
+
+The table below summarizes the item value type.
+
+| HTTP DataType | Package Data Type         | Package Enum Type    |
+|---------------|---------------------------|----------------------|
+| Integer       | `int`                     | `Type::Integer`      |
+| Decimal       | `float`                   | `Type::Decimal`      |
+| String        | `string`                  | `Tyoe::String`       |
+| Boolean       | `bool`                    | `Type::Boolean`      |
+| Token         | class `Token`             | `Type::Token`        |
+| Byte Sequence | class `ByteSequence`      | `Type::ByteSequence` |
+| Date          | class `DateTimeImmutable` | `Type::Date`         |
+
+```php
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Item;
+
+$item = Item::fromPair([
+    "hello world", [
+        ["a", ByteSequence::fromDecoded("Hello World")],
+    ]
+]);
+$item->value();                    // returns "hello world"
+$item->type();                     // returns Type::String
+$item->parameters()["a"]->type();  // returns Type::ByteSequence
+$item->parameters()["a"]->value(); // returns StructuredFields\ByteSequence::fromDecoded('Hello World');
+echo $item->toHttpValue();         // returns "hello world";a=:SGVsbG8gV29ybGQ=:
+```
+
+Once again it is possible to simplify this code using the following technique:
+
+```php
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Item;
+
+$item = Item::from("hello world", [
+    "a" => Item::fromDecodedByteSequence("Hello World")
+]);
+$item->value();                    // returns "hello world"
+$item->type();                     // returns Type::String
+$item->parameters()["a"]->value(); // returns StructuredFields\ByteSequence::fromDecoded('Hello World');
+$item->parameters()["a"]->type();  // returns Type::ByteSequence
+echo $item->toHttpValue();         // returns "hello world";a=:SGVsbG8gV29ybGQ=:
+```
+
+The RFC define two (2) specific data types that can not be represented by PHP default type system, for them, we define
+two classes `Token` and `ByteSequence` to help representing them in our code.
+
+```php
+use Bakame\Http\StructuredFields\Token;
+use Bakame\Http\StructuredFields\ByteSequence;
+
+Token::fromString(string|Stringable $value): self;         // from a value and an associate iterable of parameters
+ByteSequence::fromDecoded(string|Stringable $value): self; // a string to convert to a Token and an associate iterable of parameters
+ByteSequence::fromEncoded(string|Stringable $value): self; // a string to convert to a Byte Sequence and an associate iterable of parameters
+```
+
+**Of note: to instantiate a decimal number type a float MUST be used as the first argument of `Item::from`.**
+
+```php
+use Bakame\Http\StructuredFields\Item;
+
+$decimal = Item::from(42.0);
+$decimal->type(); //Type::Decimal
+
+$integer = Item::fromPair([42]);
+$integer->type(); //return Type::Integer
+```
 
 ## Contributing
 
