@@ -7,13 +7,11 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/bakame/http-structured-fields.svg?style=flat-square)](https://packagist.org/packages/bakame/http-structured-fields)
 [![Sponsor development of this project](https://img.shields.io/badge/sponsor%20this%20package-%E2%9D%A4-ff69b4.svg?style=flat-square)](https://github.com/sponsors/nyamsprod)
 
-The package uses value objects to parse, serialize and build [HTTP Structured Fields][1] in PHP.
+The package uses value objects to parse, serialize, build and update [HTTP Structured Fields][1] in PHP.
 
-HTTP Structured fields are intended for use by specifications of new HTTP fields that wish to 
-use a common syntax that is more restrictive than traditional HTTP field values or could
-be used to [retrofit current fields][2] to have them compliant with the new syntax.
-
-The package can be used to **parse, build, update and serialize** HTTP Structured Fields in a predicable way;
+HTTP Structured fields are intended for use for new HTTP fields that wish to use a common syntax that is
+more restrictive than traditional HTTP field values or could be used to [retrofit current fields][2] to
+have them compliant with the new syntax.
 
 ```php
 use Bakame\Http\StructuredFields\Item;
