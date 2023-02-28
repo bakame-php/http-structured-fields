@@ -226,10 +226,13 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Delete members associated with the list of instance indexes.
      */
-    public function remove(int ...$indexes): static
+    public function remove(string|int ...$indexes): static
     {
         $offsets = array_filter(
-            array_map(fn (int $index): int|null => $this->filterIndex($index), $indexes),
+            array_map(
+                fn (int $index): int|null => $this->filterIndex($index),
+                array_filter($indexes, static fn (string|int $key): bool => is_int($key))
+            ),
             fn (int|null $index): bool => null !== $index
         );
 

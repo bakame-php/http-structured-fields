@@ -222,10 +222,10 @@ final class Dictionary implements MemberOrderedMap
         return new self($members);
     }
 
-    public function remove(string ...$keys): static
+    public function remove(string|int ...$keys): static
     {
         $members = $this->members;
-        foreach ($keys as $key) {
+        foreach (array_filter($keys, static fn (string|int $key): bool => is_string($key)) as $key) {
             unset($members[$key]);
         }
 

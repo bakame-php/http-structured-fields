@@ -35,4 +35,12 @@ interface MemberContainer extends ArrayAccess, Countable, IteratorAggregate, Str
      * Tells whether the instance contain a members at the specified offset.
      */
     public function has(string|int $offset): bool;
+
+    /**
+     * Deletes members associated with the list of submitted keys.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     */
+    public function remove(string|int ...$indexes): static;
 }

@@ -53,14 +53,6 @@ interface MemberOrderedMap extends MemberContainer
     public function add(string $key, StructuredField $member): static;
 
     /**
-     * Deletes members associated with the list of submitted keys.
-     *
-     * This method MUST retain the state of the current instance, and return
-     * an instance that contains the specified changes.
-     */
-    public function remove(string ...$keys): static;
-
-    /**
      * Adds a member at the end of the instance and deletes any previous reference to the key if present.
      *
      * This method MUST retain the state of the current instance, and return

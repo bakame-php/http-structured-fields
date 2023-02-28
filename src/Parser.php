@@ -361,7 +361,7 @@ final class Parser
     private static function parseByteSequence(string $httpValue): array
     {
         if (1 !== preg_match('/^(?<sequence>:(?<byte>[a-z\d+\/=]*):)/i', $httpValue, $matches)) {
-            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Byte sequence contains invalid characters.");
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Byte Sequence contains invalid characters.");
         }
 
         return [ByteSequence::fromEncoded($matches['byte']), strlen($matches['sequence'])];

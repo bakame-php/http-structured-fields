@@ -46,12 +46,4 @@ interface MemberList extends MemberContainer
      * @throws InvalidOffset If the index does not exist
      */
     public function replace(int $index, StructuredField $member): static;
-
-    /**
-     * Deletes members associated with the list of submitted keys.
-     *
-     * This method MUST retain the state of the current instance, and return
-     * an instance that contains the specified changes.
-     */
-    public function remove(int ...$indexes): static;
 }

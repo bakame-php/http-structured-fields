@@ -25,11 +25,8 @@ final class DictionaryTest extends StructuredFieldTestCase
         self::assertSame(['string', $stringItem], $instance->pair(0));
         self::assertSame($stringItem, $instance->get('string'));
         self::assertTrue($instance->has('string'));
-        self::assertEquals(
-            [['string', $stringItem], ['boolean', $booleanItem]],
-            [...$instance->toPairs()]
-        );
-
+        self::assertFalse($instance->has('not-present'));
+        self::assertEquals([['string', $stringItem], ['boolean', $booleanItem]], [...$instance->toPairs()]);
         self::assertEquals($arrayParams, [...$instance]);
     }
 
@@ -45,6 +42,7 @@ final class DictionaryTest extends StructuredFieldTestCase
         self::assertSame($stringItem, $instance->get('string'));
         self::assertTrue($instance->has('string'));
         self::assertEquals($arrayParams, [...$instance->toPairs()]);
+        self::assertEquals(['string' => $stringItem, 'boolean' => $booleanItem], [...$instance]);
     }
 
     #[Test]

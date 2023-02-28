@@ -32,34 +32,32 @@ final class ByteSequenceTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_decode_base64_field(): void
     {
-        $source = 'cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==';
-        $item = ByteSequence::fromEncoded($source);
+        $encoded = 'cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==';
+        $value = ByteSequence::fromEncoded($encoded);
 
-        self::assertSame('pretend this is binary content.', $item->decoded());
-        self::assertSame($source, $item->encoded());
+        self::assertSame('pretend this is binary content.', $value->decoded());
+        self::assertSame($encoded, $value->encoded());
     }
 
     #[Test]
     public function it_can_encode_raw_field(): void
     {
         $decoded = 'pretend this is binary content.';
-        $source = 'cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==';
-        $item = ByteSequence::fromDecoded($decoded);
+        $encoded = 'cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==';
+        $value = ByteSequence::fromDecoded($decoded);
 
-        self::assertSame('pretend this is binary content.', $item->decoded());
-        self::assertSame($source, $item->encoded());
+        self::assertSame('pretend this is binary content.', $value->decoded());
+        self::assertSame($encoded, $value->encoded());
     }
 
     #[Test]
     public function it_can_compare_instances(): void
     {
         $decoded = 'pretend this is binary content.';
-        $source = 'cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==';
-        $value1 = ByteSequence::fromDecoded($decoded);
-        $value2 = ByteSequence::fromEncoded($source);
-        $value3 = ByteSequence::fromDecoded($source);
+        $encoded = 'cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==';
+        $value = ByteSequence::fromDecoded($decoded);
 
-        self::assertTrue($value1->equals($value2));
-        self::assertFalse($value1->equals($value3));
+        self::assertTrue($value->equals(ByteSequence::fromEncoded($encoded)));
+        self::assertFalse($value->equals(ByteSequence::fromDecoded($encoded)));
     }
 }
