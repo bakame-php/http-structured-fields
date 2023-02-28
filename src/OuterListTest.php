@@ -104,7 +104,7 @@ final class OuterListTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function test_it_can_generate_the_same_value(): void
+    public function it_can_generate_the_same_value(): void
     {
         $res = OuterList::fromHttpValue('token, "string", ?1; parameter, (42 42.0)');
 
@@ -127,9 +127,17 @@ final class OuterListTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function testArrayAccessThrowsInvalidIndex2(): void
+    public function it_returns_the_same_object_if_nothing_is_changed(): void
     {
-        self::assertCount(0, OuterList::from()->remove(0));
+        $container = OuterList::from(42, 'forty-two');
+
+        $sameContainer = $container
+            ->unshift()
+            ->push()
+            ->insert(1)
+            ->remove(42, 46);
+
+        self::assertSame($container, $sameContainer);
     }
 
     #[Test]

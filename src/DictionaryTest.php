@@ -34,7 +34,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function test_it_can_be_instantiated_with_key_value_pairs(): void
+    public function it_can_be_instantiated_with_key_value_pairs(): void
     {
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
@@ -78,6 +78,14 @@ final class DictionaryTest extends StructuredFieldTestCase
 
         self::assertCount(0, $deleteAgain);
         self::assertFalse($deleteAgain->hasMembers());
+    }
+
+    #[Test]
+    public function it_returns_the_same_object_if_no_member_is_removed(): void
+    {
+        $instance = Dictionary::create();
+
+        self::assertSame($instance, $instance->remove('foo', 'bar', 'baz'));
     }
 
     #[Test]

@@ -141,6 +141,10 @@ final class OuterList implements MemberList
      */
     public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
+        if ([] === $members) {
+            return $this;
+        }
+
         return new self(...[...array_map(self::filterMember(...), array_values($members)), ...$this->members]);
     }
 
@@ -149,6 +153,10 @@ final class OuterList implements MemberList
      */
     public function push(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
+        if ([] === $members) {
+            return $this;
+        }
+
         return new self(...[...$this->members, ...array_map(self::filterMember(...), array_values($members))]);
     }
 
@@ -165,6 +173,7 @@ final class OuterList implements MemberList
             null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
             0 === $offset => $this->unshift(...$members),
             count($this->members) === $offset => $this->push(...$members),
+            [] === $members => $this,
             default => (function (array $newMembers) use ($offset, $members) {
                 array_splice($newMembers, $offset, 0, array_map(self::filterMember(...), $members));
 
@@ -199,6 +208,10 @@ final class OuterList implements MemberList
             array_map(fn (int $index): int|null => $this->filterIndex($index), $indexes),
             fn (int|null $index): bool => null !== $index
         );
+
+        if ($offsets === []) {
+            return $this;
+        }
 
         $members = $this->members;
         foreach ($offsets as $offset) {

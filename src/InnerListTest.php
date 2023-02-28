@@ -73,6 +73,19 @@ final class InnerListTest extends TestCase
     }
 
     #[Test]
+    public function it_returns_the_same_object_if_nothing_is_changed(): void
+    {
+        $container = InnerList::from(42, 'forty-two');
+
+        $sameContainer = $container
+            ->unshift()
+            ->push()
+            ->insert(1);
+
+        self::assertSame($container, $sameContainer);
+    }
+
+    #[Test]
     public function it_fails_to_replace_invalid_index(): void
     {
         $this->expectException(InvalidOffset::class);
@@ -148,7 +161,7 @@ final class InnerListTest extends TestCase
     }
 
     #[Test]
-    public function testArrayAccessThrowsInvalidIndex2(): void
+    public function it_returns_the_same_object_if_no_member_is_removed(): void
     {
         self::assertCount(0, InnerList::from()->remove(0));
     }

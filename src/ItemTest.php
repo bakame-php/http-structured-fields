@@ -201,7 +201,7 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function test_in_can_be_instantiated_using_bare_items(): void
+    public function in_can_be_instantiated_using_bare_items(): void
     {
         $parameters = [
             'string' => '42',

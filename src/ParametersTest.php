@@ -98,6 +98,17 @@ final class ParametersTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_returns_the_same_object_if_no_member_is_removed(): void
+    {
+        $stringItem = Item::from('helloWorld');
+        $booleanItem = Item::from(true);
+        $arrayParams = ['string' => $stringItem, 'boolean' => $booleanItem];
+        $instance = Parameters::fromAssociative($arrayParams);
+
+        self::assertSame($instance, $instance->remove('foo', 'bar', 'baz'));
+    }
+
+    #[Test]
     public function it_fails_to_add_an_item_with_wrong_key(): void
     {
         $this->expectException(SyntaxError::class);

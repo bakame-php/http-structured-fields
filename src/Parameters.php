@@ -242,6 +242,10 @@ final class Parameters implements MemberOrderedMap
             unset($members[$key]);
         }
 
+        if ($members === $this->members) {
+            return $this;
+        }
+
         return new self($members);
     }
 

@@ -95,7 +95,7 @@ final class InnerList implements MemberList, ParameterAccess
 
     public function toHttpValue(): string
     {
-        return '('.implode(' ', array_map(fn (Value $value): string => $value->toHttpValue(), $this->members)).')'.$this->parameters->toHttpValue();
+        return '('.implode(' ', array_map(fn (StructuredField $value): string => $value->toHttpValue(), $this->members)).')'.$this->parameters->toHttpValue();
     }
 
     public function __toString(): string
@@ -161,6 +161,10 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
+        if ([] === $members) {
+            return $this;
+        }
+
         return new self($this->parameters, [...array_map(self::filterMember(...), array_values($members)), ...$this->members]);
     }
 
@@ -169,6 +173,10 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public function push(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
+        if ([] === $members) {
+            return $this;
+        }
+
         return new self($this->parameters, [...$this->members, ...array_map(self::filterMember(...), array_values($members))]);
     }
 
@@ -194,6 +202,7 @@ final class InnerList implements MemberList, ParameterAccess
             null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
             0 === $offset => $this->unshift(...$members),
             count($this->members) === $offset => $this->push(...$members),
+            [] === $members => $this,
             default => (function (array $newMembers) use ($offset, $members) {
                 array_splice($newMembers, $offset, 0, array_map(self::filterMember(...), $members));
 
@@ -223,6 +232,10 @@ final class InnerList implements MemberList, ParameterAccess
             array_map(fn (int $index): int|null => $this->filterIndex($index), $indexes),
             fn (int|null $index): bool => null !== $index
         );
+
+        if ([] === $offsets) {
+            return $this;
+        }
 
         $members = $this->members;
         foreach ($offsets as $offset) {
