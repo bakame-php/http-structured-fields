@@ -11,19 +11,16 @@ The package uses value objects to parse, serialize and build [HTTP Structured Fi
 
 HTTP Structured fields are intended for use by specifications of new HTTP fields that wish to 
 use a common syntax that is more restrictive than traditional HTTP field values or could
-be used to [retrofit current headers][2] to have them compliant with the new syntax.
+be used to [retrofit current fields][2] to have them compliant with the new syntax.
 
-The package can be used to:
-
-- parse and serialize HTTP Structured Fields
-- build or update HTTP Structured Fields in a predicable way;
+The package can be used to **parse, build, update and serialize** HTTP Structured Fields in a predicable way;
 
 ```php
 use Bakame\Http\StructuredFields\Item;
 
 $field = Item::from("/terms", ['rel' => 'copyright', 'anchor' => '#foo']);
-echo $field->toHttpValue();              // display "/terms";rel="copyright";anchor="#foo"
-echo $field->value();                    // display "/terms"
+echo $field->toHttpValue();                // display "/terms";rel="copyright";anchor="#foo"
+echo $field->value();                      // display "/terms"
 echo $field->parameters()['rel']->value(); // display "copyright"
 ```
 
