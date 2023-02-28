@@ -12,6 +12,7 @@ use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function count;
+use function implode;
 use function is_string;
 use function trim;
 
@@ -74,7 +75,7 @@ final class Parameters implements MemberOrderedMap
      *
      * @param MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}> $pairs
      */
-    public static function fromPairs(MemberOrderedMap|iterable $pairs): self
+    public static function fromPairs(iterable $pairs): self
     {
         if ($pairs instanceof MemberOrderedMap) {
             $pairs = $pairs->toPairs();
@@ -144,8 +145,6 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * Returns an iterable construct of dictionary pairs.
-     *
      * @return Iterator<array{0:string, 1:Value}>
      */
     public function toPairs(): Iterator
@@ -156,8 +155,6 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * Returns all the container keys.
-     *
      * @return array<string>
      */
     public function keys(): array
@@ -165,18 +162,14 @@ final class Parameters implements MemberOrderedMap
         return array_keys($this->members);
     }
 
-    /**
-     * Tells whether the key is present in the container.
-     */
     public function has(string|int $offset): bool
     {
         return is_string($offset) && array_key_exists($offset, $this->members);
     }
 
     /**
-     * Returns the value associated to the key.
-     *
-     * @throws InvalidOffset if the key is not found
+     * @throws SyntaxError   If the key is invalid
+     * @throws InvalidOffset If the key is not found
      */
     public function get(string|int $offset): Value
     {
@@ -187,9 +180,6 @@ final class Parameters implements MemberOrderedMap
         return $this->members[$offset];
     }
 
-    /**
-     * Tells whether the index is present in the container.
-     */
     public function hasPair(int $index): bool
     {
         try {
@@ -216,8 +206,6 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * Returns the key-value pair found at a given index.
-     *
      * @throws InvalidOffset if the index is not found
      *
      * @return array{0:string, 1:Value}
@@ -230,7 +218,7 @@ final class Parameters implements MemberOrderedMap
     public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         $members = $this->members;
-        $members[$key] = self::filterMember($member);
+        $members[MapKey::fromString($key)->value] = self::filterMember($member);
 
         return new self($members);
     }
@@ -249,9 +237,6 @@ final class Parameters implements MemberOrderedMap
         return new self($members);
     }
 
-    /**
-     * Adds a member at the end of the instance and deletes any previous reference to the key if present.
-     */
     public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         $members = $this->members;
@@ -260,9 +245,6 @@ final class Parameters implements MemberOrderedMap
         return new self([...$members, $key => self::filterMember($member)]);
     }
 
-    /**
-     * Adds a member at the beginning of the instance and deletes any previous reference to the key if present.
-     */
     public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         $members = $this->members;
@@ -272,8 +254,6 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * Merges multiple instances using iterable associative structures.
-     *
      * @param iterable<string, Value|DataType> ...$others
      */
     public function mergeAssociative(iterable ...$others): static
@@ -287,8 +267,6 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * Merge multiple instances using iterable pairs.
-     *
      * @param MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}> ...$others
      */
     public function mergePairs(MemberOrderedMap|iterable ...$others): static

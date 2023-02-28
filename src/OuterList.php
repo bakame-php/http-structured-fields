@@ -109,7 +109,7 @@ final class OuterList implements MemberList
         return null !== $this->filterIndex($offset);
     }
 
-    private function filterIndex(int|string $index): int|null
+    private function filterIndex(string|int $index): int|null
     {
         if (!is_int($index)) {
             return null;
@@ -182,11 +182,6 @@ final class OuterList implements MemberList
         };
     }
 
-    /**
-     * Replaces the member associated with the index.
-     *
-     * @throws InvalidOffset If the index does not exist
-     */
     public function replace(int $index, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         if (null === ($offset = $this->filterIndex($index))) {
@@ -212,7 +207,7 @@ final class OuterList implements MemberList
             fn (int|null $index): bool => null !== $index
         );
 
-        if ($offsets === []) {
+        if ([] === $offsets) {
             return $this;
         }
 

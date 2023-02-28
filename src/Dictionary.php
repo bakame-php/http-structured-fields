@@ -14,6 +14,8 @@ use function array_map;
 use function count;
 use function implode;
 use function is_array;
+use function is_iterable;
+use function is_string;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
@@ -95,6 +97,8 @@ final class Dictionary implements MemberOrderedMap
      * Returns an instance from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
+     *
+     * @throws SyntaxError If the string is not a valid
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
@@ -191,7 +195,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * Validates and Format the submitted index position.
+     * Filters and format instance index.
      */
     private function filterIndex(int $index): int
     {

@@ -13,6 +13,8 @@ use function array_map;
 use function array_splice;
 use function array_values;
 use function count;
+use function implode;
+use function is_int;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.1
@@ -49,6 +51,20 @@ final class InnerList implements MemberList, ParameterAccess
         return new self(Parameters::fromAssociative($parameters), $members);
     }
 
+    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Value
+    {
+        return match (true) {
+            $member instanceof Value => $member,
+            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Value::class.'" instance; received a "'.$member::class.'" instead.'),
+            default => Item::from($member),
+        };
+    }
+
+    /**
+     * Returns an instance from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1
+     */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
         return InnerList::fromList(...Parser::parseInnerList($httpValue));
@@ -119,7 +135,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @return Iterator<array-key, Value>
+     * @return Iterator<int, Value>
      */
     public function getIterator(): Iterator
     {
@@ -140,7 +156,9 @@ final class InnerList implements MemberList, ParameterAccess
         $max = count($this->members);
 
         return match (true) {
-            [] === $this->members, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            [] === $this->members,
+            0 > $max + $index,
+            0 > $max - $index - 1 => null,
             0 > $index => $max + $index,
             default => $index,
         };
@@ -157,7 +175,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * Insert members at the beginning of the list.
+     * Inserts members at the beginning of the list.
      */
     public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
@@ -180,17 +198,8 @@ final class InnerList implements MemberList, ParameterAccess
         return new self($this->parameters, [...$this->members, ...array_map(self::filterMember(...), array_values($members))]);
     }
 
-    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Value
-    {
-        return match (true) {
-            $member instanceof Value => $member,
-            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Value::class.'" instance; received a "'.$member::class.'" instead.'),
-            default => Item::from($member),
-        };
-    }
-
     /**
-     * Replace the member associated with the index.
+     * Inserts members starting at the given index.
      *
      * @throws InvalidOffset If the index does not exist
      */
@@ -224,7 +233,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * Delete members associated with the list of instance indexes.
+     * Deletes members associated with the list of instance indexes.
      */
     public function remove(string|int ...$indexes): static
     {
