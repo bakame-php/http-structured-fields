@@ -6,16 +6,18 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
+- **[BC Break]** `OrderedList` is renamed `OuterList`.
 - **[BC Break]** `MemberContainer::remove` methods get added to the interface.
-- **[BC Break]** `MemberContainer::has` method accepts a variadic argument. All submitted indexes should be present for the method to return `true`
-- **[BC Break]** `MemberContainer::hasPair` method accepts a variadic argument. All submitted indexes should be present for the method to return `true`
+- **[BC Break]** `MemberContainer::keys` method added to the interface.
 
 ### Fixed
 
 - Migrate to PHPUnit 10
-- **[BC Break]** `OrderedList` is renamed `OuterList`.
-- **[BC Break]** `ParameterAccess` interface signature updated to use the `Value` interface instead of the `Item` implementation.
 - Improve Collection immutability with method changes
+- **[BC Break]** `ParameterAccess` interface signature updated to use the `Value` interface instead of the `Item` implementation.
+- **[BC Break]** `MemberList::remove`, `MemberOrderedMap::remove` and `MemberOrderedMap::keys` methods are moved to their parent interface.
+- **[BC Break]** Renamed arguments for indexation for normalization 
+- **[BC Break]** `MemberContainer::has` and `MemberOrderedMap::hasPair` methods accept a variadic argument. All submitted indexes/keys should be present for the method to return `true`
 
 ### Deprecated
 
@@ -23,8 +25,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- **[BC Break]** `OrderedList` is removed use `OuterList`.
-- **[BC Break]** `MemberList::remove` and `MemberOrderedMap::remove` methods are removed from the interface.
+- **[BC Break]** `OrderedList` is remove, use `OuterList` instead.
 
 ## [0.7.0] - 2023-02-06
 

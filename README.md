@@ -52,8 +52,8 @@ echo $list[-1]->value(); // returns '/member/*/comments'
 
 ### Parsing and Serializing Structured Fields
 
-To parse an HTTP field you may use the `fromHttpValue` named constructor provided by all the
-immutable value objects:
+To parse the string representation of an HTTP field you must use the `fromHttpValue`
+named constructor provided to all the immutable value objects:
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
@@ -61,11 +61,13 @@ use Bakame\Http\StructuredFields\Dictionary;
 $dictionary = Dictionary::fromHttpValue("a=?0,   b,   c=?1; foo=bar");
 ```
 
-The `fromHttpValue` named constructor returns an instance of the `Bakame\Http\StructuredFields\StructuredField` interface.
-The interface provides a way to serialize back the object into a normalized RFC compliant HTTP field using the `toHttpValue` method.
+`fromHttpValue` returns an instance of the `Bakame\Http\StructuredFields\StructuredField` interface.
+The interface provides a way to serialize the value object into a normalized RFC compliant HTTP field
+string value using the `toHttpValue` method.
 
-To ease integration with current PHP frameworks and HTTP related packages working with headers and trailers, each value object
-also exposes the `Stringable` interface method `__toString`, an alias of the `toHttpValue` method.
+To ease integration with current PHP frameworks and packages working with HTTP headers and trailers,
+each value object also exposes the `Stringable` interface method `__toString`,
+an alias of the `toHttpValue` method.
 
 ````php
 use Bakame\Http\StructuredFields\OuterList;
@@ -75,18 +77,19 @@ echo $list->toHttpValue(); // '("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1'
 echo $list;                // '("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1'
 ````
 
-The library provides currently five (5) immutable value objects define inside the `Bakame\Http\StructuredFields` namespace
-with expose the `StructuredField` interface and expose a `fromHttpValue` named constructor:
+The library provides currently five (5) immutable value objects define inside the `Bakame\Http\StructuredFields`
+namespace 
 
-- an `Item`;
-- a 2 Ordered Map Containers `Dictionary` and `Parameters`;
-- a 2 List Containers `OuterList` and `InnerList`;
+- `Item`;
+- `Dictionary` and `Parameters` as 2 Ordered Map Containers;
+- `OuterList` and `InnerList` as 2 List Containers ;
+
+they all implement the `StructuredField` interface and expose a `fromHttpValue` named constructor:
 
 ### Building and Updating Structured Fields
 
-Creating or updating an HTTP field value can be achieved using any of our immutable value object as a starting point.
-
-For instance Ordered Map Containers can be build with an associative iterable as shown below
+Every value object can create or update the HTTP field value it represents.
+For instance Ordered Map containers can be build with an associative iterable as shown below
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
@@ -138,7 +141,17 @@ echo $value;                //"b=?0, a=bar;baz=42, c=@1671800423"
 Because we are using immutable value objects any change to the value object will return a new instance with
 the changes applied and leave the original instance unchanged.
 
-The same changes can be applied to List Containers but with adapted methods around list handling:
+Ordered Map Containers exhibits the following modifying methods:
+
+```php
+$map->add($key, $value): static;
+$map->append($key, $value): static;
+$map->prepend($key, $value): static;
+$map->mergeAssociative(...$others): static;
+$map->mergePairs(...$others): static;
+```
+
+Conversely, changes can be applied to List containers but with adapted methods around list handling:
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
@@ -154,9 +167,30 @@ echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 ```
 
+List containers exhibit the following modifying methods:
+
+```php
+$list->unshift(...$members): static;
+$list->push(...$members): static;
+$list->insert($key, ...$members): static;
+$list->replace($key, $member): static;
+```
+
+Last but not least you can attach and update to `Item` and `InnerList` instances a `Parameters` instance using the
+following methods:
+
+```php
+$field->withParameters(Parameters $parameters): static;
+$field->addParameter($key, $value): static;
+$field->appendParameter($key, $value): static;
+$field->prependParameter($key, $value): static;
+$field->withoutParameters(...$keys): static;
+$field->withoutAllParameters($): static;
+```
+
 ### Item and RFC Data Types
 
-To handle an item, the package provide a specific `Item` value obhject with additional named constructors
+To handle an item, the package provide a specific `Item` value object with additional named constructors.
 Items can have different types that are translated to PHP using:
 
 - native type where possible
@@ -164,15 +198,15 @@ Items can have different types that are translated to PHP using:
 
 The table below summarizes the item value type.
 
-| HTTP DataType | Package Data Type         | Package Enum Type    |
-|---------------|---------------------------|----------------------|
-| Integer       | `int`                     | `Type::Integer`      |
-| Decimal       | `float`                   | `Type::Decimal`      |
-| String        | `string`                  | `Tyoe::String`       |
-| Boolean       | `bool`                    | `Type::Boolean`      |
-| Token         | class `Token`             | `Type::Token`        |
-| Byte Sequence | class `ByteSequence`      | `Type::ByteSequence` |
-| Date          | class `DateTimeImmutable` | `Type::Date`         |
+| HTTP DataType | Package Data Type                                      | Package Enum Type    |
+|---------------|--------------------------------------------------------|----------------------|
+| Integer       | `int`                                                  | `Type::Integer`      |
+| Decimal       | `float`                                                | `Type::Decimal`      |
+| String        | `string` or `Stringable` class                         | `Tyoe::String`       |
+| Boolean       | `bool`                                                 | `Type::Boolean`      |
+| Token         | class `Token`                                          | `Type::Token`        |
+| Byte Sequence | class `ByteSequence`                                   | `Type::ByteSequence` |
+| Date          | class `DateTimeImmutable` or `DateTimeInterface` class | `Type::Date`         |
 
 ```php
 use Bakame\Http\StructuredFields\ByteSequence;
@@ -232,10 +266,22 @@ $integer->type(); //return Type::Integer
 
 ### Accessing members of Structured Fields Containers.
 
+`Item` are accessible using three (3) methods:
+
+```php
+use Bakame\Http\StructuredFields\Item;
+
+$item = Item::from(CarbonImmutable::parse('today'));
+$item->type();       // return Type::Date;
+$item->value()       // return CarbonImmutable::parse('today') (because it extends DateTimeImmutable)
+$item->parameters(); // returns a Parameters container
+```
+
 All containers implement PHP `IteratorAggregate`, `Countable` and `ArrayAccess` interfaces for easy usage in your codebase.
 You also can access container members via the following shared methods
 
 ```php
+$container->keys(): array<string>;
 $container->has(string|int ...$offsets): bool;
 $container->get(string|int $offset): bool;
 $container->remove(string|int ...$offsets): bool;
@@ -252,11 +298,19 @@ use Bakame\Http\StructuredFields\Item;
 $value = Item::from("Hello world", [
     'a' => 'foobar',
 ]);
-$value->parameters()->has('b'); // return false
-$value->parameters()->has('22'); // return false the index does not exists
+$value->parameters()->has('b');     // return false
+$value->parameters()['a'];          // return Item::from('foobar')
+$value->parameters()['a'] = 23      // triggers a ForbiddenOperation exception
+unset($value->parameters()['a']);   // triggers a ForbiddenOperation exception
 ```
 
+Apart from the PHP interfaces with the `Dictionary` and the `Parameters` classes you can access the members as pairs:
 
+```php
+$container->hasPair(int ...$offsets): bool;
+$container->pair(int $offset): array{0:string, 1:StructuredField};
+$container->toPairs(): iterable<array{0:string, 1:StructuredField}>;
+```
 
 ## Contributing
 
