@@ -39,6 +39,7 @@ final class OuterListTest extends StructuredFieldTestCase
 
         self::assertCount(2, $instance);
         self::assertSame($booleanItem, $instance->get(1));
+        self::assertTrue($instance->has(0, 1));
 
         $deletedInstance = $instance->remove(1);
 
@@ -190,5 +191,27 @@ final class OuterListTest extends StructuredFieldTestCase
         $this->expectException(LogicException::class);
 
         OuterList::from('foobar', 'foobar', 'zero', 0)[0] = Item::from(false);
+    }
+
+
+    #[Test]
+    public function it_can_returns_the_container_member_keys(): void
+    {
+        $instance = OuterList::from();
+
+        self::assertSame([], $instance->keys());
+
+        $newInstance = $instance
+            ->push(Item::from(false), Item::from(true));
+
+        self::assertSame([0, 1], $newInstance->keys());
+
+        $container = OuterList::from()
+            ->unshift('42')
+            ->push(42)
+            ->insert(1, 42.0)
+            ->replace(0, ByteSequence::fromDecoded('Hello World'));
+
+        self::assertSame([0, 1, 2], $container->keys());
     }
 }

@@ -117,16 +117,22 @@ final class Item implements Value
      */
     public static function from(mixed $value, iterable $parameters = []): self
     {
-        return new self(match (true) {
+        $parameters = Parameters::fromAssociative($parameters);
+        if ($value instanceof Value) {
+            $parameters = $value->parameters()->mergeAssociative($parameters);
+        }
+
+        return new self(match (true) { /* @phpstan-ignore-line */
+            $value instanceof Value => $value->value(),
+            $value instanceof DateTimeInterface => self::filterDate($value),
             is_int($value) => self::filterIntegerRange($value, 'Integer'),
             is_float($value) => self::filterDecimal($value),
             is_string($value) || $value instanceof Stringable => self::filterString($value),
-            $value instanceof DateTimeInterface => self::filterDate($value),
             is_bool($value),
             $value instanceof Token,
             $value instanceof ByteSequence => $value,
             default => throw new SyntaxError('The type "'.(is_object($value) ? $value::class : gettype($value)).'" is not supported.')
-        }, Parameters::fromAssociative($parameters));
+        }, $parameters);
     }
 
     /**
@@ -184,13 +190,17 @@ final class Item implements Value
         return $value instanceof DateTimeImmutable ? $value : DateTimeImmutable::createFromInterface($value);
     }
 
-    public function value(): Token|ByteSequence|DateTimeImmutable|string|int|float|bool
+    public function value(): ByteSequence|Token|DateTimeImmutable|string|int|float|bool
     {
         return $this->value;
     }
 
     public function withValue(mixed $value): static
     {
+        if ($value instanceof Value) {
+            $value = $value->value();
+        }
+
         return match (true) {
             ($this->value instanceof ByteSequence || $this->value instanceof Token) && $this->value->equals($value),
             $this->value instanceof DateTimeInterface && $value instanceof DateTimeInterface && $value == $this->value,

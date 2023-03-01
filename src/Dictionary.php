@@ -165,28 +165,28 @@ final class Dictionary implements MemberOrderedMap
         return array_keys($this->members);
     }
 
-    public function has(string|int ...$offsets): bool
+    public function has(string|int ...$keys): bool
     {
-        foreach ($offsets as $offset) {
-            if (!is_string($offset) || !array_key_exists($offset, $this->members)) {
+        foreach ($keys as $key) {
+            if (!is_string($key) || !array_key_exists($key, $this->members)) {
                 return false;
             }
         }
 
-        return [] !== $offsets;
+        return [] !== $keys;
     }
 
     /**
      * @throws SyntaxError   If the key is invalid
      * @throws InvalidOffset If the key is not found
      */
-    public function get(string|int $offset): Value|InnerList
+    public function get(string|int $key): Value|InnerList
     {
-        if (!$this->has($offset)) {
-            throw InvalidOffset::dueToKeyNotFound($offset);
+        if (!$this->has($key)) {
+            throw InvalidOffset::dueToKeyNotFound($key);
         }
 
-        return $this->members[$offset];
+        return $this->members[$key];
     }
 
     public function hasPair(int ...$indexes): bool

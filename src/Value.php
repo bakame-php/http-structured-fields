@@ -12,15 +12,15 @@ interface Value extends ParameterAccess, StructuredField
     public function value(): mixed;
 
     /**
+     * Returns the value type.
+     */
+    public function type(): Type;
+
+    /**
      * Returns a new instance with the newly associated value.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified value change.
      */
     public function withValue(mixed $value): static;
-
-    /**
-     * Returns the value type.
-     */
-    public function type(): Type;
 }

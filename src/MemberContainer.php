@@ -27,14 +27,21 @@ interface MemberContainer extends ArrayAccess, Countable, IteratorAggregate, Str
     public function hasMembers(): bool;
 
     /**
+     * Returns an ordered list of the instance keys.
+     *
+     * @return array<TKey>
+     */
+    public function keys(): array;
+
+    /**
      * @return TValue
      */
-    public function get(string|int $offset): StructuredField;
+    public function get(string|int $key): StructuredField;
 
     /**
      * Tells whether the instance contain a members at the specified offsets.
      */
-    public function has(string|int ...$offsets): bool;
+    public function has(string|int ...$keys): bool;
 
     /**
      * Deletes members associated with the list of submitted keys.
@@ -42,5 +49,5 @@ interface MemberContainer extends ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      */
-    public function remove(string|int ...$indexes): static;
+    public function remove(string|int ...$keys): static;
 }

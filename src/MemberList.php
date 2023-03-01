@@ -35,7 +35,7 @@ interface MemberList extends MemberContainer
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $index, StructuredField ...$members): static;
+    public function insert(int $key, StructuredField ...$members): static;
 
     /**
      * Replaces the member associated with the index.
@@ -45,5 +45,5 @@ interface MemberList extends MemberContainer
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function replace(int $index, StructuredField $member): static;
+    public function replace(int $key, StructuredField $member): static;
 }

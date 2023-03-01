@@ -43,10 +43,51 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function it_instantiate_a_decimal(): void
+    #[DataProvider('provideFrom1stArgument')]
+    public function it_instantiate_many_types(mixed $value, string $expected): void
     {
-        self::assertSame('42.0', Item::from(42.0)->toHttpValue());
-        self::assertSame('42.0', (string) Item::from(42.0));
+        self::assertSame($expected, Item::from($value)->toHttpValue());
+    }
+
+    #[Test]
+    #[DataProvider('provideFrom1stArgument')]
+    public function it_updates_item(mixed $value, string $expected): void
+    {
+        $parameters = Parameters::fromAssociative(['foo' => 'bar']);
+        if ($value instanceof Value) {
+            $expected = $value->withoutAllParameters()->toHttpValue();
+        }
+
+        self::assertSame(
+            $expected.$parameters->toHttpValue(),
+            Item::from('hello-world', $parameters)->withValue($value)->toHttpValue()
+        );
+    }
+
+    /**
+     * @return iterable<string, array{value:mixed, expected:string}>>
+     */
+    public static function provideFrom1stArgument(): iterable
+    {
+        $item = Item::from(42, ['foobar' => 'baz']);
+
+        return [
+            'decimal' => ['value' => 42.0, 'expected' => '42.0'],
+            'string' => ['value' => 'forty-two', 'expected' => '"forty-two"'],
+            'stringable' => ['value' => new class() implements Stringable {
+                public function __toString(): string
+                {
+                    return 'forty-two';
+                }
+            }, 'expected' => '"forty-two"'],
+            'integer' => ['value' => 42,   'expected' => '42'],
+            'boolean true' => ['value' => true, 'expected' => '?1'],
+            'boolean false' => ['value' => false, 'expected' => '?0'],
+            'token' => ['value' => Token::fromString('helloworld'), 'expected' => 'helloworld'],
+            'byte sequence' => ['value' => ByteSequence::fromDecoded('foobar'), 'expected' => ':Zm9vYmFy:'],
+            'datetime' => ['value' => new DateTime('2020-03-04 19:23:15'), 'expected' => '@1583349795'],
+            'value' => ['value' => $item, 'expected' => $item->toHttpValue()],
+        ];
     }
 
     #[Test]
@@ -66,22 +107,8 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function it_instantiates_an_integer(): void
-    {
-        self::assertSame('42', Item::from(42)->toHttpValue());
-    }
-
-    #[Test]
-    public function it_instantiates_a_boolean(): void
-    {
-        self::assertSame('?1', Item::from(true)->toHttpValue());
-        self::assertSame('?0', Item::from(false)->toHttpValue());
-    }
-
-    #[Test]
     public function it_instantiates_a_token(): void
     {
-        self::assertSame('helloworld', Item::from(Token::fromString('helloworld'))->toHttpValue());
         self::assertSame('helloworld', Item::fromToken('helloworld')->toHttpValue());
     }
 
@@ -89,7 +116,6 @@ final class ItemTest extends StructuredFieldTestCase
     public function it_instantiates_a_date(): void
     {
         $item = Item::fromHttpValue('@1583349795');
-
         self::assertEquals($item, Item::from(new DateTimeImmutable('2020-03-04 19:23:15')));
         self::assertEquals($item, Item::from(new DateTime('2020-03-04 19:23:15')));
         self::assertSame('@1583349795', $item->toHttpValue());

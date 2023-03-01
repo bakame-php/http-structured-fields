@@ -36,13 +36,6 @@ interface MemberOrderedMap extends MemberContainer
     public function pair(int $index): array;
 
     /**
-     * Returns an ordered list of the instance keys.
-     *
-     * @return array<TKey>
-     */
-    public function keys(): array;
-
-    /**
      * Adds a member at the end of the instance otherwise updates the value associated with the key if already present.
      *
      * This method MUST retain the state of the current instance, and return

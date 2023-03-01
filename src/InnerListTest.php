@@ -243,4 +243,26 @@ final class InnerListTest extends TestCase
 
         InnerList::from('foobar', 'foobar', 'zero', 0)[0] = Item::from(false);
     }
+
+
+    #[Test]
+    public function it_can_returns_the_container_member_keys(): void
+    {
+        $instance = InnerList::from();
+
+        self::assertSame([], $instance->keys());
+
+        $newInstance = $instance
+            ->push(Item::from(false), Item::from(true));
+
+        self::assertSame([0, 1], $newInstance->keys());
+
+        $container = InnerList::from()
+            ->unshift('42')
+            ->push(42)
+            ->insert(1, 42.0)
+            ->replace(0, ByteSequence::fromDecoded('Hello World'));
+
+        self::assertSame([0, 1, 2], $container->keys());
+    }
 }

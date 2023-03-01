@@ -162,28 +162,28 @@ final class Parameters implements MemberOrderedMap
         return array_keys($this->members);
     }
 
-    public function has(string|int ...$offsets): bool
+    public function has(string|int ...$keys): bool
     {
-        foreach ($offsets as $offset) {
+        foreach ($keys as $offset) {
             if (!is_string($offset) || !array_key_exists($offset, $this->members)) {
                 return false;
             }
         }
 
-        return [] !== $offsets;
+        return [] !== $keys;
     }
 
     /**
      * @throws SyntaxError   If the key is invalid
      * @throws InvalidOffset If the key is not found
      */
-    public function get(string|int $offset): Value
+    public function get(string|int $key): Value
     {
-        if (!$this->has($offset)) {
-            throw InvalidOffset::dueToKeyNotFound($offset);
+        if (!$this->has($key)) {
+            throw InvalidOffset::dueToKeyNotFound($key);
         }
 
-        return $this->members[$offset];
+        return $this->members[$key];
     }
 
     public function hasPair(int ...$indexes): bool

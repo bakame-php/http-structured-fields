@@ -135,6 +135,14 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
+     * @return array<int>
+     */
+    public function keys(): array
+    {
+        return array_keys($this->members);
+    }
+
+    /**
      * @return Iterator<int, Value>
      */
     public function getIterator(): Iterator
@@ -142,15 +150,15 @@ final class InnerList implements MemberList, ParameterAccess
         yield from $this->members;
     }
 
-    public function has(string|int ...$offsets): bool
+    public function has(string|int ...$keys): bool
     {
-        foreach ($offsets as $offset) {
+        foreach ($keys as $offset) {
             if (null === $this->filterIndex($offset)) {
                 return false;
             }
         }
 
-        return [] !== $offsets;
+        return [] !== $keys;
     }
 
     private function filterIndex(string|int $index): int|null
@@ -170,11 +178,11 @@ final class InnerList implements MemberList, ParameterAccess
         };
     }
 
-    public function get(string|int $offset): Value
+    public function get(string|int $key): Value
     {
-        $index = $this->filterIndex($offset);
+        $index = $this->filterIndex($key);
         if (null === $index) {
-            throw InvalidOffset::dueToIndexNotFound($offset);
+            throw InvalidOffset::dueToIndexNotFound($key);
         }
 
         return $this->members[$index];
@@ -209,12 +217,12 @@ final class InnerList implements MemberList, ParameterAccess
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $index, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public function insert(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
-        $offset = $this->filterIndex($index);
+        $offset = $this->filterIndex($key);
 
         return match (true) {
-            null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
+            null === $offset => throw InvalidOffset::dueToIndexNotFound($key),
             0 === $offset => $this->unshift(...$members),
             count($this->members) === $offset => $this->push(...$members),
             [] === $members => $this,
@@ -226,10 +234,10 @@ final class InnerList implements MemberList, ParameterAccess
         };
     }
 
-    public function replace(int $index, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function replace(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        if (null === ($offset = $this->filterIndex($index))) {
-            throw InvalidOffset::dueToIndexNotFound($index);
+        if (null === ($offset = $this->filterIndex($key))) {
+            throw InvalidOffset::dueToIndexNotFound($key);
         }
 
         $members = $this->members;
@@ -241,12 +249,12 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Deletes members associated with the list of instance indexes.
      */
-    public function remove(string|int ...$indexes): static
+    public function remove(string|int ...$keys): static
     {
         $offsets = array_filter(
             array_map(
                 fn (int $index): int|null => $this->filterIndex($index),
-                array_filter($indexes, static fn (string|int $key): bool => is_int($key))
+                array_filter($keys, static fn (string|int $key): bool => is_int($key))
             ),
             fn (int|null $index): bool => null !== $index
         );
