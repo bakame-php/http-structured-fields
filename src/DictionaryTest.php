@@ -103,7 +103,8 @@ final class DictionaryTest extends StructuredFieldTestCase
     {
         $instance = Dictionary::create();
 
-        self::assertFalse($instance->hasPair(3));
+        self::assertFalse($instance->hasPair(1, 2, 3));
+        self::assertFalse($instance->hasPair());
 
         $this->expectException(InvalidOffset::class);
 

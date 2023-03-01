@@ -104,9 +104,15 @@ final class OuterList implements MemberList
         yield from $this->members;
     }
 
-    public function has(string|int $offset): bool
+    public function has(string|int ...$offsets): bool
     {
-        return null !== $this->filterIndex($offset);
+        foreach ($offsets as $offset) {
+            if (null === $this->filterIndex($offset)) {
+                return false;
+            }
+        }
+
+        return [] !== $offsets;
     }
 
     private function filterIndex(string|int $index): int|null

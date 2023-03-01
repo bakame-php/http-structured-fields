@@ -32,9 +32,9 @@ interface MemberContainer extends ArrayAccess, Countable, IteratorAggregate, Str
     public function get(string|int $offset): StructuredField;
 
     /**
-     * Tells whether the instance contain a members at the specified offset.
+     * Tells whether the instance contain a members at the specified offsets.
      */
-    public function has(string|int $offset): bool;
+    public function has(string|int ...$offsets): bool;
 
     /**
      * Deletes members associated with the list of submitted keys.

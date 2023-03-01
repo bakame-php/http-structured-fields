@@ -61,11 +61,11 @@ use Bakame\Http\StructuredFields\Dictionary;
 $dictionary = Dictionary::fromHttpValue("a=?0,   b,   c=?1; foo=bar");
 ```
 
-The `fromHttpValue` named constructor returns an instance of the `Bakame\Http\StructuredFields\StructuredField` interface
-which provides a way to serialize back the object into a normalized RFC compliant HTTP field using the `toHttpValue` method.
+The `fromHttpValue` named constructor returns an instance of the `Bakame\Http\StructuredFields\StructuredField` interface.
+The interface provides a way to serialize back the object into a normalized RFC compliant HTTP field using the `toHttpValue` method.
 
-To ease integration with current PHP frameworks and packages working with HTTP headers and trailers, each value object
-also exposes the `Stringable` interface method `__toString` which is an alias of the `toHttpValue` method.
+To ease integration with current PHP frameworks and HTTP related packages working with headers and trailers, each value object
+also exposes the `Stringable` interface method `__toString`, an alias of the `toHttpValue` method.
 
 ````php
 use Bakame\Http\StructuredFields\OuterList;
@@ -75,13 +75,12 @@ echo $list->toHttpValue(); // '("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1'
 echo $list;                // '("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1'
 ````
 
-The library provides currently five (5) immutable value objects define inside the `Bakame\Http\StructuredFields` namespace:
+The library provides currently five (5) immutable value objects define inside the `Bakame\Http\StructuredFields` namespace
+with expose the `StructuredField` interface and expose a `fromHttpValue` named constructor:
 
-- an [Item](item.md);
-- a [2 Ordered Map Containers](ordered-maps.md) `Dictionary` and `Parameters`;
-- a [2 List Containers](lists.md) `OuterList` and `InnerList`;
-
-All five of them implement the `StructuredField` interface and expose a `fromHttpValue` named constructor.
+- an `Item`;
+- a 2 Ordered Map Containers `Dictionary` and `Parameters`;
+- a 2 List Containers `OuterList` and `InnerList`;
 
 ### Building and Updating Structured Fields
 
@@ -136,8 +135,8 @@ echo $value->toHttpValue(); //"b=?0, a=bar;baz=42, c=@1671800423"
 echo $value;                //"b=?0, a=bar;baz=42, c=@1671800423"
 ```
 
-Because we are using immutable value object any change to the value object will return a new instance with
-the changes implemented and leave the original instance unchanged.
+Because we are using immutable value objects any change to the value object will return a new instance with
+the changes applied and leave the original instance unchanged.
 
 The same changes can be applied to List Containers but with adapted methods around list handling:
 
@@ -230,6 +229,34 @@ $decimal->type(); //Type::Decimal
 $integer = Item::fromPair([42]);
 $integer->type(); //return Type::Integer
 ```
+
+### Accessing members of Structured Fields Containers.
+
+All containers implement PHP `IteratorAggregate`, `Countable` and `ArrayAccess` interfaces for easy usage in your codebase.
+You also can access container members via the following shared methods
+
+```php
+$container->has(string|int ...$offsets): bool;
+$container->get(string|int $offset): bool;
+$container->remove(string|int ...$offsets): bool;
+$container->hasMembers(): bool;
+$container->hasNotMembers(): bool;
+```
+
+To avoid invalid states, the modifying methods from PHP `ArrayAccess` will throw a `ForbiddenOperation` if you try to
+use them:
+
+```php
+use Bakame\Http\StructuredFields\Item;
+
+$value = Item::from("Hello world", [
+    'a' => 'foobar',
+]);
+$value->parameters()->has('b'); // return false
+$value->parameters()->has('22'); // return false the index does not exists
+```
+
+
 
 ## Contributing
 

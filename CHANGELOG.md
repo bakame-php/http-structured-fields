@@ -7,6 +7,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Added
 
 - **[BC Break]** `MemberContainer::remove` methods get added to the interface.
+- **[BC Break]** `MemberContainer::has` method accepts a variadic argument. All submitted indexes should be present for the method to return `true`
+- **[BC Break]** `MemberContainer::hasPair` method accepts a variadic argument. All submitted indexes should be present for the method to return `true`
 
 ### Fixed
 

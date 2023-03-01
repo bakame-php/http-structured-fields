@@ -165,9 +165,15 @@ final class Dictionary implements MemberOrderedMap
         return array_keys($this->members);
     }
 
-    public function has(string|int $offset): bool
+    public function has(string|int ...$offsets): bool
     {
-        return is_string($offset) && array_key_exists($offset, $this->members);
+        foreach ($offsets as $offset) {
+            if (!is_string($offset) || !array_key_exists($offset, $this->members)) {
+                return false;
+            }
+        }
+
+        return [] !== $offsets;
     }
 
     /**
@@ -183,15 +189,17 @@ final class Dictionary implements MemberOrderedMap
         return $this->members[$offset];
     }
 
-    public function hasPair(int $index): bool
+    public function hasPair(int ...$indexes): bool
     {
-        try {
-            $this->filterIndex($index);
-
-            return true;
-        } catch (InvalidOffset) {
-            return false;
+        foreach ($indexes as $index) {
+            try {
+                $this->filterIndex($index);
+            } catch (InvalidOffset) {
+                return false;
+            }
         }
+
+        return [] !== $indexes;
     }
 
     /**

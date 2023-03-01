@@ -84,7 +84,11 @@ final class ParametersTest extends StructuredFieldTestCase
         self::assertFalse($deletedInstance->hasPair(1));
 
         $addedInstance = $deletedInstance->append('foobar', Item::from('BarBaz'));
+
         self::assertTrue($addedInstance->hasPair(1));
+        self::assertFalse($addedInstance->hasPair(3, 23));
+        self::assertFalse($addedInstance->hasPair());
+
         $foundItem = $addedInstance->pair(1);
 
         self::assertCount(2, $addedInstance);
@@ -92,6 +96,7 @@ final class ParametersTest extends StructuredFieldTestCase
         self::assertStringContainsString('BarBaz', $foundItem[1]->value());
 
         $altInstance = $addedInstance->remove('foobar', 'string');
+
         self::assertCount(0, $altInstance);
         self::assertFalse($altInstance->hasMembers());
         self::assertTrue($altInstance->hasNoMembers());
@@ -122,7 +127,9 @@ final class ParametersTest extends StructuredFieldTestCase
         $this->expectException(InvalidOffset::class);
 
         $instance = Parameters::create();
-        self::assertFalse($instance->has('foobar'));
+
+        self::assertFalse($instance->has('foobar', 'barbaz'));
+        self::assertFalse($instance->has());
 
         $instance->get('foobar');
     }

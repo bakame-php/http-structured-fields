@@ -23,7 +23,7 @@ interface MemberOrderedMap extends MemberContainer
     /**
      * Tells whether a pair is attached to the given index position.
      */
-    public function hasPair(int $index): bool;
+    public function hasPair(int ...$indexes): bool;
 
     /**
      * Returns the item or the inner-list and its key as attached to the given
