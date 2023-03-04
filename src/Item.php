@@ -24,7 +24,7 @@ use const PHP_ROUND_HALF_EVEN;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
- * @phpstan-type DataType ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
+ * @phpstan-import-type DataType from Value
  */
 final class Item implements Value
 {
@@ -122,7 +122,7 @@ final class Item implements Value
             $parameters = $value->parameters()->mergeAssociative($parameters);
         }
 
-        return new self(match (true) { /* @phpstan-ignore-line */
+        return new self(match (true) {
             $value instanceof Value => $value->value(),
             $value instanceof DateTimeInterface => self::filterDate($value),
             is_int($value) => self::filterIntegerRange($value, 'Integer'),

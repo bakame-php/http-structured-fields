@@ -4,12 +4,19 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use DateTimeImmutable;
+use DateTimeInterface;
+use Stringable;
+
+/**
+ * @phpstan-type DataType ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
+ */
 interface Value extends ParameterAccess, StructuredField
 {
     /**
      * Returns the underlying value.
      */
-    public function value(): mixed;
+    public function value(): ByteSequence|Token|DateTimeImmutable|string|int|float|bool;
 
     /**
      * Returns the value type.

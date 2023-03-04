@@ -19,7 +19,7 @@ use function is_int;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.1
  * @implements MemberList<int, Value>
- * @phpstan-import-type DataType from Item
+ * @phpstan-import-type DataType from Value
  */
 final class InnerList implements MemberList, ParameterAccess
 {

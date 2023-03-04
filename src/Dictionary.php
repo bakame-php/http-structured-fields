@@ -21,7 +21,7 @@ use function is_string;
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
  *
  * @implements MemberOrderedMap<string, Value|InnerList<int, Value>>
- * @phpstan-import-type DataType from Item
+ * @phpstan-import-type DataType from Value
  */
 final class Dictionary implements MemberOrderedMap
 {

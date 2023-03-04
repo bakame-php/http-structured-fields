@@ -20,7 +20,7 @@ use function is_array;
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#name-lists
  *
  * @implements MemberList<int, Value|InnerList<int, Value>>
- * @phpstan-import-type DataType from Item
+ * @phpstan-import-type DataType from Value
  */
 final class OuterList implements MemberList
 {
