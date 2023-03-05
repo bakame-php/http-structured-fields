@@ -180,12 +180,13 @@ Last but not least you can attach and update to `Item` and `InnerList` instances
 following methods:
 
 ```php
-$field->withParameters(Parameters $parameters): static;
+$field->parameter($key): mixed|null;
 $field->addParameter($key, $value): static;
 $field->appendParameter($key, $value): static;
 $field->prependParameter($key, $value): static;
 $field->withoutParameters(...$keys): static;
 $field->withoutAllParameters($): static;
+$field->withParameters(Parameters $parameters): static;
 ```
 
 ### Item and RFC Data Types
@@ -217,11 +218,10 @@ $item = Item::fromPair([
         ["a", ByteSequence::fromDecoded("Hello World")],
     ]
 ]);
-$item->value();                    // returns "hello world"
-$item->type();                     // returns Type::String
-$item->parameters()["a"]->type();  // returns Type::ByteSequence
-$item->parameters()["a"]->value(); // returns StructuredFields\ByteSequence::fromDecoded('Hello World');
-echo $item->toHttpValue();         // returns "hello world";a=:SGVsbG8gV29ybGQ=:
+$item->value();            // returns "hello world"
+$item->type();             // returns Type::String
+$item->parameters("a");    // returns StructuredFields\ByteSequence::fromDecoded('Hello World');
+echo $item->toHttpValue(); // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
 
 Once again it is possible to simplify this code using the following technique:
@@ -233,11 +233,10 @@ use Bakame\Http\StructuredFields\Item;
 $item = Item::from("hello world", [
     "a" => Item::fromDecodedByteSequence("Hello World")
 ]);
-$item->value();                    // returns "hello world"
-$item->type();                     // returns Type::String
-$item->parameters()["a"]->value(); // returns StructuredFields\ByteSequence::fromDecoded('Hello World');
-$item->parameters()["a"]->type();  // returns Type::ByteSequence
-echo $item->toHttpValue();         // returns "hello world";a=:SGVsbG8gV29ybGQ=:
+$item->value();            // returns "hello world"
+$item->type();             // returns Type::String
+$item->parameters("a");    // returns StructuredFields\ByteSequence::fromDecoded('Hello World');
+echo $item->toHttpValue(); // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
 
 The RFC define two (2) specific data types that can not be represented by PHP default type system, for them, we define
@@ -298,8 +297,8 @@ use Bakame\Http\StructuredFields\Item;
 $value = Item::from("Hello world", [
     'a' => 'foobar',
 ]);
-$value->parameters()->has('b');     // return false
-$value->parameters()['a'];          // return Item::from('foobar')
+$value->parameters('b');            // return null
+$value->parameters('a');            // return 'foobar'
 $value->parameters()['a'] = 23      // triggers a ForbiddenOperation exception
 unset($value->parameters()['a']);   // triggers a ForbiddenOperation exception
 ```

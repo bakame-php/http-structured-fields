@@ -215,6 +215,15 @@ final class Item implements Value
         return $this->parameters;
     }
 
+    public function parameter(string $key): mixed
+    {
+        if ($this->parameters->has($key)) {
+            return $this->parameters->get($key)->value();
+        }
+
+        return null;
+    }
+
     public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->add($key, $member));

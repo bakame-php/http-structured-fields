@@ -6,6 +6,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
+- `ParameterAccess::parameter` to ease parameter members value access.
 - **[BC Break]** `OrderedList` is renamed `OuterList`.
 - **[BC Break]** `MemberContainer::remove` methods get added to the interface.
 - **[BC Break]** `MemberContainer::keys` method added to the interface.

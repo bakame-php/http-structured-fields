@@ -4,12 +4,22 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+/**
+ * @phpstan-import-type DataType from Value
+ */
 interface ParameterAccess
 {
     /**
      * Returns a copy of the associated parameter instance.
      */
     public function parameters(): Parameters;
+
+    /**
+     * Returns the member value or null if no members value exists.
+     *
+     * @return DataType|null
+     */
+    public function parameter(string $key): mixed;
 
     /**
      * Adds a member if its key is not present at the of the associated parameter instance or update the instance at the given key.

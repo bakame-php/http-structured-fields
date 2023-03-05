@@ -215,6 +215,8 @@ final class InnerListTest extends TestCase
         self::assertSame($instance1, $instance4);
         self::assertFalse($instance5->parameters()->hasMembers());
         self::assertTrue($instance6->parameters()->hasNoMembers());
+        self::assertTrue($instance1->parameter('a'));
+        self::assertNull($instance5->parameter('a'));
     }
 
     #[Test]
