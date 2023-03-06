@@ -19,7 +19,7 @@ use Bakame\Http\StructuredFields\Item;
 $field = Item::from("/terms", ['rel' => 'copyright', 'anchor' => '#foo']);
 echo $field->toHttpValue();                // display "/terms";rel="copyright";anchor="#foo"
 echo $field->value();                      // display "/terms"
-echo $field->parameters()['rel']->value(); // display "copyright"
+echo $field->parameter('rel');             // display "copyright"
 ```
 
 ## System Requirements
@@ -86,10 +86,11 @@ namespace
 
 they all implement the `StructuredField` interface and expose a `fromHttpValue` named constructor:
 
-### Building and Updating Structured Fields
+### Building and Updating Structured Fields Values
 
-Every value object can create or update the HTTP field value it represents.
-For instance Ordered Map containers can be build with an associative iterable as shown below
+Every value object can be used as a builder to create an HTTP field value.
+
+For instance, `Dictionary` and `Parameters` can be build with an associative iterable as shown below
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
@@ -104,7 +105,7 @@ echo $value->toHttpValue(); //"b=?0, a=bar;baz=42, c=@1671800423"
 echo $value;                //"b=?0, a=bar;baz=42, c=@1671800423"
 ```
 
-Or with an iterable of pairs as described in the RFC:
+Or with an iterable structure of pairs as described in the RFC:
 
 ```php
 use Bakame\Http\StructuredFields\Parameters;
@@ -141,7 +142,7 @@ echo $value;                //"b=?0, a=bar;baz=42, c=@1671800423"
 Because we are using immutable value objects any change to the value object will return a new instance with
 the changes applied and leave the original instance unchanged.
 
-Ordered Map Containers exhibits the following modifying methods:
+`Dictionary` and `Parameters` exhibit the following modifying methods:
 
 ```php
 $map->add($key, $value): static;
@@ -151,7 +152,7 @@ $map->mergeAssociative(...$others): static;
 $map->mergePairs(...$others): static;
 ```
 
-Conversely, changes can be applied to List containers but with adapted methods around list handling:
+Conversely, changes can be applied to `OuterList` and `InnerList` with adapted methods around list handling:
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
@@ -167,7 +168,7 @@ echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 ```
 
-List containers exhibit the following modifying methods:
+`OuterList` and `InnerList` exhibit the following modifying methods:
 
 ```php
 $list->unshift(...$members): static;
@@ -176,8 +177,8 @@ $list->insert($key, ...$members): static;
 $list->replace($key, $member): static;
 ```
 
-Last but not least you can attach and update to `Item` and `InnerList` instances a `Parameters` instance using the
-following methods:
+Last but not least you can attach, read and update a `Parameters` instance using the
+following methods on `Item` and `InnerList` instances:
 
 ```php
 $field->parameter($key): mixed|null;
@@ -263,6 +264,21 @@ $integer = Item::fromPair([42]);
 $integer->type(); //return Type::Integer
 ```
 
+Here's the complete list of named constructors attached to the `Item` object. They all call the `Item::from` method, 
+so they all expect an associative iterable to represents the parameters.
+
+```php
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Value;
+
+Item::from($value, iterable<string, Value> $associativeParameters = []): self;
+Item::fromDecodedByteSequence(string $value, iterable<string, Value> $associativeParameters = []): self;
+Item::fromEncodedByteSequence(string $value, iterable<string, Value> $associativeParameters = []): self;
+Item::fromTimestamp(int $value, iterable<string, Value> $associativeParameters = []): self;
+Item::fromDateFormat(string $dateFormat, string $dateString, iterable<string, Value> $associativeParameters = []): self;
+Item::fromPair(array{0:mixed, 1:iterable<array{0:string, 1:StructuredField}>} $pair): self;
+```
+
 ### Accessing members of Structured Fields Containers.
 
 `Item` are accessible using three (3) methods:
@@ -271,9 +287,10 @@ $integer->type(); //return Type::Integer
 use Bakame\Http\StructuredFields\Item;
 
 $item = Item::from(CarbonImmutable::parse('today'));
-$item->type();       // return Type::Date;
-$item->value()       // return CarbonImmutable::parse('today') (because it extends DateTimeImmutable)
-$item->parameters(); // returns a Parameters container
+$item->type();         // return Type::Date;
+$item->value()         // return CarbonImmutable::parse('today') (because it extends DateTimeImmutable)
+$item->parameters();   // returns a Parameters container
+$item->parameter('z'); // returns the Bare Item value or null if the key does not exists
 ```
 
 All containers implement PHP `IteratorAggregate`, `Countable` and `ArrayAccess` interfaces for easy usage in your codebase.
@@ -292,15 +309,13 @@ To avoid invalid states, the modifying methods from PHP `ArrayAccess` will throw
 use them:
 
 ```php
-use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Parameters;
 
-$value = Item::from("Hello world", [
-    'a' => 'foobar',
-]);
-$value->parameters('b');            // return null
-$value->parameters('a');            // return 'foobar'
-$value->parameters()['a'] = 23      // triggers a ForbiddenOperation exception
-unset($value->parameters()['a']);   // triggers a ForbiddenOperation exception
+$value = Parameters::fromAssociative(['a' => 'foobar']);
+$value->has('b');     // return false
+$value['a']->value(); // return 'foobar'
+$value['a'] = 23      // triggers a ForbiddenOperation exception
+unset($value['a']);   // triggers a ForbiddenOperation exception
 ```
 
 Apart from the PHP interfaces with the `Dictionary` and the `Parameters` classes you can access the members as pairs:
