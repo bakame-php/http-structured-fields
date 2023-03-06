@@ -115,7 +115,7 @@ final class InnerList implements MemberList, ParameterAccess
             return $this;
         }
 
-        return new self($parameters, $this->members);
+        return new static($parameters, $this->members);
     }
 
     public function toHttpValue(): string

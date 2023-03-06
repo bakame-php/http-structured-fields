@@ -94,6 +94,33 @@ final class Item implements Value
     }
 
     /**
+     * Returns a new instance from a timestamp and an iterable of key-value parameters.
+     *
+     * @param iterable<string,Value|DataType> $parameters
+     */
+    public static function fromTimestamp(int $timestamp, iterable $parameters = []): self
+    {
+        return self::from((new DateTimeImmutable())->setTimestamp($timestamp), $parameters);
+    }
+
+    /**
+     * Returns a new instance from a date format its date string representation and an iterable of key-value parameters.
+     *
+     * @param iterable<string,Value|DataType> $parameters
+     *
+     * @throws SyntaxError if the fornat is
+     */
+    public static function fromDateFormat(string $format, string $dateString, iterable $parameters = []): self
+    {
+        $date = DateTimeImmutable::createFromFormat($format, $dateString);
+        if (false === $date) {
+            throw new SyntaxError('The date notation `'.$dateString.'` is incompatible with the date format `'.$format.'`.');
+        }
+
+        return self::from($date, $parameters);
+    }
+
+    /**
      * @param array{
      *     0:DataType,
      *     1?:MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}>
@@ -251,7 +278,7 @@ final class Item implements Value
 
     public function withParameters(Parameters $parameters): static
     {
-        return $this->parameters->toHttpValue() === $parameters->toHttpValue() ? $this : new self($this->value, $parameters);
+        return $this->parameters->toHttpValue() === $parameters->toHttpValue() ? $this : new static($this->value, $parameters);
     }
 
     /**

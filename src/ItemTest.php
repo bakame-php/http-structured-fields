@@ -7,6 +7,7 @@ namespace Bakame\Http\StructuredFields;
 use ArrayObject;
 use DateTime;
 use DateTimeImmutable;
+use DateTimeInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Stringable;
@@ -60,7 +61,7 @@ final class ItemTest extends StructuredFieldTestCase
 
         self::assertSame(
             $expected.$parameters->toHttpValue(),
-            Item::from('hello-world', $parameters)->withValue($value)->toHttpValue()
+            (string) Item::from('hello-world', $parameters)->withValue($value)
         );
     }
 
@@ -118,6 +119,8 @@ final class ItemTest extends StructuredFieldTestCase
         $item = Item::fromHttpValue('@1583349795');
         self::assertEquals($item, Item::from(new DateTimeImmutable('2020-03-04 19:23:15')));
         self::assertEquals($item, Item::from(new DateTime('2020-03-04 19:23:15')));
+        self::assertEquals($item, Item::fromTimestamp(1583349795));
+        self::assertEquals($item, Item::fromDateFormat(DateTimeInterface::RFC822, 'Wed, 04 Mar 20 19:23:15 +0000'));
         self::assertSame('@1583349795', $item->toHttpValue());
     }
 
@@ -138,11 +141,35 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_fails_to_instantiate_an_out_of_range_timestamp_in_the_future(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::fromTimestamp(1_000_000_000_000_000);
+    }
+
+    #[Test]
     public function it_fails_to_instantiate_an_out_of_range_date_in_the_past(): void
     {
         $this->expectException(SyntaxError::class);
 
         Item::from(new DateTime('@'.-1_000_000_000_000_000));
+    }
+
+    #[Test]
+    public function it_fails_to_instantiate_an_out_of_range_timestamp_in_the_past(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::fromTimestamp(-1_000_000_000_000_000);
+    }
+
+    #[Test]
+    public function it_fails_to_instantiate_an_invalid_date_format_string(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::fromDateFormat(DateTimeInterface::ATOM, '2012-02-03');
     }
 
     #[Test]
