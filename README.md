@@ -272,11 +272,14 @@ use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Value;
 
 Item::from($value, iterable<string, Value> $associativeParameters = []): self;
-Item::fromDecodedByteSequence(string $value, iterable<string, Value> $associativeParameters = []): self;
-Item::fromEncodedByteSequence(string $value, iterable<string, Value> $associativeParameters = []): self;
-Item::fromTimestamp(int $value, iterable<string, Value> $associativeParameters = []): self;
-Item::fromDateFormat(string $dateFormat, string $dateString, iterable<string, Value> $associativeParameters = []): self;
-Item::fromPair(array{0:mixed, 1:iterable<array{0:string, 1:StructuredField}>} $pair): self;
+Item::fromPair(array{0:mixed, 1:iterable<array{0:string, 1:Value}>} $pair): self;
+Item::fromDecodedByteSequence(string $value): self;
+Item::fromEncodedByteSequence(string $value): self;
+Item::fromToken(string $value): self;
+Item::fromDate(DateTimeInterface $value): self;
+Item::fromTimestamp(int $value): self;
+Item::fromDateFormat(string $dateFormat, string $dateString): self;
+Item::fromDateFormat(string $dateString, DateTimeZone|string|null $timezone): self;
 ```
 
 ### Accessing members of Structured Fields Containers.

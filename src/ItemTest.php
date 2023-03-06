@@ -121,6 +121,7 @@ final class ItemTest extends StructuredFieldTestCase
         self::assertEquals($item, Item::from(new DateTime('2020-03-04 19:23:15')));
         self::assertEquals($item, Item::fromTimestamp(1583349795));
         self::assertEquals($item, Item::fromDateFormat(DateTimeInterface::RFC822, 'Wed, 04 Mar 20 19:23:15 +0000'));
+        self::assertTrue($item ->value() < Item::fromDateString('-1 year')->value());
         self::assertSame('@1583349795', $item->toHttpValue());
     }
 

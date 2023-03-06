@@ -28,6 +28,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Removed
 
 - **[BC Break]** `OrderedList` is remove, use `OuterList` instead.
+- **[BC Break]**  remove the `$parameters` argument from all `Item` named constuctore except from `Item::from`.
 
 ## [0.7.0] - 2023-02-06
 

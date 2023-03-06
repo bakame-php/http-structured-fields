@@ -6,7 +6,9 @@ namespace Bakame\Http\StructuredFields;
 
 use DateTimeImmutable;
 use DateTimeInterface;
+use DateTimeZone;
 use Stringable;
+use Throwable;
 use function count;
 use function is_bool;
 use function is_float;
@@ -65,59 +67,68 @@ final class Item implements Value
 
     /**
      * Returns a new instance from an encoded byte sequence and an iterable of key-value parameters.
-     *
-     * @param iterable<string,Value|DataType> $parameters
      */
-    public static function fromEncodedByteSequence(Stringable|string $value, iterable $parameters = []): self
+    public static function fromEncodedByteSequence(Stringable|string $value): self
     {
-        return self::from(ByteSequence::fromEncoded($value), $parameters);
+        return self::from(ByteSequence::fromEncoded($value));
     }
 
     /**
      * Returns a new instance from a decoded byte sequence and an iterable of key-value parameters.
-     *
-     * @param iterable<string,Value|DataType> $parameters
      */
-    public static function fromDecodedByteSequence(Stringable|string $value, iterable $parameters = []): self
+    public static function fromDecodedByteSequence(Stringable|string $value): self
     {
-        return self::from(ByteSequence::fromDecoded($value), $parameters);
+        return self::from(ByteSequence::fromDecoded($value));
     }
 
     /**
      * Returns a new instance from a Token and an iterable of key-value parameters.
-     *
-     * @param iterable<string,Value|DataType> $parameters
      */
-    public static function fromToken(Stringable|string $value, iterable $parameters = []): self
+    public static function fromToken(Stringable|string $value): self
     {
-        return self::from(Token::fromString($value), $parameters);
+        return self::from(Token::fromString($value));
     }
 
     /**
      * Returns a new instance from a timestamp and an iterable of key-value parameters.
-     *
-     * @param iterable<string,Value|DataType> $parameters
      */
-    public static function fromTimestamp(int $timestamp, iterable $parameters = []): self
+    public static function fromTimestamp(int $timestamp): self
     {
-        return self::from((new DateTimeImmutable())->setTimestamp($timestamp), $parameters);
+        return self::from((new DateTimeImmutable())->setTimestamp($timestamp));
     }
 
     /**
      * Returns a new instance from a date format its date string representation and an iterable of key-value parameters.
      *
-     * @param iterable<string,Value|DataType> $parameters
-     *
-     * @throws SyntaxError if the fornat is
+     * @throws SyntaxError if the format is invalid
      */
-    public static function fromDateFormat(string $format, string $dateString, iterable $parameters = []): self
+    public static function fromDateFormat(string $format, string $dateString): self
     {
-        $date = DateTimeImmutable::createFromFormat($format, $dateString);
-        if (false === $date) {
+        $value = DateTimeImmutable::createFromFormat($format, $dateString);
+        if (false === $value) {
             throw new SyntaxError('The date notation `'.$dateString.'` is incompatible with the date format `'.$format.'`.');
         }
 
-        return self::from($date, $parameters);
+        return self::from($value);
+    }
+
+    /**
+     * Returns a new instance from a string parsable by DateTimeImmutable constructor, an optional timezone and an iterable of key-value parameters.
+     *
+     * @throws SyntaxError if the format is invalid
+     */
+    public static function fromDateString(string $dateString, DateTimeZone|string|null $timezone = null): self
+    {
+        $timezone ??= date_default_timezone_get();
+        if (!$timezone instanceof DateTimeZone) {
+            try {
+                $timezone = new DateTimeZone($timezone);
+            } catch (Throwable $exception) {
+                throw new SyntaxError('The timezone could not be instantiated.', 0, $exception);
+            }
+        }
+
+        return self::from(new DateTimeImmutable($dateString, $timezone));
     }
 
     /**
