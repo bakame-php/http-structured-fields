@@ -20,16 +20,16 @@ use function is_string;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
  *
- * @implements MemberOrderedMap<string, Value|InnerList<int, Value>>
+ * @implements MemberOrderedMap<string, Value|(MemberList<int, Value>&ParameterAccess)>
  * @phpstan-import-type DataType from Value
  */
 final class Dictionary implements MemberOrderedMap
 {
-    /** @var array<string, Value|InnerList<int, Value>> */
+    /** @var array<string, Value|(MemberList<int, Value>&ParameterAccess)> */
     private array $members = [];
 
     /**
-     * @param iterable<string, InnerList<int, Value>|iterable<Value|DataType>|Value|DataType> $members
+     * @param iterable<string, (MemberList<int, Value>&ParameterAccess)|iterable<Value|DataType>|Value|DataType> $members
      */
     private function __construct(iterable $members = [])
     {
@@ -40,11 +40,14 @@ final class Dictionary implements MemberOrderedMap
 
     /**
      * @param StructuredField|iterable<Value|DataType>|DataType $member
+     *
+     * @return Value|(MemberList<int, Value>&ParameterAccess)
      */
-    private static function filterMember(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Value
+    private static function filterMember(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): mixed
     {
         return match (true) {
-            $member instanceof InnerList, $member instanceof Value => $member,
+            ($member instanceof MemberList && $member instanceof ParameterAccess),
+            $member instanceof Value => $member,
             is_iterable($member) => InnerList::fromList($member),
             default => Item::from($member),
         };
@@ -64,7 +67,7 @@ final class Dictionary implements MemberOrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<string, InnerList<int, Value>|list<Value|DataType>|Value|DataType> $members
+     * @param iterable<string, (MemberList<int, Value>&ParameterAccess)|list<Value|DataType>|Value|DataType> $members
      */
     public static function fromAssociative(iterable $members): self
     {
@@ -78,7 +81,7 @@ final class Dictionary implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, Value|InnerList<int, Value>>|iterable<array{0:string, 1:InnerList<int, Value>|list<Value|DataType>|Value|DataType}> $pairs
+     * @param MemberOrderedMap<string, Value|(MemberList<int, Value>&ParameterAccess)>|iterable<array{0:string, 1:(MemberList<int, Value>&ParameterAccess)|list<Value|DataType>|Value|DataType}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
@@ -111,7 +114,7 @@ final class Dictionary implements MemberOrderedMap
 
     public function toHttpValue(): string
     {
-        $formatter = static fn (Value|InnerList $member, string $key): string => match (true) {
+        $formatter = static fn (StructuredField $member, string $key): string => match (true) {
             $member instanceof Value && true === $member->value() => $key.$member->parameters()->toHttpValue(),
             default => $key.'='.$member->toHttpValue(),
         };
@@ -140,7 +143,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @return Iterator<string, Value|InnerList<int, Value>>
+     * @return Iterator<string, Value|(MemberList<int, Value>&ParameterAccess)>
      */
     public function getIterator(): Iterator
     {
@@ -148,7 +151,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @return Iterator<array{0:string, 1:Value|InnerList<int, Value>}>
+     * @return Iterator<array{0:string, 1:Value|(MemberList<int, Value>&ParameterAccess)}>
      */
     public function toPairs(): Iterator
     {
@@ -179,8 +182,10 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @throws SyntaxError   If the key is invalid
      * @throws InvalidOffset If the key is not found
+     *
+     * @return Value|(MemberList<int, Value>&ParameterAccess)
      */
-    public function get(string|int $key): Value|InnerList
+    public function get(string|int $key): StructuredField
     {
         if (!$this->has($key)) {
             throw InvalidOffset::dueToKeyNotFound($key);
@@ -219,7 +224,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @throws InvalidOffset If the key is not found
      *
-     * @return array{0:string, 1:Value|InnerList<int, Value>}
+     * @return array{0:string, 1:Value|(MemberList<int, Value>&ParameterAccess)}
      */
     public function pair(int $index): array
     {
@@ -265,7 +270,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param iterable<string, InnerList<int, Value>|Value|DataType> ...$others
+     * @param iterable<string, (MemberList<int, Value>&ParameterAccess)|Value|DataType> ...$others
      */
     public function mergeAssociative(iterable ...$others): static
     {
@@ -278,7 +283,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param MemberOrderedMap<string, Value|InnerList<int, Value>>|iterable<array{0:string, 1:InnerList<int, Value>|Value|DataType}> ...$others
+     * @param MemberOrderedMap<string, Value|(MemberList<int, Value>&ParameterAccess)>|iterable<array{0:string, 1:(MemberList<int, Value>&ParameterAccess)|Value|DataType}> ...$others
      */
     public function mergePairs(MemberOrderedMap|iterable ...$others): static
     {
@@ -301,9 +306,9 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @param string $offset
      *
-     * @return Value|InnerList<int, Value>
+     * @return Value|(MemberList<int, Value>&ParameterAccess)
      */
-    public function offsetGet(mixed $offset): InnerList|Value
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->get($offset);
     }

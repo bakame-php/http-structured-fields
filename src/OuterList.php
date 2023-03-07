@@ -19,15 +19,18 @@ use function is_array;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#name-lists
  *
- * @implements MemberList<int, Value|InnerList<int, Value>>
+ * @implements MemberList<int, Value|(MemberList<int, Value>&ParameterAccess)>
  * @phpstan-import-type DataType from Value
  */
 final class OuterList implements MemberList
 {
-    /** @var list<Value|InnerList<int, Value>> */
+    /** @var list<Value|(MemberList<int, Value>&ParameterAccess)> */
     private array $members;
 
-    private function __construct(InnerList|Value ...$members)
+    /**
+     * @param Value|(MemberList<int, Value>&ParameterAccess) ...$members
+     */
+    private function __construct(MemberList|Value ...$members)
     {
         $this->members = array_values($members);
     }
@@ -41,7 +44,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param iterable<InnerList<int, Value>|list<Value|DataType>|Value|DataType> $members
+     * @param iterable<(MemberList<int, Value>&ParameterAccess)|list<Value|DataType>|Value|DataType> $members
      */
     public static function fromList(iterable $members = []): self
     {
@@ -50,11 +53,14 @@ final class OuterList implements MemberList
 
     /**
      * @param StructuredField|iterable<Value|DataType>|DataType $member
+     *
+     * @return (MemberList<int, Value>&ParameterAccess)|Value
      */
-    private static function filterMember(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): InnerList|Value
+    private static function filterMember(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): mixed
     {
         return match (true) {
-            $member instanceof InnerList, $member instanceof Value => $member,
+            ($member instanceof MemberList && $member instanceof ParameterAccess),
+            $member instanceof Value => $member,
             is_iterable($member) => InnerList::fromList($member),
             default => Item::from($member),
         };
@@ -107,7 +113,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @return Iterator<int, Value|InnerList<int, Value>>
+     * @return Iterator<int, Value|(MemberList<int, Value>&ParameterAccess)>
      */
     public function getIterator(): Iterator
     {
@@ -142,7 +148,10 @@ final class OuterList implements MemberList
         };
     }
 
-    public function get(string|int $key): Value|InnerList
+    /**
+     * @return (MemberList<int, Value>&ParameterAccess)|Value
+     */
+    public function get(string|int $key): MemberList|Value
     {
         $index = $this->filterIndex($key);
         if (null === $index) {
@@ -246,9 +255,9 @@ final class OuterList implements MemberList
     /**
      * @param int $offset
      *
-     * @return Value|InnerList<int, Value>
+     * @return Value|(MemberList<int, Value>&ParameterAccess)
      */
-    public function offsetGet(mixed $offset): InnerList|Value
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->get($offset);
     }

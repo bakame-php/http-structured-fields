@@ -67,7 +67,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        return InnerList::fromList(...Parser::parseInnerList($httpValue));
+        return self::fromList(...Parser::parseInnerList($httpValue));
     }
 
     public function parameters(): Parameters
