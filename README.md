@@ -17,9 +17,9 @@ have them compliant with the new syntax.
 use Bakame\Http\StructuredFields\Item;
 
 $field = Item::from("/terms", ['rel' => 'copyright', 'anchor' => '#foo']);
-echo $field->toHttpValue();                // display "/terms";rel="copyright";anchor="#foo"
-echo $field->value();                      // display "/terms"
-echo $field->parameter('rel');             // display "copyright"
+echo $field->toHttpValue();     // display "/terms";rel="copyright";anchor="#foo"
+echo $field->value();           // display "/terms"
+echo $field->parameter('rel');  // display "copyright"
 ```
 
 ## System Requirements
@@ -97,7 +97,7 @@ use Bakame\Http\StructuredFields\Dictionary;
 
 $value = Dictionary::fromAssociative([
     'b' => false,
-    'a' => Item::fromToken('bar', ['baz' => 42]),
+    'a' => Item::fromToken('bar')->addParameter('baz', 42),
     'c' => new DateTimeImmutable('2022-12-23 13:00:23'),
 ]);
 

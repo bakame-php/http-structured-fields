@@ -65,7 +65,7 @@ interface ParameterAccess
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      */
-    public function withoutAllParameters(): static;
+    public function withoutAnyParameter(): static;
 
     /**
      * Returns a new instance with the newly associated parameter instance.

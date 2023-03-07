@@ -104,7 +104,7 @@ final class InnerList implements MemberList, ParameterAccess
         return $this->withParameters($this->parameters()->remove(...$keys));
     }
 
-    public function withoutAllParameters(): static
+    public function withoutAnyParameter(): static
     {
         return $this->withParameters(Parameters::create());
     }

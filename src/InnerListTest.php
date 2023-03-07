@@ -206,7 +206,7 @@ final class InnerListTest extends TestCase
         $instance3 = $instance1->prependParameter('a', false);
         $instance4 = $instance1->withoutParameter('b');
         $instance5 = $instance1->withoutParameter('a');
-        $instance6 = $instance1->withoutAllParameters();
+        $instance6 = $instance1->withoutAnyParameter();
 
         self::assertSame($instance1, $instance2);
         self::assertSame($instance1, $instance7);

@@ -56,7 +56,7 @@ final class ItemTest extends StructuredFieldTestCase
     {
         $parameters = Parameters::fromAssociative(['foo' => 'bar']);
         if ($value instanceof Value) {
-            $expected = $value->withoutAllParameters()->toHttpValue();
+            $expected = $value->withoutAnyParameter()->toHttpValue();
         }
 
         self::assertSame(
@@ -171,6 +171,22 @@ final class ItemTest extends StructuredFieldTestCase
         $this->expectException(SyntaxError::class);
 
         Item::fromDateFormat(DateTimeInterface::ATOM, '2012-02-03');
+    }
+
+    #[Test]
+    public function it_fails_to_instantiate_a_date_with_an_invalid_timezone(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::fromDateString('+ 5 minutes', 'foobar');
+    }
+
+    #[Test]
+    public function it_fails_to_instantiate_a_date_with_an_invalid_datetime(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::fromDateString('foobar');
     }
 
     #[Test]
@@ -379,7 +395,7 @@ final class ItemTest extends StructuredFieldTestCase
         $instance3 = $instance1->prependParameter('a', false);
         $instance4 = $instance1->withoutParameter('b');
         $instance5 = $instance1->withoutParameter('a');
-        $instance6 = $instance1->withoutAllParameters();
+        $instance6 = $instance1->withoutAnyParameter();
 
         self::assertSame($instance1, $instance2);
         self::assertSame($instance1, $instance7);

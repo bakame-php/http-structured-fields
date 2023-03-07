@@ -102,11 +102,11 @@ final class Item implements Value
      *
      * @throws SyntaxError if the format is invalid
      */
-    public static function fromDateFormat(string $format, string $dateString): self
+    public static function fromDateFormat(string $format, string $datetime): self
     {
-        $value = DateTimeImmutable::createFromFormat($format, $dateString);
+        $value = DateTimeImmutable::createFromFormat($format, $datetime);
         if (false === $value) {
-            throw new SyntaxError('The date notation `'.$dateString.'` is incompatible with the date format `'.$format.'`.');
+            throw new SyntaxError('The date notation `'.$datetime.'` is incompatible with the date format `'.$format.'`.');
         }
 
         return self::from($value);
@@ -117,7 +117,7 @@ final class Item implements Value
      *
      * @throws SyntaxError if the format is invalid
      */
-    public static function fromDateString(string $dateString, DateTimeZone|string|null $timezone = null): self
+    public static function fromDateString(string $datetime, DateTimeZone|string|null $timezone = null): self
     {
         $timezone ??= date_default_timezone_get();
         if (!$timezone instanceof DateTimeZone) {
@@ -128,7 +128,13 @@ final class Item implements Value
             }
         }
 
-        return self::from(new DateTimeImmutable($dateString, $timezone));
+        try {
+            $value = new DateTimeImmutable($datetime, $timezone);
+        } catch (Throwable $exception) {
+            throw new SyntaxError('Unable to create a '.DateTimeImmutable::class.' instance with the date notation `'.$datetime.'.`', 0, $exception);
+        }
+
+        return self::from($value);
     }
 
     /**
@@ -277,7 +283,7 @@ final class Item implements Value
         return $this->withParameters($this->parameters()->append($key, $member));
     }
 
-    public function withoutAllParameters(): static
+    public function withoutAnyParameter(): static
     {
         return $this->withParameters(Parameters::create());
     }

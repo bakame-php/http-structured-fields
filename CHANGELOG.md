@@ -8,13 +8,14 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - `Item::fromTimestamp`, `Item::fromDateFormat` to improve item instantiation with dates.
 - `ParameterAccess::parameter` to ease parameter members value access.
+- **[BC Break]**  `ParameterAccess::withoutAllParameters` is renamed `ParameterAccess::withoutAnyParameters`.
 - **[BC Break]** `OrderedList` is renamed `OuterList`.
 - **[BC Break]** `MemberContainer::remove` methods get added to the interface.
 - **[BC Break]** `MemberContainer::keys` method added to the interface.
 
 ### Fixed
 
-- Migrate to PHPUnit 10
+- Test suite migrated to PHPUnit 10
 - Improve Collection immutability with method changes
 - **[BC Break]** `ParameterAccess` interface signature updated to use the `Value` interface instead of the `Item` implementation.
 - **[BC Break]** `MemberList::remove`, `MemberOrderedMap::remove` and `MemberOrderedMap::keys` methods are moved to their parent interface.
@@ -27,7 +28,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- **[BC Break]** `OrderedList` is remove, use `OuterList` instead.
+- **[BC Break]** `OrderedList` is removed, use `OuterList` instead.
+- **[BC Break]**  `ParameterAccess::withoutAllParameters` is removed, use `ParameterAccess::withoutAnyParameters` instead.
 - **[BC Break]**  remove the `$parameters` argument from all `Item` named constuctore except from `Item::from`.
 
 ## [0.7.0] - 2023-02-06
