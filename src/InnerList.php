@@ -151,9 +151,6 @@ final class InnerList implements MemberList, ParameterAccess
         return array_keys($this->members);
     }
 
-    /**
-     * @return Iterator<int, Value>
-     */
     public function getIterator(): Iterator
     {
         yield from $this->members;
@@ -187,7 +184,7 @@ final class InnerList implements MemberList, ParameterAccess
         };
     }
 
-    public function get(string|int $key): Value
+    public function get(string|int $key): StructuredField
     {
         $index = $this->filterIndex($key);
         if (null === $index) {
@@ -195,6 +192,32 @@ final class InnerList implements MemberList, ParameterAccess
         }
 
         return $this->members[$index];
+    }
+
+    /**
+     * @param int $offset
+     */
+    public function offsetExists(mixed $offset): bool
+    {
+        return $this->has($offset);
+    }
+
+    /**
+     * @param int $offset
+     */
+    public function offsetGet(mixed $offset): mixed
+    {
+        return $this->get($offset);
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 
     /**
@@ -206,11 +229,19 @@ final class InnerList implements MemberList, ParameterAccess
             return $this;
         }
 
-        return new self($this->parameters, [...array_map(self::filterMember(...), array_values($members)), ...$this->members]);
+        return $this->newInstance([...array_map(self::filterMember(...), array_values($members)), ...$this->members]);
     }
 
     /**
-     * Insert members at the end of the list.
+     * @param iterable<Value|DataType> $members
+     */
+    private function newInstance(iterable $members): self
+    {
+        return new self($this->parameters, $members);
+    }
+
+    /**
+     * Inserts members at the end of the list.
      */
     public function push(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
@@ -218,7 +249,7 @@ final class InnerList implements MemberList, ParameterAccess
             return $this;
         }
 
-        return new self($this->parameters, [...$this->members, ...array_map(self::filterMember(...), array_values($members))]);
+        return $this->newInstance([...$this->members, ...array_map(self::filterMember(...), array_values($members))]);
     }
 
     /**
@@ -238,7 +269,7 @@ final class InnerList implements MemberList, ParameterAccess
             default => (function (array $newMembers) use ($offset, $members) {
                 array_splice($newMembers, $offset, 0, array_map(self::filterMember(...), $members));
 
-                return new self($this->parameters, $newMembers);
+                return $this->newInstance($newMembers);
             })($this->members),
         };
     }
@@ -252,7 +283,7 @@ final class InnerList implements MemberList, ParameterAccess
         $members = $this->members;
         $members[$offset] = self::filterMember($member);
 
-        return new self($this->parameters, $members);
+        return $this->newInstance($members);
     }
 
     /**
@@ -277,32 +308,6 @@ final class InnerList implements MemberList, ParameterAccess
             unset($members[$offset]);
         }
 
-        return new self($this->parameters, $members);
-    }
-
-    /**
-     * @param int $offset
-     */
-    public function offsetExists(mixed $offset): bool
-    {
-        return $this->has($offset);
-    }
-
-    /**
-     * @param int $offset
-     */
-    public function offsetGet(mixed $offset): Value
-    {
-        return $this->get($offset);
-    }
-
-    public function offsetUnset(mixed $offset): void
-    {
-        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
-    }
-
-    public function offsetSet(mixed $offset, mixed $value): void
-    {
-        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
+        return $this->newInstance($members);
     }
 }

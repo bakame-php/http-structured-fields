@@ -136,9 +136,6 @@ final class Parameters implements MemberOrderedMap
         return [] !== $this->members;
     }
 
-    /**
-     * @return Iterator<array-key, Value>
-     */
     public function getIterator(): Iterator
     {
         yield from $this->members;

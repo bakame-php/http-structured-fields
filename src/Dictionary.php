@@ -142,9 +142,6 @@ final class Dictionary implements MemberOrderedMap
         return [] !== $this->members;
     }
 
-    /**
-     * @return Iterator<string, Value|(MemberList<int, Value>&ParameterAccess)>
-     */
     public function getIterator(): Iterator
     {
         yield from $this->members;

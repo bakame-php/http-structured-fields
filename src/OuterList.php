@@ -112,9 +112,6 @@ final class OuterList implements MemberList
         return array_keys($this->members);
     }
 
-    /**
-     * @return Iterator<int, Value|(MemberList<int, Value>&ParameterAccess)>
-     */
     public function getIterator(): Iterator
     {
         yield from $this->members;
@@ -148,10 +145,7 @@ final class OuterList implements MemberList
         };
     }
 
-    /**
-     * @return (MemberList<int, Value>&ParameterAccess)|Value
-     */
-    public function get(string|int $key): MemberList|Value
+    public function get(string|int $key): StructuredField
     {
         $index = $this->filterIndex($key);
         if (null === $index) {
@@ -159,6 +153,32 @@ final class OuterList implements MemberList
         }
 
         return $this->members[$index];
+    }
+
+    /**
+     * @param int $offset
+     */
+    public function offsetExists(mixed $offset): bool
+    {
+        return $this->has($offset);
+    }
+
+    /**
+     * @param int $offset
+     */
+    public function offsetGet(mixed $offset): mixed
+    {
+        return $this->get($offset);
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 
     /**
@@ -170,7 +190,15 @@ final class OuterList implements MemberList
             return $this;
         }
 
-        return new self(...[...array_map(self::filterMember(...), array_values($members)), ...$this->members]);
+        return $this->newInstance([...array_map(self::filterMember(...), array_values($members)), ...$this->members]);
+    }
+
+    /**
+     * @param iterable<int, Value|(MemberList<int, Value>&ParameterAccess)> $members
+     */
+    private function newInstance(iterable $members): self
+    {
+        return new self(...$members);
     }
 
     /**
@@ -182,7 +210,7 @@ final class OuterList implements MemberList
             return $this;
         }
 
-        return new self(...[...$this->members, ...array_map(self::filterMember(...), array_values($members))]);
+        return $this->newInstance([...$this->members, ...array_map(self::filterMember(...), array_values($members))]);
     }
 
     /**
@@ -202,7 +230,7 @@ final class OuterList implements MemberList
             default => (function (array $newMembers) use ($offset, $members) {
                 array_splice($newMembers, $offset, 0, array_map(self::filterMember(...), $members));
 
-                return new self(...$newMembers);
+                return $this->newInstance($newMembers);
             })($this->members),
         };
     }
@@ -216,7 +244,7 @@ final class OuterList implements MemberList
         $members = $this->members;
         $members[$offset] = self::filterMember($member);
 
-        return new self(...$members);
+        return $this->newInstance($members);
     }
 
     /**
@@ -241,34 +269,6 @@ final class OuterList implements MemberList
             unset($members[$offset]);
         }
 
-        return new self(...$members);
-    }
-
-    /**
-     * @param int $offset
-     */
-    public function offsetExists(mixed $offset): bool
-    {
-        return $this->has($offset);
-    }
-
-    /**
-     * @param int $offset
-     *
-     * @return Value|(MemberList<int, Value>&ParameterAccess)
-     */
-    public function offsetGet(mixed $offset): mixed
-    {
-        return $this->get($offset);
-    }
-
-    public function offsetUnset(mixed $offset): void
-    {
-        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
-    }
-
-    public function offsetSet(mixed $offset, mixed $value): void
-    {
-        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
+        return $this->newInstance($members);
     }
 }
