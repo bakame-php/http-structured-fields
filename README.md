@@ -291,12 +291,13 @@ so they all expect an associative iterable to represents the parameters.
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Value;
 
-Item::from($value, iterable<string, Value> $associativeParameters = []): self;
-Item::fromPair(array{0:mixed, 1:iterable<array{0:string, 1:Value}>} $pair): self;
+//@type DataType ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
+
+Item::from(DataType $value, iterable<string, Value> $associativeParameters = []): self;
+Item::fromPair(array{0:DataType, 1:iterable<array{0:string, 1:DataType}>} $pair): self;
 Item::fromDecodedByteSequence(string $value): self;
 Item::fromEncodedByteSequence(string $value): self;
 Item::fromToken(string $value): self;
-Item::fromDate(DateTimeInterface $datetime): self;
 Item::fromTimestamp(int $value): self;
 Item::fromDateFormat(string $format, string $datetime): self;
 Item::fromDateString(string $datetime, DateTimeZone|string|null $timezone): self;

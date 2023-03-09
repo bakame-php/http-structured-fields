@@ -127,14 +127,6 @@ final class Item implements Value
     }
 
     /**
-     * Returns a new instance from a Token and an iterable of key-value parameters.
-     */
-    public static function fromDate(DateTimeInterface $datetime): self
-    {
-        return self::from($datetime);
-    }
-
-    /**
      * Returns a new instance from a timestamp and an iterable of key-value parameters.
      */
     public static function fromTimestamp(int $timestamp): self
