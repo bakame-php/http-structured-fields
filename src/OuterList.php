@@ -44,14 +44,6 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param iterable<(MemberList<int, Value>&ParameterAccess)|list<Value|DataType>|Value|DataType> $members
-     */
-    public static function fromList(iterable $members = []): self
-    {
-        return new self(...array_map(self::filterMember(...), [...$members]));
-    }
-
-    /**
      * @param StructuredField|iterable<Value|DataType>|DataType $member
      *
      * @return (MemberList<int, Value>&ParameterAccess)|Value
@@ -61,7 +53,7 @@ final class OuterList implements MemberList
         return match (true) {
             ($member instanceof MemberList && $member instanceof ParameterAccess),
             $member instanceof Value => $member,
-            is_iterable($member) => InnerList::fromList($member),
+            is_iterable($member) => InnerList::from(...$member),
             default => Item::from($member),
         };
     }
@@ -74,7 +66,7 @@ final class OuterList implements MemberList
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
         return self::from(...array_map(
-            fn ($value) => is_array($value) ? InnerList::fromList(...$value) : $value,
+            fn (mixed $value) => is_array($value) ? InnerList::from(...$value[0])->withParameters(Parameters::fromAssociative($value[1])) : $value,
             Parser::parseList($httpValue)
         ));
     }

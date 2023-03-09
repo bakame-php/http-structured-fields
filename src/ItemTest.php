@@ -150,11 +150,27 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_fails_to_instantiate_an_out_of_range_date_instance_in_the_future(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::fromDate(new DateTime('@'. 1_000_000_000_000_000));
+    }
+
+    #[Test]
     public function it_fails_to_instantiate_an_out_of_range_date_in_the_past(): void
     {
         $this->expectException(SyntaxError::class);
 
         Item::from(new DateTime('@'.-1_000_000_000_000_000));
+    }
+
+    #[Test]
+    public function it_fails_to_instantiate_an_out_of_range_date_instance_in_the_past(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::fromDate(new DateTime('@'.-1_000_000_000_000_000));
     }
 
     #[Test]

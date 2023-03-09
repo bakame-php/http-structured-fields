@@ -21,7 +21,7 @@ final class OuterListTest extends StructuredFieldTestCase
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = OuterList::fromList($arrayParams);
+        $instance = OuterList::from(...$arrayParams);
 
         self::assertSame($stringItem, $instance->get(0));
         self::assertTrue($instance->hasMembers());
@@ -35,7 +35,7 @@ final class OuterListTest extends StructuredFieldTestCase
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = OuterList::fromList($arrayParams);
+        $instance = OuterList::from(...$arrayParams);
 
         self::assertCount(2, $instance);
         self::assertSame($booleanItem, $instance->get(1));
@@ -109,11 +109,11 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $res = OuterList::fromHttpValue('token, "string", ?1; parameter, (42 42.0)');
 
-        $list = OuterList::fromList([
+        $list = OuterList::from(...[
             Token::fromString('token'),
             'string',
             Item::from(true, ['parameter' => true]),
-            InnerList::fromList([42, 42.0]),
+            InnerList::from(42, 42.0),
         ]);
 
         self::assertSame($res->toHttpValue(), $list->toHttpValue());
@@ -155,7 +155,7 @@ final class OuterListTest extends StructuredFieldTestCase
         $token = Token::fromString('token');
         $innerList = InnerList::from('test');
         $input = ['foobar', 0, false, $token, $innerList];
-        $structuredField = OuterList::fromList($input);
+        $structuredField = OuterList::from(...$input);
 
         self::assertInstanceOf(Item::class, $structuredField->get(2));
         self::assertFalse($structuredField->get(2)->value());

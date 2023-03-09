@@ -16,7 +16,8 @@ final class InnerListTest extends TestCase
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = InnerList::fromList($arrayParams, Parameters::fromAssociative(['test' => Item::from(42)]));
+        $instance = InnerList::from(...$arrayParams)
+            ->withParameters(Parameters::fromAssociative(['test' => Item::from(42)]));
 
         self::assertSame($stringItem, $instance->get(0));
         self::assertTrue($instance->hasMembers());
@@ -30,7 +31,7 @@ final class InnerListTest extends TestCase
     {
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
-        $instance = InnerList::fromList([$stringItem, $booleanItem]);
+        $instance = InnerList::from($stringItem, $booleanItem);
 
         self::assertCount(2, $instance);
         self::assertTrue($instance->has(1));
@@ -116,9 +117,10 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_access_its_parameter_values(): void
     {
-        $instance = InnerList::fromList([false], ['foo' => 'bar']);
+        $instance = InnerList::from(false)->addParameter('foo', 'bar');
 
         self::assertSame('bar', $instance->parameters()->get('foo')->value());
+        self::assertSame('bar', $instance->parameter('foo'));
     }
 
     #[Test]
@@ -126,7 +128,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        InnerList::fromList([false], ['foo' => 'bar'])->parameters()->get('bar')->value();
+        InnerList::from(false)->parameters()->get('bar')->value();
     }
 
     #[Test]
@@ -179,7 +181,7 @@ final class InnerListTest extends TestCase
     {
         $token = Token::fromString('token');
         $input = ['foobar', 0, false, $token];
-        $structuredField = InnerList::fromList($input);
+        $structuredField = InnerList::from(...$input);
 
         self::assertFalse($structuredField->get(2)->value());
         self::assertEquals($token, $structuredField->get(-1)->value());
@@ -188,7 +190,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_create_via_with_parameters_method_a_new_object(): void
     {
-        $instance1 = InnerList::fromList([Token::fromString('babayaga'), 'a', true], ['a' => true]);
+        $instance1 = InnerList::from(Token::fromString('babayaga'), 'a', true)->addParameter('a', true);
         $instance2 = $instance1->withParameters(Parameters::fromAssociative(['a' => true]));
         $instance3 = $instance1->withParameters(Parameters::fromAssociative(['a' => false]));
 
@@ -200,7 +202,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_create_via_parameters_access_methods_a_new_object(): void
     {
-        $instance1 = InnerList::fromList([Token::fromString('babayaga'), 'a', true], ['a' => true]);
+        $instance1 = InnerList::from(Token::fromString('babayaga'), 'a', true)->withParameters(Parameters::fromAssociative(['a' => true]));
         $instance2 = $instance1->appendParameter('a', true);
         $instance7 = $instance1->addParameter('a', true);
         $instance3 = $instance1->prependParameter('a', false);

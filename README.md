@@ -7,10 +7,10 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/bakame/http-structured-fields.svg?style=flat-square)](https://packagist.org/packages/bakame/http-structured-fields)
 [![Sponsor development of this project](https://img.shields.io/badge/sponsor%20this%20package-%E2%9D%A4-ff69b4.svg?style=flat-square)](https://github.com/sponsors/nyamsprod)
 
-The package uses value objects to parse, serialize, build and update [HTTP Structured Fields][1] in PHP.
+`bakame/http-structured-fields` is a framework-agnostic PHP library that allows you to parse, serialize and build HTTP Structured Fields in PHP according to the [RFC][1].
 
 HTTP Structured fields are intended for use for new HTTP fields that wish to use a common syntax that is
-more restrictive than traditional HTTP field values or could be used to [retrofit current fields][2] to
+more restrictive than traditional HTTP field values or could be used to retrofit current fields value to
 have them compliant with the new syntax.
 
 ```php
@@ -52,45 +52,65 @@ echo $list[-1]->value(); // returns '/member/*/comments'
 
 ### Parsing and Serializing Structured Fields
 
-To parse the string representation of an HTTP field you must use the `fromHttpValue`
-named constructor provided to all the immutable value objects:
+Once the library is installed parsing the header value is done via one of the package value object via its `fromHttpValue`
+named constructor as shown below:
 
 ```php
-use Bakame\Http\StructuredFields\Dictionary;
 
-$dictionary = Dictionary::fromHttpValue("a=?0,   b,   c=?1; foo=bar");
+declare(strict_types=1);
+
+namespace MyApp;
+
+require 'vendor/autoload.php';
+
+use Bakame\Http\StructuredFields\Item;
+
+//the HTTP request object is given by your application
+// or any given framework or package.
+//We use a PSR-7 Request object in this example
+
+$headerLine = $request->getHeaderLine('foo');
+$field = Item::fromHttpValue($headerLine);
+$field->value();          // returns the found token value
+$field->parameter('baz'); // returns the value of the parameter or null if the parameter is not defined.
 ```
 
-`fromHttpValue` returns an instance of the `Bakame\Http\StructuredFields\StructuredField` interface.
+The `fromHttpValue` method returns an instance of the `Bakame\Http\StructuredFields\StructuredField` interface.
 The interface provides a way to serialize the value object into a normalized RFC compliant HTTP field
 string value using the `toHttpValue` method.
 
 To ease integration with current PHP frameworks and packages working with HTTP headers and trailers,
-each value object also exposes the `Stringable` interface method `__toString`,
-an alias of the `toHttpValue` method.
+each value object also exposes the `Stringable` interface method `__toString` as an alias 
+of the `toHttpValue` method.
 
 ````php
-use Bakame\Http\StructuredFields\OuterList;
+use Bakame\Http\StructuredFields\Item;
 
-$list = OuterList::fromHttpValue('("foo"; a=1;b=2);lvl=5, ("bar" "baz");lvl=1');
-echo $list->toHttpValue(); // '("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1'
-echo $list;                // '("foo";a=1;b=2);lvl=5, ("bar" "baz");lvl=1'
+$bar = Item::fromToken('bar')->addParameter('baz', Item::from(42));
+echo $bar->toHttpValue(); // return 'bar;baz=42'   
+
+//the HTTP response object is given by your application
+// or any given framework or package.
+//We use Symfony Response object in this example
+$newResponse = $response->headers->set('foo', $bar->toHttpValue());
+//or
+$newResponse = $response->headers->set('foo', $bar);
 ````
 
-The library provides currently five (5) immutable value objects define inside the `Bakame\Http\StructuredFields`
-namespace 
+The library provides all five (5) structured defined in the RFC inside the `Bakame\Http\StructuredFields`
+namespace.
 
 - `Item`;
-- `Dictionary` and `Parameters` as 2 Ordered Map Containers;
-- `OuterList` and `InnerList` as 2 List Containers ;
+- `Dictionary` and `Parameters` as 2 Ordered map Containers;
+- `OuterList` and `InnerList` as 2 list Containers ;
 
-they all implement the `StructuredField` interface and expose a `fromHttpValue` named constructor:
+They all implement the `StructuredField` interface and expose a `fromHttpValue` named constructor:
 
 ### Building and Updating Structured Fields Values
 
 Every value object can be used as a builder to create an HTTP field value.
 
-For instance, `Dictionary` and `Parameters` can be build with an associative iterable as shown below
+The `Dictionary` and `Parameters` instances can be build with an associative iterable structure as shown below
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
@@ -105,7 +125,7 @@ echo $value->toHttpValue(); //"b=?0, a=bar;baz=42, c=@1671800423"
 echo $value;                //"b=?0, a=bar;baz=42, c=@1671800423"
 ```
 
-Or with an iterable structure of pairs as described in the RFC:
+Or with an iterable structure of pairs as per defined in the RFC:
 
 ```php
 use Bakame\Http\StructuredFields\Parameters;
@@ -120,7 +140,7 @@ echo $value->toHttpValue(); //;b=?0;a=bar;c=@1671800423
 echo $value;                //;b=?0;a=bar;c=@1671800423
 ```
 
-If builder methods are preferred, the same result can be achieved with the following steps:
+If the preference is to use the builder pattern, the same result can be achieved with the following steps:
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
@@ -129,7 +149,7 @@ use Bakame\Http\StructuredFields\Token;
 
 $bar = Item::fromToken('bar')
     ->addParameter('baz', Item::from(42));
-$dictBuilder = Dictionary::create()
+$value = Dictionary::create()
     ->add('a', $bar)
     ->prepend('b', Item::from(false))
     ->append('c', Item::from(new DateTimeImmutable('2022-12-23 13:00:23')))
@@ -200,15 +220,15 @@ Items can have different types that are translated to PHP using:
 
 The table below summarizes the item value type.
 
-| HTTP DataType | Package Data Type                                      | Package Enum Type    |
-|---------------|--------------------------------------------------------|----------------------|
-| Integer       | `int`                                                  | `Type::Integer`      |
-| Decimal       | `float`                                                | `Type::Decimal`      |
-| String        | `string` or `Stringable` class                         | `Tyoe::String`       |
-| Boolean       | `bool`                                                 | `Type::Boolean`      |
-| Token         | class `Token`                                          | `Type::Token`        |
-| Byte Sequence | class `ByteSequence`                                   | `Type::ByteSequence` |
-| Date          | class `DateTimeImmutable` or `DateTimeInterface` class | `Type::Date`         |
+| HTTP DataType | Package Data Type              | Package Enum Type    |
+|---------------|--------------------------------|----------------------|
+| Integer       | `int`                          | `Type::Integer`      |
+| Decimal       | `float`                        | `Type::Decimal`      |
+| String        | `string` or `Stringable` class | `Tyoe::String`       |
+| Boolean       | `bool`                         | `Type::Boolean`      |
+| Token         | class `Token`                  | `Type::Token`        |
+| Byte Sequence | class `ByteSequence`           | `Type::ByteSequence` |
+| Date          | class `DateTimeImmutable`      | `Type::Date`         |
 
 ```php
 use Bakame\Http\StructuredFields\ByteSequence;
@@ -216,12 +236,12 @@ use Bakame\Http\StructuredFields\Item;
 
 $item = Item::fromPair([
     "hello world", [
-        ["a", ByteSequence::fromDecoded("Hello World")],
+        ["a", Item::from(ByteSequence::fromDecoded("Hello World"))],
     ]
 ]);
 $item->value();            // returns "hello world"
 $item->type();             // returns Type::String
-$item->parameters("a");    // returns StructuredFields\ByteSequence::fromDecoded('Hello World');
+$item->parameters("a");    // returns ByteSequence::fromDecoded('Hello World');
 echo $item->toHttpValue(); // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
 
@@ -276,10 +296,10 @@ Item::fromPair(array{0:mixed, 1:iterable<array{0:string, 1:Value}>} $pair): self
 Item::fromDecodedByteSequence(string $value): self;
 Item::fromEncodedByteSequence(string $value): self;
 Item::fromToken(string $value): self;
-Item::fromDate(DateTimeInterface $value): self;
+Item::fromDate(DateTimeInterface $datetime): self;
 Item::fromTimestamp(int $value): self;
-Item::fromDateFormat(string $dateFormat, string $dateString): self;
-Item::fromDateFormat(string $dateString, DateTimeZone|string|null $timezone): self;
+Item::fromDateFormat(string $format, string $datetime): self;
+Item::fromDateString(string $datetime, DateTimeZone|string|null $timezone): self;
 ```
 
 ### Accessing members of Structured Fields Containers.

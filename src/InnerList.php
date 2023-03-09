@@ -42,15 +42,6 @@ final class InnerList implements MemberList, ParameterAccess
         return new self(Parameters::create(), $members);
     }
 
-    /**
-     * @param iterable<Value|DataType> $members
-     * @param iterable<string, Value|DataType> $parameters
-     */
-    public static function fromList(iterable $members = [], iterable $parameters = []): self
-    {
-        return new self(Parameters::fromAssociative($parameters), $members);
-    }
-
     private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Value
     {
         return match (true) {
@@ -67,7 +58,10 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        return self::fromList(...Parser::parseInnerList($httpValue));
+        [$members, $parameters] = [...Parser::parseInnerList($httpValue)];
+
+        return self::from(...$members)
+            ->withParameters(Parameters::fromAssociative($parameters));
     }
 
     public function parameters(): Parameters

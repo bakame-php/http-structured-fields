@@ -39,9 +39,46 @@ final class Item implements Value
         $this->type = Type::fromValue($this->value);
     }
 
-    public function type(): Type
+    /**
+     * Returns a new instance from a value type and an iterable of key-value parameters.
+     *
+     * @param iterable<string,Value|DataType> $parameters
+     */
+    public static function from(mixed $value, iterable $parameters = []): self
     {
-        return $this->type;
+        $parameters = Parameters::fromAssociative($parameters);
+        if ($value instanceof Value) {
+            $parameters = $value->parameters()->mergeAssociative($parameters);
+        }
+
+        return new self(match (true) {
+            $value instanceof Value => $value->value(),
+            $value instanceof DateTimeInterface => self::filterDate($value),
+            is_int($value) => self::filterIntegerRange($value, 'Integer'),
+            is_float($value) => self::filterDecimal($value),
+            is_string($value) || $value instanceof Stringable => self::filterString($value),
+            is_bool($value),
+            $value instanceof Token,
+            $value instanceof ByteSequence => $value,
+            default => throw new SyntaxError('The type "'.(is_object($value) ? $value::class : gettype($value)).'" is not supported.')
+        }, $parameters);
+    }
+
+    /**
+     * @param array{
+     *     0:DataType,
+     *     1?:MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}>
+     * } $pair
+     */
+    public static function fromPair(array $pair): self
+    {
+        $pair[1] = $pair[1] ?? [];
+
+        return match (true) {
+            !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'),  /* @phpstan-ignore-line */
+            2 !== count($pair) => throw new SyntaxError('The pair first value should be the item value and the optional second value the item parameters.'), /* @phpstan-ignore-line */
+            default => self::from($pair[0], Parameters::fromPairs($pair[1])),
+        };
     }
 
     /**
@@ -90,6 +127,14 @@ final class Item implements Value
     }
 
     /**
+     * Returns a new instance from a Token and an iterable of key-value parameters.
+     */
+    public static function fromDate(DateTimeInterface $datetime): self
+    {
+        return self::from($datetime);
+    }
+
+    /**
      * Returns a new instance from a timestamp and an iterable of key-value parameters.
      */
     public static function fromTimestamp(int $timestamp): self
@@ -135,48 +180,6 @@ final class Item implements Value
         }
 
         return self::from($value);
-    }
-
-    /**
-     * @param array{
-     *     0:DataType,
-     *     1?:MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}>
-     * } $pair
-     */
-    public static function fromPair(array $pair): self
-    {
-        $pair[1] = $pair[1] ?? [];
-
-        return match (true) {
-            !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'),  /* @phpstan-ignore-line */
-            2 !== count($pair) => throw new SyntaxError('The pair first value should be the item value and the optional second value the item parameters.'), /* @phpstan-ignore-line */
-            default => self::from($pair[0], Parameters::fromPairs($pair[1])),
-        };
-    }
-
-    /**
-     * Returns a new instance from a value type and an iterable of key-value parameters.
-     *
-     * @param iterable<string,Value|DataType> $parameters
-     */
-    public static function from(mixed $value, iterable $parameters = []): self
-    {
-        $parameters = Parameters::fromAssociative($parameters);
-        if ($value instanceof Value) {
-            $parameters = $value->parameters()->mergeAssociative($parameters);
-        }
-
-        return new self(match (true) {
-            $value instanceof Value => $value->value(),
-            $value instanceof DateTimeInterface => self::filterDate($value),
-            is_int($value) => self::filterIntegerRange($value, 'Integer'),
-            is_float($value) => self::filterDecimal($value),
-            is_string($value) || $value instanceof Stringable => self::filterString($value),
-            is_bool($value),
-            $value instanceof Token,
-            $value instanceof ByteSequence => $value,
-            default => throw new SyntaxError('The type "'.(is_object($value) ? $value::class : gettype($value)).'" is not supported.')
-        }, $parameters);
     }
 
     /**
@@ -239,19 +242,9 @@ final class Item implements Value
         return $this->value;
     }
 
-    public function withValue(mixed $value): static
+    public function type(): Type
     {
-        if ($value instanceof Value) {
-            $value = $value->value();
-        }
-
-        return match (true) {
-            ($this->value instanceof ByteSequence || $this->value instanceof Token) && $this->value->equals($value),
-            $this->value instanceof DateTimeInterface && $value instanceof DateTimeInterface && $value == $this->value,
-            $value instanceof Stringable && $value->__toString() === $this->value,
-            $value === $this->value => $this,
-            default => self::from($value, $this->parameters),
-        };
+        return $this->type;
     }
 
     public function parameters(): Parameters
@@ -268,34 +261,9 @@ final class Item implements Value
         return null;
     }
 
-    public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function __toString(): string
     {
-        return $this->withParameters($this->parameters()->add($key, $member));
-    }
-
-    public function prependParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
-    {
-        return $this->withParameters($this->parameters()->prepend($key, $member));
-    }
-
-    public function appendParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
-    {
-        return $this->withParameters($this->parameters()->append($key, $member));
-    }
-
-    public function withoutAnyParameter(): static
-    {
-        return $this->withParameters(Parameters::create());
-    }
-
-    public function withoutParameter(string ...$keys): static
-    {
-        return $this->withParameters($this->parameters()->remove(...$keys));
-    }
-
-    public function withParameters(Parameters $parameters): static
-    {
-        return $this->parameters->toHttpValue() === $parameters->toHttpValue() ? $this : new static($this->value, $parameters);
+        return $this->toHttpValue();
     }
 
     /**
@@ -316,11 +284,6 @@ final class Item implements Value
         }.$this->parameters->toHttpValue();
     }
 
-    public function __toString(): string
-    {
-        return $this->toHttpValue();
-    }
-
     /**
      * Serialize the Item decimal value according to RFC8941.
      *
@@ -332,5 +295,50 @@ final class Item implements Value
         $result = json_encode(round($value, 3, PHP_ROUND_HALF_EVEN));
 
         return str_contains($result, '.') ? $result : $result.'.0';
+    }
+
+    public function withValue(mixed $value): static
+    {
+        if ($value instanceof Value) {
+            $value = $value->value();
+        }
+
+        return match (true) {
+            ($this->value instanceof ByteSequence || $this->value instanceof Token) && $this->value->equals($value),
+            $this->value instanceof DateTimeInterface && $value instanceof DateTimeInterface && $value == $this->value,
+            $value instanceof Stringable && $value->__toString() === $this->value,
+            $value === $this->value => $this,
+            default => self::from($value, $this->parameters),
+        };
+    }
+
+    public function withParameters(Parameters $parameters): static
+    {
+        return $this->parameters->toHttpValue() === $parameters->toHttpValue() ? $this : new static($this->value, $parameters);
+    }
+
+    public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    {
+        return $this->withParameters($this->parameters()->add($key, $member));
+    }
+
+    public function prependParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    {
+        return $this->withParameters($this->parameters()->prepend($key, $member));
+    }
+
+    public function withoutParameter(string ...$keys): static
+    {
+        return $this->withParameters($this->parameters()->remove(...$keys));
+    }
+
+    public function appendParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    {
+        return $this->withParameters($this->parameters()->append($key, $member));
+    }
+
+    public function withoutAnyParameter(): static
+    {
+        return $this->withParameters(Parameters::create());
     }
 }
