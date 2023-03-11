@@ -174,7 +174,22 @@ $map->mergeAssociative(...$others): static;
 $map->mergePairs(...$others): static;
 ```
 
-Conversely, changes can be applied to `OuterList` and `InnerList` with adapted methods around list handling:
+To Create `OuterList` and `InnerList` instances you can use the `fromMembers` name constructor:
+
+```php
+use Bakame\Http\StructuredFields\InnerList;
+use Bakame\Http\StructuredFields\Item;
+
+$list = InnerList::fromMembers(
+    Item::fromDecodedByteSequence('Hello World'),
+    42.0,
+    42
+);
+
+echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
+echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
+```
+Once again, builder methods exist on both classes to ease container construction.
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
@@ -199,8 +214,8 @@ $list->insert($key, ...$members): static;
 $list->replace($key, $member): static;
 ```
 
-Last but not least you can attach, read and update a `Parameters` instance using the
-following methods on `Item` and `InnerList` instances:
+On `InnerList` instances it is possible to attach, read and update a `Parameters` instance using the
+following methods:
 
 ```php
 $field->parameter($key): mixed|null;
@@ -210,6 +225,18 @@ $field->prependParameter($key, $value): static;
 $field->withoutParameters(...$keys): static;
 $field->withoutAnyParameter(): static;
 $field->withParameters(Parameters $parameters): static;
+```
+
+It is possible to instantiate an `InnerList` instance with included parameters using one of those two additional named constructors:
+
+```php
+use Bakame\Http\StructuredFields\InnerList;
+use Bakame\Http\StructuredFields\Value;
+
+//@type DataType Value|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
+
+InnerList::fromAssociativeParameters(iterable<string, Value> $parameters, DataType ...$members): self;
+InnerList::fromPairParameters(iterable<array{0:string, 1:DataType}>} $parameters, DataType ...$members): self;
 ```
 
 ### Item and RFC Data Types
