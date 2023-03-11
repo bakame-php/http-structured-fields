@@ -226,7 +226,7 @@ final class Parameters implements MemberOrderedMap
     public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         $members = $this->members;
-        $members[MapKey::fromString($key)->value] = self::filterMember($member);
+        $members[$key] = $member;
 
         return new self($members);
     }
@@ -249,8 +249,9 @@ final class Parameters implements MemberOrderedMap
     {
         $members = $this->members;
         unset($members[$key]);
+        $members[$key] = $member;
 
-        return new self([...$members, $key => self::filterMember($member)]);
+        return new self($members);
     }
 
     public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
@@ -258,7 +259,7 @@ final class Parameters implements MemberOrderedMap
         $members = $this->members;
         unset($members[$key]);
 
-        return new self([$key => self::filterMember($member), ...$members]);
+        return new self([$key => $member, ...$members]);
     }
 
     /**

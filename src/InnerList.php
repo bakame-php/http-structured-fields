@@ -34,6 +34,15 @@ final class InnerList implements MemberList, ParameterAccess
         $this->members = array_map(self::filterMember(...), array_values([...$members]));
     }
 
+    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Value
+    {
+        return match (true) {
+            $member instanceof Value => $member,
+            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Value::class.'" instance; received a "'.$member::class.'" instead.'),
+            default => Item::from($member),
+        };
+    }
+
     /**
      * Returns a new instance.
      */
@@ -60,15 +69,6 @@ final class InnerList implements MemberList, ParameterAccess
     public static function fromPairParameters(iterable $parameters, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
         return new self(Parameters::fromPairs($parameters), $members);
-    }
-
-    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Value
-    {
-        return match (true) {
-            $member instanceof Value => $member,
-            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Value::class.'" instance; received a "'.$member::class.'" instead.'),
-            default => Item::from($member),
-        };
     }
 
     /**
@@ -242,7 +242,7 @@ final class InnerList implements MemberList, ParameterAccess
             return $this;
         }
 
-        return $this->newInstance([...array_map(self::filterMember(...), array_values($members)), ...$this->members]);
+        return $this->newInstance([...array_values($members), ...$this->members]);
     }
 
     /**
@@ -262,7 +262,7 @@ final class InnerList implements MemberList, ParameterAccess
             return $this;
         }
 
-        return $this->newInstance([...$this->members, ...array_map(self::filterMember(...), array_values($members))]);
+        return $this->newInstance([...$this->members, ...array_values($members)]);
     }
 
     /**
@@ -280,7 +280,7 @@ final class InnerList implements MemberList, ParameterAccess
             count($this->members) === $offset => $this->push(...$members),
             [] === $members => $this,
             default => (function (array $newMembers) use ($offset, $members) {
-                array_splice($newMembers, $offset, 0, array_map(self::filterMember(...), $members));
+                array_splice($newMembers, $offset, 0, $members);
 
                 return $this->newInstance($newMembers);
             })($this->members),
@@ -294,7 +294,7 @@ final class InnerList implements MemberList, ParameterAccess
         }
 
         $members = $this->members;
-        $members[$offset] = self::filterMember($member);
+        $members[$offset] = $member;
 
         return $this->newInstance($members);
     }

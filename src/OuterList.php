@@ -28,19 +28,11 @@ final class OuterList implements MemberList
     private readonly array $members;
 
     /**
-     * @param Value|(MemberList<int, Value>&ParameterAccess) ...$members
-     */
-    private function __construct(MemberList|Value ...$members)
-    {
-        $this->members = array_values($members);
-    }
-
-    /**
      * @param StructuredField|iterable<Value|DataType>|DataType ...$members
      */
-    public static function fromMembers(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
+    private function __construct(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members)
     {
-        return new self(...array_map(self::filterMember(...), $members));
+        $this->members = array_map(self::filterMember(...), array_values([...$members]));
     }
 
     /**
@@ -56,6 +48,14 @@ final class OuterList implements MemberList
             is_iterable($member) => InnerList::fromMembers(...$member),
             default => Item::from($member),
         };
+    }
+
+    /**
+     * @param StructuredField|iterable<Value|DataType>|DataType ...$members
+     */
+    public static function fromMembers(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
+    {
+        return new self(...$members);
     }
 
     /**
@@ -182,11 +182,11 @@ final class OuterList implements MemberList
             return $this;
         }
 
-        return $this->newInstance([...array_map(self::filterMember(...), array_values($members)), ...$this->members]);
+        return $this->newInstance([...array_values($members), ...$this->members]);
     }
 
     /**
-     * @param iterable<int, Value|(MemberList<int, Value>&ParameterAccess)> $members
+     * @param iterable<int, Value|DataType|(MemberList<int, Value>&ParameterAccess)> $members
      */
     private function newInstance(iterable $members): self
     {
@@ -202,7 +202,7 @@ final class OuterList implements MemberList
             return $this;
         }
 
-        return $this->newInstance([...$this->members, ...array_map(self::filterMember(...), array_values($members))]);
+        return $this->newInstance([...$this->members, ...array_values($members)]);
     }
 
     /**
@@ -220,7 +220,7 @@ final class OuterList implements MemberList
             count($this->members) === $offset => $this->push(...$members),
             [] === $members => $this,
             default => (function (array $newMembers) use ($offset, $members) {
-                array_splice($newMembers, $offset, 0, array_map(self::filterMember(...), $members));
+                array_splice($newMembers, $offset, 0, $members);
 
                 return $this->newInstance($newMembers);
             })($this->members),
@@ -234,7 +234,7 @@ final class OuterList implements MemberList
         }
 
         $members = $this->members;
-        $members[$offset] = self::filterMember($member);
+        $members[$offset] = $member;
 
         return $this->newInstance($members);
     }
