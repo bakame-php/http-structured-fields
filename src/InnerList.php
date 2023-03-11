@@ -24,7 +24,7 @@ use function is_int;
 final class InnerList implements MemberList, ParameterAccess
 {
     /** @var list<Value> */
-    private array $members;
+    private readonly array $members;
 
     /**
      * @param iterable<Value|DataType> $members
@@ -37,9 +37,29 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance.
      */
-    public static function from(Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public static function fromMembers(Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
         return new self(Parameters::create(), $members);
+    }
+
+    /**
+     * Returns a new instance with an iter.
+     *
+     * @param iterable<string,Value|DataType> $parameters
+     */
+    public static function fromAssociativeParameters(iterable $parameters, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    {
+        return new self(Parameters::fromAssociative($parameters), $members);
+    }
+
+    /**
+     * Returns a new instance.
+     *
+     * @param MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}> $parameters
+     */
+    public static function fromPairParameters(iterable $parameters, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    {
+        return new self(Parameters::fromPairs($parameters), $members);
     }
 
     private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Value
@@ -60,7 +80,7 @@ final class InnerList implements MemberList, ParameterAccess
     {
         [$members, $parameters] = [...Parser::parseInnerList($httpValue)];
 
-        return self::from(...$members)
+        return self::fromMembers(...$members)
             ->withParameters(Parameters::fromAssociative($parameters));
     }
 

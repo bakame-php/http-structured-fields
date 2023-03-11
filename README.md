@@ -100,9 +100,11 @@ $newResponse = $response->headers->set('foo', $bar);
 The library provides all five (5) structured defined in the RFC inside the `Bakame\Http\StructuredFields`
 namespace.
 
-- `Item`;
-- `Dictionary` and `Parameters` as 2 Ordered map Containers;
-- `OuterList` and `InnerList` as 2 list Containers ;
+- `Item`
+- `Parameters`
+- `Dictionary`
+- `OuterList`
+- `InnerList`
 
 They all implement the `StructuredField` interface and expose a `fromHttpValue` named constructor:
 
@@ -178,7 +180,7 @@ Conversely, changes can be applied to `OuterList` and `InnerList` with adapted m
 use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Item;
 
-$list = InnerList::from()
+$list = InnerList::fromMembers()
     ->unshift('42')
     ->push(42)
     ->insert(1, 42.0)
@@ -206,7 +208,7 @@ $field->addParameter($key, $value): static;
 $field->appendParameter($key, $value): static;
 $field->prependParameter($key, $value): static;
 $field->withoutParameters(...$keys): static;
-$field->withoutAllParameters($): static;
+$field->withoutAnyParameter(): static;
 $field->withParameters(Parameters $parameters): static;
 ```
 
@@ -291,7 +293,7 @@ so they all expect an associative iterable to represents the parameters.
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Value;
 
-//@type DataType ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
+//@type DataType Value|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
 
 Item::from(DataType $value, iterable<string, Value> $associativeParameters = []): self;
 Item::fromPair(array{0:DataType, 1:iterable<array{0:string, 1:DataType}>} $pair): self;
@@ -305,7 +307,7 @@ Item::fromDateString(string $datetime, DateTimeZone|string|null $timezone): self
 
 ### Accessing members of Structured Fields Containers.
 
-`Item` are accessible using three (3) methods:
+`Item` properties are accessible using the following methods:
 
 ```php
 use Bakame\Http\StructuredFields\Item;
@@ -313,8 +315,21 @@ use Bakame\Http\StructuredFields\Item;
 $item = Item::from(CarbonImmutable::parse('today'));
 $item->type();         // return Type::Date;
 $item->value()         // return CarbonImmutable::parse('today') (because it extends DateTimeImmutable)
-$item->parameters();   // returns a Parameters container
-$item->parameter('z'); // returns the Bare Item value or null if the key does not exists
+```
+
+You can attach, read and update the associated `Parameters` instance using the
+following:
+
+```php
+use Bakame\Http\StructuredFields\Parameters;
+
+$item->parameter($key): mixed|null;
+$item->addParameter($key, $value): static;
+$item->appendParameter($key, $value): static;
+$item->prependParameter($key, $value): static;
+$item->withoutParameters(...$keys): static;
+$item->withoutAnyParameter(): static;
+$item->withParameters(Parameters $parameters): static;
 ```
 
 All containers implement PHP `IteratorAggregate`, `Countable` and `ArrayAccess` interfaces for easy usage in your codebase.
@@ -326,7 +341,7 @@ $container->has(string|int ...$offsets): bool;
 $container->get(string|int $offset): bool;
 $container->remove(string|int ...$offsets): bool;
 $container->hasMembers(): bool;
-$container->hasNotMembers(): bool;
+$container->hasNoMembers(): bool;
 ```
 
 To avoid invalid states, the modifying methods from PHP `ArrayAccess` will throw a `ForbiddenOperation` if you try to

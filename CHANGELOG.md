@@ -8,10 +8,14 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - `Item::fromTimestamp`, `Item::fromDateFormat` to improve item instantiation with dates.
 - `ParameterAccess::parameter` to ease parameter members value access.
-- **[BC Break]**  `ParameterAccess::withoutAllParameters` is renamed `ParameterAccess::withoutAnyParameters`.
+- `InnerList::fromAssociativeParameters`
+- `InnerList::fromPairParameters`
+- **[BC Break]** `ParameterAccess::withoutAllParameters` is renamed `ParameterAccess::withoutAnyParameter`.
 - **[BC Break]** `OrderedList` is renamed `OuterList`.
 - **[BC Break]** `MemberContainer::remove` methods get added to the interface.
 - **[BC Break]** `MemberContainer::keys` method added to the interface.
+- **[BC Break]** `InnerList::from` is renamed `InnerList::fromMembers`.
+- **[BC Break]** `OuterList::from` is renamed `OuterList::fromMembers`.
 
 ### Fixed
 
@@ -31,9 +35,11 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - **[BC Break]** `OrderedList` is removed, use `OuterList` instead.
 - **[BC Break]**  `ParameterAccess::withoutAllParameters` is removed, use `ParameterAccess::withoutAnyParameters` instead.
 - **[BC Break]**  remove the `$parameters` argument from all `Item` named constuctore except from `Item::from`.
-- **[BC Break]**  remove the `InnerList::fromList`, use `InnerList::from` instead.
-- **[BC Break]**  remove the `OuterList::fromList`, use `OuterList::from` instead.
-
+- **[BC Break]**  remove `InnerList::fromList`, use `InnerList::from` instead.
+- **[BC Break]**  remove `OuterList::fromList`, use `OuterList::from` instead.
+- **[BC Break]**  remove `InnerList::from` use `InnerList::fromMembers`.
+- **[BC Break]**  remove `OuterList::from` use `OuterList::fromMembers`.
+- 
 ## [0.7.0] - 2023-02-06
 
 ### Added

@@ -16,7 +16,7 @@ final class InnerListTest extends TestCase
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = InnerList::from(...$arrayParams)
+        $instance = InnerList::fromMembers(...$arrayParams)
             ->withParameters(Parameters::fromAssociative(['test' => Item::from(42)]));
 
         self::assertSame($stringItem, $instance->get(0));
@@ -31,7 +31,7 @@ final class InnerListTest extends TestCase
     {
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
-        $instance = InnerList::from($stringItem, $booleanItem);
+        $instance = InnerList::fromMembers($stringItem, $booleanItem);
 
         self::assertCount(2, $instance);
         self::assertTrue($instance->has(1));
@@ -61,7 +61,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_unshift_insert_and_replace(): void
     {
-        $container = InnerList::from()
+        $container = InnerList::fromMembers()
             ->unshift('42')
             ->push(42)
             ->insert(1, 42.0)
@@ -76,7 +76,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_returns_the_same_object_if_nothing_is_changed(): void
     {
-        $container = InnerList::from(42, 'forty-two');
+        $container = InnerList::fromMembers(42, 'forty-two');
 
         $sameContainer = $container
             ->unshift()
@@ -91,7 +91,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        InnerList::from()->replace(0, ByteSequence::fromDecoded('Hello World'));
+        InnerList::fromMembers()->replace(0, ByteSequence::fromDecoded('Hello World'));
     }
 
     #[Test]
@@ -99,13 +99,13 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        InnerList::from()->insert(3, ByteSequence::fromDecoded('Hello World'));
+        InnerList::fromMembers()->insert(3, ByteSequence::fromDecoded('Hello World'));
     }
 
     #[Test]
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
-        $instance = InnerList::from();
+        $instance = InnerList::fromMembers();
 
         self::assertFalse($instance->has(3));
 
@@ -117,7 +117,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_access_its_parameter_values(): void
     {
-        $instance = InnerList::from(false)->addParameter('foo', 'bar');
+        $instance = InnerList::fromAssociativeParameters(['foo' => 'bar'], false);
 
         self::assertSame('bar', $instance->parameters()->get('foo')->value());
         self::assertSame('bar', $instance->parameter('foo'));
@@ -128,7 +128,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        InnerList::from(false)->parameters()->get('bar')->value();
+        InnerList::fromMembers(false)->parameters()->get('bar')->value();
     }
 
     #[Test]
@@ -159,13 +159,13 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        InnerList::from()->insert(0, Item::from(42.0));
+        InnerList::fromMembers()->insert(0, Item::from(42.0));
     }
 
     #[Test]
     public function it_returns_the_same_object_if_no_member_is_removed(): void
     {
-        self::assertCount(0, InnerList::from()->remove(0));
+        self::assertCount(0, InnerList::fromMembers()->remove(0));
     }
 
     #[Test]
@@ -173,7 +173,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        InnerList::from()->get('zero');
+        InnerList::fromMembers()->get('zero');
     }
 
     #[Test]
@@ -181,7 +181,7 @@ final class InnerListTest extends TestCase
     {
         $token = Token::fromString('token');
         $input = ['foobar', 0, false, $token];
-        $structuredField = InnerList::from(...$input);
+        $structuredField = InnerList::fromMembers(...$input);
 
         self::assertFalse($structuredField->get(2)->value());
         self::assertEquals($token, $structuredField->get(-1)->value());
@@ -190,7 +190,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_create_via_with_parameters_method_a_new_object(): void
     {
-        $instance1 = InnerList::from(Token::fromString('babayaga'), 'a', true)->addParameter('a', true);
+        $instance1 = InnerList::fromPairParameters([['a', true]], Token::fromString('babayaga'), 'a', true);
         $instance2 = $instance1->withParameters(Parameters::fromAssociative(['a' => true]));
         $instance3 = $instance1->withParameters(Parameters::fromAssociative(['a' => false]));
 
@@ -202,7 +202,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_create_via_parameters_access_methods_a_new_object(): void
     {
-        $instance1 = InnerList::from(Token::fromString('babayaga'), 'a', true)->withParameters(Parameters::fromAssociative(['a' => true]));
+        $instance1 = InnerList::fromMembers(Token::fromString('babayaga'), 'a', true)->withParameters(Parameters::fromAssociative(['a' => true]));
         $instance2 = $instance1->appendParameter('a', true);
         $instance7 = $instance1->addParameter('a', true);
         $instance3 = $instance1->prependParameter('a', false);
@@ -224,7 +224,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_implements_the_array_access_interface(): void
     {
-        $structuredField = InnerList::from('foobar', 'foobar', 'zero', 0);
+        $structuredField = InnerList::fromMembers('foobar', 'foobar', 'zero', 0);
 
         self::assertInstanceOf(Item::class, $structuredField->get(0));
         self::assertInstanceOf(Item::class, $structuredField[0]);
@@ -237,7 +237,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(LogicException::class);
 
-        unset(InnerList::from('foobar', 'foobar', 'zero', 0)[0]);
+        unset(InnerList::fromMembers('foobar', 'foobar', 'zero', 0)[0]);
     }
 
     #[Test]
@@ -245,14 +245,14 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(LogicException::class);
 
-        InnerList::from('foobar', 'foobar', 'zero', 0)[0] = Item::from(false);
+        InnerList::fromMembers('foobar', 'foobar', 'zero', 0)[0] = Item::from(false);
     }
 
 
     #[Test]
     public function it_can_returns_the_container_member_keys(): void
     {
-        $instance = InnerList::from();
+        $instance = InnerList::fromMembers();
 
         self::assertSame([], $instance->keys());
 
@@ -261,7 +261,7 @@ final class InnerListTest extends TestCase
 
         self::assertSame([0, 1], $newInstance->keys());
 
-        $container = InnerList::from()
+        $container = InnerList::fromMembers()
             ->unshift('42')
             ->push(42)
             ->insert(1, 42.0)
