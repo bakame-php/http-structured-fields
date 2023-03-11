@@ -24,16 +24,19 @@ use function trim;
 final class Parameters implements MemberOrderedMap
 {
     /** @var array<string, Value> */
-    private array $members = [];
+    private readonly array $members;
 
     /**
      * @param iterable<string, Value|DataType> $members
      */
     private function __construct(iterable $members = [])
     {
+        $filteredMembers = [];
         foreach ($members as $key => $member) {
-            $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
+            $filteredMembers[MapKey::fromString($key)->value] = self::filterMember($member);
         }
+
+        $this->members = $filteredMembers;
     }
 
     private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Value

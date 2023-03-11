@@ -26,16 +26,19 @@ use function is_string;
 final class Dictionary implements MemberOrderedMap
 {
     /** @var array<string, Value|(MemberList<int, Value>&ParameterAccess)> */
-    private array $members = [];
+    private readonly array $members;
 
     /**
      * @param iterable<string, (MemberList<int, Value>&ParameterAccess)|iterable<Value|DataType>|Value|DataType> $members
      */
     private function __construct(iterable $members = [])
     {
+        $filteredMembers = [];
         foreach ($members as $key => $member) {
-            $this->members[MapKey::fromString($key)->value] = self::filterMember($member);
+            $filteredMembers[MapKey::fromString($key)->value] = self::filterMember($member);
         }
+
+        $this->members = $filteredMembers;
     }
 
     /**
@@ -107,7 +110,7 @@ final class Dictionary implements MemberOrderedMap
     {
         return new self((function (iterable $pairs) {
             foreach ($pairs as $key => $value) {
-                yield $key => is_array($value) ? InnerList::fromMembers(...$value[0])->withParameters(Parameters::fromAssociative($value[1])) : $value;
+                yield $key => is_array($value) ? InnerList::fromAssociativeParameters($value[1], ...$value[0]) : $value;
             }
         })(Parser::parseDictionary($httpValue)));
     }

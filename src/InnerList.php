@@ -80,8 +80,7 @@ final class InnerList implements MemberList, ParameterAccess
     {
         [$members, $parameters] = [...Parser::parseInnerList($httpValue)];
 
-        return self::fromMembers(...$members)
-            ->withParameters(Parameters::fromAssociative($parameters));
+        return self::fromAssociativeParameters($parameters, ...$members);
     }
 
     public function parameters(): Parameters
