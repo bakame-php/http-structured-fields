@@ -75,14 +75,14 @@ final class ItemTest extends StructuredFieldTestCase
 
     #[Test]
     #[DataProvider('provideFrom1stArgument')]
-    public function it_instantiate_many_types(mixed $value, string $expected): void
+    public function it_instantiate_many_types(Value|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool $value, string $expected): void
     {
         self::assertSame($expected, Item::from($value)->toHttpValue());
     }
 
     #[Test]
     #[DataProvider('provideFrom1stArgument')]
-    public function it_updates_item(mixed $value, string $expected): void
+    public function it_updates_item(Value|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool $value, string $expected): void
     {
         $parameters = Parameters::fromAssociative(['foo' => 'bar']);
         if ($value instanceof Value) {
@@ -96,7 +96,7 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     /**
-     * @return iterable<string, array{value:mixed, expected:string}>>
+     * @return iterable<string, array{value:Value|DataType, expected:string}>>
      */
     public static function provideFrom1stArgument(): iterable
     {

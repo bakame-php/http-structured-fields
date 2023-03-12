@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use DateTimeImmutable;
-use DateTimeInterface;
-use Stringable;
 
 /**
- * @phpstan-type DataType ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
+ * @phpstan-type DataType ByteSequence|Token|\DateTimeInterface|\Stringable|string|int|float|bool
  */
 interface Value extends ParameterAccess, StructuredField
 {
@@ -28,6 +26,8 @@ interface Value extends ParameterAccess, StructuredField
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified value change.
+     *
+     * @param Value|DataType $value
      */
     public function withValue(mixed $value): static;
 }
