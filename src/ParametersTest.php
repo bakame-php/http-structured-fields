@@ -50,6 +50,14 @@ final class ParametersTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_fails_to_instantiate_a_pair_with_the_associative_constructor(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Parameters::fromAssociative([['a', 'b']]); // @phpstan-ignore-line
+    }
+
+    #[Test]
     public function it_fails_to_instantiate_with_an_item_containing_already_parameters(): void
     {
         $this->expectException(InvalidArgument::class);

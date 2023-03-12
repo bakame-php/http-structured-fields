@@ -55,8 +55,7 @@
         "test": [
             "@phpunit",
             "@phpstan",
-            "@phpcs",
-            "@benchmark"
+            "@phpcs"
         ]
     },
     "scripts-descriptions": {
@@ -64,6 +63,7 @@
         "phpunit": "Runs unit and functional testing",
         "phpcs": "Runs coding style testing",
         "phpcs:fix": "Fix coding style issues",
+        "benchmark": "Runs parser benchmark",
         "test": "Runs all tests"
     },
     "repositories": [

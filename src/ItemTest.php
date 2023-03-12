@@ -12,6 +12,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Stringable;
 
+/**
+ * @phpstan-import-type DataType from Value
+ */
 final class ItemTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
@@ -28,19 +31,46 @@ final class ItemTest extends StructuredFieldTestCase
     ];
 
     #[Test]
-    public function it_fails_to_instantiate_a_decimal_too_big(): void
+    #[DataProvider('provideInvalidArguments')]
+    public function it_fails_to_instantiate_an_item(mixed $value): void
     {
         $this->expectException(SyntaxError::class);
 
-        Item::from(1_000_000_000_000.0);
+        Item::from($value);
     }
 
-    #[Test]
-    public function it_fails_to_instantiate_a_decimal_too_small(): void
+    /**
+     * @return iterable<string, array{value:mixed}>
+     */
+    public static function provideInvalidArguments(): iterable
     {
-        $this->expectException(SyntaxError::class);
+        yield 'if the decimal is too big' => [
+            'value' => 1_000_000_000_000.0,
+        ];
 
-        Item::from(-1_000_000_000_000.0);
+        yield 'if the decimal is too small' => [
+            'value' => -1_000_000_000_000.0,
+        ];
+
+        yield 'if the integer is too big' => [
+            'value' => 1_000_000_000_000_000,
+        ];
+
+        yield 'if the integer is too small' => [
+            'value' => -1_000_000_000_000_000,
+        ];
+
+        yield 'if the date is too much in the future' => [
+            'value' => new DateTime('@'. 1_000_000_000_000_000),
+        ];
+
+        yield 'if the date is too much in the past' => [
+            'value' => new DateTime('@'.-1_000_000_000_000_000),
+        ];
+
+        yield 'if the string contains invalud characters' => [
+            'value' => "\0foobar",
+        ];
     }
 
     #[Test]
@@ -92,22 +122,6 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function it_fails_to_instantiate_a_integer_too_big(): void
-    {
-        $this->expectException(SyntaxError::class);
-
-        Item::from(1_000_000_000_000_000);
-    }
-
-    #[Test]
-    public function it_fails_to_instantiate_a_integer_too_small(): void
-    {
-        $this->expectException(SyntaxError::class);
-
-        Item::from(-1_000_000_000_000_000);
-    }
-
-    #[Test]
     public function it_instantiates_a_token(): void
     {
         self::assertSame('helloworld', Item::fromToken('helloworld')->toHttpValue());
@@ -134,27 +148,11 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function it_fails_to_instantiate_an_out_of_range_date_in_the_future(): void
-    {
-        $this->expectException(SyntaxError::class);
-
-        Item::from(new DateTime('@'. 1_000_000_000_000_000));
-    }
-
-    #[Test]
     public function it_fails_to_instantiate_an_out_of_range_timestamp_in_the_future(): void
     {
         $this->expectException(SyntaxError::class);
 
         Item::fromTimestamp(1_000_000_000_000_000);
-    }
-
-    #[Test]
-    public function it_fails_to_instantiate_an_out_of_range_date_in_the_past(): void
-    {
-        $this->expectException(SyntaxError::class);
-
-        Item::from(new DateTime('@'.-1_000_000_000_000_000));
     }
 
     #[Test]
@@ -203,14 +201,6 @@ final class ItemTest extends StructuredFieldTestCase
     public function it_instantiates_a_string(): void
     {
         self::assertSame('"foobar"', Item::from('foobar')->toHttpValue());
-    }
-
-    #[Test]
-    public function it_fails_to_instantiate_an_invalid_string(): void
-    {
-        $this->expectException(SyntaxError::class);
-
-        Item::from("\0foobar");
     }
 
     #[Test]

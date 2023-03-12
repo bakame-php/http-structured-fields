@@ -18,8 +18,12 @@ final class MapKey
     /**
      * @throws SyntaxError If the string is not a valid HTTP value field key
      */
-    public static function fromString(string $httpValue): self
+    public static function from(string|int $httpValue): self
     {
+        if (!is_string($httpValue)) {
+            throw new SyntaxError('The key must be a string; '.gettype($httpValue).' received.');
+        }
+
         $instance = self::fromStringBeginning($httpValue);
         if ($instance->value !== $httpValue) {
             throw new SyntaxError('No valid http value key could be extracted from "'.$httpValue.'".');

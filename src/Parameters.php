@@ -33,7 +33,7 @@ final class Parameters implements MemberOrderedMap
     {
         $filteredMembers = [];
         foreach ($members as $key => $member) {
-            $filteredMembers[MapKey::fromString($key)->value] = self::filterMember($member);
+            $filteredMembers[MapKey::from($key)->value] = self::filterMember($member);
         }
 
         $this->members = $filteredMembers;
