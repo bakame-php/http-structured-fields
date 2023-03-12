@@ -20,6 +20,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Fixed
 
 - Test suite migrated to PHPUnit 10
+- Adding Benchmark test with PHPBench
 - Improve Collection immutability with method changes
 - **[BC Break]** `ParameterAccess` interface signature updated to use the `Value` interface instead of the `Item` implementation.
 - **[BC Break]** `MemberList::remove`, `MemberOrderedMap::remove` and `MemberOrderedMap::keys` methods are moved to their parent interface.
