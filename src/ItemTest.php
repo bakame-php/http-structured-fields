@@ -315,16 +315,16 @@ final class ItemTest extends StructuredFieldTestCase
         self::assertEquals($instance3, $instance1);
     }
 
+    #[Test]
+    #[DataProvider('invalidPairProvider')]
     /**
      * @param array<mixed> $pair
      */
-    #[Test]
-    #[DataProvider('invalidPairProvider')]
     public function it_fails_to_create_an_item_from_an_array_of_pairs(array $pair): void
     {
         $this->expectException(SyntaxError::class);
 
-        Item::fromPair($pair);  /* @phpstan-ignore-line */
+        Item::fromPair($pair);  // @phpstan-ignore-line
     }
 
     /**

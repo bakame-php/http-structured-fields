@@ -21,7 +21,7 @@ final class OuterListTest extends StructuredFieldTestCase
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = OuterList::fromMembers(...$arrayParams);
+        $instance = OuterList::from(...$arrayParams);
 
         self::assertSame($stringItem, $instance->get(0));
         self::assertTrue($instance->hasMembers());
@@ -35,7 +35,7 @@ final class OuterListTest extends StructuredFieldTestCase
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = OuterList::fromMembers(...$arrayParams);
+        $instance = OuterList::from(...$arrayParams);
 
         self::assertCount(2, $instance);
         self::assertSame($booleanItem, $instance->get(1));
@@ -64,7 +64,7 @@ final class OuterListTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_unshift_insert_and_replace(): void
     {
-        $instance = OuterList::fromMembers()
+        $instance = OuterList::from()
             ->unshift(Item::from('42'))
             ->push(Item::from(42))
             ->insert(1, Item::from(42.0))
@@ -81,7 +81,7 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        OuterList::fromMembers()->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
+        OuterList::from()->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
     }
 
     #[Test]
@@ -89,13 +89,13 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        OuterList::fromMembers()->insert(3, Item::from(ByteSequence::fromDecoded('Hello World')));
+        OuterList::from()->insert(3, Item::from(ByteSequence::fromDecoded('Hello World')));
     }
 
     #[Test]
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
-        $instance = OuterList::fromMembers();
+        $instance = OuterList::from();
 
         self::assertFalse($instance->has(3));
 
@@ -109,11 +109,11 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $res = OuterList::fromHttpValue('token, "string", ?1; parameter, (42 42.0)');
 
-        $list = OuterList::fromMembers(...[
+        $list = OuterList::from(...[
             Token::fromString('token'),
             'string',
             Item::from(true, ['parameter' => true]),
-            InnerList::fromMembers(42, 42.0),
+            InnerList::from(42, 42.0),
         ]);
 
         self::assertSame($res->toHttpValue(), $list->toHttpValue());
@@ -124,13 +124,13 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        OuterList::fromMembers()->insert(0, Item::from(42.0));
+        OuterList::from()->insert(0, Item::from(42.0));
     }
 
     #[Test]
     public function it_returns_the_same_object_if_nothing_is_changed(): void
     {
-        $container = OuterList::fromMembers(42, 'forty-two');
+        $container = OuterList::from(42, 'forty-two');
 
         $sameContainer = $container
             ->unshift()
@@ -146,16 +146,16 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        OuterList::fromMembers()->get('zero');
+        OuterList::from()->get('zero');
     }
 
     #[Test]
     public function it_can_access_the_item_value(): void
     {
         $token = Token::fromString('token');
-        $innerList = InnerList::fromMembers('test');
+        $innerList = InnerList::from('test');
         $input = ['foobar', 0, false, $token, $innerList];
-        $structuredField = OuterList::fromMembers(...$input);
+        $structuredField = OuterList::from(...$input);
 
         self::assertInstanceOf(Item::class, $structuredField->get(2));
         self::assertFalse($structuredField->get(2)->value());
@@ -169,7 +169,7 @@ final class OuterListTest extends StructuredFieldTestCase
     #[Test]
     public function it_implements_the_array_access_interface(): void
     {
-        $structuredField = OuterList::fromMembers('foobar', 'foobar', 'zero', 0);
+        $structuredField = OuterList::from('foobar', 'foobar', 'zero', 0);
 
         self::assertInstanceOf(Item::class, $structuredField->get(0));
         self::assertInstanceOf(Item::class, $structuredField[0]);
@@ -182,7 +182,7 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(LogicException::class);
 
-        unset(OuterList::fromMembers('foobar', 'foobar', 'zero', 0)[0]);
+        unset(OuterList::from('foobar', 'foobar', 'zero', 0)[0]);
     }
 
     #[Test]
@@ -190,14 +190,14 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(LogicException::class);
 
-        OuterList::fromMembers('foobar', 'foobar', 'zero', 0)[0] = Item::from(false);
+        OuterList::from('foobar', 'foobar', 'zero', 0)[0] = Item::from(false);
     }
 
 
     #[Test]
     public function it_can_returns_the_container_member_keys(): void
     {
-        $instance = OuterList::fromMembers();
+        $instance = OuterList::from();
 
         self::assertSame([], $instance->keys());
 
@@ -206,7 +206,7 @@ final class OuterListTest extends StructuredFieldTestCase
 
         self::assertSame([0, 1], $newInstance->keys());
 
-        $container = OuterList::fromMembers()
+        $container = OuterList::from()
             ->unshift('42')
             ->push(42)
             ->insert(1, 42.0)

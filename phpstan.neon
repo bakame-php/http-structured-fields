@@ -8,4 +8,5 @@ parameters:
     paths:
         - src
     ignoreErrors:
+        - '#it_fails_to_create_an_item_from_an_array_of_pairs\(\)#'
     reportUnmatchedIgnoredErrors: true

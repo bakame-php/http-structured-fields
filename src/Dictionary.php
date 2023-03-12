@@ -51,7 +51,7 @@ final class Dictionary implements MemberOrderedMap
         return match (true) {
             ($member instanceof MemberList && $member instanceof ParameterAccess),
             $member instanceof Value => $member,
-            is_iterable($member) => InnerList::fromMembers(...$member),
+            is_iterable($member) => InnerList::from(...$member),
             default => Item::from($member),
         };
     }

@@ -180,7 +180,7 @@ To Create `OuterList` and `InnerList` instances you can use the `fromMembers` na
 use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Item;
 
-$list = InnerList::fromMembers(
+$list = InnerList::from(
     Item::fromDecodedByteSequence('Hello World'),
     42.0,
     42
@@ -195,7 +195,7 @@ Once again, builder methods exist on both classes to ease container construction
 use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Item;
 
-$list = InnerList::fromMembers()
+$list = InnerList::from()
     ->unshift('42')
     ->push(42)
     ->insert(1, 42.0)

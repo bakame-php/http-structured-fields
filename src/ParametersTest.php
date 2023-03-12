@@ -295,7 +295,7 @@ final class ParametersTest extends StructuredFieldTestCase
     {
         $this->expectException(InvalidArgument::class);
 
-        Parameters::fromPairs([['foo', InnerList::fromMembers(42)]]);
+        Parameters::fromPairs([['foo', InnerList::from(42)]]);
     }
 
 
