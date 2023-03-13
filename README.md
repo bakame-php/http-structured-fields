@@ -174,7 +174,7 @@ $map->mergeAssociative(...$others): static;
 $map->mergePairs(...$others): static;
 ```
 
-To Create `OuterList` and `InnerList` instances you can use the `fromMembers` name constructor:
+To Create `OuterList` and `InnerList` instances you can use the `from` name constructor:
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
@@ -227,7 +227,7 @@ $field->withoutAnyParameter(): static;
 $field->withParameters(Parameters $parameters): static;
 ```
 
-It is possible to instantiate an `InnerList` instance with included parameters using one of those two additional named constructors:
+It is also possible to instantiate an `InnerList` instance with included parameters using one of those two additional named constructors:
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
@@ -241,7 +241,7 @@ InnerList::fromPairParameters(iterable<array{0:string, 1:DataType}>} $parameters
 
 ### Item and RFC Data Types
 
-To handle an item, the package provide a specific `Item` value object with additional named constructors.
+To handle item, the package provide a specific `Item` value object with additional named constructors.
 Items can have different types that are translated to PHP using:
 
 - native type where possible
@@ -263,11 +263,9 @@ The table below summarizes the item value type.
 use Bakame\Http\StructuredFields\ByteSequence;
 use Bakame\Http\StructuredFields\Item;
 
-$item = Item::fromPair([
-    "hello world", [
-        ["a", Item::from(ByteSequence::fromDecoded("Hello World"))],
-    ]
-]);
+$item = Item::fromPair(["hello world", [
+    ["a", Item::from(ByteSequence::fromDecoded("Hello World"))],
+]]);
 $item->value();            // returns "hello world"
 $item->type();             // returns Type::String
 $item->parameters("a");    // returns ByteSequence::fromDecoded('Hello World');
@@ -313,8 +311,7 @@ $integer = Item::fromPair([42]);
 $integer->type(); //return Type::Integer
 ```
 
-Here's the complete list of named constructors attached to the `Item` object. They all call the `Item::from` method, 
-so they all expect an associative iterable to represents the parameters.
+Here's the complete list of named constructors attached to the `Item` object. The `Item::from` method expects an associative iterable to represents the parameters.
 
 ```php
 use Bakame\Http\StructuredFields\Item;
@@ -340,8 +337,8 @@ Item::fromDateString(string $datetime, DateTimeZone|string|null $timezone): self
 use Bakame\Http\StructuredFields\Item;
 
 $item = Item::from(CarbonImmutable::parse('today'));
-$item->type();         // return Type::Date;
-$item->value()         // return CarbonImmutable::parse('today') (because it extends DateTimeImmutable)
+$item->type();  // return Type::Date;
+$item->value()  // return CarbonImmutable::parse('today') (because it extends DateTimeImmutable)
 ```
 
 You can attach, read and update the associated `Parameters` instance using the
@@ -351,6 +348,7 @@ following:
 use Bakame\Http\StructuredFields\Parameters;
 
 $item->parameter($key): mixed|null;
+$item->parameters(): Parameters;
 $item->addParameter($key, $value): static;
 $item->appendParameter($key, $value): static;
 $item->prependParameter($key, $value): static;
