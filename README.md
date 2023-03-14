@@ -7,20 +7,12 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/bakame/http-structured-fields.svg?style=flat-square)](https://packagist.org/packages/bakame/http-structured-fields)
 [![Sponsor development of this project](https://img.shields.io/badge/sponsor%20this%20package-%E2%9D%A4-ff69b4.svg?style=flat-square)](https://github.com/sponsors/nyamsprod)
 
-`bakame/http-structured-fields` is a framework-agnostic PHP library that allows you to parse, serialize and build HTTP Structured Fields in PHP according to the [RFC][1].
+`bakame/http-structured-fields` is a framework-agnostic PHP library that allows you to parse, serialize 
+and build HTTP Structured Fields in PHP according to the [RFC8941][1].
 
 HTTP Structured fields are intended for use for new HTTP fields that wish to use a common syntax that is
-more restrictive than traditional HTTP field values or could be used to retrofit current fields value to
-have them compliant with the new syntax.
-
-```php
-use Bakame\Http\StructuredFields\Item;
-
-$field = Item::from("/terms", ['rel' => 'copyright', 'anchor' => '#foo']);
-echo $field->toHttpValue();     // display "/terms";rel="copyright";anchor="#foo"
-echo $field->value();           // display "/terms"
-echo $field->parameter('rel');  // display "copyright"
-```
+more restrictive than traditional HTTP field values. They will be used to retrofit current fields value 
+to make them compliant with the new syntax.
 
 ## System Requirements
 
@@ -37,7 +29,7 @@ composer require bakame/http-structured-fields
 or download the library and:
 
 - use any other [PSR-4][4] compatible autoloader.
-- use the bundle autoloader script as shown below:
+- or, use the bundle autoloader script as shown below:
 
 ~~~php
 require 'path/to/http-structured-fields/repo/autoload.php';
@@ -52,8 +44,8 @@ echo $list[-1]->value(); // returns '/member/*/comments'
 
 ### Parsing and Serializing Structured Fields
 
-Once the library is installed parsing the header value is done via one of the package value object via its `fromHttpValue`
-named constructor as shown below:
+Once the library is installed parsing the header value is done via the normalized `fromHttpValue` named 
+constructor attached to all library's value objects as shown below:
 
 ```php
 
@@ -65,48 +57,48 @@ require 'vendor/autoload.php';
 
 use Bakame\Http\StructuredFields\Item;
 
-//the HTTP request object is given by your application
-// or any given framework or package.
-//We use a PSR-7 Request object in this example
+// the raw HTTP field value is given by your application
+// via any given framework or package or super global.
+// We are using a PSR-7 Request object in this example
 
-$headerLine = $request->getHeaderLine('foo');
+$headerLine = $request->getHeaderLine('foo'); // bar;baz=42'
 $field = Item::fromHttpValue($headerLine);
-$field->value();          // returns the found token value
-$field->parameter('baz'); // returns the value of the parameter or null if the parameter is not defined.
+$field->value();          // returns Token::fromString('bar); the found token value 
+$field->parameter('baz'); // returns 42; the value of the parameter or null if the parameter is not defined.
 ```
 
-The `fromHttpValue` method returns an instance of the `Bakame\Http\StructuredFields\StructuredField` interface.
-The interface provides a way to serialize the value object into a normalized RFC compliant HTTP field
-string value using the `toHttpValue` method.
+The `fromHttpValue` method returns an instance which implements the `Bakame\Http\StructuredFields\StructuredField` interface.
+The interface provides a way to serialize the object into a normalized RFC compliant HTTP field
+string value using the `StructuredField::toHttpValue` method.
 
 To ease integration with current PHP frameworks and packages working with HTTP headers and trailers,
-each value object also exposes the `Stringable` interface method `__toString` as an alias 
-of the `toHttpValue` method.
+each value object also exposes the `Stringable` interface method `__toString` as an alias to 
+the `toHttpValue` method.
 
 ````php
 use Bakame\Http\StructuredFields\Item;
 
-$bar = Item::fromToken('bar')->addParameter('baz', Item::from(42));
+$bar = Item::fromToken('bar')->addParameter('baz', 42);
 echo $bar->toHttpValue(); // return 'bar;baz=42'   
 
-//the HTTP response object is given by your application
-// or any given framework or package.
-//We use Symfony Response object in this example
+// the HTTP response object is build by your application
+// via your framework, a package or PHP function.
+// we are using Symfony Response object in this example
+
 $newResponse = $response->headers->set('foo', $bar->toHttpValue());
 //or
 $newResponse = $response->headers->set('foo', $bar);
 ````
 
 The library provides all five (5) structured defined in the RFC inside the `Bakame\Http\StructuredFields`
-namespace.
+namespace. As mentioned, they all implement the `StructuredField` interface and 
+expose a `fromHttpValue` named constructor:
 
 - `Item`
 - `Parameters`
 - `Dictionary`
-- `OuterList`
+- `OuterList` (named `List` in the RFC but renamed in the package because `list` is a reserved word in PHP.)
 - `InnerList`
-
-They all implement the `StructuredField` interface and expose a `fromHttpValue` named constructor:
 
 ### Building and Updating Structured Fields Values
 
@@ -214,11 +206,10 @@ $list->insert($key, ...$members): static;
 $list->replace($key, $member): static;
 ```
 
-On `InnerList` instances it is possible to attach, read and update a `Parameters` instance using the
+On `InnerList` instances it is possible to attach and update a `Parameters` instance using the
 following methods:
 
 ```php
-$field->parameter($key): mixed|null;
 $field->addParameter($key, $value): static;
 $field->appendParameter($key, $value): static;
 $field->prependParameter($key, $value): static;
@@ -235,13 +226,13 @@ use Bakame\Http\StructuredFields\Value;
 
 //@type DataType Value|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
 
-InnerList::fromAssociativeParameters(iterable<string, Value> $parameters, DataType ...$members): self;
-InnerList::fromPairParameters(iterable<array{0:string, 1:DataType}>} $parameters, DataType ...$members): self;
+InnerList::fromAssociative(iterable<string, Value> $parameters, iterable<DataType|Value> $members): self;
+InnerList::fromPair(array{0: iterable<DataType|Value>, 1: iterable<array{0:string, 1:DataType}>} $pairs): self;
 ```
 
 ### Item and RFC Data Types
 
-To handle item, the package provide a specific `Item` value object with additional named constructors.
+To handle items, the package provides a specific `Item` value object with additional named constructors.
 Items can have different types that are translated to PHP using:
 
 - native type where possible
@@ -311,7 +302,8 @@ $integer = Item::fromPair([42]);
 $integer->type(); //return Type::Integer
 ```
 
-Here's the complete list of named constructors attached to the `Item` object. The `Item::from` method expects an associative iterable to represents the parameters.
+Here's the complete list of named constructors attached to the `Item` object.
+The `Item::from` method expects an associative iterable to represents the parameters.
 
 ```php
 use Bakame\Http\StructuredFields\Item;
@@ -327,6 +319,33 @@ Item::fromToken(string $value): self;
 Item::fromTimestamp(int $value): self;
 Item::fromDateFormat(string $format, string $datetime): self;
 Item::fromDateString(string $datetime, DateTimeZone|string|null $timezone): self;
+```
+
+It is possible to update a `Item` object using two (2) modifying methods
+
+```php
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Value;
+use Bakame\Http\StructuredFields\Parameters;
+
+Item::withValue(Value|DataType $value): static
+Item::withParameters(Parameters $parameterds): static`
+```
+Just like with the `InnerList` instance the `Item` object provides additionnal modifying methods
+to help deal with parameters:
+
+You can attach, read and update the associated `Parameters` instance using the
+following:
+
+```php
+use Bakame\Http\StructuredFields\Parameters;
+
+$item->addParameter($key, $value): static;
+$item->appendParameter($key, $value): static;
+$item->prependParameter($key, $value): static;
+$item->withoutParameters(...$keys): static;
+$item->withoutAnyParameter(): static;
+$item->withParameters(Parameters $parameters): static;
 ```
 
 ### Accessing members of Structured Fields Containers.
@@ -347,14 +366,8 @@ following:
 ```php
 use Bakame\Http\StructuredFields\Parameters;
 
-$item->parameter($key): mixed|null;
+$item->parameter($key): DataType|null;
 $item->parameters(): Parameters;
-$item->addParameter($key, $value): static;
-$item->appendParameter($key, $value): static;
-$item->prependParameter($key, $value): static;
-$item->withoutParameters(...$keys): static;
-$item->withoutAnyParameter(): static;
-$item->withParameters(Parameters $parameters): static;
 ```
 
 All containers implement PHP `IteratorAggregate`, `Countable` and `ArrayAccess` interfaces for easy usage in your codebase.

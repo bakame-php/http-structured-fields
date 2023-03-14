@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use LogicException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -16,7 +17,7 @@ final class InnerListTest extends TestCase
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = InnerList::fromAssociativeParameters(['test' => Item::from(42)], ...$arrayParams);
+        $instance = InnerList::fromAssociative(['test' => Item::from(42)], ...$arrayParams);
 
         self::assertSame($stringItem, $instance->get(0));
         self::assertTrue($instance->hasMembers());
@@ -116,7 +117,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_access_its_parameter_values(): void
     {
-        $instance = InnerList::fromAssociativeParameters(['foo' => 'bar'], false);
+        $instance = InnerList::fromAssociative(['foo' => 'bar'], false);
 
         self::assertSame('bar', $instance->parameters()->get('foo')->value());
         self::assertSame('bar', $instance->parameter('foo'));
@@ -189,10 +190,18 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_create_via_with_parameters_method_a_new_object(): void
     {
-        $instance1 = InnerList::fromPairParameters([['a', true]], Token::fromString('babayaga'), 'a', true);
+        $instance1 = InnerList::fromPair([
+            [Token::fromString('babayaga'), 'a', true],
+            [['a', true]]],
+        );
+        $instance1bis = InnerList::fromPair([
+            [Token::fromString('babayaga'), 'a', true],
+            [['a', true]],
+        ]);
         $instance2 = $instance1->withParameters(Parameters::fromAssociative(['a' => true]));
         $instance3 = $instance1->withParameters(Parameters::fromAssociative(['a' => false]));
 
+        self::assertSame($instance1->toHttpValue(), $instance1bis->toHttpValue());
         self::assertSame($instance1, $instance2);
         self::assertNotSame($instance1->parameters(), $instance3->parameters());
         self::assertEquals([...$instance1], [...$instance3]);
@@ -201,7 +210,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_create_via_parameters_access_methods_a_new_object(): void
     {
-        $instance1 = InnerList::fromAssociativeParameters(['a' => true], Token::fromString('babayaga'), 'a', true);
+        $instance1 = InnerList::fromAssociative(['a' => true], Token::fromString('babayaga'), 'a', true);
         $instance2 = $instance1->appendParameter('a', true);
         $instance7 = $instance1->addParameter('a', true);
         $instance3 = $instance1->prependParameter('a', false);
@@ -218,6 +227,28 @@ final class InnerListTest extends TestCase
         self::assertTrue($instance6->parameters()->hasNoMembers());
         self::assertTrue($instance1->parameter('a'));
         self::assertNull($instance5->parameter('a'));
+    }
+
+    #[Test]
+    #[DataProvider('invalidPairProvider')]
+    /**
+     * @param array<mixed> $pair
+     */
+    public function it_fails_to_create_an_item_from_an_array_of_pairs(array $pair): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        InnerList::fromPair($pair);  // @phpstan-ignore-line
+    }
+
+    /**
+     * @return iterable<string, array{pair:array<mixed>}>
+     */
+    public static function invalidPairProvider(): iterable
+    {
+        yield 'empty pair' => ['pair' => []];
+        yield 'empty extra filled pair' => ['pair' => [1, [2], 3]];
+        yield 'associative array' => ['pair' => ['value' => 'bar', 'parameters' => ['foo' => 'bar']]];
     }
 
     #[Test]

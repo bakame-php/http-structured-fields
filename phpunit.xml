@@ -15,8 +15,9 @@
       <directory suffix=".php">src</directory>
     </include>
     <exclude>
-        <directory suffix="TestCase.php">src</directory>
+      <directory suffix="TestCase.php">src</directory>
       <directory suffix="Test.php">src</directory>
+      <directory suffix="Bench.php">src</directory>
       <directory prefix="Test">src</directory>
     </exclude>
     <report>

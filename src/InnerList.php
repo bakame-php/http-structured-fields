@@ -52,23 +52,30 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
+     * @param array{
+     *     0:iterable<Value|DataType>,
+     *     1?:MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}>
+     * } $pair
+     */
+    public static function fromPair(array $pair): static
+    {
+        $pair[1] = $pair[1] ?? [];
+
+        return match (true) {
+            !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'),  // @phpstan-ignore-line
+            2 !== count($pair) => throw new SyntaxError('The pair first value should be the innerlist members and the optional second value the innerlist parameters.'),   // @phpstan-ignore-line
+            default => new self(Parameters::fromPairs($pair[1]), $pair[0]),
+        };
+    }
+
+    /**
      * Returns a new instance with an iter.
      *
      * @param iterable<string,Value|DataType> $parameters
      */
-    public static function fromAssociativeParameters(iterable $parameters, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public static function fromAssociative(iterable $parameters, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
         return new self(Parameters::fromAssociative($parameters), $members);
-    }
-
-    /**
-     * Returns a new instance.
-     *
-     * @param MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}> $parameters
-     */
-    public static function fromPairParameters(iterable $parameters, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
-    {
-        return new self(Parameters::fromPairs($parameters), $members);
     }
 
     /**
@@ -80,7 +87,7 @@ final class InnerList implements MemberList, ParameterAccess
     {
         [$members, $parameters] = [...Parser::parseInnerList($httpValue)];
 
-        return self::fromAssociativeParameters($parameters, ...$members);
+        return self::fromAssociative($parameters, ...$members);
     }
 
     public function parameters(): Parameters

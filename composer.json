@@ -34,8 +34,8 @@
         "phpstan/phpstan-strict-rules": "^1.5.0",
         "phpstan/phpstan-phpunit": "^1.3.10",
         "phpstan/phpstan-deprecation-rules": "^1.1.2",
-        "phpunit/phpunit": "^10.0.15",
-        "phpbench/phpbench": "^1.2"
+        "phpunit/phpunit": "^10.0.16",
+        "phpbench/phpbench": "^1.2.9"
     },
     "autoload": {
         "psr-4": {
@@ -48,7 +48,7 @@
     },
     "scripts": {
         "benchmark": "phpbench run --report=default",
-        "phpcs": "PHP_CS_FIXER_IGNORE_ENV=1 php-cs-fixer fix --dry-run --diff -vvv --allow-risky=yes --ansi",
+        "phpcs": "php-cs-fixer fix --dry-run --diff -vvv --allow-risky=yes --ansi",
         "phpcs:fix": "php-cs-fixer fix -vvv --allow-risky=yes --ansi",
         "phpstan": "phpstan analyse -c phpstan.neon --ansi --xdebug --memory-limit 192M",
         "phpunit": "XDEBUG_MODE=coverage phpunit --coverage-text",
