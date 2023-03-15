@@ -46,7 +46,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance.
      */
-    public static function from(Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public static function from(Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         return new self(Parameters::create(), $members);
     }
@@ -57,7 +57,7 @@ final class InnerList implements MemberList, ParameterAccess
      *     1?:MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}>
      * } $pair
      */
-    public static function fromPair(array $pair): static
+    public static function fromPair(array $pair): self
     {
         $pair[1] = $pair[1] ?? [];
 
@@ -71,9 +71,10 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance with an iter.
      *
+     * @param iterable<Value|DataType> $members
      * @param iterable<string,Value|DataType> $parameters
      */
-    public static function fromAssociative(iterable $parameters, Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public static function fromAssociative(iterable $members = [], iterable $parameters = []): self
     {
         return new self(Parameters::fromAssociative($parameters), $members);
     }
@@ -85,9 +86,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        [$members, $parameters] = [...Parser::parseInnerList($httpValue)];
-
-        return self::fromAssociative($parameters, ...$members);
+        return self::fromAssociative(...Parser::parseInnerList($httpValue));
     }
 
     public function parameters(): Parameters

@@ -226,7 +226,7 @@ use Bakame\Http\StructuredFields\Value;
 
 //@type DataType Value|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
 
-InnerList::fromAssociative(iterable<string, Value> $parameters, iterable<DataType|Value> $members): self;
+InnerList::fromAssociative(iterable<Value|DataType> $members, iterable<string, Value|DataType> $parameters): self;
 InnerList::fromPair(array{0: iterable<DataType|Value>, 1: iterable<array{0:string, 1:DataType}>} $pairs): self;
 ```
 

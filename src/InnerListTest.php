@@ -17,7 +17,7 @@ final class InnerListTest extends TestCase
         $stringItem = Item::from('helloWorld');
         $booleanItem = Item::from(true);
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = InnerList::fromAssociative(['test' => Item::from(42)], ...$arrayParams);
+        $instance = InnerList::fromAssociative($arrayParams, ['test' => Item::from(42)]);
 
         self::assertSame($stringItem, $instance->get(0));
         self::assertTrue($instance->hasMembers());
@@ -117,7 +117,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_access_its_parameter_values(): void
     {
-        $instance = InnerList::fromAssociative(['foo' => 'bar'], false);
+        $instance = InnerList::fromAssociative([false], ['foo' => 'bar']);
 
         self::assertSame('bar', $instance->parameters()->get('foo')->value());
         self::assertSame('bar', $instance->parameter('foo'));
@@ -190,7 +190,8 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_create_via_with_parameters_method_a_new_object(): void
     {
-        $instance1 = InnerList::fromPair([
+        $instance1 = InnerList::fromPair(
+            [
             [Token::fromString('babayaga'), 'a', true],
             [['a', true]]],
         );
@@ -210,7 +211,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_create_via_parameters_access_methods_a_new_object(): void
     {
-        $instance1 = InnerList::fromAssociative(['a' => true], Token::fromString('babayaga'), 'a', true);
+        $instance1 = InnerList::fromAssociative([Token::fromString('babayaga'), 'a', true], ['a' => true]);
         $instance2 = $instance1->appendParameter('a', true);
         $instance7 = $instance1->addParameter('a', true);
         $instance3 = $instance1->prependParameter('a', false);

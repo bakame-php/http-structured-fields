@@ -6,8 +6,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
-- `InnerList::fromPair`
-- `InnerList::fromAssociative`
+- `InnerList::fromPair` to improve InnerList public API;
+- `InnerList::fromAssociative` to improve InnerList public API;
 
 ### Fixed
 
