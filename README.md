@@ -164,6 +164,7 @@ $map->append($key, $value): static;
 $map->prepend($key, $value): static;
 $map->mergeAssociative(...$others): static;
 $map->mergePairs(...$others): static;
+$map->remove(...$key): static;
 ```
 
 To Create `OuterList` and `InnerList` instances you can use the `from` name constructor:
@@ -204,18 +205,19 @@ $list->unshift(...$members): static;
 $list->push(...$members): static;
 $list->insert($key, ...$members): static;
 $list->replace($key, $member): static;
+$list->remove(...$key): static;
 ```
 
 On `InnerList` instances it is possible to attach and update a `Parameters` instance using the
 following methods:
 
 ```php
-$field->addParameter($key, $value): static;
-$field->appendParameter($key, $value): static;
-$field->prependParameter($key, $value): static;
-$field->withoutParameters(...$keys): static;
-$field->withoutAnyParameter(): static;
-$field->withParameters(Parameters $parameters): static;
+$list->addParameter($key, $value): static;
+$list->appendParameter($key, $value): static;
+$list->prependParameter($key, $value): static;
+$list->withoutParameters(...$keys): static;
+$list->withoutAnyParameter(): static;
+$list->withParameters(Parameters $parameters): static;
 ```
 
 It is also possible to instantiate an `InnerList` instance with included parameters using one of those two additional named constructors:
@@ -259,7 +261,7 @@ $item = Item::fromPair(["hello world", [
 ]]);
 $item->value();            // returns "hello world"
 $item->type();             // returns Type::String
-$item->parameters("a");    // returns ByteSequence::fromDecoded('Hello World');
+$item->parameter("a");    // returns ByteSequence::fromDecoded('Hello World');
 echo $item->toHttpValue(); // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
 
@@ -274,7 +276,7 @@ $item = Item::from("hello world", [
 ]);
 $item->value();            // returns "hello world"
 $item->type();             // returns Type::String
-$item->parameters("a");    // returns StructuredFields\ByteSequence::fromDecoded('Hello World');
+$item->parameter("a");    // returns StructuredFields\ByteSequence::fromDecoded('Hello World');
 echo $item->toHttpValue(); // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
 
@@ -360,8 +362,7 @@ $item->type();  // return Type::Date;
 $item->value()  // return CarbonImmutable::parse('today') (because it extends DateTimeImmutable)
 ```
 
-You can attach, read and update the associated `Parameters` instance using the
-following:
+You can read the associated `Parameters` instance attached to ab `Item` or an `InnerList` instances using the following methods:
 
 ```php
 use Bakame\Http\StructuredFields\Parameters;
@@ -377,7 +378,6 @@ You also can access container members via the following shared methods
 $container->keys(): array<string>;
 $container->has(string|int ...$offsets): bool;
 $container->get(string|int $offset): bool;
-$container->remove(string|int ...$offsets): bool;
 $container->hasMembers(): bool;
 $container->hasNoMembers(): bool;
 ```
