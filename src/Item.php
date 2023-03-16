@@ -36,7 +36,7 @@ final class Item implements Value
         private readonly Token|ByteSequence|DateTimeImmutable|int|float|string|bool $value,
         private readonly Parameters $parameters
     ) {
-        $this->type = Type::fromValue($this->value);
+        $this->type = Type::from($this->value);
     }
 
     /**

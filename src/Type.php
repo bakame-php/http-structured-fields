@@ -6,6 +6,7 @@ namespace Bakame\Http\StructuredFields;
 
 use DateTimeInterface;
 use Stringable;
+use Throwable;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
@@ -20,8 +21,12 @@ enum Type
     case Boolean;
     case Date;
 
-    public static function fromValue(mixed $value): self
+    public static function from(mixed $value): self
     {
+        if ($value instanceof Value) {
+            return $value->type();
+        }
+
         return match (true) {
             $value instanceof Token => self::Token,
             $value instanceof ByteSequence => self::ByteSequence,
@@ -34,8 +39,18 @@ enum Type
         };
     }
 
+    public static function tryFrom(mixed $value): self|null
+    {
+        try {
+            return self::from($value);
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
     public function equals(mixed $other): bool
     {
-        return $other instanceof self && $other === $this;
+        return ($other instanceof self && $other === $this) ||
+            ($other instanceof Value && $other->type() === $this);
     }
 }
