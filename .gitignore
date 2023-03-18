@@ -2,9 +2,5 @@ vendor
 build
 .idea
 .phpunit.cache
-docs/_site
-docs/.jekyll-cache
-docs/node_modules
 composer.lock
 .php-cs-fixer.cache
-.phpunit.result.cache
