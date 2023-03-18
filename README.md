@@ -422,8 +422,8 @@ using one of those two additional named constructors:
 use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Value;
 
-InnerList::fromAssociative(iterable<Value|DataType> $members, iterable<string, Value|DataType> $parameters): self;
-InnerList::fromPair(array{0: iterable<DataType|Value>, 1: iterable<array{0:string, 1:DataType}>} $pairs): self;
+InnerList::fromAssociative(iterable<string, Value|DataType> $parameters, iterable $members = []): self;
+InnerList::fromPairs(iterable<array{0:string, 1:Value|DataType}>} $parameters, iterable $members = []): self;
 ```
 
 ## Contributing

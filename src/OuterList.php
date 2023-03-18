@@ -36,7 +36,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param StructuredField|iterable<Value|DataType>|DataType $member
+     * @param iterable<Value|DataType>|StructuredField|DataType $member
      *
      * @return (MemberList<int, Value>&ParameterAccess)|Value
      */
@@ -66,7 +66,7 @@ final class OuterList implements MemberList
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
         return self::from(...array_map(
-            fn (mixed $value) => is_array($value) ? InnerList::fromAssociative($value[0], $value[1]) : $value,
+            fn (mixed $value) => is_array($value) ? InnerList::fromAssociative($value[1], $value[0]) : $value,
             Parser::parseList($httpValue)
         ));
     }

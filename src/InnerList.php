@@ -52,29 +52,21 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param array{
-     *     0:iterable<Value|DataType>,
-     *     1?:MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}>
-     * } $pair
+     * @param MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}> $parameters
+     * @param iterable<Value|DataType> $members
      */
-    public static function fromPair(array $pair): self
+    public static function fromPairs(iterable $parameters, iterable $members = []): self
     {
-        $pair[1] = $pair[1] ?? [];
-
-        return match (true) {
-            !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'),  // @phpstan-ignore-line
-            2 !== count($pair) => throw new SyntaxError('The pair first value should be the innerlist members and the optional second value the innerlist parameters.'),   // @phpstan-ignore-line
-            default => new self(Parameters::fromPairs($pair[1]), $pair[0]),
-        };
+        return new self(Parameters::fromPairs($parameters), $members);
     }
 
     /**
      * Returns a new instance with an iter.
      *
-     * @param iterable<Value|DataType> $members
      * @param iterable<string,Value|DataType> $parameters
+     * @param iterable<Value|DataType> $members
      */
-    public static function fromAssociative(iterable $members = [], iterable $parameters = []): self
+    public static function fromAssociative(iterable $parameters, iterable $members = []): self
     {
         return new self(Parameters::fromAssociative($parameters), $members);
     }
@@ -86,7 +78,9 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        return self::fromAssociative(...Parser::parseInnerList($httpValue));
+        [$members, $parameters] = Parser::parseInnerList($httpValue);
+
+        return self::fromAssociative($parameters, $members);
     }
 
     public function parameters(): Parameters
