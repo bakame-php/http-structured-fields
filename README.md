@@ -8,7 +8,7 @@
 [![Sponsor development of this project](https://img.shields.io/badge/sponsor%20this%20package-%E2%9D%A4-ff69b4.svg?style=flat-square)](https://github.com/sponsors/nyamsprod)
 
 `bakame/http-structured-fields` is a framework-agnostic PHP library that allows you to parse, serialize 
-and build HTTP Structured Fields in PHP according to the [RFC8941][1].
+and build HTTP Structured Fields in PHP according to the [RFC8941](https://www.rfc-editor.org/rfc/rfc8941.html).
 
 ## System Requirements
 
@@ -21,20 +21,6 @@ Use composer:
 ```
 composer require bakame/http-structured-fields
 ```
-
-or download the library and:
-
-- use any other [PSR-4][4] compatible autoloader.
-- or, use the bundle autoloader script as shown below:
-
-~~~php
-require 'path/to/http-structured-fields/repo/autoload.php';
-
-use Bakame\Http\StructuredFields\OuterList;
-
-$list = OuterList::fromHttpValue('"/member/*/author", "/member/*/comments"');
-echo $list[-1]->value(); // returns '/member/*/comments'
-~~~
 
 ## Documentation
 
@@ -475,8 +461,3 @@ The package internal parser is heavily inspired by previous work done by [Gapple
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE) for more information.
-
-[1]: https://www.rfc-editor.org/rfc/rfc8941.html
-[2]: https://www.ietf.org/id/draft-ietf-httpbis-retrofit-00.html
-[3]: https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
-[4]: https://www.php-fig.org/psr/psr-4/
