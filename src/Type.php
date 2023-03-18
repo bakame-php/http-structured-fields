@@ -21,7 +21,7 @@ enum Type
     case Boolean;
     case Date;
 
-    public static function from(mixed $value): self
+    public static function fromValue(mixed $value): self
     {
         if ($value instanceof Value) {
             return $value->type();
@@ -39,10 +39,10 @@ enum Type
         };
     }
 
-    public static function tryFrom(mixed $value): self|null
+    public static function tryFromValue(mixed $value): self|null
     {
         try {
-            return self::from($value);
+            return self::fromValue($value);
         } catch (Throwable) {
             return null;
         }
@@ -50,7 +50,10 @@ enum Type
 
     public function equals(mixed $other): bool
     {
-        return ($other instanceof self && $other === $this) ||
-            ($other instanceof Value && $other->type() === $this);
+        if ($other instanceof Value) {
+            $other = $other->type();
+        }
+
+        return $other instanceof self && $other === $this;
     }
 }

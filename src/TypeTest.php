@@ -18,21 +18,28 @@ final class TypeTest extends TestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Type::from([]);
+        Type::fromValue([]);
     }
 
     #[Test]
     public function it_will_return_null_if_the_type_is_no_supported(): void
     {
-        self::assertNull(Type::tryFrom([]));
+        self::assertNull(Type::tryFromValue([]));
+    }
+
+    #[Test]
+    public function it_can_tell_the_item_type_from_a_value_instance(): void
+    {
+        self::assertFalse(Type::Integer->equals(Item::from(42.0)));
+        self::assertTrue(Type::Token->equals(Item::fromToken('text/csv')));
     }
 
     #[Test]
     #[DataProvider('itemTypeProvider')]
     public function it_can_tell_the_item_type(mixed $value, Type $expectedType): void
     {
-        self::assertTrue($expectedType->equals(Type::from($value)));
-        self::assertTrue($expectedType->equals(Type::tryFrom($value)));
+        self::assertTrue($expectedType->equals(Type::fromValue($value)));
+        self::assertTrue($expectedType->equals(Type::tryFromValue($value)));
     }
 
     /**

@@ -20,9 +20,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- **[BC Break]** `InnerList::fromPairParameters` use `InnerList::fromPair` instead.
+- **[BC Break]** `InnerList::fromPairParameters` use `InnerList::fromPairs` instead.
 - **[BC Break]** `InnerList::fromAssociativeParameters` use `InnerList::fromAssociative` instead.
-- **[BC Break]** `Type::fromValue` use `Type::from` instead.
 
 ## [0.8.0] - 2023-03-12
 
