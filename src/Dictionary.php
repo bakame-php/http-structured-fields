@@ -108,9 +108,9 @@ final class Dictionary implements MemberOrderedMap
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        return new self((function (iterable $pairs) {
-            foreach ($pairs as $key => $value) {
-                yield $key => is_array($value) ? InnerList::fromAssociative($value[1], $value[0]) : $value;
+        return new self((function (iterable $members) {
+            foreach ($members as $key => $member) {
+                yield $key => is_array($member) ? InnerList::fromAssociative($member[1], ...$member[0]) : $member;
             }
         })(Parser::parseDictionary($httpValue)));
     }

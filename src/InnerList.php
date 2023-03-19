@@ -53,10 +53,11 @@ final class InnerList implements MemberList, ParameterAccess
 
     /**
      * @param MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}> $parameters
-     * @param iterable<Value|DataType> $members
      */
-    public static function fromPairs(iterable $parameters, iterable $members = []): self
-    {
+    public static function fromPairs(
+        iterable $parameters,
+        Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
+    ): self {
         return new self(Parameters::fromPairs($parameters), $members);
     }
 
@@ -64,10 +65,11 @@ final class InnerList implements MemberList, ParameterAccess
      * Returns a new instance with an iter.
      *
      * @param iterable<string,Value|DataType> $parameters
-     * @param iterable<Value|DataType> $members
      */
-    public static function fromAssociative(iterable $parameters, iterable $members = []): self
-    {
+    public static function fromAssociative(
+        iterable $parameters,
+        Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
+    ): self {
         return new self(Parameters::fromAssociative($parameters), $members);
     }
 
@@ -80,7 +82,7 @@ final class InnerList implements MemberList, ParameterAccess
     {
         [$members, $parameters] = Parser::parseInnerList($httpValue);
 
-        return self::fromAssociative($parameters, $members);
+        return self::fromAssociative($parameters, ...$members);
     }
 
     public function parameters(): Parameters
