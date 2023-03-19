@@ -360,8 +360,7 @@ final class ItemTest extends StructuredFieldTestCase
 
         self::assertSame($instance1, $instance2);
         self::assertNotSame($instance1, $instance3);
-        self::assertNotSame($instance1->parameters(), $instance3->parameters());
-        self::assertEquals($instance1->parameters(), $instance3->parameters());
+        self::assertSame($instance1->parameters(), $instance3->parameters());
     }
 
     #[Test]

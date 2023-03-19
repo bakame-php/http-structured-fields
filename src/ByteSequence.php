@@ -65,4 +65,9 @@ final class ByteSequence
     {
         return $other instanceof self && $other->value === $this->value;
     }
+
+    public function type(): Type
+    {
+        return Type::ByteSequence;
+    }
 }
