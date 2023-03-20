@@ -96,17 +96,20 @@ enum Type
         return str_contains($result, '.') ? $result : $result.'.0';
     }
 
-    public static function convert(mixed $value): Token|ByteSequence|DateTimeImmutable|int|float|string|bool
+    /**
+     * @return array{value:Token|ByteSequence|DateTimeImmutable|int|float|string|bool, type:Type}
+     */
+    public static function convert(mixed $value): array
     {
         return match (true) {
-            $value instanceof Value => $value->value(),
-            $value instanceof DateTimeInterface => self::filterDate($value),
-            is_int($value) => self::filterIntegerRange($value, 'Integer'),
-            is_float($value) => self::filterDecimal($value),
-            is_string($value) || $value instanceof Stringable => self::filterString($value),
-            is_bool($value),
+            $value instanceof Value => ['value' => $value->value(), 'type' => $value->type()],
+            $value instanceof DateTimeInterface => ['value' => self::filterDate($value), 'type' => self::Date],
+            is_int($value) => ['value' => self::filterIntegerRange($value, 'Integer'), 'type' => self::Integer],
+            is_float($value) => ['value' => self::filterDecimal($value), 'type' => self::Decimal],
+            is_string($value) || $value instanceof Stringable => ['value' => self::filterString($value), 'type' => self::String],
+            is_bool($value) => ['value' => $value, 'type' => self::Boolean],
             $value instanceof Token,
-            $value instanceof ByteSequence => $value,
+            $value instanceof ByteSequence => ['value' => $value, 'type' => $value->type()],
             default => throw new SyntaxError('The type "'.(is_object($value) ? $value::class : gettype($value)).'" is not supported.')
         };
     }

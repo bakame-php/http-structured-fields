@@ -27,8 +27,7 @@ final class Item implements Value
 
     private function __construct(mixed $value, private readonly Parameters $parameters)
     {
-        $this->value = Type::convert($value);
-        $this->type = Type::fromValue($this->value);
+        ['value' => $this->value, 'type' => $this->type] = Type::convert($value);
     }
 
     /**
