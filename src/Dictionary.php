@@ -20,18 +20,18 @@ use function is_string;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
  *
- * @phpstan-import-type DataType from ValueAccess
- * @phpstan-type Member (MemberList<int, ValueAccess&ParameterAccess>|ValueAccess)&ParameterAccess
- * @phpstan-type PseudoMember iterable<(ValueAccess&ParameterAccess)|DataType>|DataType
- * @implements MemberOrderedMap<string, Member>
+ * @phpstan-import-type ListMember from StructuredField
+ * @phpstan-import-type PseudoListMember from StructuredField
+ *
+ * @implements MemberOrderedMap<string, ListMember>
  */
 final class Dictionary implements MemberOrderedMap
 {
-    /** @var array<string, Member> */
+    /** @var array<string, ListMember> */
     private readonly array $members;
 
     /**
-     * @param iterable<string, Member|PseudoMember> $members
+     * @param iterable<string, ListMember|PseudoListMember> $members
      */
     private function __construct(iterable $members = [])
     {
@@ -44,9 +44,9 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param Member|PseudoMember $member
+     * @param ListMember|PseudoListMember $member
      *
-     * @return Member
+     * @return ListMember
      */
     private static function filterMember(mixed $member): mixed
     {
@@ -72,7 +72,7 @@ final class Dictionary implements MemberOrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<string, Member|PseudoMember> $members
+     * @param iterable<string, ListMember|PseudoListMember> $members
      */
     public static function fromAssociative(iterable $members): self
     {
@@ -86,7 +86,7 @@ final class Dictionary implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, Member>|iterable<array{0:string, 1:Member|PseudoMember}> $pairs
+     * @param MemberOrderedMap<string, ListMember>|iterable<array{0:string, 1:ListMember|PseudoListMember}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
@@ -153,7 +153,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @return Iterator<array{0:string, 1:Member}>
+     * @return Iterator<array{0:string, 1:ListMember}>
      */
     public function toPairs(): Iterator
     {
@@ -170,9 +170,13 @@ final class Dictionary implements MemberOrderedMap
         return array_keys($this->members);
     }
 
-    public function has(string|int ...$keys): bool
+    public function has(MapKey|string|int ...$keys): bool
     {
         foreach ($keys as $key) {
+            if ($key instanceof MapKey) {
+                $key = $key->value;
+            }
+
             if (!is_string($key) || !array_key_exists($key, $this->members)) {
                 return false;
             }
@@ -185,12 +189,16 @@ final class Dictionary implements MemberOrderedMap
      * @throws SyntaxError   If the key is invalid
      * @throws InvalidOffset If the key is not found
      *
-     * @return Member
+     * @return ListMember
      */
-    public function get(string|int $key): StructuredField
+    public function get(MapKey|string|int $key): StructuredField
     {
         if (!$this->has($key)) {
             throw InvalidOffset::dueToKeyNotFound($key);
+        }
+
+        if ($key instanceof MapKey) {
+            $key = $key->value;
         }
 
         return $this->members[$key];
@@ -226,7 +234,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @throws InvalidOffset If the key is not found
      *
-     * @return array{0:string, 1:Member}
+     * @return array{0:string, 1:ListMember}
      */
     public function pair(int $index): array
     {
@@ -241,11 +249,11 @@ final class Dictionary implements MemberOrderedMap
         return new self($members);
     }
 
-    public function remove(string|int ...$keys): static
+    public function remove(MapKey|string|int ...$keys): static
     {
         $members = $this->members;
-        foreach (array_filter($keys, static fn (string|int $key): bool => is_string($key)) as $key) {
-            unset($members[$key]);
+        foreach (array_filter($keys, static fn (MapKey|string|int $key): bool => !is_int($key)) as $key) {
+            unset($members[$key instanceof MapKey ? $key->value : $key]);
         }
 
         if ($members === $this->members) {
@@ -277,7 +285,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param iterable<string, Member|PseudoMember> ...$others
+     * @param iterable<string, ListMember|PseudoListMember> ...$others
      */
     public function mergeAssociative(iterable ...$others): static
     {
@@ -290,7 +298,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param MemberOrderedMap<string, Member>|iterable<array{0:string, 1:Member|PseudoMember}> ...$others
+     * @param MemberOrderedMap<string, ListMember>|iterable<array{0:string, 1:ListMember|PseudoListMember}> ...$others
      */
     public function mergePairs(MemberOrderedMap|iterable ...$others): static
     {
@@ -313,7 +321,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @param string $offset
      *
-     * @return Member
+     * @return ListMember
      */
     public function offsetGet(mixed $offset): mixed
     {

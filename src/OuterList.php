@@ -19,18 +19,18 @@ use function is_array;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#name-lists
  *
- * @phpstan-import-type DataType from ValueAccess
- * @phpstan-import-type Member from Dictionary
- * @phpstan-import-type PseudoMember from Dictionary
- * @implements MemberList<int, Member>
+ * @phpstan-import-type ListMember from StructuredField
+ * @phpstan-import-type PseudoListMember from StructuredField
+ *
+ * @implements MemberList<int, ListMember>
  */
 final class OuterList implements MemberList
 {
-    /** @var list<Member> */
+    /** @var list<ListMember> */
     private readonly array $members;
 
     /**
-     * @param Member|PseudoMember ...$members
+     * @param ListMember|PseudoListMember ...$members
      */
     private function __construct(iterable|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members)
     {
@@ -38,9 +38,9 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param Member|PseudoMember $member
+     * @param ListMember|PseudoListMember $member
      *
-     * @return Member
+     * @return ListMember
      */
     private static function filterMember(mixed $member): mixed
     {
@@ -52,7 +52,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param Member|PseudoMember ...$members
+     * @param ListMember|PseudoListMember ...$members
      */
     public static function from(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
@@ -110,7 +110,7 @@ final class OuterList implements MemberList
         yield from $this->members;
     }
 
-    public function has(string|int ...$keys): bool
+    public function has(MapKey|string|int ...$keys): bool
     {
         foreach ($keys as $offset) {
             if (null === $this->filterIndex($offset)) {
@@ -121,7 +121,7 @@ final class OuterList implements MemberList
         return [] !== $keys;
     }
 
-    private function filterIndex(string|int $index): int|null
+    private function filterIndex(MapKey|string|int $index): int|null
     {
         if (!is_int($index)) {
             return null;
@@ -138,7 +138,7 @@ final class OuterList implements MemberList
         };
     }
 
-    public function get(string|int $key): StructuredField
+    public function get(MapKey|string|int $key): StructuredField
     {
         $index = $this->filterIndex($key);
         if (null === $index) {
@@ -159,7 +159,7 @@ final class OuterList implements MemberList
     /**
      * @param int $offset
      *
-     * @return Member
+     * @return ListMember
      */
     public function offsetGet(mixed $offset): mixed
     {
@@ -189,7 +189,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param iterable<int, Member|PseudoMember> $members
+     * @param iterable<int, ListMember|PseudoListMember> $members
      */
     private function newInstance(iterable $members): self
     {
@@ -245,12 +245,12 @@ final class OuterList implements MemberList
     /**
      * Deletes members associated with the list of instance indexes.
      */
-    public function remove(string|int ...$keys): static
+    public function remove(MapKey|string|int ...$keys): static
     {
         $offsets = array_filter(
             array_map(
                 fn (int $index): int|null => $this->filterIndex($index),
-                array_filter($keys, static fn (string|int $key): bool => is_int($key))
+                array_filter($keys, static fn (MapKey|string|int $key): bool => is_int($key))
             ),
             fn (int|null $index): bool => null !== $index
         );

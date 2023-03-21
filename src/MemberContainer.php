@@ -36,12 +36,12 @@ interface MemberContainer extends ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @return TValue
      */
-    public function get(string|int $key): StructuredField;
+    public function get(MapKey|string|int $key): StructuredField;
 
     /**
      * Tells whether the instance contain a members at the specified offsets.
      */
-    public function has(string|int ...$keys): bool;
+    public function has(MapKey|string|int ...$keys): bool;
 
     /**
      * Deletes members associated with the list of submitted keys.
@@ -49,5 +49,5 @@ interface MemberContainer extends ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      */
-    public function remove(string|int ...$keys): static;
+    public function remove(MapKey|string|int ...$keys): static;
 }

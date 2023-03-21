@@ -19,17 +19,17 @@ use function trim;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.2
  *
- * @phpstan-import-type DataType from ValueAccess
- * @phpstan-type Member ValueAccess&ParameterAccess
- * @implements MemberOrderedMap<string, Member>
+ * @phpstan-import-type DataType from StructuredField
+ * @phpstan-import-type ItemValue from StructuredField
+ * @implements MemberOrderedMap<string, ItemValue>
  */
 final class Parameters implements MemberOrderedMap
 {
-    /** @var array<string, ValueAccess&ParameterAccess> */
+    /** @var array<string, ItemValue> */
     private readonly array $members;
 
     /**
-     * @param iterable<string, Member|DataType> $members
+     * @param iterable<string, ItemValue|DataType> $members
      */
     private function __construct(iterable $members = [])
     {
@@ -42,9 +42,9 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param Member|DataType $member
+     * @param ItemValue|DataType $member
      *
-     * @return Member
+     * @return ItemValue
      */
     private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): object
     {
@@ -69,7 +69,7 @@ final class Parameters implements MemberOrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<array-key, Member|DataType> $members
+     * @param iterable<array-key, ItemValue|DataType> $members
      */
     public static function fromAssociative(iterable $members): self
     {
@@ -83,7 +83,7 @@ final class Parameters implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, Member>|iterable<array{0:string, 1:Member|DataType}> $pairs
+     * @param MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemValue|DataType}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
@@ -152,7 +152,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @return Iterator<array{0:string, 1:Member}>
+     * @return Iterator<array{0:string, 1:ItemValue}>
      */
     public function toPairs(): Iterator
     {
@@ -169,9 +169,13 @@ final class Parameters implements MemberOrderedMap
         return array_keys($this->members);
     }
 
-    public function has(string|int ...$keys): bool
+    public function has(MapKey|string|int ...$keys): bool
     {
         foreach ($keys as $offset) {
+            if ($offset instanceof MapKey) {
+                $offset = $offset->value;
+            }
+
             if (!is_string($offset) || !array_key_exists($offset, $this->members)) {
                 return false;
             }
@@ -184,12 +188,16 @@ final class Parameters implements MemberOrderedMap
      * @throws SyntaxError   If the key is invalid
      * @throws InvalidOffset If the key is not found
      *
-     * @return Member
+     * @return ItemValue
      */
-    public function get(string|int $key): ValueAccess
+    public function get(MapKey|string|int $key): StructuredField
     {
         if (!$this->has($key)) {
             throw InvalidOffset::dueToKeyNotFound($key);
+        }
+
+        if ($key instanceof MapKey) {
+            return $this->members[$key->value];
         }
 
         return $this->members[$key];
@@ -225,7 +233,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * @throws InvalidOffset if the index is not found
      *
-     * @return array{0:string, 1:Member}
+     * @return array{0:string, 1:ItemValue}
      */
     public function pair(int $index): array
     {
@@ -240,11 +248,11 @@ final class Parameters implements MemberOrderedMap
         return new self($members);
     }
 
-    public function remove(string|int ...$keys): static
+    public function remove(MapKey|string|int ...$keys): static
     {
         $members = $this->members;
-        foreach (array_filter($keys, static fn (string|int $key): bool => is_string($key)) as $key) {
-            unset($members[$key]);
+        foreach (array_filter($keys, static fn (MapKey|string|int $key): bool => !is_int($key)) as $key) {
+            unset($members[$key instanceof MapKey ? $key->value : $key]);
         }
 
         if ($members === $this->members) {
@@ -260,6 +268,10 @@ final class Parameters implements MemberOrderedMap
         unset($members[$key]);
         $members[$key] = $member;
 
+        if ($members == $this->members) {
+            return $this;
+        }
+
         return new self($members);
     }
 
@@ -272,7 +284,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param iterable<string, Member|DataType> ...$others
+     * @param iterable<string, ItemValue|DataType> ...$others
      */
     public function mergeAssociative(iterable ...$others): static
     {
@@ -285,7 +297,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param MemberOrderedMap<string, Member>|iterable<array{0:string, 1:Member|DataType}> ...$others
+     * @param MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemValue|DataType}> ...$others
      */
     public function mergePairs(MemberOrderedMap|iterable ...$others): static
     {
@@ -308,7 +320,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param string $offset
      *
-     * @return Member
+     * @return ItemValue
      */
     public function offsetGet(mixed $offset): ValueAccess
     {

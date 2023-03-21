@@ -13,8 +13,6 @@ use const PHP_ROUND_HALF_EVEN;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
- *
- * @phpstan-import-type DataType from ValueAccess
  */
 final class Value
 {

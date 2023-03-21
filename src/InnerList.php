@@ -19,17 +19,17 @@ use function is_int;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.1
  *
- * @phpstan-import-type DataType from ValueAccess
- * @phpstan-import-type Member from Parameters
- * @implements MemberList<int, Member>
+ * @phpstan-import-type DataType from StructuredField
+ * @phpstan-import-type ItemValue from StructuredField
+ * @implements MemberList<int, ItemValue>
  */
 final class InnerList implements MemberList, ParameterAccess
 {
-    /** @var list<Member> */
+    /** @var list<ItemValue> */
     private readonly array $members;
 
     /**
-     * @param iterable<Member|DataType> $members
+     * @param iterable<ItemValue|DataType> $members
      */
     private function __construct(private readonly Parameters $parameters, iterable $members)
     {
@@ -37,9 +37,9 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param Member|DataType $member
+     * @param ItemValue|DataType $member
      *
-     * @return Member
+     * @return ItemValue
      */
     private static function filterMember(mixed $member): object
     {
@@ -59,7 +59,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param MemberOrderedMap<string, Member>|iterable<array{0:string, 1:Member|DataType}> $parameters
+     * @param MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemValue|DataType}> $parameters
      */
     public static function fromPairs(
         iterable $parameters,
@@ -71,7 +71,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance with an iter.
      *
-     * @param iterable<string, Member|DataType> $parameters
+     * @param iterable<string, ItemValue|DataType> $parameters
      */
     public static function fromAssociative(
         iterable $parameters,
@@ -178,7 +178,7 @@ final class InnerList implements MemberList, ParameterAccess
         yield from $this->members;
     }
 
-    public function has(string|int ...$keys): bool
+    public function has(MapKey|string|int ...$keys): bool
     {
         foreach ($keys as $offset) {
             if (null === $this->filterIndex($offset)) {
@@ -189,7 +189,7 @@ final class InnerList implements MemberList, ParameterAccess
         return [] !== $keys;
     }
 
-    private function filterIndex(string|int $index): int|null
+    private function filterIndex(MapKey|string|int $index): int|null
     {
         if (!is_int($index)) {
             return null;
@@ -207,9 +207,9 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @return Member
+     * @return ItemValue
      */
-    public function get(string|int $key): StructuredField
+    public function get(MapKey|string|int $key): StructuredField
     {
         $index = $this->filterIndex($key);
         if (null === $index) {
@@ -230,7 +230,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param int $offset
      *
-     * @return Member
+     * @return ItemValue
      */
     public function offsetGet(mixed $offset): mixed
     {
@@ -260,7 +260,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param iterable<Member|DataType> $members
+     * @param iterable<ItemValue|DataType> $members
      */
     private function newInstance(iterable $members): self
     {
@@ -316,12 +316,12 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Deletes members associated with the list of instance indexes.
      */
-    public function remove(string|int ...$keys): static
+    public function remove(MapKey|string|int ...$keys): static
     {
         $offsets = array_filter(
             array_map(
                 fn (int $index): int|null => $this->filterIndex($index),
-                array_filter($keys, static fn (string|int $key): bool => is_int($key))
+                array_filter($keys, static fn (MapKey|string|int $key): bool => is_int($key))
             ),
             fn (int|null $index): bool => null !== $index
         );
