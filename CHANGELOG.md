@@ -8,7 +8,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - `InnerList::fromPair` to improve InnerList public API;
 - `InnerList::fromAssociative` to improve InnerList public API;
-- `Tupe::from` and `Tupe::tryFrom`  to improve Type public API;
+- `Value` class to improve Item public API;
+- `Item` implements the `ValueAccess` interface;
 
 ### Fixed
 
@@ -22,6 +23,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - **[BC Break]** `InnerList::fromPairParameters` use `InnerList::fromPairs` instead.
 - **[BC Break]** `InnerList::fromAssociativeParameters` use `InnerList::fromAssociative` instead.
+- **[BC Break]** `Value` interface use a combination of `ValueAccess` **and** `ParameterAccess` instead.
 
 ## [0.8.0] - 2023-03-12
 

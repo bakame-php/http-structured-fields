@@ -28,6 +28,12 @@ final class TypeTest extends TestCase
     }
 
     #[Test]
+    public function it_will_return_null_if_the_type_is_invalid(): void
+    {
+        self::assertNull(Type::tryFromValue(1_000_000_000_000_000));
+    }
+
+    #[Test]
     public function it_can_tell_the_item_type_from_a_value_instance(): void
     {
         self::assertFalse(Type::Integer->equals(Item::from(42.0)));

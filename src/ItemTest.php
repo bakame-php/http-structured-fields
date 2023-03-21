@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Stringable;
 
 /**
- * @phpstan-import-type DataType from Value
+ * @phpstan-import-type DataType from ValueAccess
  */
 final class ItemTest extends StructuredFieldTestCase
 {
@@ -75,17 +75,17 @@ final class ItemTest extends StructuredFieldTestCase
 
     #[Test]
     #[DataProvider('provideFrom1stArgument')]
-    public function it_instantiate_many_types(Value|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool $value, string $expected): void
+    public function it_instantiate_many_types(ValueAccess|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool $value, string $expected): void
     {
         self::assertSame($expected, Item::from($value)->toHttpValue());
     }
 
     #[Test]
     #[DataProvider('provideFrom1stArgument')]
-    public function it_updates_item(Value|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool $value, string $expected): void
+    public function it_updates_item(ValueAccess|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool $value, string $expected): void
     {
         $parameters = Parameters::fromAssociative(['foo' => 'bar']);
-        if ($value instanceof Value) {
+        if ($value instanceof ParameterAccess && $value instanceof ValueAccess) {
             $expected = $value->withoutAnyParameter()->toHttpValue();
         }
 
@@ -96,7 +96,7 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     /**
-     * @return iterable<string, array{value:Value|DataType, expected:string}>>
+     * @return iterable<string, array{value:ValueAccess|DataType, expected:string}>>
      */
     public static function provideFrom1stArgument(): iterable
     {

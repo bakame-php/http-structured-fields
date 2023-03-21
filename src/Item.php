@@ -8,7 +8,6 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use Stringable;
-use Throwable;
 use function count;
 use function preg_match;
 use function str_contains;
@@ -18,37 +17,37 @@ use function trim;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
- * @phpstan-import-type DataType from Value
+ *
+ * @phpstan-import-type DataType from ValueAccess
+ * @phpstan-import-type Member from Parameters
  */
-final class Item implements Value
+final class Item implements ParameterAccess, ValueAccess
 {
-    private readonly Token|ByteSequence|DateTimeImmutable|int|float|string|bool $value;
-    private readonly Type $type;
-
-    private function __construct(mixed $value, private readonly Parameters $parameters)
-    {
-        ['value' => $this->value, 'type' => $this->type] = Type::convert($value);
+    private function __construct(
+        private readonly Value $value,
+        private readonly Parameters $parameters
+    ) {
     }
 
     /**
      * Returns a new instance from a value type and an iterable of key-value parameters.
      *
-     * @param iterable<string,Value|DataType> $parameters
+     * @param iterable<string, Member|DataType> $parameters
      */
     public static function from(mixed $value, iterable $parameters = []): self
     {
         $parameters = Parameters::fromAssociative($parameters);
-        if ($value instanceof Value) {
+        if ($value instanceof ParameterAccess) {
             $parameters = $value->parameters()->mergeAssociative($parameters);
         }
 
-        return new self($value, $parameters);
+        return new self(new Value($value), $parameters);
     }
 
     /**
      * @param array{
      *     0:DataType,
-     *     1?:MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}>
+     *     1?:MemberOrderedMap<string, Member>|iterable<array{0:string, 1:Member|DataType}>
      * } $pair
      */
     public static function fromPair(array $pair): self
@@ -58,7 +57,7 @@ final class Item implements Value
         return match (true) {
             !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'),  /* @phpstan-ignore-line */
             2 !== count($pair) => throw new SyntaxError('The pair first value should be the item value and the optional second value the item parameters.'), /* @phpstan-ignore-line */
-            default => new self($pair[0], Parameters::fromPairs($pair[1])),
+            default => new self(new Value($pair[0]), Parameters::fromPairs($pair[1])),
         };
     }
 
@@ -80,7 +79,7 @@ final class Item implements Value
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
         }
 
-        return new self($value, Parameters::fromHttpValue(substr($itemString, $offset)));
+        return new self(new Value($value), Parameters::fromHttpValue(substr($itemString, $offset)));
     }
 
     /**
@@ -88,7 +87,7 @@ final class Item implements Value
      */
     public static function fromEncodedByteSequence(Stringable|string $value): self
     {
-        return new self(ByteSequence::fromEncoded($value), Parameters::create());
+        return new self(Value::fromEncodedByteSequence($value), Parameters::create());
     }
 
     /**
@@ -96,7 +95,7 @@ final class Item implements Value
      */
     public static function fromDecodedByteSequence(Stringable|string $value): self
     {
-        return new self(ByteSequence::fromDecoded($value), Parameters::create());
+        return new self(Value::fromDecodedByteSequence($value), Parameters::create());
     }
 
     /**
@@ -104,7 +103,7 @@ final class Item implements Value
      */
     public static function fromToken(Stringable|string $value): self
     {
-        return new self(Token::fromString($value), Parameters::create());
+        return new self(Value::fromToken($value), Parameters::create());
     }
 
     /**
@@ -112,7 +111,7 @@ final class Item implements Value
      */
     public static function fromTimestamp(int $timestamp): self
     {
-        return new self((new DateTimeImmutable())->setTimestamp($timestamp), Parameters::create());
+        return new self(Value::fromTimestamp($timestamp), Parameters::create());
     }
 
     /**
@@ -122,12 +121,7 @@ final class Item implements Value
      */
     public static function fromDateFormat(string $format, string $datetime): self
     {
-        $value = DateTimeImmutable::createFromFormat($format, $datetime);
-        if (false === $value) {
-            throw new SyntaxError('The date notation `'.$datetime.'` is incompatible with the date format `'.$format.'`.');
-        }
-
-        return new self($value, Parameters::create());
+        return new self(Value::fromDateFormat($format, $datetime), Parameters::create());
     }
 
     /**
@@ -137,32 +131,17 @@ final class Item implements Value
      */
     public static function fromDateString(string $datetime, DateTimeZone|string|null $timezone = null): self
     {
-        $timezone ??= date_default_timezone_get();
-        if (!$timezone instanceof DateTimeZone) {
-            try {
-                $timezone = new DateTimeZone($timezone);
-            } catch (Throwable $exception) {
-                throw new SyntaxError('The timezone could not be instantiated.', 0, $exception);
-            }
-        }
-
-        try {
-            $value = new DateTimeImmutable($datetime, $timezone);
-        } catch (Throwable $exception) {
-            throw new SyntaxError('Unable to create a '.DateTimeImmutable::class.' instance with the date notation `'.$datetime.'.`', 0, $exception);
-        }
-
-        return new self($value, Parameters::create());
+        return new self(Value::fromDateString($datetime, $timezone), Parameters::create());
     }
 
     public function value(): ByteSequence|Token|DateTimeImmutable|string|int|float|bool
     {
-        return $this->value;
+        return $this->value->value;
     }
 
     public function type(): Type
     {
-        return $this->type;
+        return $this->value->type;
     }
 
     public function parameters(): Parameters
@@ -191,22 +170,17 @@ final class Item implements Value
      */
     public function toHttpValue(): string
     {
-        return Type::serialize($this->value).$this->parameters->toHttpValue();
+        return $this->value->serialize().$this->parameters->toHttpValue();
     }
 
     public function withValue(mixed $value): static
     {
-        if ($value instanceof Value) {
-            $value = $value->value();
+        $value = new Value($value);
+        if ($value->equals($this->value)) {
+            return $this;
         }
 
-        return match (true) {
-            ($this->value instanceof ByteSequence || $this->value instanceof Token) && $this->value->equals($value),
-            $this->value instanceof DateTimeInterface && $value instanceof DateTimeInterface && $value == $this->value,
-            $value instanceof Stringable && $value->__toString() === $this->value,
-            $value === $this->value => $this,
-            default => new self($value, $this->parameters),
-        };
+        return new self($value, $this->parameters);
     }
 
     public function withParameters(Parameters $parameters): static

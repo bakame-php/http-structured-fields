@@ -19,39 +19,40 @@ use function is_array;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#name-lists
  *
- * @implements MemberList<int, Value|(MemberList<int, Value>&ParameterAccess)>
- * @phpstan-import-type DataType from Value
+ * @phpstan-import-type DataType from ValueAccess
+ * @phpstan-import-type Member from Dictionary
+ * @phpstan-import-type PseudoMember from Dictionary
+ * @implements MemberList<int, Member>
  */
 final class OuterList implements MemberList
 {
-    /** @var list<Value|(MemberList<int, Value>&ParameterAccess)> */
+    /** @var list<Member> */
     private readonly array $members;
 
     /**
-     * @param StructuredField|iterable<Value|DataType>|DataType ...$members
+     * @param Member|PseudoMember ...$members
      */
-    private function __construct(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members)
+    private function __construct(iterable|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members)
     {
         $this->members = array_map(self::filterMember(...), array_values([...$members]));
     }
 
     /**
-     * @param iterable<Value|DataType>|StructuredField|DataType $member
+     * @param Member|PseudoMember $member
      *
-     * @return (MemberList<int, Value>&ParameterAccess)|Value
+     * @return Member
      */
-    private static function filterMember(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): mixed
+    private static function filterMember(mixed $member): mixed
     {
         return match (true) {
-            ($member instanceof MemberList && $member instanceof ParameterAccess),
-            $member instanceof Value => $member,
+            $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
             is_iterable($member) => InnerList::from(...$member),
             default => Item::from($member),
         };
     }
 
     /**
-     * @param StructuredField|iterable<Value|DataType>|DataType ...$members
+     * @param Member|PseudoMember ...$members
      */
     public static function from(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
@@ -157,6 +158,8 @@ final class OuterList implements MemberList
 
     /**
      * @param int $offset
+     *
+     * @return Member
      */
     public function offsetGet(mixed $offset): mixed
     {
@@ -186,7 +189,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param iterable<int, Value|DataType|(MemberList<int, Value>&ParameterAccess)> $members
+     * @param iterable<int, Member|PseudoMember> $members
      */
     private function newInstance(iterable $members): self
     {

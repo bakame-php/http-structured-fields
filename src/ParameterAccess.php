@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 /**
- * @phpstan-import-type DataType from Value
+ * @phpstan-import-type DataType from ValueAccess
  */
 interface ParameterAccess
 {
@@ -29,7 +29,7 @@ interface ParameterAccess
      *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function addParameter(string $key, Value $member): static;
+    public function addParameter(string $key, ValueAccess $member): static;
 
     /**
      * Adds a member at the start of the associated parameter instance and deletes any previous reference to the key if present.
@@ -39,7 +39,7 @@ interface ParameterAccess
      *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function prependParameter(string $key, Value $member): static;
+    public function prependParameter(string $key, ValueAccess $member): static;
 
     /**
      * Adds a member at the end of the associated parameter instance and deletes any previous reference to the key if present.
@@ -49,7 +49,7 @@ interface ParameterAccess
      *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function appendParameter(string $key, Value $member): static;
+    public function appendParameter(string $key, ValueAccess $member): static;
 
     /**
      * Deletes members associated with the list of submitted keys in the associated parameter intance.

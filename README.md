@@ -260,7 +260,7 @@ The `Item::from` method expects an associative iterable to represents the parame
 
 ```php
 use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\Value;
+use Bakame\Http\StructuredFields\ValueAccess;
 
 //@type DataType Value|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
 
@@ -278,7 +278,7 @@ It is possible to update a `Item` object using the following modifying method:
 
 ```php
 use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\Value;
+use Bakame\Http\StructuredFields\ValueAccess;
 use Bakame\Http\StructuredFields\Parameters;
 
 Item::withValue(Value|DataType $value): static
@@ -420,7 +420,7 @@ using one of those two additional named constructors:
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
-use Bakame\Http\StructuredFields\Value;
+use Bakame\Http\StructuredFields\ValueAccess;
 
 InnerList::fromAssociative(iterable<string, Value|DataType> $parameters, ...$members): self;
 InnerList::fromPairs(iterable<array{0:string, 1:Value|DataType}>} $parameters, ...$members): self;

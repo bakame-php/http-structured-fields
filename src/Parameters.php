@@ -18,16 +18,18 @@ use function trim;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.2
- * @implements MemberOrderedMap<string, Value>
- * @phpstan-import-type DataType from Value
+ *
+ * @phpstan-import-type DataType from ValueAccess
+ * @phpstan-type Member ValueAccess&ParameterAccess
+ * @implements MemberOrderedMap<string, Member>
  */
 final class Parameters implements MemberOrderedMap
 {
-    /** @var array<string, Value> */
+    /** @var array<string, ValueAccess&ParameterAccess> */
     private readonly array $members;
 
     /**
-     * @param iterable<string, Value|DataType> $members
+     * @param iterable<string, Member|DataType> $members
      */
     private function __construct(iterable $members = [])
     {
@@ -39,10 +41,15 @@ final class Parameters implements MemberOrderedMap
         $this->members = $filteredMembers;
     }
 
-    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Value
+    /**
+     * @param Member|DataType $member
+     *
+     * @return Member
+     */
+    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): object
     {
         return match (true) {
-            $member instanceof Value && $member->parameters()->hasNoMembers() => $member,
+            $member instanceof ValueAccess && $member instanceof ParameterAccess && $member->parameters()->hasNoMembers() => $member,
             !$member instanceof StructuredField => Item::from($member),
             default => throw new InvalidArgument('Parameters instances can only contain bare items.'),
         };
@@ -62,7 +69,7 @@ final class Parameters implements MemberOrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<array-key, Value|DataType> $members
+     * @param iterable<array-key, Member|DataType> $members
      */
     public static function fromAssociative(iterable $members): self
     {
@@ -76,7 +83,7 @@ final class Parameters implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}> $pairs
+     * @param MemberOrderedMap<string, Member>|iterable<array{0:string, 1:Member|DataType}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
@@ -111,7 +118,7 @@ final class Parameters implements MemberOrderedMap
 
     public function toHttpValue(): string
     {
-        $formatter = static fn (Value $member, string $offset): string => match (true) {
+        $formatter = static fn (ValueAccess $member, string $offset): string => match (true) {
             true === $member->value() => ';'.$offset,
             default => ';'.$offset.'='.$member->toHttpValue(),
         };
@@ -145,7 +152,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @return Iterator<array{0:string, 1:Value}>
+     * @return Iterator<array{0:string, 1:Member}>
      */
     public function toPairs(): Iterator
     {
@@ -176,8 +183,10 @@ final class Parameters implements MemberOrderedMap
     /**
      * @throws SyntaxError   If the key is invalid
      * @throws InvalidOffset If the key is not found
+     *
+     * @return Member
      */
-    public function get(string|int $key): Value
+    public function get(string|int $key): ValueAccess
     {
         if (!$this->has($key)) {
             throw InvalidOffset::dueToKeyNotFound($key);
@@ -216,7 +225,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * @throws InvalidOffset if the index is not found
      *
-     * @return array{0:string, 1:Value}
+     * @return array{0:string, 1:Member}
      */
     public function pair(int $index): array
     {
@@ -263,7 +272,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param iterable<string, Value|DataType> ...$others
+     * @param iterable<string, Member|DataType> ...$others
      */
     public function mergeAssociative(iterable ...$others): static
     {
@@ -276,7 +285,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}> ...$others
+     * @param MemberOrderedMap<string, Member>|iterable<array{0:string, 1:Member|DataType}> ...$others
      */
     public function mergePairs(MemberOrderedMap|iterable ...$others): static
     {
@@ -298,8 +307,10 @@ final class Parameters implements MemberOrderedMap
 
     /**
      * @param string $offset
+     *
+     * @return Member
      */
-    public function offsetGet(mixed $offset): Value
+    public function offsetGet(mixed $offset): ValueAccess
     {
         return $this->get($offset);
     }

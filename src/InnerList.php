@@ -18,45 +18,52 @@ use function is_int;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.1
- * @implements MemberList<int, Value>
- * @phpstan-import-type DataType from Value
+ *
+ * @phpstan-import-type DataType from ValueAccess
+ * @phpstan-import-type Member from Parameters
+ * @implements MemberList<int, Member>
  */
 final class InnerList implements MemberList, ParameterAccess
 {
-    /** @var list<Value> */
+    /** @var list<Member> */
     private readonly array $members;
 
     /**
-     * @param iterable<Value|DataType> $members
+     * @param iterable<Member|DataType> $members
      */
     private function __construct(private readonly Parameters $parameters, iterable $members)
     {
         $this->members = array_map(self::filterMember(...), array_values([...$members]));
     }
 
-    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): Value
+    /**
+     * @param Member|DataType $member
+     *
+     * @return Member
+     */
+    private static function filterMember(mixed $member): object
     {
         return match (true) {
-            $member instanceof Value => $member,
-            $member instanceof StructuredField => throw new InvalidArgument('Expecting a "'.Value::class.'" instance; received a "'.$member::class.'" instead.'),
-            default => Item::from($member),
+            $member instanceof ValueAccess && $member instanceof ParameterAccess => $member,
+            !$member instanceof StructuredField => Item::from($member),
+            default => throw new InvalidArgument('Expecting a "'.ValueAccess::class.'" instance; received a "'.$member::class.'" instead.'),
         };
     }
 
     /**
      * Returns a new instance.
      */
-    public static function from(Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
+    public static function from(ValueAccess|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         return new self(Parameters::create(), $members);
     }
 
     /**
-     * @param MemberOrderedMap<string, Value>|iterable<array{0:string, 1:Value|DataType}> $parameters
+     * @param MemberOrderedMap<string, Member>|iterable<array{0:string, 1:Member|DataType}> $parameters
      */
     public static function fromPairs(
         iterable $parameters,
-        Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
+        StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
     ): self {
         return new self(Parameters::fromPairs($parameters), $members);
     }
@@ -64,11 +71,11 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance with an iter.
      *
-     * @param iterable<string,Value|DataType> $parameters
+     * @param iterable<string, Member|DataType> $parameters
      */
     public static function fromAssociative(
         iterable $parameters,
-        Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
+        ValueAccess|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
     ): self {
         return new self(Parameters::fromAssociative($parameters), $members);
     }
@@ -199,6 +206,9 @@ final class InnerList implements MemberList, ParameterAccess
         };
     }
 
+    /**
+     * @return Member
+     */
     public function get(string|int $key): StructuredField
     {
         $index = $this->filterIndex($key);
@@ -219,6 +229,8 @@ final class InnerList implements MemberList, ParameterAccess
 
     /**
      * @param int $offset
+     *
+     * @return Member
      */
     public function offsetGet(mixed $offset): mixed
     {
@@ -248,7 +260,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param iterable<Value|DataType> $members
+     * @param iterable<Member|DataType> $members
      */
     private function newInstance(iterable $members): self
     {
