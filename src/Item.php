@@ -18,12 +18,12 @@ use function trim;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
  *
- * @phpstan-import-type DataType from StructuredField
  * @phpstan-import-type ItemValue from StructuredField
+ * @phpstan-import-type ItemStruct from StructuredField
  */
 final class Item implements ParameterAccess, ValueAccess
 {
-    private function __construct(
+    public function __construct(
         private readonly Value $value,
         private readonly Parameters $parameters
     ) {
@@ -32,7 +32,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * Returns a new instance from a value type and an iterable of key-value parameters.
      *
-     * @param iterable<string, ItemValue|DataType> $parameters
+     * @param iterable<string, ItemStruct> $parameters
      */
     public static function from(mixed $value, iterable $parameters = []): self
     {
@@ -46,8 +46,8 @@ final class Item implements ParameterAccess, ValueAccess
 
     /**
      * @param array{
-     *     0:DataType,
-     *     1?:MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemValue|DataType}>
+     *     0:ItemStruct,
+     *     1?:MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemStruct}>
      * } $pair
      */
     public static function fromPair(array $pair): self

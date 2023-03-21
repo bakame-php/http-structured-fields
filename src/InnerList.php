@@ -19,8 +19,8 @@ use function is_int;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.1
  *
- * @phpstan-import-type DataType from StructuredField
  * @phpstan-import-type ItemValue from StructuredField
+ * @phpstan-import-type ItemStruct from StructuredField
  * @implements MemberList<int, ItemValue>
  */
 final class InnerList implements MemberList, ParameterAccess
@@ -29,7 +29,7 @@ final class InnerList implements MemberList, ParameterAccess
     private readonly array $members;
 
     /**
-     * @param iterable<ItemValue|DataType> $members
+     * @param iterable<ItemStruct> $members
      */
     private function __construct(private readonly Parameters $parameters, iterable $members)
     {
@@ -37,7 +37,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param ItemValue|DataType $member
+     * @param ItemStruct $member
      *
      * @return ItemValue
      */
@@ -59,7 +59,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemValue|DataType}> $parameters
+     * @param MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemStruct}> $parameters
      */
     public static function fromPairs(
         iterable $parameters,
@@ -71,7 +71,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance with an iter.
      *
-     * @param iterable<string, ItemValue|DataType> $parameters
+     * @param iterable<string, ItemStruct> $parameters
      */
     public static function fromAssociative(
         iterable $parameters,
@@ -260,7 +260,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param iterable<ItemValue|DataType> $members
+     * @param iterable<ItemStruct> $members
      */
     private function newInstance(iterable $members): self
     {

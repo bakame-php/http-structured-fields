@@ -21,6 +21,7 @@ use function trim;
  *
  * @phpstan-import-type DataType from StructuredField
  * @phpstan-import-type ItemValue from StructuredField
+ * @phpstan-import-type ItemStruct from StructuredField
  * @implements MemberOrderedMap<string, ItemValue>
  */
 final class Parameters implements MemberOrderedMap
@@ -29,7 +30,7 @@ final class Parameters implements MemberOrderedMap
     private readonly array $members;
 
     /**
-     * @param iterable<string, ItemValue|DataType> $members
+     * @param iterable<string, ItemStruct> $members
      */
     private function __construct(iterable $members = [])
     {
@@ -42,7 +43,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param ItemValue|DataType $member
+     * @param ItemStruct $member
      *
      * @return ItemValue
      */
@@ -69,7 +70,7 @@ final class Parameters implements MemberOrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<array-key, ItemValue|DataType> $members
+     * @param iterable<array-key, ItemStruct> $members
      */
     public static function fromAssociative(iterable $members): self
     {
@@ -83,7 +84,7 @@ final class Parameters implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemValue|DataType}> $pairs
+     * @param MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemStruct}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
@@ -284,7 +285,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param iterable<string, ItemValue|DataType> ...$others
+     * @param iterable<string, ItemStruct> ...$others
      */
     public function mergeAssociative(iterable ...$others): static
     {
@@ -297,7 +298,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemValue|DataType}> ...$others
+     * @param MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemStruct}> ...$others
      */
     public function mergePairs(MemberOrderedMap|iterable ...$others): static
     {

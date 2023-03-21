@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use DateTimeImmutable;
-use DateTimeInterface;
 use DateTimeZone;
 use Stringable;
 use function in_array;
@@ -26,7 +25,9 @@ use function substr;
  * @internal Use Dictionary::fromHttpValue(), Parameters::fromHttpValue(),
  *               OuterList::fromHttpValue(), InnerList::fromHttpValue() or Item::fromHttpValue() instead
  *
- * @phpstan-import-type DataType from ValueAccess
+ * @phpstan-import-type DataType from StructuredField
+ * @phpstan-import-type ItemValue from StructuredField
+ * @phpstan-import-type ItemStruct from StructuredField
  */
 final class Parser
 {
@@ -35,10 +36,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1
      *
-     * @return array<ValueAccess|DataType|array{
-     *     0:array<ValueAccess|DataType>,
-     *     1:array<string,ValueAccess|DataType>
-     * }>
+     * @return array<ItemStruct|array{0:array<ItemStruct>, 1:array<string, ItemStruct>}>
      */
     public static function parseList(Stringable|string $httpValue): array
     {
@@ -57,10 +55,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.2
      *
-     * @return array<string, ValueAccess|DataType|array{
-     *     0:array<ValueAccess|DataType>,
-     *     1:array<string,ValueAccess|DataType>
-     * }>
+     * @return array<string, ItemStruct|array{0:array<ItemStruct>, 1:array<string,ItemStruct>}>
      */
     public static function parseDictionary(Stringable|string $httpValue): array
     {
@@ -85,7 +80,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
-     * @return array{0:array<ValueAccess|DataType>, 1:array<string,ValueAccess|DataType>}
+     * @return array{0:array<ItemStruct>, 1:array<string, ItemStruct>}
      */
     public static function parseInnerList(Stringable|string $httpValue): array
     {
@@ -142,7 +137,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
      *
-     * @return array{0:array{0:array<ValueAccess|DataType>, 1:array<string,ValueAccess|DataType>}|ValueAccess, 1:int}
+     * @return array{0:array{0:array<ItemStruct>, 1:array<string,ItemStruct>}|ItemValue, 1:int}
      */
     private static function parseItemOrInnerList(string $httpValue): array
     {
@@ -160,7 +155,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
-     * @return array{0:array{0:array<ValueAccess|DataType>, 1:array<string,ValueAccess|DataType>}, 1:int}
+     * @return array{0:array{0:array<ItemStruct>, 1:array<string, ItemStruct>}, 1:int}
      */
     private static function parseInnerListValue(string $httpValue): array
     {
@@ -277,7 +272,7 @@ final class Parser
      *
      * @see https://httpwg.org/http-extensions/draft-ietf-httpbis-sfbis.html#name-dates
      *
-     * @return array{0:DateTimeInterface, 1:int}
+     * @return array{0:DateTimeImmutable, 1:int}
      */
     private static function parseDate(string $httpValue): array
     {
@@ -369,7 +364,7 @@ final class Parser
     }
 
     /**
-     * @return array{0:ValueAccess, 1:string}
+     * @return array{0:ItemValue, 1:string}
      */
     private static function parseItem(string $remainder): array
     {
