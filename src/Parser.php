@@ -25,9 +25,9 @@ use function substr;
  * @internal Use Dictionary::fromHttpValue(), Parameters::fromHttpValue(),
  *               OuterList::fromHttpValue(), InnerList::fromHttpValue() or Item::fromHttpValue() instead
  *
- * @phpstan-import-type DataType from StructuredField
- * @phpstan-import-type ItemValue from StructuredField
- * @phpstan-import-type ItemStruct from StructuredField
+ * @phpstan-import-type SfTypeInput from StructuredField
+ * @phpstan-import-type SfItem from StructuredField
+ * @phpstan-import-type SfItemInput from StructuredField
  */
 final class Parser
 {
@@ -36,7 +36,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1
      *
-     * @return array<ItemStruct|array{0:array<ItemStruct>, 1:array<string, ItemStruct>}>
+     * @return array<SfItemInput|array{0:array<SfItemInput>, 1:array<string, SfItemInput>}>
      */
     public static function parseList(Stringable|string $httpValue): array
     {
@@ -55,7 +55,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.2
      *
-     * @return array<string, ItemStruct|array{0:array<ItemStruct>, 1:array<string,ItemStruct>}>
+     * @return array<string, SfItemInput|array{0:array<SfItemInput>, 1:array<string,SfItemInput>}>
      */
     public static function parseDictionary(Stringable|string $httpValue): array
     {
@@ -80,7 +80,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
-     * @return array{0:array<ItemStruct>, 1:array<string, ItemStruct>}
+     * @return array{0:array<SfItemInput>, 1:array<string, SfItemInput>}
      */
     public static function parseInnerList(Stringable|string $httpValue): array
     {
@@ -137,7 +137,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
      *
-     * @return array{0:array{0:array<ItemStruct>, 1:array<string,ItemStruct>}|ItemValue, 1:int}
+     * @return array{0:array{0:array<SfItemInput>, 1:array<string,SfItemInput>}|SfItem, 1:int}
      */
     private static function parseItemOrInnerList(string $httpValue): array
     {
@@ -155,7 +155,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
-     * @return array{0:array{0:array<ItemStruct>, 1:array<string, ItemStruct>}, 1:int}
+     * @return array{0:array{0:array<SfItemInput>, 1:array<string, SfItemInput>}, 1:int}
      */
     private static function parseInnerListValue(string $httpValue): array
     {
@@ -187,7 +187,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.1
      *
-     * @return array{0:DataType, 1:int}
+     * @return array{0:SfTypeInput, 1:int}
      */
     public static function parseBareItem(string $httpValue): array
     {
@@ -207,7 +207,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.2
      *
-     * @return array{0:array<string, DataType>, 1:int}
+     * @return array{0:array<string, SfTypeInput>, 1:int}
      */
     public static function parseParameters(string $httpValue): array
     {
@@ -364,7 +364,7 @@ final class Parser
     }
 
     /**
-     * @return array{0:ItemValue, 1:string}
+     * @return array{0:SfItem, 1:string}
      */
     private static function parseItem(string $remainder): array
     {

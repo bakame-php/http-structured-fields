@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Stringable;
 
 /**
- * @phpstan-import-type DataType from ValueAccess
+ * @phpstan-import-type SfItemInput from StructuredField
  */
 final class ItemTest extends StructuredFieldTestCase
 {
@@ -96,7 +96,7 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     /**
-     * @return iterable<string, array{value:ValueAccess|DataType, expected:string}>>
+     * @return iterable<string, array{value:SfItemInput, expected:string}>>
      */
     public static function provideFrom1stArgument(): iterable
     {

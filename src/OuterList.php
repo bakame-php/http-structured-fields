@@ -19,18 +19,18 @@ use function is_array;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#name-lists
  *
- * @phpstan-import-type ListMember from StructuredField
- * @phpstan-import-type PseudoListMember from StructuredField
+ * @phpstan-import-type SfInnerList from StructuredField
+ * @phpstan-import-type SfInnerListInput from StructuredField
  *
- * @implements MemberList<int, ListMember>
+ * @implements MemberList<int, SfInnerList>
  */
 final class OuterList implements MemberList
 {
-    /** @var list<ListMember> */
+    /** @var list<SfInnerList> */
     private readonly array $members;
 
     /**
-     * @param ListMember|PseudoListMember ...$members
+     * @param SfInnerList|SfInnerListInput ...$members
      */
     private function __construct(iterable|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members)
     {
@@ -38,9 +38,9 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param ListMember|PseudoListMember $member
+     * @param SfInnerList|SfInnerListInput $member
      *
-     * @return ListMember
+     * @return SfInnerList
      */
     private static function filterMember(mixed $member): mixed
     {
@@ -52,7 +52,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param ListMember|PseudoListMember ...$members
+     * @param SfInnerList|SfInnerListInput ...$members
      */
     public static function from(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
@@ -138,6 +138,9 @@ final class OuterList implements MemberList
         };
     }
 
+    /**
+     * @return SfInnerList
+     */
     public function get(MapKey|string|int $key): StructuredField
     {
         $index = $this->filterIndex($key);
@@ -159,7 +162,7 @@ final class OuterList implements MemberList
     /**
      * @param int $offset
      *
-     * @return ListMember
+     * @return SfInnerList
      */
     public function offsetGet(mixed $offset): mixed
     {
@@ -189,7 +192,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param iterable<int, ListMember|PseudoListMember> $members
+     * @param iterable<int, SfInnerList|SfInnerListInput> $members
      */
     private function newInstance(iterable $members): self
     {

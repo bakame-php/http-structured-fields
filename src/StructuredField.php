@@ -7,11 +7,11 @@ namespace Bakame\Http\StructuredFields;
 use Stringable;
 
 /**
- * @phpstan-type DataType ByteSequence|Token|\DateTimeInterface|\Stringable|string|int|float|bool
- * @phpstan-type ItemValue ValueAccess&ParameterAccess
- * @phpstan-type ItemStruct ItemValue|DataType
- * @phpstan-type ListMember (MemberList<int, ItemValue>|ValueAccess)&ParameterAccess
- * @phpstan-type PseudoListMember iterable<ItemStruct>|ItemStruct
+ * @phpstan-type SfTypeInput ByteSequence|Token|\DateTimeInterface|\Stringable|string|int|float|bool
+ * @phpstan-type SfItem ValueAccess&ParameterAccess
+ * @phpstan-type SfItemInput SfItem|SfTypeInput
+ * @phpstan-type SfInnerList (MemberList<int, SfItem>|ValueAccess)&ParameterAccess
+ * @phpstan-type SfInnerListInput iterable<SfItemInput>|SfItemInput
  */
 interface StructuredField extends Stringable
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 /**
- * @phpstan-import-type DataType from ValueAccess
+ * @phpstan-import-type SfTypeInput from ValueAccess
  */
 interface ParameterAccess
 {
@@ -17,7 +17,7 @@ interface ParameterAccess
     /**
      * Returns the member value or null if no members value exists.
      *
-     * @return DataType|null
+     * @return SfTypeInput|null
      */
     public function parameter(string $key): mixed;
 

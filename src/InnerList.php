@@ -19,17 +19,17 @@ use function is_int;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.1
  *
- * @phpstan-import-type ItemValue from StructuredField
- * @phpstan-import-type ItemStruct from StructuredField
- * @implements MemberList<int, ItemValue>
+ * @phpstan-import-type SfItem from StructuredField
+ * @phpstan-import-type SfItemInput from StructuredField
+ * @implements MemberList<int, SfItem>
  */
 final class InnerList implements MemberList, ParameterAccess
 {
-    /** @var list<ItemValue> */
+    /** @var list<SfItem> */
     private readonly array $members;
 
     /**
-     * @param iterable<ItemStruct> $members
+     * @param iterable<SfItemInput> $members
      */
     private function __construct(private readonly Parameters $parameters, iterable $members)
     {
@@ -37,9 +37,9 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param ItemStruct $member
+     * @param SfItemInput $member
      *
-     * @return ItemValue
+     * @return SfItem
      */
     private static function filterMember(mixed $member): object
     {
@@ -59,7 +59,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemStruct}> $parameters
+     * @param MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}> $parameters
      */
     public static function fromPairs(
         iterable $parameters,
@@ -71,7 +71,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance with an iter.
      *
-     * @param iterable<string, ItemStruct> $parameters
+     * @param iterable<string, SfItemInput> $parameters
      */
     public static function fromAssociative(
         iterable $parameters,
@@ -207,7 +207,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @return ItemValue
+     * @return SfItem
      */
     public function get(MapKey|string|int $key): StructuredField
     {
@@ -230,7 +230,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param int $offset
      *
-     * @return ItemValue
+     * @return SfItem
      */
     public function offsetGet(mixed $offset): mixed
     {
@@ -260,7 +260,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param iterable<ItemStruct> $members
+     * @param iterable<SfItemInput> $members
      */
     private function newInstance(iterable $members): self
     {

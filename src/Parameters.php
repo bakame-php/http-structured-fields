@@ -19,18 +19,18 @@ use function trim;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.2
  *
- * @phpstan-import-type DataType from StructuredField
- * @phpstan-import-type ItemValue from StructuredField
- * @phpstan-import-type ItemStruct from StructuredField
- * @implements MemberOrderedMap<string, ItemValue>
+ * @phpstan-import-type SfTypeInput from StructuredField
+ * @phpstan-import-type SfItem from StructuredField
+ * @phpstan-import-type SfItemInput from StructuredField
+ * @implements MemberOrderedMap<string, SfItem>
  */
 final class Parameters implements MemberOrderedMap
 {
-    /** @var array<string, ItemValue> */
+    /** @var array<string, SfItem> */
     private readonly array $members;
 
     /**
-     * @param iterable<string, ItemStruct> $members
+     * @param iterable<string, SfItemInput> $members
      */
     private function __construct(iterable $members = [])
     {
@@ -43,9 +43,9 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param ItemStruct $member
+     * @param SfItemInput $member
      *
-     * @return ItemValue
+     * @return SfItem
      */
     private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): object
     {
@@ -70,7 +70,7 @@ final class Parameters implements MemberOrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<array-key, ItemStruct> $members
+     * @param iterable<array-key, SfItemInput> $members
      */
     public static function fromAssociative(iterable $members): self
     {
@@ -84,7 +84,7 @@ final class Parameters implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemStruct}> $pairs
+     * @param MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
@@ -153,7 +153,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @return Iterator<array{0:string, 1:ItemValue}>
+     * @return Iterator<array{0:string, 1:SfItem}>
      */
     public function toPairs(): Iterator
     {
@@ -189,7 +189,7 @@ final class Parameters implements MemberOrderedMap
      * @throws SyntaxError   If the key is invalid
      * @throws InvalidOffset If the key is not found
      *
-     * @return ItemValue
+     * @return SfItem
      */
     public function get(MapKey|string|int $key): StructuredField
     {
@@ -234,7 +234,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * @throws InvalidOffset if the index is not found
      *
-     * @return array{0:string, 1:ItemValue}
+     * @return array{0:string, 1:SfItem}
      */
     public function pair(int $index): array
     {
@@ -285,7 +285,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param iterable<string, ItemStruct> ...$others
+     * @param iterable<string, SfItemInput> ...$others
      */
     public function mergeAssociative(iterable ...$others): static
     {
@@ -298,7 +298,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param MemberOrderedMap<string, ItemValue>|iterable<array{0:string, 1:ItemStruct}> ...$others
+     * @param MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}> ...$others
      */
     public function mergePairs(MemberOrderedMap|iterable ...$others): static
     {
@@ -321,7 +321,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param string $offset
      *
-     * @return ItemValue
+     * @return SfItem
      */
     public function offsetGet(mixed $offset): ValueAccess
     {
