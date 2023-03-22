@@ -10,8 +10,8 @@ use Stringable;
  * @phpstan-type SfTypeInput ByteSequence|Token|\DateTimeInterface|\Stringable|string|int|float|bool
  * @phpstan-type SfItem ValueAccess&ParameterAccess
  * @phpstan-type SfItemInput SfItem|SfTypeInput
- * @phpstan-type SfInnerList (MemberList<int, SfItem>|ValueAccess)&ParameterAccess
- * @phpstan-type SfInnerListInput iterable<SfItemInput>|SfItemInput
+ * @phpstan-type SfMember (MemberList<int, SfItem>|ValueAccess)&ParameterAccess
+ * @phpstan-type SfMemberInput iterable<SfItemInput>|SfItemInput
  */
 interface StructuredField extends Stringable
 {

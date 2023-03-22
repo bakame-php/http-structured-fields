@@ -10,10 +10,11 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `InnerList::fromAssociative` to improve InnerList public API;
 - `Value` class to improve Item public API;
 - `Item` implements the `ValueAccess` interface;
+- `Item::fromValue` named constructor to instantiate a new `Item` from a `Value` object;
 
 ### Fixed
 
-- None
+- Improve annotation using `@phpstan-type`
 
 ### Deprecated
 

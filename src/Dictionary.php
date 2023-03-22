@@ -20,18 +20,18 @@ use function is_string;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
  *
- * @phpstan-import-type SfInnerList from StructuredField
- * @phpstan-import-type SfInnerListInput from StructuredField
+ * @phpstan-import-type SfMember from StructuredField
+ * @phpstan-import-type SfMemberInput from StructuredField
  *
- * @implements MemberOrderedMap<string, SfInnerList>
+ * @implements MemberOrderedMap<string, SfMember>
  */
 final class Dictionary implements MemberOrderedMap
 {
-    /** @var array<string, SfInnerList> */
+    /** @var array<string, SfMember> */
     private readonly array $members;
 
     /**
-     * @param iterable<string, SfInnerList|SfInnerListInput> $members
+     * @param iterable<string, SfMember|SfMemberInput> $members
      */
     private function __construct(iterable $members = [])
     {
@@ -44,11 +44,11 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param SfInnerList|SfInnerListInput $member
+     * @param SfMember|SfMemberInput $member
      *
-     * @return SfInnerList
+     * @return SfMember
      */
-    private static function filterMember(mixed $member): mixed
+    private static function filterMember(mixed $member): object
     {
         return match (true) {
             $member instanceof ParameterAccess &&
@@ -72,7 +72,7 @@ final class Dictionary implements MemberOrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<string, SfInnerList|SfInnerListInput> $members
+     * @param iterable<string, SfMember|SfMemberInput> $members
      */
     public static function fromAssociative(iterable $members): self
     {
@@ -86,7 +86,7 @@ final class Dictionary implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, SfInnerList>|iterable<array{0:string, 1:SfInnerList|SfInnerListInput}> $pairs
+     * @param MemberOrderedMap<string, SfMember>|iterable<array{0:string, 1:SfMember|SfMemberInput}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
@@ -153,7 +153,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @return Iterator<array{0:string, 1:SfInnerList}>
+     * @return Iterator<array{0:string, 1:SfMember}>
      */
     public function toPairs(): Iterator
     {
@@ -188,8 +188,6 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @throws SyntaxError   If the key is invalid
      * @throws InvalidOffset If the key is not found
-     *
-     * @return SfInnerList
      */
     public function get(MapKey|string|int $key): StructuredField
     {
@@ -234,7 +232,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @throws InvalidOffset If the key is not found
      *
-     * @return array{0:string, 1:SfInnerList}
+     * @return array{0:string, 1:SfMember}
      */
     public function pair(int $index): array
     {
@@ -285,7 +283,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param iterable<string, SfInnerList|SfInnerListInput> ...$others
+     * @param iterable<string, SfMember|SfMemberInput> ...$others
      */
     public function mergeAssociative(iterable ...$others): static
     {
@@ -298,7 +296,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param MemberOrderedMap<string, SfInnerList>|iterable<array{0:string, 1:SfInnerList|SfInnerListInput}> ...$others
+     * @param MemberOrderedMap<string, SfMember>|iterable<array{0:string, 1:SfMember|SfMemberInput}> ...$others
      */
     public function mergePairs(MemberOrderedMap|iterable ...$others): static
     {
@@ -320,8 +318,6 @@ final class Dictionary implements MemberOrderedMap
 
     /**
      * @param string $offset
-     *
-     * @return SfInnerList
      */
     public function offsetGet(mixed $offset): mixed
     {

@@ -47,7 +47,7 @@ final class Parameters implements MemberOrderedMap
      *
      * @return SfItem
      */
-    private static function filterMember(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): object
+    private static function filterMember(mixed $member): object
     {
         return match (true) {
             $member instanceof ValueAccess && $member instanceof ParameterAccess && $member->parameters()->hasNoMembers() => $member,
@@ -263,6 +263,9 @@ final class Parameters implements MemberOrderedMap
         return new self($members);
     }
 
+    /**
+     * @param SfItemInput $member
+     */
     public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         $members = $this->members;
@@ -276,6 +279,9 @@ final class Parameters implements MemberOrderedMap
         return new self($members);
     }
 
+    /**
+     * @param SfItemInput $member
+     */
     public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         $members = $this->members;
@@ -320,10 +326,8 @@ final class Parameters implements MemberOrderedMap
 
     /**
      * @param string $offset
-     *
-     * @return SfItem
      */
-    public function offsetGet(mixed $offset): ValueAccess
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->get($offset);
     }

@@ -23,7 +23,7 @@ use function trim;
  */
 final class Item implements ParameterAccess, ValueAccess
 {
-    public function __construct(
+    private function __construct(
         private readonly Value $value,
         private readonly Parameters $parameters
     ) {
@@ -41,7 +41,11 @@ final class Item implements ParameterAccess, ValueAccess
             $parameters = $value->parameters()->mergeAssociative($parameters);
         }
 
-        return new self(new Value($value), $parameters);
+        if (!$value instanceof Value) {
+            $value = new Value($value);
+        }
+
+        return new self($value, $parameters);
     }
 
     /**
@@ -87,7 +91,7 @@ final class Item implements ParameterAccess, ValueAccess
      */
     public static function fromEncodedByteSequence(Stringable|string $value): self
     {
-        return new self(Value::fromEncodedByteSequence($value), Parameters::create());
+        return self::fromValue(Value::fromEncodedByteSequence($value));
     }
 
     /**
@@ -95,7 +99,7 @@ final class Item implements ParameterAccess, ValueAccess
      */
     public static function fromDecodedByteSequence(Stringable|string $value): self
     {
-        return new self(Value::fromDecodedByteSequence($value), Parameters::create());
+        return self::fromValue(Value::fromDecodedByteSequence($value));
     }
 
     /**
@@ -103,7 +107,7 @@ final class Item implements ParameterAccess, ValueAccess
      */
     public static function fromToken(Stringable|string $value): self
     {
-        return new self(Value::fromToken($value), Parameters::create());
+        return self::fromValue(Value::fromToken($value));
     }
 
     /**
@@ -111,7 +115,7 @@ final class Item implements ParameterAccess, ValueAccess
      */
     public static function fromTimestamp(int $timestamp): self
     {
-        return new self(Value::fromTimestamp($timestamp), Parameters::create());
+        return self::fromValue(Value::fromTimestamp($timestamp));
     }
 
     /**
@@ -121,7 +125,7 @@ final class Item implements ParameterAccess, ValueAccess
      */
     public static function fromDateFormat(string $format, string $datetime): self
     {
-        return new self(Value::fromDateFormat($format, $datetime), Parameters::create());
+        return self::fromValue(Value::fromDateFormat($format, $datetime));
     }
 
     /**
@@ -131,7 +135,15 @@ final class Item implements ParameterAccess, ValueAccess
      */
     public static function fromDateString(string $datetime, DateTimeZone|string|null $timezone = null): self
     {
-        return new self(Value::fromDateString($datetime, $timezone), Parameters::create());
+        return self::fromValue(Value::fromDateString($datetime, $timezone));
+    }
+
+    /**
+     * Returns a new bare instance from value.
+     */
+    public static function fromValue(Value $value): self
+    {
+        return new self($value, Parameters::create());
     }
 
     public function value(): ByteSequence|Token|DateTimeImmutable|string|int|float|bool

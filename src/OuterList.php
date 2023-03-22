@@ -19,18 +19,18 @@ use function is_array;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#name-lists
  *
- * @phpstan-import-type SfInnerList from StructuredField
- * @phpstan-import-type SfInnerListInput from StructuredField
+ * @phpstan-import-type SfMember from StructuredField
+ * @phpstan-import-type SfMemberInput from StructuredField
  *
- * @implements MemberList<int, SfInnerList>
+ * @implements MemberList<int, SfMember>
  */
 final class OuterList implements MemberList
 {
-    /** @var list<SfInnerList> */
+    /** @var list<SfMember> */
     private readonly array $members;
 
     /**
-     * @param SfInnerList|SfInnerListInput ...$members
+     * @param SfMember|SfMemberInput ...$members
      */
     private function __construct(iterable|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members)
     {
@@ -38,11 +38,11 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param SfInnerList|SfInnerListInput $member
+     * @param SfMember|SfMemberInput $member
      *
-     * @return SfInnerList
+     * @return SfMember
      */
-    private static function filterMember(mixed $member): mixed
+    private static function filterMember(mixed $member): object
     {
         return match (true) {
             $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
@@ -52,7 +52,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param SfInnerList|SfInnerListInput ...$members
+     * @param SfMember|SfMemberInput ...$members
      */
     public static function from(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
@@ -139,7 +139,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @return SfInnerList
+     * @return SfMember
      */
     public function get(MapKey|string|int $key): StructuredField
     {
@@ -162,7 +162,7 @@ final class OuterList implements MemberList
     /**
      * @param int $offset
      *
-     * @return SfInnerList
+     * @return SfMember
      */
     public function offsetGet(mixed $offset): mixed
     {
@@ -192,7 +192,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param iterable<int, SfInnerList|SfInnerListInput> $members
+     * @param iterable<int, SfMember|SfMemberInput> $members
      */
     private function newInstance(iterable $members): self
     {
