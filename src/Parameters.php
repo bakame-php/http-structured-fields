@@ -241,10 +241,10 @@ final class Parameters implements MemberOrderedMap
         return [...$this->toPairs()][$this->filterIndex($index)];
     }
 
-    public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function add(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         $members = $this->members;
-        $members[$key] = $member;
+        $members[$key instanceof MapKey ? $key->value : $key] = $member;
 
         return new self($members);
     }
@@ -266,8 +266,9 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param SfItemInput $member
      */
-    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function append(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
+        $key = $key instanceof MapKey ? $key->value : $key;
         $members = $this->members;
         unset($members[$key]);
         $members[$key] = $member;
@@ -282,8 +283,9 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param SfItemInput $member
      */
-    public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function prepend(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
+        $key = $key instanceof MapKey ? $key->value : $key;
         $members = $this->members;
         unset($members[$key]);
 

@@ -200,24 +200,26 @@ final class Item implements ParameterAccess, ValueAccess
         return $this->parameters->toHttpValue() === $parameters->toHttpValue() ? $this : new static($this->value, $parameters);
     }
 
-    public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function addParameter(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        return $this->withParameters($this->parameters()->add($key, $member));
+        return $this->withParameters($this->parameters()->add($key instanceof MapKey ? $key->value : $key, $member));
     }
 
-    public function prependParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function prependParameter(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        return $this->withParameters($this->parameters()->prepend($key, $member));
+        return $this->withParameters($this->parameters()->prepend($key instanceof MapKey ? $key->value : $key, $member));
     }
 
-    public function withoutParameter(string ...$keys): static
+    public function appendParameter(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        return $this->withParameters($this->parameters()->remove(...$keys));
+        return $this->withParameters($this->parameters()->append($key instanceof MapKey ? $key->value : $key, $member));
     }
 
-    public function appendParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function withoutParameter(MapKey|string ...$keys): static
     {
-        return $this->withParameters($this->parameters()->append($key, $member));
+        return $this->withParameters($this->parameters()->remove(
+            ...array_map(fn (MapKey|string $key): string => $key instanceof MapKey ? $key->value : $key, $keys)
+        ));
     }
 
     public function withoutAnyParameter(): static

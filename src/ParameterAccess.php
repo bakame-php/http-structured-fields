@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 /**
- * @phpstan-import-type SfTypeInput from ValueAccess
+ * @phpstan-import-type SfTypeInput from StructuredField
  */
 interface ParameterAccess
 {

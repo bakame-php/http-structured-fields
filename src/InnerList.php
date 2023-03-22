@@ -53,7 +53,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance.
      */
-    public static function from(ValueAccess|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
+    public static function from(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         return new self(Parameters::create(), $members);
     }
@@ -75,7 +75,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function fromAssociative(
         iterable $parameters,
-        ValueAccess|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
+        StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
     ): self {
         return new self(Parameters::fromAssociative($parameters), $members);
     }
@@ -97,38 +97,14 @@ final class InnerList implements MemberList, ParameterAccess
         return $this->parameters;
     }
 
-    public function parameter(string $key): mixed
+    public function parameter(MapKey|string $key): mixed
     {
+        $key = $key instanceof MapKey ? $key->value : $key;
         if ($this->parameters->has($key)) {
             return $this->parameters->get($key)->value();
         }
 
         return null;
-    }
-
-    public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
-    {
-        return $this->withParameters($this->parameters()->add($key, $member));
-    }
-
-    public function prependParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
-    {
-        return $this->withParameters($this->parameters()->prepend($key, $member));
-    }
-
-    public function appendParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
-    {
-        return $this->withParameters($this->parameters()->append($key, $member));
-    }
-
-    public function withoutParameter(string ...$keys): static
-    {
-        return $this->withParameters($this->parameters()->remove(...$keys));
-    }
-
-    public function withoutAnyParameter(): static
-    {
-        return $this->withParameters(Parameters::create());
     }
 
     public function withParameters(Parameters $parameters): static
@@ -138,6 +114,33 @@ final class InnerList implements MemberList, ParameterAccess
         }
 
         return new static($parameters, $this->members);
+    }
+
+    public function addParameter(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    {
+        return $this->withParameters($this->parameters()->add($key instanceof MapKey ? $key->value : $key, $member));
+    }
+
+    public function prependParameter(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    {
+        return $this->withParameters($this->parameters()->prepend($key instanceof MapKey ? $key->value : $key, $member));
+    }
+
+    public function appendParameter(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    {
+        return $this->withParameters($this->parameters()->append($key instanceof MapKey ? $key->value : $key, $member));
+    }
+
+    public function withoutParameter(MapKey|string ...$keys): static
+    {
+        return $this->withParameters($this->parameters()->remove(
+            ...array_map(fn (MapKey|string $key): string => $key instanceof MapKey ? $key->value : $key, $keys)
+        ));
+    }
+
+    public function withoutAnyParameter(): static
+    {
+        return $this->withParameters(Parameters::create());
     }
 
     public function toHttpValue(): string

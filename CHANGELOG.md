@@ -11,6 +11,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Value` class to improve Item public API;
 - `Item` implements the `ValueAccess` interface;
 - `Item::fromValue` named constructor to instantiate a new `Item` from a `Value` object;
+- Adding support for `MapKey` object.
 
 ### Fixed
 
