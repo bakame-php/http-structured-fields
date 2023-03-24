@@ -100,7 +100,7 @@ final class ItemTest extends StructuredFieldTestCase
      */
     public static function provideFrom1stArgument(): iterable
     {
-        $item = Item::from(42, ['foobar' => 'baz']);
+        $item = Item::from(42);
 
         return [
             'decimal' => ['value' => 42.0, 'expected' => '42.0'],

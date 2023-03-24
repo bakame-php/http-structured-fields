@@ -36,13 +36,12 @@ final class Item implements ParameterAccess, ValueAccess
      */
     public static function from(mixed $value, iterable $parameters = []): self
     {
-        $parameters = Parameters::fromAssociative($parameters);
-        if ($value instanceof ParameterAccess) {
-            $parameters = $value->parameters()->mergeAssociative($parameters);
-        }
-
         if (!$value instanceof Value) {
             $value = new Value($value);
+        }
+
+        if (!$parameters instanceof Parameters) {
+            $parameters = Parameters::fromAssociative($parameters);
         }
 
         return new self($value, $parameters);
@@ -58,11 +57,23 @@ final class Item implements ParameterAccess, ValueAccess
     {
         $pair[1] = $pair[1] ?? [];
 
-        return match (true) {
-            !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'),  /* @phpstan-ignore-line */
-            2 !== count($pair) => throw new SyntaxError('The pair first value should be the item value and the optional second value the item parameters.'), /* @phpstan-ignore-line */
-            default => new self(new Value($pair[0]), Parameters::fromPairs($pair[1])),
-        };
+        if (!array_is_list($pair)) { /* @phpstan-ignore-line */
+            throw new SyntaxError('The pair must be represented by an array as a list.');
+        }
+
+        if (2 !== count($pair)) { /* @phpstan-ignore-line */
+            throw new SyntaxError('The pair first value should be the item value and the optional second value the item parameters.');
+        }
+
+        if (!$pair[0] instanceof Value) {
+            $pair[0] = new Value($pair[0]);
+        }
+
+        if (!$pair[1] instanceof Parameters) {
+            $pair[1] = Parameters::fromPairs($pair[1]);
+        }
+
+        return new self($pair[0], $pair[1]);
     }
 
     /**
@@ -161,13 +172,13 @@ final class Item implements ParameterAccess, ValueAccess
         return $this->parameters;
     }
 
-    public function parameter(string $key): mixed
+    public function parameter(MapKey|string $key): mixed
     {
-        if ($this->parameters->has($key)) {
-            return $this->parameters->get($key)->value();
+        try {
+            return $this->parameters->get($key instanceof MapKey ? $key->value : $key)->value();
+        } catch (StructuredFieldError) {
+            return null;
         }
-
-        return null;
     }
 
     public function __toString(): string

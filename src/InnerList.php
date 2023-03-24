@@ -53,7 +53,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance.
      */
-    public static function from(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
+    public static function from(StructuredField|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         return new self(Parameters::create(), $members);
     }
@@ -63,7 +63,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function fromPairs(
         iterable $parameters,
-        StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
+        StructuredField|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
     ): self {
         return new self(Parameters::fromPairs($parameters), $members);
     }
@@ -75,7 +75,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function fromAssociative(
         iterable $parameters,
-        StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
+        StructuredField|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
     ): self {
         return new self(Parameters::fromAssociative($parameters), $members);
     }
@@ -99,12 +99,11 @@ final class InnerList implements MemberList, ParameterAccess
 
     public function parameter(MapKey|string $key): mixed
     {
-        $key = $key instanceof MapKey ? $key->value : $key;
-        if ($this->parameters->has($key)) {
-            return $this->parameters->get($key)->value();
+        try {
+            return $this->parameters->get($key instanceof MapKey ? $key->value : $key)->value();
+        } catch (StructuredFieldError) {
+            return null;
         }
-
-        return null;
     }
 
     public function withParameters(Parameters $parameters): static
