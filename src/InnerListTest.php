@@ -195,12 +195,10 @@ final class InnerListTest extends TestCase
             'a',
             true
         );
-        $instance1bis = InnerList::fromPairs(
+        $instance1bis = InnerList::fromPair([
+            [Token::fromString('babayaga'), 'a', true],
             [['a', true]],
-            Token::fromString('babayaga'),
-            'a',
-            true
-        );
+        ]);
         $instance2 = $instance1->withParameters(Parameters::fromAssociative(['a' => true]));
         $instance3 = $instance1->withParameters(Parameters::fromAssociative(['a' => false]));
 

@@ -423,7 +423,7 @@ use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\ValueAccess;
 
 InnerList::fromAssociative(iterable<string, Value|DataType> $parameters, ...$members): self;
-InnerList::fromPairs(iterable<array{0:string, 1:Value|DataType}>} $parameters, ...$members): self;
+InnerList::fromPair(array{0:list<Item>, iterable<array{0:string, 1:Value|DataType}>} $pair): self;
 ```
 
 ## Contributing

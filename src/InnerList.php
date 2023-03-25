@@ -59,13 +59,28 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}> $parameters
+     * @param array{
+     *     0:iterable<SfItemInput>,
+     *     1?:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>
+     * } $pair
      */
-    public static function fromPairs(
-        iterable $parameters,
-        StructuredField|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
-    ): self {
-        return new self(Parameters::fromPairs($parameters), $members);
+    public static function fromPair(array $pair): self
+    {
+        $pair[1] = $pair[1] ?? [];
+
+        if (!array_is_list($pair)) { /* @phpstan-ignore-line */
+            throw new SyntaxError('The pair must be represented by an array as a list.');
+        }
+
+        if (2 !== count($pair)) { /* @phpstan-ignore-line */
+            throw new SyntaxError('The pair first value should be the member list and the optional second value the inner list parameters.');
+        }
+
+        if (!$pair[1] instanceof Parameters) {
+            $pair[1] = Parameters::fromPairs($pair[1]);
+        }
+
+        return new self($pair[1], $pair[0]);
     }
 
     /**
