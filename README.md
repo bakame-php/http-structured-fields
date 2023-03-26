@@ -91,7 +91,7 @@ Per the RFC, items can have different types that are translated to PHP using:
 
 The table below summarizes the item value type.
 
-| HTTP DataType | Package Data Type              | Package Enum Type    |
+| RFC Type      | PHP Type                       | Package Enum Type    |
 |---------------|--------------------------------|----------------------|
 | Integer       | `int`                          | `Type::Integer`      |
 | Decimal       | `float`                        | `Type::Decimal`      |
@@ -144,7 +144,7 @@ are accessible using the following methods:
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Type;
 
-//@type DataType ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|bool
+//@type SfItemInput ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|bool
 // the Item::value() can return one of those type
 $item = Item::from(CarbonImmutable::parse('today'));
 $item->type();  // return Type::Date;
@@ -260,18 +260,20 @@ The `Item::from` method expects an associative iterable to represents the parame
 
 ```php
 use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\ValueAccess;
 
-//@type DataType Value|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
+//@type SfItemInput ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
 
-Item::from(DataType $value, iterable<string, Value> $associativeParameters = []): self;
-Item::fromPair(array{0:DataType, 1:iterable<array{0:string, 1:DataType}>} $pair): self;
+Item::from(SfItemInput $value, iterable<string, SfItemInput> $associativeParameters = []): self;
+Item::fromPair(array{0:SfItemInput, 1:iterable<array{0:string, 1:SfItemInput}>} $pair): self;
 Item::fromDecodedByteSequence(string $value): self;
 Item::fromEncodedByteSequence(string $value): self;
 Item::fromToken(string $value): self;
 Item::fromTimestamp(int $value): self;
 Item::fromDateFormat(string $format, string $datetime): self;
-Item::fromDateString(string $datetime, DateTimeZone|string|null $timezone): self;
+Item::fromDecimal(int|float $value): self;
+Item::fromInteger(int|float $value): self;
+Item::true(): self;
+Item::false(): self;
 ```
 
 It is possible to update a `Item` object using the following modifying method:
@@ -281,7 +283,7 @@ use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\ValueAccess;
 use Bakame\Http\StructuredFields\Parameters;
 
-Item::withValue(Value|DataType $value): static
+Item::withValue(SfItemInput $value): static
 ```
 
 And just like with the `InnerList` instance the `Item` object provides additional modifying methods
@@ -420,10 +422,9 @@ using one of those two additional named constructors:
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
-use Bakame\Http\StructuredFields\ValueAccess;
 
-InnerList::fromAssociative(iterable<string, Value|DataType> $parameters, ...$members): self;
-InnerList::fromPair(array{0:list<Item>, iterable<array{0:string, 1:Value|DataType}>} $pair): self;
+InnerList::fromAssociative(iterable<string, SfItemInput> $parameters, ...$members): self;
+InnerList::fromPair(array{0:list<Item>, iterable<array{0:string, 1:SfItemInput}>} $pair): self;
 ```
 
 ## Contributing

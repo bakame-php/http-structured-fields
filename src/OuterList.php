@@ -32,7 +32,7 @@ final class OuterList implements MemberList
     /**
      * @param SfMember|SfMemberInput ...$members
      */
-    private function __construct(iterable|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members)
+    private function __construct(iterable|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members)
     {
         $this->members = array_map(self::filterMember(...), array_values([...$members]));
     }
@@ -54,7 +54,7 @@ final class OuterList implements MemberList
     /**
      * @param SfMember|SfMemberInput ...$members
      */
-    public static function from(iterable|StructuredField|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
+    public static function from(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         return new self(...$members);
     }
@@ -182,7 +182,7 @@ final class OuterList implements MemberList
     /**
      * Inserts members at the beginning of the list.
      */
-    public function unshift(StructuredField|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
         if ([] === $members) {
             return $this;
@@ -202,7 +202,7 @@ final class OuterList implements MemberList
     /**
      * Inserts members at the end of the list.
      */
-    public function push(StructuredField|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public function push(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
         if ([] === $members) {
             return $this;
@@ -216,7 +216,7 @@ final class OuterList implements MemberList
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $key, StructuredField|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public function insert(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
     {
         $offset = $this->filterIndex($key);
 
@@ -233,7 +233,7 @@ final class OuterList implements MemberList
         };
     }
 
-    public function replace(int $key, StructuredField|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function replace(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         if (null === ($offset = $this->filterIndex($key))) {
             throw InvalidOffset::dueToIndexNotFound($key);

@@ -36,15 +36,11 @@ final class Item implements ParameterAccess, ValueAccess
      */
     public static function from(mixed $value, iterable $parameters = []): self
     {
-        if (!$value instanceof Value) {
-            $value = new Value($value);
-        }
-
         if (!$parameters instanceof Parameters) {
             $parameters = Parameters::fromAssociative($parameters);
         }
 
-        return new self($value, $parameters);
+        return new self(new Value($value), $parameters);
     }
 
     /**
@@ -65,15 +61,11 @@ final class Item implements ParameterAccess, ValueAccess
             throw new SyntaxError('The pair first value should be the item value and the optional second value the item parameters.');
         }
 
-        if (!$pair[0] instanceof Value) {
-            $pair[0] = new Value($pair[0]);
-        }
-
         if (!$pair[1] instanceof Parameters) {
             $pair[1] = Parameters::fromPairs($pair[1]);
         }
 
-        return new self($pair[0], $pair[1]);
+        return new self(new Value($pair[0]), $pair[1]);
     }
 
     /**
@@ -152,9 +144,29 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * Returns a new bare instance from value.
      */
-    public static function fromValue(Value $value): self
+    private static function fromValue(Value $value): self
     {
         return new self($value, Parameters::create());
+    }
+
+    public static function fromDecimal(int|float $value): self
+    {
+        return self::fromValue(Value::fromDecimal($value));
+    }
+
+    public static function fromInteger(int|float $value): self
+    {
+        return self::fromValue(Value::fromInteger($value));
+    }
+
+    public static function true(): self
+    {
+        return self::fromValue(Value::true());
+    }
+
+    public static function false(): self
+    {
+        return self::fromValue(Value::false());
     }
 
     public function value(): ByteSequence|Token|DateTimeImmutable|string|int|float|bool
@@ -194,6 +206,14 @@ final class Item implements ParameterAccess, ValueAccess
     public function toHttpValue(): string
     {
         return $this->value->serialize().$this->parameters->toHttpValue();
+    }
+
+    /**
+     * @return array{0:SfItemInput, 1:MemberOrderedMap<string, SfItem>}
+     */
+    public function toPair(): array
+    {
+        return [$this->value->value, $this->parameters];
     }
 
     public function withValue(mixed $value): static

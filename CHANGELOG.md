@@ -7,11 +7,12 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Added
 
 - `InnerList::fromPair` to improve InnerList public API;
+- `InnerList::toPair` to improve InnerList public API;
 - `InnerList::fromAssociative` to improve InnerList public API;
-- `Value` class to improve Item public API;
 - `Item` implements the `ValueAccess` interface;
-- `Item::fromValue` named constructor to instantiate a new `Item` from a `Value` object;
-- Adding support for `MapKey` object.
+- `Item::toPair` to complement `Item::fromPair`;
+- `Value` internal class to improve Item public API;
+- Adding support for `MapKey` object to access container members.
 
 ### Fixed
 

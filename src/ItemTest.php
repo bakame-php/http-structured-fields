@@ -188,6 +188,32 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_instantiates_a_decimal(): void
+    {
+        self::assertSame(42.0, Item::from(42.0)->value());
+        self::assertSame(42.0, Item::fromDecimal(42)->value());
+        self::assertSame(42.0, Item::fromDecimal(42.0)->value());
+    }
+
+    #[Test]
+    public function it_instantiates_a_integer(): void
+    {
+        self::assertSame(42, Item::from(42)->value());
+        self::assertSame(42, Item::fromInteger(42.9)->value());
+        self::assertSame(42, Item::fromInteger(42.0)->value());
+        self::assertSame(42, Item::fromInteger(42)->value());
+    }
+
+    #[Test]
+    public function it_instantiates_a_boolean(): void
+    {
+        self::assertTrue(Item::from(true)->value());
+        self::assertTrue(Item::true()->value());
+        self::assertFalse(Item::from(false)->value());
+        self::assertFalse(Item::false()->value());
+    }
+
+    #[Test]
     public function it_instantiates_a_binary(): void
     {
         $byteSequence = ByteSequence::fromDecoded('foobar');
@@ -313,6 +339,17 @@ final class ItemTest extends StructuredFieldTestCase
 
         self::assertEquals($instance2, $instance1);
         self::assertEquals($instance3, $instance1);
+    }
+
+    #[Test]
+    public function it_can_create_and_return_an_array_of_pairs(): void
+    {
+        $instance = Item::fromPair([42, [['foo', 'bar']]]);
+        $res = $instance->toPair();
+
+        self::assertSame(42, $res[0]);
+        self::assertEquals(Parameters::fromAssociative(['foo' => 'bar']), $res[1]);
+        self::assertEquals($instance, Item::fromPair($res));
     }
 
     #[Test]

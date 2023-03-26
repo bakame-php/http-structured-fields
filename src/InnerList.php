@@ -53,7 +53,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance.
      */
-    public static function from(StructuredField|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
+    public static function from(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
         return new self(Parameters::create(), $members);
     }
@@ -90,7 +90,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function fromAssociative(
         iterable $parameters,
-        StructuredField|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
+        StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
     ): self {
         return new self(Parameters::fromAssociative($parameters), $members);
     }
@@ -165,6 +165,14 @@ final class InnerList implements MemberList, ParameterAccess
     public function __toString(): string
     {
         return $this->toHttpValue();
+    }
+
+    /**
+     * @return array{0:list<SfItem>, 1:MemberOrderedMap<string, SfItem>}
+     */
+    public function toPair(): array
+    {
+        return [$this->members, $this->parameters];
     }
 
     public function count(): int

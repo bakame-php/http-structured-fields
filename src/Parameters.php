@@ -266,7 +266,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param SfItemInput $member
      */
-    public function append(MapKey|string $key, StructuredField|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function append(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         $key = $key instanceof MapKey ? $key->value : $key;
         $members = $this->members;
@@ -283,7 +283,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param SfItemInput $member
      */
-    public function prepend(MapKey|string $key, StructuredField|Value|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function prepend(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         $key = $key instanceof MapKey ? $key->value : $key;
         $members = $this->members;

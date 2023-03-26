@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use LogicException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -206,6 +207,39 @@ final class InnerListTest extends TestCase
         self::assertSame($instance1, $instance2);
         self::assertNotSame($instance1->parameters(), $instance3->parameters());
         self::assertEquals([...$instance1], [...$instance3]);
+    }
+
+    /**
+     * @param array<mixed> $pair
+     */
+    #[Test]
+    #[DataProvider('invalidPairProvider')]
+    public function it_fails_to_create_an_innerlist_from_an_array_of_pairs(array $pair): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        InnerList::fromPair($pair);  // @phpstan-ignore-line
+    }
+
+    /**
+     * @return iterable<string, array{pair:array<mixed>}>
+     */
+    public static function invalidPairProvider(): iterable
+    {
+        yield 'empty pair' => ['pair' => []];
+        yield 'empty extra filled pair' => ['pair' => [1, [2], 3]];
+        yield 'associative array' => ['pair' => ['value' => 'bar', 'parameters' => ['foo' => 'bar']]];
+    }
+
+    #[Test]
+    public function it_can_create_and_return_an_array_of_pairs(): void
+    {
+        $instance = InnerList::fromPair([[42, 'forty-two'], [['foo', 'bar']]]);
+        $res = $instance->toPair();
+
+        self::assertEquals([Item::from(42), Item::from('forty-two')], $res[0]);
+        self::assertEquals(Parameters::fromAssociative(['foo' => 'bar']), $res[1]);
+        self::assertEquals($instance, InnerList::fromPair($res));
     }
 
     #[Test]

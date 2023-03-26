@@ -6,9 +6,15 @@ namespace Bakame\Http\StructuredFields;
 
 /**
  * @phpstan-import-type SfTypeInput from StructuredField
+ * @phpstan-import-type SfItem from StructuredField
  */
 interface ParameterAccess
 {
+    /**
+     * @return array{0:mixed, 1:MemberOrderedMap<string, SfItem>}
+     */
+    public function toPair(): array;
+
     /**
      * Returns a copy of the associated parameter instance.
      */

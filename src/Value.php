@@ -13,6 +13,7 @@ use const PHP_ROUND_HALF_EVEN;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
+ * @internal
  */
 final class Value
 {
@@ -159,6 +160,26 @@ final class Value
         }
 
         return new self($value);
+    }
+
+    public static function fromDecimal(int|float $value): self
+    {
+        return new self((float) $value);
+    }
+
+    public static function fromInteger(int|float $value): self
+    {
+        return new self((int) $value);
+    }
+
+    public static function true(): self
+    {
+        return new self(true);
+    }
+
+    public static function false(): self
+    {
+        return new self(false);
     }
 
     /**
