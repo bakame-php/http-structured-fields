@@ -194,7 +194,7 @@ final class Value
             is_int($this->value) => (string) $this->value,
             is_float($this->value) => self::serializeDecimal($this->value),
             is_bool($this->value) => '?'.($this->value ? '1' : '0'),
-            $this->value instanceof Token => $this->value->value,
+            $this->value instanceof Token => $this->value->toString(),
             $this->value instanceof DateTimeImmutable => '@'.$this->value->getTimestamp(),
             default => ':'.$this->value->encoded().':',
         };

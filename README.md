@@ -114,7 +114,7 @@ ByteSequence::fromDecoded(string|Stringable $value): ByteSequence;
 ByteSequence::fromEncoded(string|Stringable $value): ByteSequence;
 ```
 
-Both class are final and immutable and their value can not be modified once instantiated.
+Both classes are final and immutable; their value can not be modified once instantiated.
 To access their value, they expose the following API:
 
 ```php
@@ -122,7 +122,7 @@ use Bakame\Http\StructuredFields\Token;
 use Bakame\Http\StructuredFields\ByteSequence;
 
 $token = Token::fromString('application/text+xml');
-echo $token->value; // returns 'application/text+xml'
+echo $token->toString(); // returns 'application/text+xml'
 
 $byte = ByteSequence::fromDecoded('Hello world!');
 $byte->decoded(); // returns 'Hello world!'
@@ -150,17 +150,7 @@ $item = Item::from(CarbonImmutable::parse('today'));
 $item->type();  // return Type::Date;
 $item->value()  // return CarbonImmutable::parse('today') (because it extends DateTimeImmutable)
 // you can also do 
-Type::Date->equals($item->type()); // returns true
-```
-
-You can also read the associated `Parameters` instance attached to an `Item` instance
-using the following methods:
-
-```php
-use Bakame\Http\StructuredFields\Parameters;
-
-$item->parameter($key): ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|bool|null;
-$item->parameters(): Parameters;
+Type::Date->equals($item); // returns true
 ```
 
 #### Containers
@@ -199,7 +189,9 @@ $container->pair(int $offset): array{0:string, 1:StructuredField};
 $container->toPairs(): iterable<array{0:string, 1:StructuredField}>;
 ```
 
-You can also read the associated `Parameters` instance attached to an `InnerList` instance
+#### Accessing the paramters values
+
+You can also read the associated `Parameters` instance attached to an `InnerList` or a `Item` instances
 using the following methods:
 
 ```php
@@ -214,21 +206,6 @@ $innerList->parameters(): Parameters;
 Every value object can be used as a builder to create an HTTP field value.
 
 The `Item` value object exposes lots of named constructors.
-
-```php
-use Bakame\Http\StructuredFields\ByteSequence;
-use Bakame\Http\StructuredFields\Item;
-
-$item = Item::fromPair(["hello world", [
-    ["a", Item::from(ByteSequence::fromDecoded("Hello World"))],
-]]);
-$item->value();            // returns "hello world"
-$item->type();             // returns Type::String
-$item->parameter("a");    // returns ByteSequence::fromDecoded('Hello World');
-echo $item->toHttpValue(); // returns "hello world";a=:SGVsbG8gV29ybGQ=:
-```
-
-Once again it is possible to simplify this code using the following technique:
 
 ```php
 use Bakame\Http\StructuredFields\ByteSequence;
@@ -261,10 +238,6 @@ The `Item::from` method expects an associative iterable to represents the parame
 ```php
 use Bakame\Http\StructuredFields\Item;
 
-//@type SfItemInput ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
-
-Item::from(SfItemInput $value, iterable<string, SfItemInput> $associativeParameters = []): self;
-Item::fromPair(array{0:SfItemInput, 1:iterable<array{0:string, 1:SfItemInput}>} $pair): self;
 Item::fromDecodedByteSequence(string $value): self;
 Item::fromEncodedByteSequence(string $value): self;
 Item::fromToken(string $value): self;
@@ -284,21 +257,6 @@ use Bakame\Http\StructuredFields\ValueAccess;
 use Bakame\Http\StructuredFields\Parameters;
 
 Item::withValue(SfItemInput $value): static
-```
-
-And just like with the `InnerList` instance the `Item` object provides additional modifying methods
-to help deal with parameters. You can attach and update the associated `Parameters` instance using the
-following methods:
-
-```php
-use Bakame\Http\StructuredFields\Parameters;
-
-$item->addParameter($key, $value): static;
-$item->appendParameter($key, $value): static;
-$item->prependParameter($key, $value): static;
-$item->withoutParameters(...$keys): static;
-$item->withoutAnyParameter(): static;
-$item->withParameters(Parameters $parameters): static;
 ```
 
 The `Dictionary` and `Parameters` instances can be build with an associative iterable structure as shown below
@@ -405,16 +363,22 @@ $list->replace($key, $member): static;
 $list->remove(...$key): static;
 ```
 
-On `InnerList` instances it is possible to attach and update a `Parameters` instance using the
-following methods:
+# Adding and updating parameters
+
+Apart from the `Item::from` named constructor, you can initialize a new Item instance using pairs
+as defined in the RFC:
 
 ```php
-$list->addParameter($key, $value): static;
-$list->appendParameter($key, $value): static;
-$list->prependParameter($key, $value): static;
-$list->withoutParameters(...$keys): static;
-$list->withoutAnyParameter(): static;
-$list->withParameters(Parameters $parameters): static;
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Item;
+
+$item = Item::fromPair(["hello world", [
+    ["a", Item::from(ByteSequence::fromDecoded("Hello World"))],
+]]);
+$item->value();            // returns "hello world"
+$item->type();             // returns Type::String
+$item->parameter("a");    // returns ByteSequence::fromDecoded('Hello World');
+echo $item->toHttpValue(); // returns "hello world";a=:SGVsbG8gV29ybGQ=:
 ```
 
 It is also possible to instantiate an `InnerList` instance with included parameters
@@ -422,9 +386,40 @@ using one of those two additional named constructors:
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
+use Bakame\Http\StructuredFields\Item;
+
+//@type SfItemInput ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
+
+Item::from(SfItemInput $value, iterable<string, SfItemInput> $parameters = []): self;
+Item::fromPair(array{0:SfItemInput, 1:iterable<array{0:string, 1:SfItemInput}>} $pair): self;
 
 InnerList::fromAssociative(iterable<string, SfItemInput> $parameters, ...$members): self;
 InnerList::fromPair(array{0:list<Item>, iterable<array{0:string, 1:SfItemInput}>} $pair): self;
+```
+
+Both classes allow return their respective pair representation via the `toPair` method.
+
+```php
+use Bakame\Http\StructuredFields\InnerList;
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Parameters;
+
+InnerList::toPair(): array{0:list<Item>, 1:Parameters}>};
+Item::toPair(): array{0:mixed, 1:Parameters}>};
+```
+
+The `InnerList` and  `Item` object provide additional modifying methods to help deal with parameters.
+You can attach and update the associated `Parameters` instance using the following methods:
+
+```php
+use Bakame\Http\StructuredFields\Parameters;
+
+$field->addParameter(string $key, mixed $value): static;
+$field->appendParameter(string $key, mixed $value): static;
+$field->prependParameter(string $key, mixed $value): static;
+$field->withoutParameters(string ...$keys): static;
+$field->withoutAnyParameter(): static;
+$field->withParameters(Parameters $parameters): static;
 ```
 
 ## Contributing
