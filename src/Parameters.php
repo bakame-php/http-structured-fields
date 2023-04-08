@@ -30,13 +30,14 @@ final class Parameters implements MemberOrderedMap
     private readonly array $members;
 
     /**
-     * @param iterable<string, SfItemInput> $members
+     * @param iterable<MapKey|string, SfItemInput> $members
      */
     private function __construct(iterable $members = [])
     {
         $filteredMembers = [];
         foreach ($members as $key => $member) {
-            $filteredMembers[MapKey::from($key)->value] = self::filterMember($member);
+            $offset = $key instanceof MapKey ? $key->value : MapKey::from($key)->value;
+            $filteredMembers[$offset] = self::filterMember($member);
         }
 
         $this->members = $filteredMembers;
