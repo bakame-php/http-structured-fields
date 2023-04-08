@@ -73,7 +73,7 @@ final class InnerList implements MemberList, ParameterAccess
         }
 
         if (2 !== count($pair)) { /* @phpstan-ignore-line */
-            throw new SyntaxError('The pair first value should be the member list and the optional second value the inner list parameters.');
+            throw new SyntaxError('The pair first member must be the member list and the optional second member the inner list parameters.');
         }
 
         if (!$pair[1] instanceof Parameters) {
@@ -112,10 +112,10 @@ final class InnerList implements MemberList, ParameterAccess
         return $this->parameters;
     }
 
-    public function parameter(MapKey|string $key): mixed
+    public function parameter(string $key): mixed
     {
         try {
-            return $this->parameters->get($key instanceof MapKey ? $key->value : $key)->value();
+            return $this->parameters->get($key)->value();
         } catch (StructuredFieldError) {
             return null;
         }
@@ -130,26 +130,24 @@ final class InnerList implements MemberList, ParameterAccess
         return new static($parameters, $this->members);
     }
 
-    public function addParameter(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        return $this->withParameters($this->parameters()->add($key instanceof MapKey ? $key->value : $key, $member));
+        return $this->withParameters($this->parameters()->add($key, $member));
     }
 
-    public function prependParameter(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function prependParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        return $this->withParameters($this->parameters()->prepend($key instanceof MapKey ? $key->value : $key, $member));
+        return $this->withParameters($this->parameters()->prepend($key, $member));
     }
 
-    public function appendParameter(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function appendParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        return $this->withParameters($this->parameters()->append($key instanceof MapKey ? $key->value : $key, $member));
+        return $this->withParameters($this->parameters()->append($key, $member));
     }
 
-    public function withoutParameter(MapKey|string ...$keys): static
+    public function withoutParameter(string ...$keys): static
     {
-        return $this->withParameters($this->parameters()->remove(
-            ...array_map(fn (MapKey|string $key): string => $key instanceof MapKey ? $key->value : $key, $keys)
-        ));
+        return $this->withParameters($this->parameters()->remove(...$keys));
     }
 
     public function withoutAnyParameter(): static
@@ -203,7 +201,7 @@ final class InnerList implements MemberList, ParameterAccess
         yield from $this->members;
     }
 
-    public function has(MapKey|string|int ...$keys): bool
+    public function has(string|int ...$keys): bool
     {
         foreach ($keys as $offset) {
             if (null === $this->filterIndex($offset)) {
@@ -214,7 +212,7 @@ final class InnerList implements MemberList, ParameterAccess
         return [] !== $keys;
     }
 
-    private function filterIndex(MapKey|string|int $index): int|null
+    private function filterIndex(string|int $index): int|null
     {
         if (!is_int($index)) {
             return null;
@@ -234,7 +232,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @return SfItem
      */
-    public function get(MapKey|string|int $key): StructuredField
+    public function get(string|int $key): StructuredField
     {
         $index = $this->filterIndex($key);
         if (null === $index) {
@@ -341,12 +339,12 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Deletes members associated with the list of instance indexes.
      */
-    public function remove(MapKey|string|int ...$keys): static
+    public function remove(string|int ...$keys): static
     {
         $offsets = array_filter(
             array_map(
                 fn (int $index): int|null => $this->filterIndex($index),
-                array_filter($keys, static fn (MapKey|string|int $key): bool => is_int($key))
+                array_filter($keys, static fn (string|int $key): bool => is_int($key))
             ),
             fn (int|null $index): bool => null !== $index
         );

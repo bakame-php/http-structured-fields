@@ -30,14 +30,13 @@ final class Parameters implements MemberOrderedMap
     private readonly array $members;
 
     /**
-     * @param iterable<MapKey|string, SfItemInput> $members
+     * @param iterable<string, SfItemInput> $members
      */
     private function __construct(iterable $members = [])
     {
         $filteredMembers = [];
         foreach ($members as $key => $member) {
-            $offset = $key instanceof MapKey ? $key->value : MapKey::from($key)->value;
-            $filteredMembers[$offset] = self::filterMember($member);
+            $filteredMembers[MapKey::from($key)->value] = self::filterMember($member);
         }
 
         $this->members = $filteredMembers;
@@ -171,13 +170,9 @@ final class Parameters implements MemberOrderedMap
         return array_keys($this->members);
     }
 
-    public function has(MapKey|string|int ...$keys): bool
+    public function has(string|int ...$keys): bool
     {
         foreach ($keys as $offset) {
-            if ($offset instanceof MapKey) {
-                $offset = $offset->value;
-            }
-
             if (!is_string($offset) || !array_key_exists($offset, $this->members)) {
                 return false;
             }
@@ -192,14 +187,10 @@ final class Parameters implements MemberOrderedMap
      *
      * @return SfItem
      */
-    public function get(MapKey|string|int $key): StructuredField
+    public function get(string|int $key): StructuredField
     {
         if (!$this->has($key)) {
             throw InvalidOffset::dueToKeyNotFound($key);
-        }
-
-        if ($key instanceof MapKey) {
-            return $this->members[$key->value];
         }
 
         return $this->members[$key];
@@ -242,19 +233,19 @@ final class Parameters implements MemberOrderedMap
         return [...$this->toPairs()][$this->filterIndex($index)];
     }
 
-    public function add(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
         $members = $this->members;
-        $members[$key instanceof MapKey ? $key->value : $key] = $member;
+        $members[$key] = $member;
 
         return new self($members);
     }
 
-    public function remove(MapKey|string|int ...$keys): static
+    public function remove(string|int ...$keys): static
     {
         $members = $this->members;
-        foreach (array_filter($keys, static fn (MapKey|string|int $key): bool => !is_int($key)) as $key) {
-            unset($members[$key instanceof MapKey ? $key->value : $key]);
+        foreach (array_filter($keys, static fn (string|int $key): bool => !is_int($key)) as $key) {
+            unset($members[$key]);
         }
 
         if ($members === $this->members) {
@@ -267,9 +258,8 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param SfItemInput $member
      */
-    public function append(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        $key = $key instanceof MapKey ? $key->value : $key;
         $members = $this->members;
         unset($members[$key]);
         $members[$key] = $member;
@@ -284,9 +274,8 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param SfItemInput $member
      */
-    public function prepend(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        $key = $key instanceof MapKey ? $key->value : $key;
         $members = $this->members;
         unset($members[$key]);
 

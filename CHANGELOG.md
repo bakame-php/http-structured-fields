@@ -14,7 +14,6 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Item::fromDate` to improve and complete the Item Date public API;
 - `Value` internal class to improve Item public API;
 - `Token::toString` to return the string representation of the token.
-- Adding support for `MapKey` object to access container members.
 
 ### Fixed
 

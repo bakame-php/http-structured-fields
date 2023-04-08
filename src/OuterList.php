@@ -110,7 +110,7 @@ final class OuterList implements MemberList
         yield from $this->members;
     }
 
-    public function has(MapKey|string|int ...$keys): bool
+    public function has(string|int ...$keys): bool
     {
         foreach ($keys as $offset) {
             if (null === $this->filterIndex($offset)) {
@@ -121,7 +121,7 @@ final class OuterList implements MemberList
         return [] !== $keys;
     }
 
-    private function filterIndex(MapKey|string|int $index): int|null
+    private function filterIndex(string|int $index): int|null
     {
         if (!is_int($index)) {
             return null;
@@ -141,7 +141,7 @@ final class OuterList implements MemberList
     /**
      * @return SfMember
      */
-    public function get(MapKey|string|int $key): StructuredField
+    public function get(string|int $key): StructuredField
     {
         $index = $this->filterIndex($key);
         if (null === $index) {
@@ -248,12 +248,12 @@ final class OuterList implements MemberList
     /**
      * Deletes members associated with the list of instance indexes.
      */
-    public function remove(MapKey|string|int ...$keys): static
+    public function remove(string|int ...$keys): static
     {
         $offsets = array_filter(
             array_map(
                 fn (int $index): int|null => $this->filterIndex($index),
-                array_filter($keys, static fn (MapKey|string|int $key): bool => is_int($key))
+                array_filter($keys, static fn (string|int $key): bool => is_int($key))
             ),
             fn (int|null $index): bool => null !== $index
         );

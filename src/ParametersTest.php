@@ -25,7 +25,7 @@ final class ParametersTest extends StructuredFieldTestCase
         $instance = Parameters::fromAssociative($arrayParams);
 
         self::assertSame(['string', $stringItem], $instance->pair(0));
-        self::assertTrue($instance->has('string', MapKey::from('string')));
+        self::assertTrue($instance->has('string', 'string'));
         self::assertSame($stringItem, $instance->get('string'));
         self::assertTrue($instance->has('string'));
 
@@ -190,7 +190,6 @@ final class ParametersTest extends StructuredFieldTestCase
 
         self::assertEquals(Item::from(42), $instance4->get('a'));
         self::assertEquals(Item::from(true), $instance4->get('b'));
-        self::assertEquals(Item::from(true), $instance4->get(MapKey::from('b')));
     }
 
     #[Test]

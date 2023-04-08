@@ -58,7 +58,7 @@ final class Item implements ParameterAccess, ValueAccess
         }
 
         if (2 !== count($pair)) { /* @phpstan-ignore-line */
-            throw new SyntaxError('The pair first value should be the item value and the optional second value the item parameters.');
+            throw new SyntaxError('The pair first member must be the item value and the optional second member the item parameters.');
         }
 
         if (!$pair[1] instanceof Parameters) {
@@ -194,10 +194,10 @@ final class Item implements ParameterAccess, ValueAccess
         return $this->parameters;
     }
 
-    public function parameter(MapKey|string $key): mixed
+    public function parameter(string $key): mixed
     {
         try {
-            return $this->parameters->get($key instanceof MapKey ? $key->value : $key)->value();
+            return $this->parameters->get($key)->value();
         } catch (StructuredFieldError) {
             return null;
         }
@@ -241,26 +241,24 @@ final class Item implements ParameterAccess, ValueAccess
         return $this->parameters->toHttpValue() === $parameters->toHttpValue() ? $this : new static($this->value, $parameters);
     }
 
-    public function addParameter(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        return $this->withParameters($this->parameters()->add($key instanceof MapKey ? $key->value : $key, $member));
+        return $this->withParameters($this->parameters()->add($key, $member));
     }
 
-    public function prependParameter(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function prependParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        return $this->withParameters($this->parameters()->prepend($key instanceof MapKey ? $key->value : $key, $member));
+        return $this->withParameters($this->parameters()->prepend($key, $member));
     }
 
-    public function appendParameter(MapKey|string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function appendParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
     {
-        return $this->withParameters($this->parameters()->append($key instanceof MapKey ? $key->value : $key, $member));
+        return $this->withParameters($this->parameters()->append($key, $member));
     }
 
-    public function withoutParameter(MapKey|string ...$keys): static
+    public function withoutParameter(string ...$keys): static
     {
-        return $this->withParameters($this->parameters()->remove(
-            ...array_map(fn (MapKey|string $key): string => $key instanceof MapKey ? $key->value : $key, $keys)
-        ));
+        return $this->withParameters($this->parameters()->remove(...$keys));
     }
 
     public function withoutAnyParameter(): static
