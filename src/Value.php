@@ -162,6 +162,16 @@ final class Value
         return new self($value);
     }
 
+    /**
+     * Returns a new instance from a DatetimeInterface implementing object.
+     *
+     * @throws SyntaxError if the format is invalid
+     */
+    public static function fromDate(DateTimeInterface $datetime): self
+    {
+        return new self($datetime);
+    }
+
     public static function fromDecimal(int|float $value): self
     {
         return new self((float) $value);

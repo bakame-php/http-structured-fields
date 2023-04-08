@@ -27,7 +27,7 @@ composer require bakame/http-structured-fields
 ### Parsing and Serializing Structured Fields
 
 Once the library is installed parsing the header value is done via the normalized `fromHttpValue` named 
-constructor attached to all library's value objects as shown below:
+constructor attached to library's structured fields representation as shown below:
 
 ```php
 
@@ -41,7 +41,7 @@ use Bakame\Http\StructuredFields\Item;
 // via any given framework or package or super global.
 // We are using a PSR-7 Request object in this example
 
-$headerLine = $request->getHeaderLine('foo'); // 'foo: bar;baz=42' the raw header line
+$headerLine = $request->getHeaderLine('foo'); // 'foo: bar;baz=42' the raw header line is a structured field item
 $field = Item::fromHttpValue($headerLine);
 $field->value();          // returns Token::fromString('bar); the found token value 
 $field->parameter('baz'); // returns 42; the value of the parameter or null if the parameter is not defined.
@@ -102,8 +102,8 @@ The table below summarizes the item value type.
 | Date          | class `DateTimeImmutable`      | `Type::Date`         |
 
 As shown in the table, the RFC define two (2) specific data types that can not be represented by
-PHP default type system, for them, we define two classes `Token` and `ByteSequence` to help
-representing them in our code.
+PHP default type system, for them, we have defined two classes `Token` and `ByteSequence` to help
+with represention.
 
 ```php
 use Bakame\Http\StructuredFields\Token;
@@ -130,6 +130,9 @@ $byte->encoded(); // returns 'SGVsbG8gd29ybGQh'
 
 $token->equals($byte); // will return false;
 $byte->equals(ByteSequence::fromEncoded('SGVsbG8gd29ybGQh')); // will return true
+
+$token->type(); // returns Type::Token enum
+$byte->type();  // returns Type::ByteSequence
 ```
 
 **Both classes DO NOT expose the `Stringable` interface to distinguish them
@@ -137,7 +140,7 @@ from a string or a string like object**
 
 #### Item
 
-The defined types are all attached to the `Item` object where there values and type
+The defined types are all attached to the `Item` object where there values and types
 are accessible using the following methods:
 
 ```php
@@ -148,7 +151,7 @@ use Bakame\Http\StructuredFields\Type;
 // the Item::value() can return one of those type
 $item = Item::from(CarbonImmutable::parse('today'));
 $item->type();  // return Type::Date;
-$item->value()  // return CarbonImmutable::parse('today') (because it extends DateTimeImmutable)
+$item->value()  // return a CarbonImmutable instance because it extends DateTimeImmutable
 // you can also do 
 Type::Date->equals($item); // returns true
 ```
@@ -189,7 +192,7 @@ $container->pair(int $offset): array{0:string, 1:StructuredField};
 $container->toPairs(): iterable<array{0:string, 1:StructuredField}>;
 ```
 
-#### Accessing the paramters values
+#### Accessing the parameters values
 
 You can also read the associated `Parameters` instance attached to an `InnerList` or a `Item` instances
 using the following methods:
@@ -205,35 +208,10 @@ $innerList->parameters(): Parameters;
 
 Every value object can be used as a builder to create an HTTP field value.
 
-The `Item` value object exposes lots of named constructors.
+#### Items value
 
-```php
-use Bakame\Http\StructuredFields\ByteSequence;
-use Bakame\Http\StructuredFields\Item;
-
-$item = Item::from("hello world", [
-    "a" => Item::fromDecodedByteSequence("Hello World")
-]);
-$item->value();            // returns "hello world"
-$item->type();             // returns Type::String
-$item->parameter("a");     // returns ByteSequence::fromDecoded('Hello World');
-echo $item->toHttpValue(); // returns "hello world";a=:SGVsbG8gV29ybGQ=:
-```
-
-**Of note: to instantiate a decimal number type a float MUST be used as the first argument of `Item::from`.**
-
-```php
-use Bakame\Http\StructuredFields\Item;
-
-$decimal = Item::from(42.0);
-$decimal->type(); //Type::Decimal
-
-$integer = Item::fromPair([42]);
-$integer->type(); //return Type::Integer
-```
-
-Here's the complete list of named constructors attached to the `Item` object.
-The `Item::from` method expects an associative iterable to represents the parameters.
+The `Item` value object exposes lots of named constructors to construct
+bare items (ie: item without parameters attached to them).
 
 ```php
 use Bakame\Http\StructuredFields\Item;
@@ -243,21 +221,23 @@ Item::fromEncodedByteSequence(string $value): self;
 Item::fromToken(string $value): self;
 Item::fromTimestamp(int $value): self;
 Item::fromDateFormat(string $format, string $datetime): self;
+Item::fromDateString(string $datetime, DateTimeZone|string|null $timezone = null): self;
+Item::fromDate(DateTimeInterface $datetime): self;
 Item::fromDecimal(int|float $value): self;
 Item::fromInteger(int|float $value): self;
 Item::true(): self;
 Item::false(): self;
 ```
 
-It is possible to update a `Item` object using the following modifying method:
+To update an `Item` object value, the `Item::withValue` method should be use:
 
 ```php
 use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\ValueAccess;
-use Bakame\Http\StructuredFields\Parameters;
 
 Item::withValue(SfItemInput $value): static
 ```
+
+### Dictionaries
 
 The `Dictionary` and `Parameters` instances can be build with an associative iterable structure as shown below
 
@@ -337,6 +317,7 @@ $list = InnerList::from(
 echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 ```
+
 Once again, builder methods exist on both classes to ease container construction.
 
 ```php
@@ -363,26 +344,10 @@ $list->replace($key, $member): static;
 $list->remove(...$key): static;
 ```
 
-# Adding and updating parameters
+#### Adding and updating parameters
 
-Apart from the `Item::from` named constructor, you can initialize a new Item instance using pairs
-as defined in the RFC:
-
-```php
-use Bakame\Http\StructuredFields\ByteSequence;
-use Bakame\Http\StructuredFields\Item;
-
-$item = Item::fromPair(["hello world", [
-    ["a", Item::from(ByteSequence::fromDecoded("Hello World"))],
-]]);
-$item->value();            // returns "hello world"
-$item->type();             // returns Type::String
-$item->parameter("a");    // returns ByteSequence::fromDecoded('Hello World');
-echo $item->toHttpValue(); // returns "hello world";a=:SGVsbG8gV29ybGQ=:
-```
-
-It is also possible to instantiate an `InnerList` instance with included parameters
-using one of those two additional named constructors:
+It is also possible to instantiate an `InnerList` or an `Item` instance with included parameters
+using one of these named constructors:
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
@@ -408,7 +373,7 @@ InnerList::toPair(): array{0:list<Item>, 1:Parameters}>};
 Item::toPair(): array{0:mixed, 1:Parameters}>};
 ```
 
-The `InnerList` and  `Item` object provide additional modifying methods to help deal with parameters.
+The `InnerList` and `Item` object provide additional modifying methods to help deal with parameters.
 You can attach and update the associated `Parameters` instance using the following methods:
 
 ```php

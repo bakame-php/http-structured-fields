@@ -142,6 +142,16 @@ final class Item implements ParameterAccess, ValueAccess
     }
 
     /**
+     * Returns a new instance from a DateTineInterface implementing object.
+     *
+     * @throws SyntaxError if the format is invalid
+     */
+    public static function fromDate(DateTimeInterface $datetime): self
+    {
+        return self::fromValue(Value::fromDate($datetime));
+    }
+
+    /**
      * Returns a new bare instance from value.
      */
     private static function fromValue(Value $value): self

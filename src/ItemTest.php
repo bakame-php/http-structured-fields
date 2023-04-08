@@ -133,6 +133,7 @@ final class ItemTest extends StructuredFieldTestCase
         $item = Item::fromHttpValue('@1583349795');
         self::assertEquals($item, Item::from(new DateTimeImmutable('2020-03-04 19:23:15')));
         self::assertEquals($item, Item::from(new DateTime('2020-03-04 19:23:15')));
+        self::assertEquals($item, Item::fromDate(new DateTime('2020-03-04 19:23:15')));
         self::assertEquals($item, Item::fromTimestamp(1583349795));
         self::assertEquals($item, Item::fromDateFormat(DateTimeInterface::RFC822, 'Wed, 04 Mar 20 19:23:15 +0000'));
         self::assertTrue($item ->value() < Item::fromDateString('-1 year')->value());
@@ -145,6 +146,22 @@ final class ItemTest extends StructuredFieldTestCase
         $this->expectException(SyntaxError::class);
 
         Item::fromHttpValue('@112345.678');
+    }
+
+    #[Test]
+    public function it_fails_to_instantiate_an_out_of_range_date_object_in_the_future(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::fromDate((new DateTimeImmutable())->setTimestamp(1_000_000_000_000_000));
+    }
+
+    #[Test]
+    public function it_fails_to_instantiate_an_out_of_range_date_object_in_the_past(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Item::fromDate((new DateTime())->setTimestamp(-1_000_000_000_000_000));
     }
 
     #[Test]
