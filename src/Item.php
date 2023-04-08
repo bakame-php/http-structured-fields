@@ -98,6 +98,14 @@ final class Item implements ParameterAccess, ValueAccess
     }
 
     /**
+     * Returns a new bare instance from value.
+     */
+    private static function fromValue(Value $value): self
+    {
+        return new self($value, Parameters::create());
+    }
+
+    /**
      * Returns a new instance from a decoded byte sequence and an iterable of key-value parameters.
      */
     public static function fromDecodedByteSequence(Stringable|string $value): self
@@ -152,28 +160,36 @@ final class Item implements ParameterAccess, ValueAccess
     }
 
     /**
-     * Returns a new bare instance from value.
+     * Returns a new instance from a float value
+     *
+     * @throws SyntaxError if the format is invalid
      */
-    private static function fromValue(Value $value): self
-    {
-        return new self($value, Parameters::create());
-    }
-
     public static function fromDecimal(int|float $value): self
     {
         return self::fromValue(Value::fromDecimal($value));
     }
 
+    /**
+     * Returns a new instance from an integer value
+     *
+     * @throws SyntaxError if the format is invalid
+     */
     public static function fromInteger(int|float $value): self
     {
         return self::fromValue(Value::fromInteger($value));
     }
 
+    /**
+     * Returns a new instance for the boolean true type
+     */
     public static function true(): self
     {
         return self::fromValue(Value::true());
     }
 
+    /**
+     * Returns a new instance for the boolean false type
+     */
     public static function false(): self
     {
         return self::fromValue(Value::false());
