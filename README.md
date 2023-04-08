@@ -237,7 +237,7 @@ use Bakame\Http\StructuredFields\Item;
 Item::withValue(SfItemInput $value): static
 ```
 
-### Dictionaries
+#### Dictionaries
 
 The `Dictionary` and `Parameters` instances can be build with an associative iterable structure as shown below
 
@@ -301,6 +301,8 @@ $map->mergeAssociative(...$others): static;
 $map->mergePairs(...$others): static;
 $map->remove(...$key): static;
 ```
+
+#### Lists
 
 To Create `OuterList` and `InnerList` instances you can use the `from` name constructor:
 
