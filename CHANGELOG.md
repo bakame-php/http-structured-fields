@@ -12,11 +12,13 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Item` implements the `ValueAccess` interface;
 - `Item::toPair` to complement `Item::fromPair`;
 - `Item::fromDate` to improve and complete the Item Date public API;
+- `Item::new` to improve Item public API;
 - `Item::fromAssociative` to improve Item public API;
 - `Item::fromString` to improve Item public API;
 - `Value` internal class to improve Item public API;
 - `Token::toString` to return the string representation of the token.
 - `Parameters::new` and `Dictionary::new` to return a new and empty instance
+- `InnerList::new` and `InnerList::new` to return a new instance
 
 ### Fixed
 
@@ -32,9 +34,10 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - **[BC Break]** `InnerList::fromAssociativeParameters` use `InnerList::fromAssociative` instead.
 - **[BC Break]** `Value` interface use a combination of `ValueAccess` **and** `ParameterAccess` instead.
 - **[BC Break]** `Token::value` is no longer public use `Token::toString` instead.
-- **[BC Break]** `Item::from` is removed use `Item::fromAssociative` instead.
+- **[BC Break]** `Item::from` is removed use `Item::fromAssociative` or `Item::new` instead.
 - **[BC Break]** `Parameters::create` is removed use `Parameters::new` instead.
-- **[BC Break]** `Dictionary::create` is removed use `Dictionary::new` instead.
+- **[BC Break]** `InnerList::from` is removed use `InnerList::new` instead.
+- **[BC Break]** `OuterList::create` is removed use `OuterList::new` instead.
 
 ## [0.8.0] - 2023-03-12
 

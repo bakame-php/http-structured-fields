@@ -91,6 +91,16 @@ final class Item implements ParameterAccess, ValueAccess
 
     /**
      * Returns a new bare instance from value.
+     *
+     * @throws SyntaxError If the value is not valid to create a Bare Item.
+     */
+    public static function new(mixed $value): self
+    {
+        return new self(new Value($value), Parameters::new());
+    }
+
+    /**
+     * Returns a new bare instance from value.
      */
     private static function fromValue(Value $value): self
     {

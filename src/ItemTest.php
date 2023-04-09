@@ -77,7 +77,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[DataProvider('provideFrom1stArgument')]
     public function it_instantiate_many_types(ValueAccess|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool $value, string $expected): void
     {
-        self::assertSame($expected, Item::fromAssociative($value)->toHttpValue());
+        self::assertSame($expected, Item::new($value)->toHttpValue());
     }
 
     #[Test]

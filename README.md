@@ -218,6 +218,7 @@ bare items (ie: item without parameters attached to them).
 ```php
 use Bakame\Http\StructuredFields\Item;
 
+Item::new(mixed $value): self;
 Item::fromDecodedByteSequence(Stringable|string $value): self;
 Item::fromEncodedByteSequence(Stringable|string $value): self;
 Item::fromToken(Stringable|string $value): self;
@@ -307,13 +308,13 @@ $map->remove(string ...$key): static;
 
 #### Lists
 
-To Create `OuterList` and `InnerList` instances you can use the `from` named constructor:
+To Create `OuterList` and `InnerList` instances you can use the `new` named constructor:
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Item;
 
-$list = InnerList::from(
+$list = InnerList::new(
     Item::fromDecodedByteSequence('Hello World'),
     42.0,
     42
@@ -329,7 +330,7 @@ Once again, builder methods exist on both classes to ease container construction
 use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Item;
 
-$list = InnerList::from()
+$list = InnerList::new()
     ->unshift('42')
     ->push(42)
     ->insert(1, 42.0)
