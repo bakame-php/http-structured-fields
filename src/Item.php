@@ -55,7 +55,7 @@ final class Item implements ParameterAccess, ValueAccess
      *
      * @param iterable<string, SfItemInput> $parameters
      */
-    public static function fromAssociative(mixed $value, iterable $parameters = []): self
+    public static function fromAssociative(mixed $value, iterable $parameters): self
     {
         if (!$parameters instanceof Parameters) {
             $parameters = Parameters::fromAssociative($parameters);

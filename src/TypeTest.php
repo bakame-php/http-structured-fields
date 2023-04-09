@@ -36,7 +36,7 @@ final class TypeTest extends TestCase
     #[Test]
     public function it_can_tell_the_item_type_from_a_value_instance(): void
     {
-        self::assertFalse(Type::Integer->equals(Item::fromAssociative(42.0)));
+        self::assertFalse(Type::Integer->equals(Item::fromDecimal(42.0)));
         self::assertTrue(Type::Token->equals(Item::fromToken('text/csv')));
     }
 
@@ -96,7 +96,7 @@ final class TypeTest extends TestCase
                 'expectedType' => Type::Date,
             ],
             'an item object' => [
-                'value' => Item::fromAssociative(new DateTimeImmutable('2020-07-12 13:37:00')),
+                'value' => Item::new(new DateTimeImmutable('2020-07-12 13:37:00')),
                 'expectedType' => Type::Date,
             ],
         ];

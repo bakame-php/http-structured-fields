@@ -159,7 +159,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        InnerList::new()->insert(0, Item::fromAssociative(42.0));
+        InnerList::new()->insert(0, Item::new(42.0));
     }
 
     #[Test]
@@ -230,7 +230,7 @@ final class InnerListTest extends TestCase
         $instance = InnerList::fromPair([[42, 'forty-two'], [['foo', 'bar']]]);
         $res = $instance->toPair();
 
-        self::assertEquals([Item::fromAssociative(42), Item::fromAssociative('forty-two')], $res[0]);
+        self::assertEquals([Item::new(42), Item::new('forty-two')], $res[0]);
         self::assertEquals(Parameters::fromAssociative(['foo' => 'bar']), $res[1]);
         self::assertEquals($instance, InnerList::fromPair($res));
     }
@@ -281,7 +281,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(LogicException::class);
 
-        InnerList::new('foobar', 'foobar', 'zero', 0)[0] = Item::fromAssociative(false);
+        InnerList::new('foobar', 'foobar', 'zero', 0)[0] = Item::false();
     }
 
 
@@ -293,7 +293,7 @@ final class InnerListTest extends TestCase
         self::assertSame([], $instance->keys());
 
         $newInstance = $instance
-            ->push(Item::fromAssociative(false), Item::fromAssociative(true));
+            ->push(Item::false(), Item::true());
 
         self::assertSame([0, 1], $newInstance->keys());
 

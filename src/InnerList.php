@@ -45,7 +45,7 @@ final class InnerList implements MemberList, ParameterAccess
     {
         return match (true) {
             $member instanceof ValueAccess && $member instanceof ParameterAccess => $member,
-            !$member instanceof StructuredField => Item::fromAssociative($member),
+            !$member instanceof StructuredField => Item::new($member),
             default => throw new InvalidArgument('Expecting a "'.ValueAccess::class.'" instance; received a "'.$member::class.'" instead.'),
         };
     }
@@ -99,7 +99,7 @@ final class InnerList implements MemberList, ParameterAccess
      * @param iterable<SfItemInput> $value
      * @param iterable<string, SfItemInput> $parameters
      */
-    public static function fromAssociative(iterable $value, iterable $parameters = []): self
+    public static function fromAssociative(iterable $value, iterable $parameters): self
     {
         if (!$parameters instanceof Parameters) {
             $parameters = Parameters::fromAssociative($parameters);

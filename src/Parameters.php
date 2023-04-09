@@ -51,7 +51,7 @@ final class Parameters implements MemberOrderedMap
     {
         return match (true) {
             $member instanceof ValueAccess && $member instanceof ParameterAccess && $member->parameters()->hasNoMembers() => $member,
-            !$member instanceof StructuredField => Item::fromAssociative($member),
+            !$member instanceof StructuredField => Item::new($member),
             default => throw new InvalidArgument('Parameters instances can only contain bare items.'),
         };
     }

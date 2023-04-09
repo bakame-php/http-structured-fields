@@ -50,14 +50,6 @@ final class ParametersTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function it_fails_to_instantiate_a_pair_with_the_associative_constructor(): void
-    {
-        $this->expectException(SyntaxError::class);
-
-        Parameters::fromAssociative([['a', 'b']]); // @phpstan-ignore-line
-    }
-
-    #[Test]
     public function it_fails_to_instantiate_with_an_item_containing_already_parameters(): void
     {
         $this->expectException(InvalidArgument::class);
@@ -65,7 +57,7 @@ final class ParametersTest extends StructuredFieldTestCase
         Parameters::fromAssociative([
             'foo' => Item::fromAssociative(
                 true,
-                Parameters::fromAssociative(['bar' => Item::fromAssociative(false)])
+                Parameters::fromAssociative(['bar' => Item::false()])
             ),
         ]);
     }
@@ -91,8 +83,8 @@ final class ParametersTest extends StructuredFieldTestCase
         self::assertFalse($deletedInstance->has('boolean'));
         self::assertFalse($deletedInstance->hasPair(1));
 
-        $addedInstance = $deletedInstance->append('foobar', Item::fromAssociative('BarBaz'));
-        self::assertSame($addedInstance, $addedInstance->append('foobar', Item::fromAssociative('BarBaz')));
+        $addedInstance = $deletedInstance->append('foobar', Item::fromString('BarBaz'));
+        self::assertSame($addedInstance, $addedInstance->append('foobar', Item::new('BarBaz')));
         self::assertTrue($addedInstance->hasPair(1));
         self::assertFalse($addedInstance->hasPair(3, 23));
         self::assertFalse($addedInstance->hasPair());
@@ -126,7 +118,7 @@ final class ParametersTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Parameters::fromAssociative(['bébé'=> Item::fromAssociative(false)]);
+        Parameters::fromAssociative(['bébé'=> Item::false()]);
     }
 
     #[Test]
@@ -195,14 +187,14 @@ final class ParametersTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_merge_two_or_more_dictionaries_different_result(): void
     {
-        $instance1 = Parameters::fromAssociative(['a' => Item::fromAssociative(false)]);
-        $instance2 = Parameters::fromAssociative(['b' => Item::fromAssociative(true)]);
-        $instance3 = Parameters::fromAssociative(['a' => Item::fromAssociative(42)]);
+        $instance1 = Parameters::fromAssociative(['a' => Item::false()]);
+        $instance2 = Parameters::fromAssociative(['b' => Item::true()]);
+        $instance3 = Parameters::fromAssociative(['a' => Item::fromInteger(42)]);
 
         $instance4 = $instance3->mergeAssociative($instance2, $instance1);
 
-        self::assertEquals(Item::fromAssociative(false), $instance4->get('a'));
-        self::assertEquals(Item::fromAssociative(true), $instance4->get('b'));
+        self::assertEquals(Item::false(), $instance4->get('a'));
+        self::assertEquals(Item::true(), $instance4->get('b'));
     }
 
     #[Test]
@@ -230,14 +222,14 @@ final class ParametersTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_merge_without_pairs_and_not_throw(): void
     {
-        self::assertCount(1, Parameters::fromAssociative(['a' => Item::fromAssociative(false)])->mergePairs());
+        self::assertCount(1, Parameters::fromAssociative(['a' => Item::false()])->mergePairs());
     }
 
     #[Test]
     public function it_can_merge_dictionary_instances_via_pairs_or_associative(): void
     {
-        $instance1 = Parameters::fromAssociative(['a' => Item::fromAssociative(false)]);
-        $instance2 = Parameters::fromAssociative(['b' => Item::fromAssociative(true)]);
+        $instance1 = Parameters::fromAssociative(['a' => Item::false()]);
+        $instance2 = Parameters::fromAssociative(['b' => Item::true()]);
 
         $instance3 = clone $instance1;
         $instance4 = clone $instance2;
@@ -332,6 +324,6 @@ final class ParametersTest extends StructuredFieldTestCase
     {
         $this->expectException(LogicException::class);
 
-        Parameters::fromPairs([['foobar', 'foobar'], ['zero', 0]])['foobar'] = Item::fromAssociative(false);
+        Parameters::fromPairs([['foobar', 'foobar'], ['zero', 0]])['foobar'] = Item::false();
     }
 }

@@ -46,7 +46,7 @@ final class OuterListTest extends StructuredFieldTestCase
         self::assertCount(1, $deletedInstance);
         self::assertFalse($deletedInstance->has(1));
 
-        $newInstance = $deletedInstance->push(Item::fromAssociative('BarBaz'));
+        $newInstance = $deletedInstance->push(Item::fromString('BarBaz'));
         $member = $newInstance->get(1);
 
         self::assertCount(2, $newInstance);
@@ -81,7 +81,7 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        OuterList::new()->replace(0, Item::fromAssociative(ByteSequence::fromDecoded('Hello World')));
+        OuterList::new()->replace(0, Item::new(ByteSequence::fromDecoded('Hello World')));
     }
 
     #[Test]
@@ -89,7 +89,7 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        OuterList::new()->insert(3, Item::fromAssociative(ByteSequence::fromDecoded('Hello World')));
+        OuterList::new()->insert(3, Item::new(ByteSequence::fromDecoded('Hello World')));
     }
 
     #[Test]
@@ -163,7 +163,7 @@ final class OuterListTest extends StructuredFieldTestCase
         self::assertInstanceOf(InnerList::class, $structuredField->get(-1));
         self::assertFalse($structuredField->has('foobar'));
 
-        self::assertEquals(Item::fromAssociative('barbaz'), $structuredField->push('barbaz')->get(-1));
+        self::assertEquals(Item::fromString('barbaz'), $structuredField->push('barbaz')->get(-1));
     }
 
     #[Test]
@@ -190,7 +190,7 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(LogicException::class);
 
-        OuterList::new('foobar', 'foobar', 'zero', 0)[0] = Item::fromAssociative(false);
+        OuterList::new('foobar', 'foobar', 'zero', 0)[0] = Item::false();
     }
 
 
