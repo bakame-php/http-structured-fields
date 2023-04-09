@@ -98,6 +98,14 @@ final class Item implements ParameterAccess, ValueAccess
     }
 
     /**
+     * Returns a new instance from a string.
+     */
+    public static function fromString(Stringable|string $value): self
+    {
+        return self::fromValue(Value::fromString($value));
+    }
+
+    /**
      * Returns a new instance from an encoded byte sequence and an iterable of key-value parameters.
      */
     public static function fromEncodedByteSequence(Stringable|string $value): self

@@ -13,6 +13,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Item::toPair` to complement `Item::fromPair`;
 - `Item::fromDate` to improve and complete the Item Date public API;
 - `Item::fromAssociative` to improve Item public API;
+- `Item::fromString` to improve Item public API;
 - `Value` internal class to improve Item public API;
 - `Token::toString` to return the string representation of the token.
 

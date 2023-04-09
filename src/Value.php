@@ -182,6 +182,11 @@ final class Value
         return new self((int) $value);
     }
 
+    public static function fromString(Stringable|string $value): self
+    {
+        return new self($value);
+    }
+
     public static function true(): self
     {
         return new self(true);

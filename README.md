@@ -218,9 +218,10 @@ bare items (ie: item without parameters attached to them).
 ```php
 use Bakame\Http\StructuredFields\Item;
 
-Item::fromDecodedByteSequence(string $value): self;
-Item::fromEncodedByteSequence(string $value): self;
-Item::fromToken(string $value): self;
+Item::fromDecodedByteSequence(Stringable|string $value): self;
+Item::fromEncodedByteSequence(Stringable|string $value): self;
+Item::fromToken(Stringable|string $value): self;
+Item::fromString(Stringable|string $value): self;
 Item::fromTimestamp(int $value): self;
 Item::fromDateFormat(string $format, string $datetime): self;
 Item::fromDateString(string $datetime, DateTimeZone|string|null $timezone = null): self;

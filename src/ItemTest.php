@@ -243,7 +243,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     public function it_instantiates_a_string(): void
     {
-        self::assertSame('"foobar"', Item::fromAssociative('foobar')->toHttpValue());
+        self::assertSame('"foobar"', Item::fromString('foobar')->toHttpValue());
     }
 
     #[Test]
