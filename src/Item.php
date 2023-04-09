@@ -30,6 +30,27 @@ final class Item implements ParameterAccess, ValueAccess
     }
 
     /**
+     * Returns a new instance from an HTTP Header or Trailer value string
+     * in compliance with RFC8941.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
+     */
+    public static function fromHttpValue(Stringable|string $httpValue): self
+    {
+        $itemString = trim((string) $httpValue, ' ');
+        if ('' === $itemString || 1 === preg_match("/[\r\t\n]|[^\x20-\x7E]/", $itemString)) {
+            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
+        }
+
+        [$value, $offset] = Parser::parseBareItem($itemString);
+        if (!str_contains($itemString, ';') && $offset !== strlen($itemString)) {
+            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
+        }
+
+        return new self(new Value($value), Parameters::fromHttpValue(substr($itemString, $offset)));
+    }
+
+    /**
      * Returns a new instance from a value type and an iterable of key-value parameters.
      *
      * @param iterable<string, SfItemInput> $parameters
@@ -69,24 +90,11 @@ final class Item implements ParameterAccess, ValueAccess
     }
 
     /**
-     * Returns a new instance from an HTTP Header or Trailer value string
-     * in compliance with RFC8941.
-     *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
+     * Returns a new bare instance from value.
      */
-    public static function fromHttpValue(Stringable|string $httpValue): self
+    private static function fromValue(Value $value): self
     {
-        $itemString = trim((string) $httpValue, ' ');
-        if ('' === $itemString || 1 === preg_match("/[\r\t\n]|[^\x20-\x7E]/", $itemString)) {
-            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
-        }
-
-        [$value, $offset] = Parser::parseBareItem($itemString);
-        if (!str_contains($itemString, ';') && $offset !== strlen($itemString)) {
-            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
-        }
-
-        return new self(new Value($value), Parameters::fromHttpValue(substr($itemString, $offset)));
+        return new self($value, Parameters::create());
     }
 
     /**
@@ -95,14 +103,6 @@ final class Item implements ParameterAccess, ValueAccess
     public static function fromEncodedByteSequence(Stringable|string $value): self
     {
         return self::fromValue(Value::fromEncodedByteSequence($value));
-    }
-
-    /**
-     * Returns a new bare instance from value.
-     */
-    private static function fromValue(Value $value): self
-    {
-        return new self($value, Parameters::create());
     }
 
     /**
@@ -219,11 +219,6 @@ final class Item implements ParameterAccess, ValueAccess
         }
     }
 
-    public function __toString(): string
-    {
-        return $this->toHttpValue();
-    }
-
     /**
      * Serialize the Item value according to RFC8941.
      *
@@ -232,6 +227,11 @@ final class Item implements ParameterAccess, ValueAccess
     public function toHttpValue(): string
     {
         return $this->value->serialize().$this->parameters->toHttpValue();
+    }
+
+    public function __toString(): string
+    {
+        return $this->toHttpValue();
     }
 
     /**
