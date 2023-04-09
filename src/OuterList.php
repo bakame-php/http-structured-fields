@@ -47,7 +47,7 @@ final class OuterList implements MemberList
         return match (true) {
             $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
             is_iterable($member) => InnerList::from(...$member),
-            default => Item::from($member),
+            default => Item::fromAssociative($member),
         };
     }
 
@@ -67,7 +67,7 @@ final class OuterList implements MemberList
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
         return self::from(...array_map(
-            fn (mixed $value) => is_array($value) ? InnerList::fromAssociative($value[1], ...$value[0]) : $value,
+            fn (mixed $value) => is_array($value) ? InnerList::fromAssociative($value[0], $value[1]) : $value,
             Parser::parseList($httpValue)
         ));
     }

@@ -36,7 +36,7 @@ final class ItemTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Item::from($value);
+        Item::fromAssociative($value);
     }
 
     /**
@@ -77,7 +77,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[DataProvider('provideFrom1stArgument')]
     public function it_instantiate_many_types(ValueAccess|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool $value, string $expected): void
     {
-        self::assertSame($expected, Item::from($value)->toHttpValue());
+        self::assertSame($expected, Item::fromAssociative($value)->toHttpValue());
     }
 
     #[Test]
@@ -91,7 +91,7 @@ final class ItemTest extends StructuredFieldTestCase
 
         self::assertSame(
             $expected.$parameters->toHttpValue(),
-            (string) Item::from('hello-world', $parameters)->withValue($value)
+            (string) Item::fromAssociative('hello-world', $parameters)->withValue($value)
         );
     }
 
@@ -100,7 +100,7 @@ final class ItemTest extends StructuredFieldTestCase
      */
     public static function provideFrom1stArgument(): iterable
     {
-        $item = Item::from(42);
+        $item = Item::fromAssociative(42);
 
         return [
             'decimal' => ['value' => 42.0, 'expected' => '42.0'],
@@ -131,8 +131,8 @@ final class ItemTest extends StructuredFieldTestCase
     public function it_instantiates_a_date(): void
     {
         $item = Item::fromHttpValue('@1583349795');
-        self::assertEquals($item, Item::from(new DateTimeImmutable('2020-03-04 19:23:15')));
-        self::assertEquals($item, Item::from(new DateTime('2020-03-04 19:23:15')));
+        self::assertEquals($item, Item::fromAssociative(new DateTimeImmutable('2020-03-04 19:23:15')));
+        self::assertEquals($item, Item::fromAssociative(new DateTime('2020-03-04 19:23:15')));
         self::assertEquals($item, Item::fromDate(new DateTime('2020-03-04 19:23:15')));
         self::assertEquals($item, Item::fromTimestamp(1583349795));
         self::assertEquals($item, Item::fromDateFormat(DateTimeInterface::RFC822, 'Wed, 04 Mar 20 19:23:15 +0000'));
@@ -207,7 +207,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     public function it_instantiates_a_decimal(): void
     {
-        self::assertSame(42.0, Item::from(42.0)->value());
+        self::assertSame(42.0, Item::fromAssociative(42.0)->value());
         self::assertSame(42.0, Item::fromDecimal(42)->value());
         self::assertSame(42.0, Item::fromDecimal(42.0)->value());
     }
@@ -215,7 +215,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     public function it_instantiates_a_integer(): void
     {
-        self::assertSame(42, Item::from(42)->value());
+        self::assertSame(42, Item::fromAssociative(42)->value());
         self::assertSame(42, Item::fromInteger(42.9)->value());
         self::assertSame(42, Item::fromInteger(42.0)->value());
         self::assertSame(42, Item::fromInteger(42)->value());
@@ -224,9 +224,9 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     public function it_instantiates_a_boolean(): void
     {
-        self::assertTrue(Item::from(true)->value());
+        self::assertTrue(Item::fromAssociative(true)->value());
         self::assertTrue(Item::true()->value());
-        self::assertFalse(Item::from(false)->value());
+        self::assertFalse(Item::fromAssociative(false)->value());
         self::assertFalse(Item::false()->value());
     }
 
@@ -235,7 +235,7 @@ final class ItemTest extends StructuredFieldTestCase
     {
         $byteSequence = ByteSequence::fromDecoded('foobar');
 
-        self::assertEquals($byteSequence, Item::from(ByteSequence::fromDecoded('foobar'))->value());
+        self::assertEquals($byteSequence, Item::fromAssociative(ByteSequence::fromDecoded('foobar'))->value());
         self::assertEquals($byteSequence, Item::fromDecodedByteSequence('foobar')->value());
         self::assertEquals($byteSequence, Item::fromEncodedByteSequence('Zm9vYmFy')->value());
     }
@@ -243,7 +243,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     public function it_instantiates_a_string(): void
     {
-        self::assertSame('"foobar"', Item::from('foobar')->toHttpValue());
+        self::assertSame('"foobar"', Item::fromAssociative('foobar')->toHttpValue());
     }
 
     #[Test]
@@ -260,31 +260,31 @@ final class ItemTest extends StructuredFieldTestCase
     {
         return [
             'boolean' => [
-                'item' => Item::from(false),
+                'item' => Item::fromAssociative(false),
                 'expectedType' => Type::Boolean,
             ],
             'integer' => [
-                'item' => Item::from(42),
+                'item' => Item::fromAssociative(42),
                 'expectedType' => Type::Integer,
             ],
             'decimal' => [
-                'item' => Item::from(42.0),
+                'item' => Item::fromAssociative(42.0),
                 'expectedType' => Type::Decimal,
             ],
             'string' => [
-                'item' => Item::from('42'),
+                'item' => Item::fromAssociative('42'),
                 'expectedType' => Type::String,
             ],
             'token' => [
-                'item' => Item::from(Token::fromString('forty-two')),
+                'item' => Item::fromAssociative(Token::fromString('forty-two')),
                 'expectedType' => Type::Token,
             ],
             'byte' => [
-                'item' => Item::from(ByteSequence::fromDecoded('😊')),
+                'item' => Item::fromAssociative(ByteSequence::fromDecoded('😊')),
                 'expectedType' => Type::ByteSequence,
             ],
             'stringable object' => [
-                'item' => Item::from(new class() implements Stringable {
+                'item' => Item::fromAssociative(new class() implements Stringable {
                     public function __toString(): string
                     {
                         return '42';
@@ -293,11 +293,11 @@ final class ItemTest extends StructuredFieldTestCase
                 'expectedType' => Type::String,
             ],
             'date-immutable' => [
-                'item' => Item::from(new DateTimeImmutable('2020-07-12 13:37:00')),
+                'item' => Item::fromAssociative(new DateTimeImmutable('2020-07-12 13:37:00')),
                 'expectedType' => Type::Date,
             ],
             'date-interface' => [
-                'item' => Item::from(new DateTime('2020-07-12 13:37:00')),
+                'item' => Item::fromAssociative(new DateTime('2020-07-12 13:37:00')),
                 'expectedType' => Type::Date,
             ],
         ];
@@ -317,8 +317,8 @@ final class ItemTest extends StructuredFieldTestCase
         ];
 
         self::assertEquals(
-            Item::from('/terms', $parameters),
-            Item::from('/terms', new ArrayObject($parameters))
+            Item::fromAssociative('/terms', $parameters),
+            Item::fromAssociative('/terms', new ArrayObject($parameters))
         );
     }
 
@@ -350,7 +350,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_create_an_item_from_a_array_of_pairs(): void
     {
-        $instance1 = Item::from(Token::fromString('babayaga'));
+        $instance1 = Item::fromAssociative(Token::fromString('babayaga'));
         $instance2 = Item::fromPair([Token::fromString('babayaga')]);
         $instance3 = Item::fromPair([Token::fromString('babayaga'), []]);
 
@@ -394,7 +394,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_create_an_item_from_a_array_of_pairs_and_parameters(): void
     {
-        $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);
+        $instance1 = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
         $instance2 = Item::fromPair([Token::fromString('babayaga'), [['a', true]]]);
 
         self::assertEquals($instance2, $instance1);
@@ -403,7 +403,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_create_via_with_value_method_a_new_object(): void
     {
-        $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);
+        $instance1 = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
         $instance2 = $instance1->withValue(Token::fromString('babayaga'));
         $instance3 = $instance1->withValue(new class() implements Stringable {
             public function __toString(): string
@@ -420,7 +420,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_create_via_with_parameters_method_a_new_object(): void
     {
-        $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);
+        $instance1 = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
         $instance2 = $instance1->withParameters(Parameters::fromAssociative(['a' => true]));
         $instance3 = $instance1->withParameters(Parameters::fromAssociative(['a' => false]));
 
@@ -432,7 +432,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_create_via_parameters_access_methods_a_new_object(): void
     {
-        $instance1 = Item::from(Token::fromString('babayaga'), ['a' => true]);
+        $instance1 = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
         $instance7 = $instance1->addParameter('a', true);
         $instance2 = $instance1->appendParameter('a', true);
         $instance3 = $instance1->prependParameter('a', false);

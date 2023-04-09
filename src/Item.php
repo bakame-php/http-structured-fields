@@ -34,7 +34,7 @@ final class Item implements ParameterAccess, ValueAccess
      *
      * @param iterable<string, SfItemInput> $parameters
      */
-    public static function from(mixed $value, iterable $parameters = []): self
+    public static function fromAssociative(mixed $value, iterable $parameters = []): self
     {
         if (!$parameters instanceof Parameters) {
             $parameters = Parameters::fromAssociative($parameters);
@@ -160,7 +160,7 @@ final class Item implements ParameterAccess, ValueAccess
     }
 
     /**
-     * Returns a new instance from a float value
+     * Returns a new instance from a float value.
      *
      * @throws SyntaxError if the format is invalid
      */
@@ -170,7 +170,7 @@ final class Item implements ParameterAccess, ValueAccess
     }
 
     /**
-     * Returns a new instance from an integer value
+     * Returns a new instance from an integer value.
      *
      * @throws SyntaxError if the format is invalid
      */
@@ -180,7 +180,7 @@ final class Item implements ParameterAccess, ValueAccess
     }
 
     /**
-     * Returns a new instance for the boolean true type
+     * Returns a new instance for the boolean true type.
      */
     public static function true(): self
     {
@@ -188,7 +188,7 @@ final class Item implements ParameterAccess, ValueAccess
     }
 
     /**
-     * Returns a new instance for the boolean false type
+     * Returns a new instance for the boolean false type.
      */
     public static function false(): self
     {

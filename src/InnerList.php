@@ -45,7 +45,7 @@ final class InnerList implements MemberList, ParameterAccess
     {
         return match (true) {
             $member instanceof ValueAccess && $member instanceof ParameterAccess => $member,
-            !$member instanceof StructuredField => Item::from($member),
+            !$member instanceof StructuredField => Item::fromAssociative($member),
             default => throw new InvalidArgument('Expecting a "'.ValueAccess::class.'" instance; received a "'.$member::class.'" instead.'),
         };
     }
@@ -86,12 +86,11 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance with an iter.
      *
+     * @param iterable<SfItemInput> $members
      * @param iterable<string, SfItemInput> $parameters
      */
-    public static function fromAssociative(
-        iterable $parameters,
-        StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members
-    ): self {
+    public static function fromAssociative(iterable $members, iterable $parameters = []): self
+    {
         return new self(Parameters::fromAssociative($parameters), $members);
     }
 
@@ -102,9 +101,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        [$members, $parameters] = Parser::parseInnerList($httpValue);
-
-        return self::fromAssociative($parameters, ...$members);
+        return self::fromAssociative(...Parser::parseInnerList($httpValue));
     }
 
     public function parameters(): Parameters

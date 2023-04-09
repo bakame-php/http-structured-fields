@@ -372,6 +372,6 @@ final class Parser
         $remainder = substr($remainder, $offset);
         [$parameters, $offset] = self::parseParameters($remainder);
 
-        return [Item::from($value, $parameters), substr($remainder, $offset)];
+        return [Item::fromAssociative($value, $parameters), substr($remainder, $offset)];
     }
 }

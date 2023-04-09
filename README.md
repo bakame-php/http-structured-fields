@@ -149,7 +149,7 @@ use Bakame\Http\StructuredFields\Type;
 
 //@type SfItemInput ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|bool
 // the Item::value() can return one of those type
-$item = Item::from(CarbonImmutable::parse('today'));
+$item = Item::fromDate(CarbonImmutable::parse('today'));
 $item->type();  // return Type::Date;
 $item->value()  // return a CarbonImmutable instance because it extends DateTimeImmutable
 // you can also do 
@@ -200,9 +200,11 @@ using the following methods:
 ```php
 use Bakame\Http\StructuredFields\Parameters;
 
-$innerList->parameter($key): ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|bool|null;
-$innerList->parameters(): Parameters;
+$field->parameter(string $key): ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|bool|null;
+$field->parameters(): Parameters;
 ```
+
+**Of note: the `parameter` method will return `null` if no value is found for the given index.**
 
 ### Building and Updating Structured Fields Values
 
@@ -246,12 +248,12 @@ use Bakame\Http\StructuredFields\Dictionary;
 
 $value = Dictionary::fromAssociative([
     'b' => false,
-    'a' => Item::fromToken('bar')->addParameter('baz', 42),
+    'a' => Item::fromToken('bar'),
     'c' => new DateTimeImmutable('2022-12-23 13:00:23'),
 ]);
 
-echo $value->toHttpValue(); //"b=?0, a=bar;baz=42, c=@1671800423"
-echo $value;                //"b=?0, a=bar;baz=42, c=@1671800423"
+echo $value->toHttpValue(); //"b=?0, a=bar, c=@1671800423"
+echo $value;                //"b=?0, a=bar, c=@1671800423"
 ```
 
 Or with an iterable structure of pairs as per defined in the RFC:
@@ -269,23 +271,23 @@ echo $value->toHttpValue(); //;b=?0;a=bar;c=@1671800423
 echo $value;                //;b=?0;a=bar;c=@1671800423
 ```
 
-If the preference is to use the builder pattern, the same result can be achieved with the following steps:
+If the preference is to use the builder pattern, the same result can be achieved with the following steps.
+We start building a `Parameters` or a `Dictionary` instance using the `create` named constructor which
+returns a new instance with no members.
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 
-$bar = Item::fromToken('bar')
-    ->addParameter('baz', Item::from(42));
 $value = Dictionary::create()
-    ->add('a', $bar)
-    ->prepend('b', Item::from(false))
-    ->append('c', Item::from(new DateTimeImmutable('2022-12-23 13:00:23')))
+    ->add('a', Item::fromToken('bar'))
+    ->prepend('b', Item::false())
+    ->append('c', Item::fromDateString('2022-12-23 13:00:23'))
 ;
 
-echo $value->toHttpValue(); //"b=?0, a=bar;baz=42, c=@1671800423"
-echo $value;                //"b=?0, a=bar;baz=42, c=@1671800423"
+echo $value->toHttpValue(); //"b=?0, a=bar, c=@1671800423"
+echo $value;                //"b=?0, a=bar, c=@1671800423"
 ```
 
 Because we are using immutable value objects any change to the value object will return a new instance with
@@ -304,7 +306,7 @@ $map->remove(...$key): static;
 
 #### Lists
 
-To Create `OuterList` and `InnerList` instances you can use the `from` name constructor:
+To Create `OuterList` and `InnerList` instances you can use the `from` named constructor:
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
@@ -341,15 +343,16 @@ echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 ```php
 $list->unshift(...$members): static;
 $list->push(...$members): static;
-$list->insert($key, ...$members): static;
-$list->replace($key, $member): static;
-$list->remove(...$key): static;
+$list->insert(int $key, ...$members): static;
+$list->replace(int $key, $member): static;
+$list->remove(int ...$key): static;
 ```
 
 #### Adding and updating parameters
 
-It is also possible to instantiate an `InnerList` or an `Item` instance with included parameters
-using one of these named constructors:
+To ease working with instance that have a `Parameters` object attached to the following
+public API is added. It is also possible to instantiate an `InnerList` or an `Item`
+instance with included parameters using one of these named constructors:
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
@@ -357,11 +360,11 @@ use Bakame\Http\StructuredFields\Item;
 
 //@type SfItemInput ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
 
-Item::from(SfItemInput $value, iterable<string, SfItemInput> $parameters = []): self;
-Item::fromPair(array{0:SfItemInput, 1:iterable<array{0:string, 1:SfItemInput}>} $pair): self;
+Item::fromAssociative(SfItemInput $value, iterable<string, SfItemInput>|Parameters $parameters = []): self;
+Item::fromPair(array{0:SfItemInput, 1:iterable<array{0:string, 1:SfItemInput}>|Parameters} $pair): self;
 
-InnerList::fromAssociative(iterable<string, SfItemInput> $parameters, ...$members): self;
-InnerList::fromPair(array{0:list<Item>, iterable<array{0:string, 1:SfItemInput}>} $pair): self;
+InnerList::fromAssociative(iterable<SfItemInput> $members, iterable<string, SfItemInput>|Parameters $parameters): self;
+InnerList::fromPair(array{0:iterable<SfItemInput>, iterable<array{0:string, 1:SfItemInput}>|Parameters} $pair): self;
 ```
 
 Both classes allow return their respective pair representation via the `toPair` method.
@@ -375,7 +378,7 @@ InnerList::toPair(): array{0:list<Item>, 1:Parameters}>};
 Item::toPair(): array{0:mixed, 1:Parameters}>};
 ```
 
-The `InnerList` and `Item` object provide additional modifying methods to help deal with parameters.
+Both objects provide additional modifying methods to help deal with parameters.
 You can attach and update the associated `Parameters` instance using the following methods:
 
 ```php

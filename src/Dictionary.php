@@ -54,7 +54,7 @@ final class Dictionary implements MemberOrderedMap
             $member instanceof ParameterAccess &&
             ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
             is_iterable($member) => InnerList::from(...$member),
-            default => Item::from($member),
+            default => Item::fromAssociative($member),
         };
     }
 
@@ -112,7 +112,7 @@ final class Dictionary implements MemberOrderedMap
     {
         return new self((function (iterable $members) {
             foreach ($members as $key => $member) {
-                yield $key => is_array($member) ? InnerList::fromAssociative($member[1], ...$member[0]) : $member;
+                yield $key => is_array($member) ? InnerList::fromAssociative($member[0], $member[1]) : $member;
             }
         })(Parser::parseDictionary($httpValue)));
     }

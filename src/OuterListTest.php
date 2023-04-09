@@ -18,8 +18,8 @@ final class OuterListTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_be_instantiated_with_an_collection_of_item(): void
     {
-        $stringItem = Item::from('helloWorld');
-        $booleanItem = Item::from(true);
+        $stringItem = Item::fromAssociative('helloWorld');
+        $booleanItem = Item::fromAssociative(true);
         $arrayParams = [$stringItem, $booleanItem];
         $instance = OuterList::from(...$arrayParams);
 
@@ -32,8 +32,8 @@ final class OuterListTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_add_or_remove_members(): void
     {
-        $stringItem = Item::from('helloWorld');
-        $booleanItem = Item::from(true);
+        $stringItem = Item::fromAssociative('helloWorld');
+        $booleanItem = Item::fromAssociative(true);
         $arrayParams = [$stringItem, $booleanItem];
         $instance = OuterList::from(...$arrayParams);
 
@@ -46,7 +46,7 @@ final class OuterListTest extends StructuredFieldTestCase
         self::assertCount(1, $deletedInstance);
         self::assertFalse($deletedInstance->has(1));
 
-        $newInstance = $deletedInstance->push(Item::from('BarBaz'));
+        $newInstance = $deletedInstance->push(Item::fromAssociative('BarBaz'));
         $member = $newInstance->get(1);
 
         self::assertCount(2, $newInstance);
@@ -65,10 +65,10 @@ final class OuterListTest extends StructuredFieldTestCase
     public function it_can_unshift_insert_and_replace(): void
     {
         $instance = OuterList::from()
-            ->unshift(Item::from('42'))
-            ->push(Item::from(42))
-            ->insert(1, Item::from(42.0))
-            ->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
+            ->unshift(Item::fromAssociative('42'))
+            ->push(Item::fromAssociative(42))
+            ->insert(1, Item::fromAssociative(42.0))
+            ->replace(0, Item::fromAssociative(ByteSequence::fromDecoded('Hello World')));
 
         self::assertCount(3, $instance);
         self::assertTrue($instance->hasMembers());
@@ -81,7 +81,7 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        OuterList::from()->replace(0, Item::from(ByteSequence::fromDecoded('Hello World')));
+        OuterList::from()->replace(0, Item::fromAssociative(ByteSequence::fromDecoded('Hello World')));
     }
 
     #[Test]
@@ -89,7 +89,7 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        OuterList::from()->insert(3, Item::from(ByteSequence::fromDecoded('Hello World')));
+        OuterList::from()->insert(3, Item::fromAssociative(ByteSequence::fromDecoded('Hello World')));
     }
 
     #[Test]
@@ -112,7 +112,7 @@ final class OuterListTest extends StructuredFieldTestCase
         $list = OuterList::from(...[
             Token::fromString('token'),
             'string',
-            Item::from(true, ['parameter' => true]),
+            Item::fromAssociative(true, ['parameter' => true]),
             InnerList::from(42, 42.0),
         ]);
 
@@ -124,7 +124,7 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        OuterList::from()->insert(0, Item::from(42.0));
+        OuterList::from()->insert(0, Item::fromAssociative(42.0));
     }
 
     #[Test]
@@ -163,7 +163,7 @@ final class OuterListTest extends StructuredFieldTestCase
         self::assertInstanceOf(InnerList::class, $structuredField->get(-1));
         self::assertFalse($structuredField->has('foobar'));
 
-        self::assertEquals(Item::from('barbaz'), $structuredField->push('barbaz')->get(-1));
+        self::assertEquals(Item::fromAssociative('barbaz'), $structuredField->push('barbaz')->get(-1));
     }
 
     #[Test]
@@ -190,7 +190,7 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(LogicException::class);
 
-        OuterList::from('foobar', 'foobar', 'zero', 0)[0] = Item::from(false);
+        OuterList::from('foobar', 'foobar', 'zero', 0)[0] = Item::fromAssociative(false);
     }
 
 
@@ -202,7 +202,7 @@ final class OuterListTest extends StructuredFieldTestCase
         self::assertSame([], $instance->keys());
 
         $newInstance = $instance
-            ->push(Item::from(false), Item::from(true));
+            ->push(Item::fromAssociative(false), Item::fromAssociative(true));
 
         self::assertSame([0, 1], $newInstance->keys());
 
