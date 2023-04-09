@@ -297,12 +297,12 @@ the changes applied and leave the original instance unchanged.
 `Dictionary` and `Parameters` exhibit the following modifying methods:
 
 ```php
-$map->add($key, $value): static;
-$map->append($key, $value): static;
-$map->prepend($key, $value): static;
+$map->add(string $key, $value): static;
+$map->append(string $key, $value): static;
+$map->prepend(string $key, $value): static;
 $map->mergeAssociative(...$others): static;
 $map->mergePairs(...$others): static;
-$map->remove(...$key): static;
+$map->remove(string ...$key): static;
 ```
 
 #### Lists
@@ -351,7 +351,7 @@ $list->remove(int ...$key): static;
 
 #### Adding and updating parameters
 
-To ease working with instance that have a `Parameters` object attached to the following
+To ease working with instance that have a `Parameters` object attached to, the following
 public API is added. It is also possible to instantiate an `InnerList` or an `Item`
 instance with included parameters using one of these named constructors:
 
@@ -361,11 +361,30 @@ use Bakame\Http\StructuredFields\Item;
 
 //@type SfItemInput ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
 
-Item::fromAssociative(SfItemInput $value, iterable<string, SfItemInput>|Parameters $parameters = []): self;
-Item::fromPair(array{0:SfItemInput, 1:iterable<array{0:string, 1:SfItemInput}>|Parameters} $pair): self;
+Item::fromAssociative(SfItemInput $value, Parameters|iterable<string, SfItemInput> $parameters = []): self;
+Item::fromPair(array{0:SfItemInput, 1:Parameters|iterable<array{0:string, 1:SfItemInput}>} $pair): self;
 
-InnerList::fromAssociative(iterable<SfItemInput> $members, iterable<string, SfItemInput>|Parameters $parameters): self;
-InnerList::fromPair(array{0:iterable<SfItemInput>, iterable<array{0:string, 1:SfItemInput}>|Parameters} $pair): self;
+InnerList::fromAssociative(iterable<SfItemInput> $value, Parameters|iterable<string, SfItemInput> $parameters): self;
+InnerList::fromPair(array{0:iterable<SfItemInput>, Parameters|iterable<array{0:string, 1:SfItemInput}>} $pair): self;
+```
+
+The following example illustrate how to use those methods:
+
+```php
+use Bakame\Http\StructuredFields\Dictionary;
+use Bakame\Http\StructuredFields\Item;
+
+echo Item::fromAssociative(
+        Token::fromString('bar'),
+        ['baz' => 42]
+    )->toHttpValue(), PHP_EOL;
+
+echo Item::fromPair([
+        Token::fromString('bar'),
+        [['baz', 42]],
+    ])->toHttpValue(), PHP_EOL;
+
+//both methods return `bar;baz=42`
 ```
 
 Both classes allow return their respective pair representation via the `toPair` method.

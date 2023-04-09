@@ -51,6 +51,16 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
+     * Returns an instance from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1
+     */
+    public static function fromHttpValue(Stringable|string $httpValue): self
+    {
+        return self::fromAssociative(...Parser::parseInnerList($httpValue));
+    }
+
+    /**
      * Returns a new instance.
      */
     public static function from(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
@@ -86,22 +96,16 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance with an iter.
      *
-     * @param iterable<SfItemInput> $members
+     * @param iterable<SfItemInput> $value
      * @param iterable<string, SfItemInput> $parameters
      */
-    public static function fromAssociative(iterable $members, iterable $parameters = []): self
+    public static function fromAssociative(iterable $value, iterable $parameters = []): self
     {
-        return new self(Parameters::fromAssociative($parameters), $members);
-    }
+        if (!$parameters instanceof Parameters) {
+            $parameters = Parameters::fromAssociative($parameters);
+        }
 
-    /**
-     * Returns an instance from an HTTP textual representation.
-     *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1
-     */
-    public static function fromHttpValue(Stringable|string $httpValue): self
-    {
-        return self::fromAssociative(...Parser::parseInnerList($httpValue));
+        return new self($parameters, $value);
     }
 
     public function parameters(): Parameters
