@@ -94,7 +94,7 @@ final class Item implements ParameterAccess, ValueAccess
      */
     private static function fromValue(Value $value): self
     {
-        return new self($value, Parameters::create());
+        return new self($value, Parameters::new());
     }
 
     /**
@@ -287,6 +287,6 @@ final class Item implements ParameterAccess, ValueAccess
 
     public function withoutAnyParameter(): static
     {
-        return $this->withParameters(Parameters::create());
+        return $this->withParameters(Parameters::new());
     }
 }

@@ -61,7 +61,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * Returns a new instance.
      */
-    public static function create(): self
+    public static function new(): self
     {
         return new self();
     }

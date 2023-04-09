@@ -273,7 +273,7 @@ echo $value;                //;b=?0;a=bar;c=@1671800423
 ```
 
 If the preference is to use the builder pattern, the same result can be achieved with the following steps.
-We start building a `Parameters` or a `Dictionary` instance using the `create` named constructor which
+We start building a `Parameters` or a `Dictionary` instance using the `new` named constructor which
 returns a new instance with no members.
 
 ```php
@@ -281,7 +281,7 @@ use Bakame\Http\StructuredFields\Dictionary;
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 
-$value = Dictionary::create()
+$value = Dictionary::new()
     ->add('a', Item::fromToken('bar'))
     ->prepend('b', Item::false())
     ->append('c', Item::fromDateString('2022-12-23 13:00:23'))

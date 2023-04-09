@@ -134,7 +134,7 @@ final class ParametersTest extends StructuredFieldTestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        $instance = Parameters::create();
+        $instance = Parameters::new();
 
         self::assertFalse($instance->has('foobar', 'barbaz'));
         self::assertFalse($instance->has());
@@ -145,7 +145,7 @@ final class ParametersTest extends StructuredFieldTestCase
     #[Test]
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
-        $instance = Parameters::create();
+        $instance = Parameters::new();
 
         self::assertFalse($instance->hasPair(3));
 
@@ -157,7 +157,7 @@ final class ParametersTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_prepend_a_new_member(): void
     {
-        $instance = Parameters::create()
+        $instance = Parameters::new()
             ->append('a', Item::fromAssociative(false))
             ->prepend('b', Item::fromAssociative(true));
 
@@ -168,11 +168,11 @@ final class ParametersTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_returns_the_container_member_keys(): void
     {
-        $instance = Parameters::create();
+        $instance = Parameters::new();
 
         self::assertSame([], $instance->keys());
 
-        $newInstance = Parameters::create()
+        $newInstance = Parameters::new()
             ->append('a', Item::fromAssociative(false))
             ->prepend('b', Item::fromAssociative(true));
 
@@ -276,7 +276,7 @@ final class ParametersTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_delete_a_member_via_array_access(): void
     {
-        $instance = Parameters::create()->add('foo', 'bar');
+        $instance = Parameters::new()->add('foo', 'bar');
 
         self::assertTrue($instance->hasMembers());
         self::assertFalse($instance->remove('foo')->hasMembers());
@@ -287,7 +287,7 @@ final class ParametersTest extends StructuredFieldTestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        Parameters::create()->get(0);
+        Parameters::new()->get(0);
     }
 
     #[Test]

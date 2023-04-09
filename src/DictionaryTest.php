@@ -84,7 +84,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_returns_the_same_object_if_no_member_is_removed(): void
     {
-        $instance = Dictionary::create();
+        $instance = Dictionary::new();
 
         self::assertSame($instance, $instance->remove('foo', 'bar', 'baz'));
     }
@@ -92,7 +92,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_fails_to_return_an_member_with_invalid_key(): void
     {
-        $instance = Dictionary::create();
+        $instance = Dictionary::new();
 
         self::assertFalse($instance->has('foobar'));
 
@@ -104,7 +104,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_fails_to_return_an_member_with_invalid_index(): void
     {
-        $instance = Dictionary::create();
+        $instance = Dictionary::new();
 
         self::assertFalse($instance->hasPair(1, 2, 3));
         self::assertFalse($instance->hasPair());
@@ -125,7 +125,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_prepend_a_new_member(): void
     {
-        $instance = Dictionary::create()
+        $instance = Dictionary::new()
             ->append('a', Item::fromAssociative(false))
             ->prepend('b', Item::fromAssociative(true));
 
@@ -135,7 +135,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_returns_the_container_member_keys(): void
     {
-        $instance = Dictionary::create();
+        $instance = Dictionary::new();
 
         self::assertSame([], $instance->keys());
 
@@ -228,7 +228,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_delete_a_member_via_array_access(): void
     {
-        $structuredField = Dictionary::create();
+        $structuredField = Dictionary::new();
         $newInstance = $structuredField->add('foo', 'bar');
 
         self::assertTrue($newInstance->hasMembers());
@@ -240,7 +240,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        Dictionary::create()->get(0);
+        Dictionary::new()->get(0);
     }
 
     #[Test]

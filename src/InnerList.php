@@ -65,7 +65,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function from(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
     {
-        return new self(Parameters::create(), $members);
+        return new self(Parameters::new(), $members);
     }
 
     /**
@@ -153,7 +153,7 @@ final class InnerList implements MemberList, ParameterAccess
 
     public function withoutAnyParameter(): static
     {
-        return $this->withParameters(Parameters::create());
+        return $this->withParameters(Parameters::new());
     }
 
     public function toHttpValue(): string
