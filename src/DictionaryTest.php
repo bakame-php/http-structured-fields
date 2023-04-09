@@ -17,8 +17,8 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_be_instantiated_with_an_collection_of_item_or_inner_list(): void
     {
-        $stringItem = Item::fromAssociative('helloWorld');
-        $booleanItem = Item::fromAssociative(true);
+        $stringItem = Item::fromString('helloWorld');
+        $booleanItem = Item::true();
         $arrayParams = ['string' => $stringItem, 'boolean' => $booleanItem];
         $instance = Dictionary::fromAssociative($arrayParams);
 
@@ -34,8 +34,8 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_be_instantiated_with_key_value_pairs(): void
     {
-        $stringItem = Item::fromAssociative('helloWorld');
-        $booleanItem = Item::fromAssociative(true);
+        $stringItem = Item::fromString('helloWorld');
+        $booleanItem = Item::true();
         $arrayParams = [['string', $stringItem], ['boolean', $booleanItem]];
         $instance = Dictionary::fromPairs($arrayParams);
 
@@ -49,8 +49,8 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_add_or_remove_members(): void
     {
-        $stringItem = Item::fromAssociative('helloWorld');
-        $booleanItem = Item::fromAssociative(true);
+        $stringItem = Item::fromString('helloWorld');
+        $booleanItem = Item::true();
         $arrayParams = ['string' => $stringItem, 'boolean' => $booleanItem];
         $instance = Dictionary::fromAssociative($arrayParams);
 
@@ -64,10 +64,10 @@ final class DictionaryTest extends StructuredFieldTestCase
         self::assertFalse($deletedInstance->has('boolean'));
         self::assertFalse($deletedInstance->hasPair(1));
 
-        $appendInstance = $deletedInstance->append('foobar', Item::fromAssociative('BarBaz'));
+        $appendInstance = $deletedInstance->append('foobar', Item::new('BarBaz'));
         self::assertTrue($appendInstance->hasPair(1));
 
-        self::assertSame($appendInstance, $appendInstance->append('foobar', Item::fromAssociative('BarBaz')));
+        self::assertSame($appendInstance, $appendInstance->append('foobar', Item::new('BarBaz')));
 
         /** @var array{0:string, 1:Item} $foundItem */
         $foundItem = $appendInstance->pair(1);
@@ -126,8 +126,8 @@ final class DictionaryTest extends StructuredFieldTestCase
     public function it_can_prepend_a_new_member(): void
     {
         $instance = Dictionary::new()
-            ->append('a', Item::fromAssociative(false))
-            ->prepend('b', Item::fromAssociative(true));
+            ->append('a', Item::false())
+            ->prepend('b', Item::true());
 
         self::assertSame('b, a=?0', (string) $instance);
     }
@@ -140,8 +140,8 @@ final class DictionaryTest extends StructuredFieldTestCase
         self::assertSame([], $instance->keys());
 
         $newInstance = $instance
-            ->append('a', Item::fromAssociative(false))
-            ->prepend('b', Item::fromAssociative(true));
+            ->append('a', Item::false())
+            ->prepend('b', Item::true());
 
         self::assertSame(['b', 'a'], $newInstance->keys());
     }
@@ -149,56 +149,56 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_merge_one_or_more_instances_using_associative(): void
     {
-        $instance1 = Dictionary::fromAssociative(['a' => Item::fromAssociative(false)]);
-        $instance2 = Dictionary::fromAssociative(['b' => Item::fromAssociative(true)]);
-        $instance3 = Dictionary::fromAssociative(['a' => Item::fromAssociative(42)]);
+        $instance1 = Dictionary::fromAssociative(['a' => Item::false()]);
+        $instance2 = Dictionary::fromAssociative(['b' => Item::true()]);
+        $instance3 = Dictionary::fromAssociative(['a' => Item::new(42)]);
 
         $instance4 = $instance1->mergeAssociative($instance2, $instance3);
 
         self::assertCount(2, $instance4);
-        self::assertEquals(Item::fromAssociative(42), $instance4->get('a'));
-        self::assertEquals(Item::fromAssociative(true), $instance4->get('b'));
+        self::assertEquals(Item::new(42), $instance4->get('a'));
+        self::assertEquals(Item::true(), $instance4->get('b'));
     }
 
     #[Test]
     public function it_can_merge_two_or_more_instances_to_yield_different_result(): void
     {
-        $instance1 = Dictionary::fromAssociative(['a' => Item::fromAssociative(false)]);
-        $instance2 = Dictionary::fromAssociative(['b' => Item::fromAssociative(true)]);
-        $instance3 = Dictionary::fromAssociative(['a' => Item::fromAssociative(42)]);
+        $instance1 = Dictionary::fromAssociative(['a' => Item::false()]);
+        $instance2 = Dictionary::fromAssociative(['b' => Item::true()]);
+        $instance3 = Dictionary::fromAssociative(['a' => Item::new(42)]);
 
         $instance4 = $instance3->mergeAssociative($instance2, $instance1);
 
         self::assertCount(2, $instance4);
-        self::assertEquals(Item::fromAssociative(false), $instance4->get('a'));
-        self::assertEquals(Item::fromAssociative(true), $instance4->get('b'));
+        self::assertEquals(Item::false(), $instance4->get('a'));
+        self::assertEquals(Item::true(), $instance4->get('b'));
     }
 
     #[Test]
     public function it_can_merge_without_argument_and_not_throw(): void
     {
-        self::assertCount(1, Dictionary::fromAssociative(['a' => Item::fromAssociative(false)])->mergeAssociative());
+        self::assertCount(1, Dictionary::fromAssociative(['a' => Item::false()])->mergeAssociative());
     }
 
     #[Test]
     public function it_can_merge_one_or_more_instances_using_pairs(): void
     {
-        $instance1 = Dictionary::fromPairs([['a', Item::fromAssociative(false)]]);
-        $instance2 = Dictionary::fromPairs([['b', Item::fromAssociative(true)]]);
-        $instance3 = Dictionary::fromPairs([['a', Item::fromAssociative(42)]]);
+        $instance1 = Dictionary::fromPairs([['a', Item::false()]]);
+        $instance2 = Dictionary::fromPairs([['b', Item::true()]]);
+        $instance3 = Dictionary::fromPairs([['a', Item::new(42)]]);
 
         $instance4 = $instance3->mergePairs($instance2, $instance1);
 
         self::assertCount(2, $instance4);
 
-        self::assertEquals(Item::fromAssociative(false), $instance4->get('a'));
-        self::assertEquals(Item::fromAssociative(true), $instance4->get('b'));
+        self::assertEquals(Item::false(), $instance4->get('a'));
+        self::assertEquals(Item::true(), $instance4->get('b'));
     }
 
     #[Test]
     public function it_can_merge_without_pairs_and_not_throw(): void
     {
-        $instance = Dictionary::fromAssociative(['a' => Item::fromAssociative(false)]);
+        $instance = Dictionary::fromAssociative(['a' => Item::false()]);
 
         self::assertCount(1, $instance->mergePairs());
     }
@@ -206,8 +206,8 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_merge_dictionary_instances_via_pairs_or_associative(): void
     {
-        $instance1 = Dictionary::fromAssociative(['a' => Item::fromAssociative(false)]);
-        $instance2 = Dictionary::fromAssociative(['b' => Item::fromAssociative(true)]);
+        $instance1 = Dictionary::fromAssociative(['a' => Item::false()]);
+        $instance2 = Dictionary::fromAssociative(['b' => Item::true()]);
 
         $instance3 = clone $instance1;
         $instance4 = clone $instance2;

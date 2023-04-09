@@ -14,10 +14,10 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_be_instantiated_with_an_collection_of_item(): void
     {
-        $stringItem = Item::fromAssociative('helloWorld');
-        $booleanItem = Item::fromAssociative(true);
+        $stringItem = Item::fromString('helloWorld');
+        $booleanItem = Item::true();
         $arrayParams = [$stringItem, $booleanItem];
-        $instance = InnerList::fromAssociative($arrayParams, ['test' => Item::fromAssociative(42)]);
+        $instance = InnerList::fromAssociative($arrayParams, ['test' => Item::new(42)]);
 
         self::assertSame($stringItem, $instance->get(0));
         self::assertTrue($instance->hasMembers());
@@ -29,7 +29,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_add_or_remove_members(): void
     {
-        $stringItem = Item::fromAssociative('helloWorld');
+        $stringItem = Item::fromString('helloWorld');
         $booleanItem = Item::true();
         $instance = InnerList::new($stringItem, $booleanItem);
 

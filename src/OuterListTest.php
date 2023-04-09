@@ -18,8 +18,8 @@ final class OuterListTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_be_instantiated_with_an_collection_of_item(): void
     {
-        $stringItem = Item::fromAssociative('helloWorld');
-        $booleanItem = Item::fromAssociative(true);
+        $stringItem = Item::new('helloWorld');
+        $booleanItem = Item::true();
         $arrayParams = [$stringItem, $booleanItem];
         $instance = OuterList::new(...$arrayParams);
 
@@ -32,8 +32,8 @@ final class OuterListTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_add_or_remove_members(): void
     {
-        $stringItem = Item::fromAssociative('helloWorld');
-        $booleanItem = Item::fromAssociative(true);
+        $stringItem = Item::new('helloWorld');
+        $booleanItem = Item::true();
         $arrayParams = [$stringItem, $booleanItem];
         $instance = OuterList::new(...$arrayParams);
 
@@ -65,10 +65,10 @@ final class OuterListTest extends StructuredFieldTestCase
     public function it_can_unshift_insert_and_replace(): void
     {
         $instance = OuterList::new()
-            ->unshift(Item::fromAssociative('42'))
-            ->push(Item::fromAssociative(42))
-            ->insert(1, Item::fromAssociative(42.0))
-            ->replace(0, Item::fromAssociative(ByteSequence::fromDecoded('Hello World')));
+            ->unshift(Item::fromString('42'))
+            ->push(Item::fromInteger(42))
+            ->insert(1, Item::fromDecimal(42.0))
+            ->replace(0, Item::new(ByteSequence::fromDecoded('Hello World')));
 
         self::assertCount(3, $instance);
         self::assertTrue($instance->hasMembers());
@@ -124,7 +124,7 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        OuterList::new()->insert(0, Item::fromAssociative(42.0));
+        OuterList::new()->insert(0, Item::fromDecimal(42.0));
     }
 
     #[Test]
@@ -202,7 +202,7 @@ final class OuterListTest extends StructuredFieldTestCase
         self::assertSame([], $instance->keys());
 
         $newInstance = $instance
-            ->push(Item::fromAssociative(false), Item::fromAssociative(true));
+            ->push(Item::false(), Item::true());
 
         self::assertSame([0, 1], $newInstance->keys());
 
