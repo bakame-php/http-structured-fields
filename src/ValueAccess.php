@@ -28,6 +28,8 @@ interface ValueAccess extends StructuredField
      * an instance that contains the specified value change.
      *
      * @param ValueAccess|SfTypeInput $value
+     *
+     * @throws SyntaxError If the value is invalid or not supported
      */
     public function withValue(mixed $value): static;
 }

@@ -34,6 +34,8 @@ final class Item implements ParameterAccess, ValueAccess
      * in compliance with RFC8941.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
+     *
+     * @throws SyntaxError If the HTTP value can not be parsed
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
@@ -54,6 +56,8 @@ final class Item implements ParameterAccess, ValueAccess
      * Returns a new instance from a value type and an iterable of key-value parameters.
      *
      * @param iterable<string, SfItemInput> $parameters
+     *
+     * @throws SyntaxError If the value or the parameters are not valid
      */
     public static function fromAssociative(mixed $value, iterable $parameters): self
     {
@@ -67,13 +71,13 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * @param array{
      *     0:SfItemInput,
-     *     1?:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>
+     *     1:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>
      * } $pair
+     *
+     * @throws SyntaxError If the pair or its content is not valid.
      */
     public static function fromPair(array $pair): self
     {
-        $pair[1] = $pair[1] ?? [];
-
         if (!array_is_list($pair)) { /* @phpstan-ignore-line */
             throw new SyntaxError('The pair must be represented by an array as a list.');
         }
@@ -92,11 +96,11 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * Returns a new bare instance from value.
      *
-     * @throws SyntaxError If the value is not valid to create a Bare Item.
+     * @throws SyntaxError If the value is not valid.
      */
     public static function new(mixed $value): self
     {
-        return new self(new Value($value), Parameters::new());
+        return self::fromValue(new Value($value));
     }
 
     /**
@@ -109,6 +113,8 @@ final class Item implements ParameterAccess, ValueAccess
 
     /**
      * Returns a new instance from a string.
+     *
+     * @throws SyntaxError if the string is invalid
      */
     public static function fromString(Stringable|string $value): self
     {
@@ -117,6 +123,8 @@ final class Item implements ParameterAccess, ValueAccess
 
     /**
      * Returns a new instance from an encoded byte sequence and an iterable of key-value parameters.
+     *
+     * @throws SyntaxError if the sequence is invalid
      */
     public static function fromEncodedByteSequence(Stringable|string $value): self
     {
@@ -125,6 +133,8 @@ final class Item implements ParameterAccess, ValueAccess
 
     /**
      * Returns a new instance from a decoded byte sequence and an iterable of key-value parameters.
+     *
+     * @throws SyntaxError if the sequence is invalid
      */
     public static function fromDecodedByteSequence(Stringable|string $value): self
     {
@@ -133,6 +143,8 @@ final class Item implements ParameterAccess, ValueAccess
 
     /**
      * Returns a new instance from a Token and an iterable of key-value parameters.
+     *
+     * @throws SyntaxError if the token is invalid
      */
     public static function fromToken(Stringable|string $value): self
     {
@@ -141,6 +153,8 @@ final class Item implements ParameterAccess, ValueAccess
 
     /**
      * Returns a new instance from a timestamp and an iterable of key-value parameters.
+     *
+     * @throws SyntaxError if the timestamp value is not supported
      */
     public static function fromTimestamp(int $timestamp): self
     {

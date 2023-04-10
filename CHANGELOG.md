@@ -21,6 +21,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - Improve annotation using `@phpstan-type`
 - `Value` internal class to improve Item public API;
+- **[BC Break]**  `::fromAssociative` and `::fromPair` the `$parameters` argument is now required;
 
 ### Deprecated
 
@@ -28,6 +29,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
+- **[BC Break]**  Remove `Stringable` automatically converted into a string type.
 - **[BC Break]** `InnerList::fromPairParameters` use `InnerList::fromPair` instead.
 - **[BC Break]** `InnerList::fromAssociativeParameters` use `InnerList::fromAssociative` instead.
 - **[BC Break]** `Value` interface use a combination of `ValueAccess` **and** `ParameterAccess` instead.

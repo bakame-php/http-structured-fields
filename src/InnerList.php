@@ -71,13 +71,11 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param array{
      *     0:iterable<SfItemInput>,
-     *     1?:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>
+     *     1:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>
      * } $pair
      */
     public static function fromPair(array $pair): self
     {
-        $pair[1] = $pair[1] ?? [];
-
         if (!array_is_list($pair)) { /* @phpstan-ignore-line */
             throw new SyntaxError('The pair must be represented by an array as a list.');
         }
