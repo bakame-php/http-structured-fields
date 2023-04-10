@@ -70,7 +70,7 @@ final class Parameters implements MemberOrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<array-key, SfItemInput> $members
+     * @param iterable<string, SfItemInput> $members
      */
     public static function fromAssociative(iterable $members): self
     {
@@ -233,7 +233,7 @@ final class Parameters implements MemberOrderedMap
         return [...$this->toPairs()][$this->filterIndex($index)];
     }
 
-    public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         $members[$key] = $member;
@@ -255,10 +255,7 @@ final class Parameters implements MemberOrderedMap
         return new self($members);
     }
 
-    /**
-     * @param SfItemInput $member
-     */
-    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         unset($members[$key]);
@@ -271,10 +268,7 @@ final class Parameters implements MemberOrderedMap
         return new self($members);
     }
 
-    /**
-     * @param SfItemInput $member
-     */
-    public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         unset($members[$key]);

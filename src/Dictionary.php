@@ -231,7 +231,7 @@ final class Dictionary implements MemberOrderedMap
         return [...$this->toPairs()][$this->filterIndex($index)];
     }
 
-    public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         $members[$key] = $member;
@@ -253,7 +253,7 @@ final class Dictionary implements MemberOrderedMap
         return new self($members);
     }
 
-    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         unset($members[$key]);
@@ -266,7 +266,7 @@ final class Dictionary implements MemberOrderedMap
         return new self($members);
     }
 
-    public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         unset($members[$key]);

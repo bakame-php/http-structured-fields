@@ -30,7 +30,7 @@ final class Value
             is_int($value) => [self::filterIntegerRange($value, 'Integer'), Type::Integer],
             is_float($value) => [self::filterDecimal($value), Type::Decimal],
             is_bool($value) => [$value, Type::Boolean],
-            is_string($value) || $value instanceof Stringable => [self::filterString($value), Type::String],
+            is_string($value) => [self::filterString($value), Type::String],
             default => throw new SyntaxError('The type "'.(is_object($value) ? $value::class : gettype($value)).'" is not supported.')
         };
     }
@@ -68,9 +68,8 @@ final class Value
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.3
      */
-    private static function filterString(Stringable|string $value): string
+    private static function filterString(string $value): string
     {
-        $value = (string) $value;
         if (1 === preg_match('/[^\x20-\x7E]/i', $value)) {
             throw new SyntaxError('The string contains invalid characters.');
         }
@@ -184,7 +183,7 @@ final class Value
 
     public static function fromString(Stringable|string $value): self
     {
-        return new self($value);
+        return new self((string) $value);
     }
 
     public static function true(): self

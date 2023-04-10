@@ -9,7 +9,6 @@ use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Stringable;
 
 final class TypeTest extends TestCase
 {
@@ -77,15 +76,6 @@ final class TypeTest extends TestCase
             'byte' => [
                 'value' => ByteSequence::fromDecoded('😊'),
                 'expectedType' => Type::ByteSequence,
-            ],
-            'stringable object' => [
-                'value' => new class() implements Stringable {
-                    public function __toString(): string
-                    {
-                        return '42';
-                    }
-                },
-                'expectedType' => Type::String,
             ],
             'datetime implementing object' => [
                 'value' => new DateTime('2020-07-12 13:37:00'),

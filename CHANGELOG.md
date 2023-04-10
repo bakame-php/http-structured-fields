@@ -14,13 +14,13 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Item::fromDate` to improve and complete the Item Date public API;
 - `Item::fromAssociative` to improve Item public API;
 - `Item::fromString` to improve Item public API;
-- `Value` internal class to improve Item public API;
 - `Token::toString` to return the string representation of the token.
 - `Item::new`, `Parameters::new`, `Dictionary::new`, `InnerList::new` and `OuterList::new` to return a new instance
 
 ### Fixed
 
 - Improve annotation using `@phpstan-type`
+- `Value` internal class to improve Item public API;
 
 ### Deprecated
 

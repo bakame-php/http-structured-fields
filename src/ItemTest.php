@@ -105,12 +105,6 @@ final class ItemTest extends StructuredFieldTestCase
         return [
             'decimal' => ['value' => 42.0, 'expected' => '42.0'],
             'string' => ['value' => 'forty-two', 'expected' => '"forty-two"'],
-            'stringable' => ['value' => new class() implements Stringable {
-                public function __toString(): string
-                {
-                    return 'forty-two';
-                }
-            }, 'expected' => '"forty-two"'],
             'integer' => ['value' => 42,   'expected' => '42'],
             'boolean true' => ['value' => true, 'expected' => '?1'],
             'boolean false' => ['value' => false, 'expected' => '?0'],
@@ -125,6 +119,19 @@ final class ItemTest extends StructuredFieldTestCase
     public function it_instantiates_a_token(): void
     {
         self::assertSame('helloworld', Item::fromToken('helloworld')->toHttpValue());
+    }
+
+    #[Test]
+    public function it_instantiates_a_stringable_object_from_string(): void
+    {
+        $object = new class() implements Stringable {
+            public function __toString(): string
+            {
+                return 'forty-two';
+            }
+        };
+
+        self::assertSame('"forty-two"', Item::fromString($object)->toHttpValue());
     }
 
     #[Test]
@@ -283,15 +290,6 @@ final class ItemTest extends StructuredFieldTestCase
                 'item' => Item::new(ByteSequence::fromDecoded('😊')),
                 'expectedType' => Type::ByteSequence,
             ],
-            'stringable object' => [
-                'item' => Item::new(new class() implements Stringable {
-                    public function __toString(): string
-                    {
-                        return '42';
-                    }
-                }),
-                'expectedType' => Type::String,
-            ],
             'date-immutable' => [
                 'item' => Item::new(new DateTimeImmutable('2020-07-12 13:37:00')),
                 'expectedType' => Type::Date,
@@ -405,16 +403,9 @@ final class ItemTest extends StructuredFieldTestCase
     {
         $instance1 = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
         $instance2 = $instance1->withValue(Token::fromString('babayaga'));
-        $instance3 = $instance1->withValue(new class() implements Stringable {
-            public function __toString(): string
-            {
-                return 'babayaga';
-            }
-        });
 
         self::assertSame($instance1, $instance2);
-        self::assertNotSame($instance1, $instance3);
-        self::assertSame($instance1->parameters(), $instance3->parameters());
+        self::assertSame($instance1->parameters(), $instance2->parameters());
     }
 
     #[Test]

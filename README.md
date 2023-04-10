@@ -91,15 +91,15 @@ Per the RFC, items can have different types that are translated to PHP using:
 
 The table below summarizes the item value type.
 
-| RFC Type      | PHP Type                       | Package Enum Type    |
-|---------------|--------------------------------|----------------------|
-| Integer       | `int`                          | `Type::Integer`      |
-| Decimal       | `float`                        | `Type::Decimal`      |
-| String        | `string` or `Stringable` class | `Tyoe::String`       |
-| Boolean       | `bool`                         | `Type::Boolean`      |
-| Token         | class `Token`                  | `Type::Token`        |
-| Byte Sequence | class `ByteSequence`           | `Type::ByteSequence` |
-| Date          | class `DateTimeImmutable`      | `Type::Date`         |
+| RFC Type      | PHP Type                  | Package Enum Type    |
+|---------------|---------------------------|----------------------|
+| Integer       | `int`                     | `Type::Integer`      |
+| Decimal       | `float`                   | `Type::Decimal`      |
+| String        | `string`                  | `Type::String`       |
+| Boolean       | `bool`                    | `Type::Boolean`      |
+| Token         | class `Token`             | `Type::Token`        |
+| Byte Sequence | class `ByteSequence`      | `Type::ByteSequence` |
+| Date          | class `DateTimeImmutable` | `Type::Date`         |
 
 As shown in the table, the RFC define two (2) specific data types that can not be represented by
 PHP default type system, for them, we have defined two classes `Token` and `ByteSequence` to help

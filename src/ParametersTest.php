@@ -63,6 +63,14 @@ final class ParametersTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_fails_to_instantiate_with_an_parameter_key_as_int(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        Parameters::fromAssociative([1 => Item::true()]); // @phpstan-ignore-line
+    }
+
+    #[Test]
     public function it_can_add_or_remove_members(): void
     {
         $stringItem = Item::fromString('helloWorld');
