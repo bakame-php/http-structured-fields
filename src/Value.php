@@ -24,13 +24,13 @@ final class Value
     {
         [$this->value, $this->type] = match (true) {
             $value instanceof ValueAccess => [$value->value(), $value->type()],
+            $value instanceof Token,
+            $value instanceof ByteSequence => [$value, $value->type()],
             $value instanceof DateTimeInterface => [self::filterDate($value), Type::Date],
             is_int($value) => [self::filterIntegerRange($value, 'Integer'), Type::Integer],
             is_float($value) => [self::filterDecimal($value), Type::Decimal],
-            is_string($value) || $value instanceof Stringable => [self::filterString($value), Type::String],
             is_bool($value) => [$value, Type::Boolean],
-            $value instanceof Token,
-            $value instanceof ByteSequence => [$value, $value->type()],
+            is_string($value) || $value instanceof Stringable => [self::filterString($value), Type::String],
             default => throw new SyntaxError('The type "'.(is_object($value) ? $value::class : gettype($value)).'" is not supported.')
         };
     }

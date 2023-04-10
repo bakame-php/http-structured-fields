@@ -12,13 +12,11 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Item` implements the `ValueAccess` interface;
 - `Item::toPair` to complement `Item::fromPair`;
 - `Item::fromDate` to improve and complete the Item Date public API;
-- `Item::new` to improve Item public API;
 - `Item::fromAssociative` to improve Item public API;
 - `Item::fromString` to improve Item public API;
 - `Value` internal class to improve Item public API;
 - `Token::toString` to return the string representation of the token.
-- `Parameters::new` and `Dictionary::new` to return a new and empty instance
-- `InnerList::new` and `InnerList::new` to return a new instance
+- `Item::new`, `Parameters::new`, `Dictionary::new`, `InnerList::new` and `OuterList::new` to return a new instance
 
 ### Fixed
 
@@ -30,7 +28,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- **[BC Break]** `InnerList::fromPairParameters` use `InnerList::fromPairs` instead.
+- **[BC Break]** `InnerList::fromPairParameters` use `InnerList::fromPair` instead.
 - **[BC Break]** `InnerList::fromAssociativeParameters` use `InnerList::fromAssociative` instead.
 - **[BC Break]** `Value` interface use a combination of `ValueAccess` **and** `ParameterAccess` instead.
 - **[BC Break]** `Token::value` is no longer public use `Token::toString` instead.
