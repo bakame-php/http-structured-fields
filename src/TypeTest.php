@@ -15,7 +15,7 @@ final class TypeTest extends TestCase
     #[Test]
     public function it_will_throw_if_the_type_is_no_supported(): void
     {
-        $this->expectException(SyntaxError::class);
+        $this->expectException(InvalidArgument::class);
 
         Type::fromValue([]);
     }

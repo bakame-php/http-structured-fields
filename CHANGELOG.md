@@ -23,6 +23,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Value` internal class to improve Item public API;
 - **[BC Break]** `::fromAssociative` and `::fromPair` the `$parameters` argument is now required;
 - **[BC Break]** `MemberOrderedMap` instances can no longer be added to `Dictionary` or `OuterList` instances.
+- RFC restriction on eligible container members.
+- Exception normalization.
 
 ### Deprecated
 

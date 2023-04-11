@@ -31,7 +31,7 @@ final class Value
             is_float($value) => [self::filterDecimal($value), Type::Decimal],
             is_bool($value) => [$value, Type::Boolean],
             is_string($value) => [self::filterString($value), Type::String],
-            default => throw new SyntaxError('The type "'.(is_object($value) ? $value::class : gettype($value)).'" is not supported.')
+            default => throw new InvalidArgument('The type "'.(is_object($value) ? $value::class : gettype($value)).'" is not supported.')
         };
     }
 

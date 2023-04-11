@@ -46,8 +46,8 @@ final class InnerList implements MemberList, ParameterAccess
     {
         return match (true) {
             $member instanceof ValueAccess && $member instanceof ParameterAccess => $member,
-            !$member instanceof StructuredField => Item::new($member),
-            default => throw new InvalidArgument('Expecting a "'.ValueAccess::class.'" instance; received a "'.$member::class.'" instead.'),
+            $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
+            default => Item::new($member),
         };
     }
 

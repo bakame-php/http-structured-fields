@@ -47,7 +47,8 @@ final class OuterList implements MemberList
     {
         return match (true) {
             $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
-            $member instanceof MemberOrderedMap => throw new InvalidArgument('Only structured fields as list are supported.'),
+            !$member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess),
+            $member instanceof MemberOrderedMap => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             is_iterable($member) => InnerList::new(...$member),
             default => Item::new($member),
         };
