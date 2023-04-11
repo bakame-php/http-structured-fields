@@ -15,6 +15,7 @@ use function array_values;
 use function count;
 use function implode;
 use function is_int;
+use const ARRAY_FILTER_USE_KEY;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.1
@@ -31,7 +32,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param iterable<SfItemInput> $members
      */
-    private function __construct(private readonly Parameters $parameters, iterable $members)
+    private function __construct(iterable $members, private readonly Parameters $parameters)
     {
         $this->members = array_map(self::filterMember(...), array_values([...$members]));
     }
@@ -63,9 +64,9 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance.
      */
-    public static function new(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
+    public static function new(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): self
     {
-        return new self(Parameters::new(), $members);
+        return new self($members, Parameters::new());
     }
 
     /**
@@ -88,7 +89,7 @@ final class InnerList implements MemberList, ParameterAccess
             $pair[1] = Parameters::fromPairs($pair[1]);
         }
 
-        return new self($pair[1], $pair[0]);
+        return new self($pair[0], $pair[1]);
     }
 
     /**
@@ -103,7 +104,7 @@ final class InnerList implements MemberList, ParameterAccess
             $parameters = Parameters::fromAssociative($parameters);
         }
 
-        return new self($parameters, $value);
+        return new self($value, $parameters);
     }
 
     public function parameters(): Parameters
@@ -118,40 +119,6 @@ final class InnerList implements MemberList, ParameterAccess
         } catch (StructuredFieldError) {
             return null;
         }
-    }
-
-    public function withParameters(Parameters $parameters): static
-    {
-        if ($this->parameters->toHttpValue() === $parameters->toHttpValue()) {
-            return $this;
-        }
-
-        return new static($parameters, $this->members);
-    }
-
-    public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
-    {
-        return $this->withParameters($this->parameters()->add($key, $member));
-    }
-
-    public function prependParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
-    {
-        return $this->withParameters($this->parameters()->prepend($key, $member));
-    }
-
-    public function appendParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
-    {
-        return $this->withParameters($this->parameters()->append($key, $member));
-    }
-
-    public function withoutParameter(string ...$keys): static
-    {
-        return $this->withParameters($this->parameters()->remove(...$keys));
-    }
-
-    public function withoutAnyParameter(): static
-    {
-        return $this->withParameters(Parameters::new());
     }
 
     public function toHttpValue(): string
@@ -272,33 +239,25 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Inserts members at the beginning of the list.
      */
-    public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
     {
         if ([] === $members) {
             return $this;
         }
 
-        return $this->newInstance([...array_values($members), ...$this->members]);
-    }
-
-    /**
-     * @param iterable<SfItemInput> $members
-     */
-    private function newInstance(iterable $members): self
-    {
-        return new self($this->parameters, $members);
+        return new self([...array_values($members), ...$this->members], $this->parameters);
     }
 
     /**
      * Inserts members at the end of the list.
      */
-    public function push(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public function push(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
     {
         if ([] === $members) {
             return $this;
         }
 
-        return $this->newInstance([...$this->members, ...array_values($members)]);
+        return new self([...$this->members, ...array_values($members)], $this->parameters);
     }
 
     /**
@@ -306,7 +265,7 @@ final class InnerList implements MemberList, ParameterAccess
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public function insert(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
     {
         $offset = $this->filterIndex($key);
 
@@ -318,12 +277,12 @@ final class InnerList implements MemberList, ParameterAccess
             default => (function (array $newMembers) use ($offset, $members) {
                 array_splice($newMembers, $offset, 0, $members);
 
-                return $this->newInstance($newMembers);
+                return new self($newMembers, $this->parameters);
             })($this->members),
         };
     }
 
-    public function replace(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function replace(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         if (null === ($offset = $this->filterIndex($key))) {
             throw InvalidOffset::dueToIndexNotFound($key);
@@ -332,7 +291,7 @@ final class InnerList implements MemberList, ParameterAccess
         $members = $this->members;
         $members[$offset] = $member;
 
-        return $this->newInstance($members);
+        return new self($members, $this->parameters);
     }
 
     public function remove(string|int ...$keys): static
@@ -349,11 +308,40 @@ final class InnerList implements MemberList, ParameterAccess
             return $this;
         }
 
-        $members = $this->members;
-        foreach ($offsets as $offset) {
-            unset($members[$offset]);
-        }
+        return new self(array_filter(
+            $this->members,
+            fn (int $key): bool => !in_array($key, $offsets, true),
+            ARRAY_FILTER_USE_KEY
+        ), $this->parameters);
+    }
 
-        return $this->newInstance($members);
+    public function withParameters(Parameters $parameters): static
+    {
+        return ($this->parameters->toHttpValue() === $parameters->toHttpValue()) ? $this : new self($this->members, $parameters);
+    }
+
+    public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
+    {
+        return $this->withParameters($this->parameters()->add($key, $member));
+    }
+
+    public function prependParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
+    {
+        return $this->withParameters($this->parameters()->prepend($key, $member));
+    }
+
+    public function appendParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
+    {
+        return $this->withParameters($this->parameters()->append($key, $member));
+    }
+
+    public function withoutParameter(string ...$keys): static
+    {
+        return $this->withParameters($this->parameters()->remove(...$keys));
+    }
+
+    public function withoutAnyParameter(): static
+    {
+        return $this->withParameters(Parameters::new());
     }
 }

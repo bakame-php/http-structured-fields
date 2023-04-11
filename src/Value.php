@@ -236,7 +236,6 @@ final class Value
         return match (true) {
             ($this->value instanceof ByteSequence || $this->value instanceof Token) && $this->value->equals($value),
             $this->value instanceof DateTimeInterface && $value instanceof DateTimeInterface && $value == $this->value,
-            $value instanceof Stringable && $value->__toString() === $this->value,
             $value === $this->value => true,
             default => false,
         };

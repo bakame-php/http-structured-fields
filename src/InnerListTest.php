@@ -55,7 +55,9 @@ final class InnerListTest extends TestCase
         $instance = $instance->remove(0, 1, 2);
 
         self::assertCount(0, $instance);
+
         self::assertFalse($instance->hasMembers());
+        self::assertTrue($instance->hasNoMembers());
     }
 
     #[Test]

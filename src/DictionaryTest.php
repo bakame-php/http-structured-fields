@@ -123,6 +123,14 @@ final class DictionaryTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_fails_to_insert_somethine_other_than_a_inner_list_or_an_item(): void
+    {
+        $this->expectException(InvalidArgument::class);
+
+        Dictionary::new()->add('foo', Parameters::fromAssociative(['foo' => 'bar']));
+    }
+
+    #[Test]
     public function it_can_prepend_a_new_member(): void
     {
         $instance = Dictionary::new()
@@ -130,6 +138,15 @@ final class DictionaryTest extends StructuredFieldTestCase
             ->prepend('b', Item::true());
 
         self::assertSame('b, a=?0', (string) $instance);
+    }
+
+    #[Test]
+    public function it_can_prepend_a_new_member_without_changing(): void
+    {
+        $instance = Dictionary::new()->append('b', Item::true());
+        $instance2 = $instance->prepend('b', Item::true());
+
+        self::assertSame($instance2, $instance);
     }
 
     #[Test]
@@ -226,12 +243,17 @@ final class DictionaryTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function it_can_delete_a_member_via_array_access(): void
+    public function it_can_delete_a_member_via_remove_method(): void
     {
-        $structuredField = Dictionary::new();
-        $newInstance = $structuredField->add('foo', 'bar');
+        $newInstance = Dictionary::new()->add('foo', 'bar');
 
         self::assertTrue($newInstance->hasMembers());
+        self::assertCount(1, $newInstance);
+
+        $newInstance2 = $newInstance->add('foo', 'bar');
+        self::assertCount(1, $newInstance2);
+        self::assertSame($newInstance, $newInstance2);
+
         self::assertFalse($newInstance->remove('foo')->hasMembers());
     }
 

@@ -8,7 +8,7 @@
 [![Sponsor development of this project](https://img.shields.io/badge/sponsor%20this%20package-%E2%9D%A4-ff69b4.svg?style=flat-square)](https://github.com/sponsors/nyamsprod)
 
 `bakame/http-structured-fields` is a framework-agnostic PHP library that allows you to parse, serialize 
-and build HTTP Structured Fields in PHP according to the [RFC8941](https://www.rfc-editor.org/rfc/rfc8941.html).
+build and update HTTP Structured Fields in PHP according to the [RFC8941](https://www.rfc-editor.org/rfc/rfc8941.html).
 
 ## System Requirements
 
@@ -30,7 +30,6 @@ Once the library is installed parsing the header value is done via the normalize
 constructor attached to library's structured fields representation as shown below:
 
 ```php
-
 declare(strict_types=1);
 
 require 'vendor/autoload.php';
@@ -58,8 +57,8 @@ the `toHttpValue` method.
 ````php
 use Bakame\Http\StructuredFields\Item;
 
-$bar = Item::fromToken('bar')->addParameter('baz', 42);
-echo $bar->toHttpValue(); // return 'bar;baz=42'   
+$bar = Item::fromHttpValue('bar;    baz=42;     secure=?1');
+echo $bar->toHttpValue(); // return 'bar;baz=42;secure' on serialization the field has been normalized
 
 // the HTTP response object is build by your application
 // via your framework, a package or a native PHP function.
@@ -103,7 +102,7 @@ The table below summarizes the item value type.
 
 As shown in the table, the RFC define two (2) specific data types that can not be represented by
 PHP default type system, for them, we have defined two classes `Token` and `ByteSequence` to help
-with represention.
+with representation.
 
 ```php
 use Bakame\Http\StructuredFields\Token;
@@ -147,11 +146,9 @@ are accessible using the following methods:
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Type;
 
-//@type SfItemInput ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|bool
-// the Item::value() can return one of those type
-$item = Item::fromDate(CarbonImmutable::parse('today'));
+$item = Item::fromHttpValue('@1234567890');
 $item->type();  // return Type::Date;
-$item->value()  // return a CarbonImmutable instance because it extends DateTimeImmutable
+$item->value()  // return the equivalent to DateTimeImmutable('2009-02-13T23:31:30.000+00:00');
 // you can also do 
 Type::Date->equals($item); // returns true
 ```
@@ -175,7 +172,7 @@ if you try to use them on any container object:
 ```php
 use Bakame\Http\StructuredFields\Parameters;
 
-$value = Parameters::fromAssociative(['a' => 'foobar']);
+$value = Parameters::fromHttpValue(';a=foobar']);
 $value->has('b');     // return false
 $value['a']->value(); // return 'foobar'
 $value['b'];          // triggers a SyntaxError exception, the index does not exist
@@ -212,7 +209,7 @@ Every value object can be used as a builder to create an HTTP field value.
 
 #### Items value
 
-The `Item` value object exposes lots of named constructors to construct
+The `Item` value object exposes a number of named constructors to construct
 bare items (ie: item without parameters attached to them).
 
 ```php
@@ -223,10 +220,10 @@ Item::fromDecodedByteSequence(Stringable|string $value): self;
 Item::fromEncodedByteSequence(Stringable|string $value): self;
 Item::fromToken(Stringable|string $value): self;
 Item::fromString(Stringable|string $value): self;
-Item::fromTimestamp(int $value): self;
+Item::fromDate(DateTimeInterface $datetime): self;
 Item::fromDateFormat(string $format, string $datetime): self;
 Item::fromDateString(string $datetime, DateTimeZone|string|null $timezone = null): self;
-Item::fromDate(DateTimeInterface $datetime): self;
+Item::fromTimestamp(int $value): self;
 Item::fromDecimal(int|float $value): self;
 Item::fromInteger(int|float $value): self;
 Item::true(): self;
@@ -238,7 +235,7 @@ To update an `Item` object value, the `Item::withValue` method should be use:
 ```php
 use Bakame\Http\StructuredFields\Item;
 
-Item::withValue(SfItemInput $value): static
+Item::withValue(mixed $value): static
 ```
 
 #### Dictionaries
@@ -265,7 +262,7 @@ use Bakame\Http\StructuredFields\Parameters;
 
 $value = Parameters::fromPairs([
     ['b', false],
-    ['a', Item::fromPair([Token::fromString('bar')])],
+    ['a', Item::fromToken('bar')],
     ['c', new DateTime('2022-12-23 13:00:23')]
 ]);
 
@@ -327,6 +324,7 @@ echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 Once again, builder methods exist on both classes to ease container construction.
 
 ```php
+use Bakame\Http\StructuredFields\ByteSequence;
 use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Item;
 
@@ -334,7 +332,7 @@ $list = InnerList::new()
     ->unshift('42')
     ->push(42)
     ->insert(1, 42.0)
-    ->replace(0, Item::fromDecodedByteSequence('Hello World'));
+    ->replace(0, Item::new(ByteSequence::fromDecoded('Hello World')));
 
 echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
@@ -357,10 +355,12 @@ public API is added. It is also possible to instantiate an `InnerList` or an `It
 instance with included parameters using one of these named constructors:
 
 ```php
+use Bakame\Http\StructuredFields\ByteSequence;
 use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Token;
 
-//@type SfItemInput ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool
+//@type SfItemInput ByteSequence|Token|DateTimeInterface|string|int|float|bool
 
 Item::fromAssociative(SfItemInput $value, Parameters|iterable<string, SfItemInput> $parameters): self;
 Item::fromPair(array{0:SfItemInput, 1:Parameters|iterable<array{0:string, 1:SfItemInput}>} $pair): self;

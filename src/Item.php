@@ -286,7 +286,7 @@ final class Item implements ParameterAccess, ValueAccess
 
     public function withParameters(Parameters $parameters): static
     {
-        return $this->parameters->toHttpValue() === $parameters->toHttpValue() ? $this : new static($this->value, $parameters);
+        return $this->parameters->toHttpValue() === $parameters->toHttpValue() ? $this : new self($this->value, $parameters);
     }
 
     public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static

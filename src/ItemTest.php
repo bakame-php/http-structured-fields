@@ -75,14 +75,14 @@ final class ItemTest extends StructuredFieldTestCase
 
     #[Test]
     #[DataProvider('provideFrom1stArgument')]
-    public function it_instantiate_many_types(ValueAccess|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool $value, string $expected): void
+    public function it_instantiate_many_types(ValueAccess|ByteSequence|Token|DateTimeInterface|string|int|float|bool $value, string $expected): void
     {
         self::assertSame($expected, Item::new($value)->toHttpValue());
     }
 
     #[Test]
     #[DataProvider('provideFrom1stArgument')]
-    public function it_updates_item(ValueAccess|ByteSequence|Token|DateTimeInterface|Stringable|string|int|float|bool $value, string $expected): void
+    public function it_updates_item(ValueAccess|ByteSequence|Token|DateTimeInterface|string|int|float|bool $value, string $expected): void
     {
         $parameters = Parameters::fromAssociative(['foo' => 'bar']);
         if ($value instanceof ParameterAccess && $value instanceof ValueAccess) {

@@ -15,6 +15,7 @@ use function count;
 use function implode;
 use function is_string;
 use function trim;
+use const ARRAY_FILTER_USE_KEY;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.2
@@ -243,10 +244,11 @@ final class Parameters implements MemberOrderedMap
 
     public function remove(string|int ...$keys): static
     {
-        $members = $this->members;
-        foreach (array_filter($keys, static fn (string|int $key): bool => !is_int($key)) as $key) {
-            unset($members[$key]);
-        }
+        $members = array_filter(
+            $this->members,
+            fn (string|int $key): bool => !in_array($key, $keys, true),
+            ARRAY_FILTER_USE_KEY
+        );
 
         if ($members === $this->members) {
             return $this;

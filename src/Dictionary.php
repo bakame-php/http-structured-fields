@@ -16,6 +16,7 @@ use function implode;
 use function is_array;
 use function is_iterable;
 use function is_string;
+use const ARRAY_FILTER_USE_KEY;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
@@ -51,8 +52,8 @@ final class Dictionary implements MemberOrderedMap
     private static function filterMember(mixed $member): object
     {
         return match (true) {
-            $member instanceof ParameterAccess &&
-            ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
+            $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
+            $member instanceof MemberOrderedMap => throw new InvalidArgument('Only structured fields as list are supported.'),
             is_iterable($member) => InnerList::new(...$member),
             default => Item::new($member),
         };
@@ -234,31 +235,16 @@ final class Dictionary implements MemberOrderedMap
     public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
-        $members[$key] = $member;
+        $members[$key] = self::filterMember($member);
 
-        return new self($members);
+        return $this->newInstance($members);
     }
 
-    public function remove(string|int ...$keys): static
+    /**
+     * @param array<string, SfMember> $members
+     */
+    private function newInstance(array $members): static
     {
-        $members = $this->members;
-        foreach (array_filter($keys, static fn (string|int $key): bool => !is_int($key)) as $key) {
-            unset($members[$key]);
-        }
-
-        if ($members === $this->members) {
-            return $this;
-        }
-
-        return new self($members);
-    }
-
-    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
-    {
-        $members = $this->members;
-        unset($members[$key]);
-        $members[$key] = $member;
-
         if ($members == $this->members) {
             return $this;
         }
@@ -266,12 +252,33 @@ final class Dictionary implements MemberOrderedMap
         return new self($members);
     }
 
+    public function remove(string|int ...$keys): static
+    {
+        $members = array_filter(
+            $this->members,
+            fn (string|int $key): bool => !in_array($key, $keys, true),
+            ARRAY_FILTER_USE_KEY
+        );
+
+        return $this->newInstance($members);
+    }
+
+    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
+    {
+        $members = $this->members;
+        unset($members[$key]);
+        $members[$key] = self::filterMember($member);
+
+        return $this->newInstance($members);
+    }
+
     public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         unset($members[$key]);
+        $members = [$key => self::filterMember($member), ...$members];
 
-        return new self([$key => $member, ...$members]);
+        return $this->newInstance($members);
     }
 
     /**

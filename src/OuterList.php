@@ -15,6 +15,7 @@ use function array_values;
 use function count;
 use function implode;
 use function is_array;
+use const ARRAY_FILTER_USE_KEY;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#name-lists
@@ -32,7 +33,7 @@ final class OuterList implements MemberList
     /**
      * @param SfMember|SfMemberInput ...$members
      */
-    private function __construct(iterable|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members)
+    private function __construct(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members)
     {
         $this->members = array_map(self::filterMember(...), array_values([...$members]));
     }
@@ -46,6 +47,7 @@ final class OuterList implements MemberList
     {
         return match (true) {
             $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
+            $member instanceof MemberOrderedMap => throw new InvalidArgument('Only structured fields as list are supported.'),
             is_iterable($member) => InnerList::new(...$member),
             default => Item::new($member),
         };
@@ -54,7 +56,7 @@ final class OuterList implements MemberList
     /**
      * @param SfMember|SfMemberInput ...$members
      */
-    public static function new(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): self
+    public static function new(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): self
     {
         return new self(...$members);
     }
@@ -182,33 +184,25 @@ final class OuterList implements MemberList
     /**
      * Inserts members at the beginning of the list.
      */
-    public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
     {
         if ([] === $members) {
             return $this;
         }
 
-        return $this->newInstance([...array_values($members), ...$this->members]);
-    }
-
-    /**
-     * @param iterable<int, SfMember|SfMemberInput> $members
-     */
-    private function newInstance(iterable $members): self
-    {
-        return new self(...$members);
+        return new self(...array_values($members), ...$this->members);
     }
 
     /**
      * Inserts members at the end of the list.
      */
-    public function push(StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public function push(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
     {
         if ([] === $members) {
             return $this;
         }
 
-        return $this->newInstance([...$this->members, ...array_values($members)]);
+        return new self(...$this->members, ...array_values($members));
     }
 
     /**
@@ -216,7 +210,7 @@ final class OuterList implements MemberList
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool ...$members): static
+    public function insert(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
     {
         $offset = $this->filterIndex($key);
 
@@ -228,12 +222,12 @@ final class OuterList implements MemberList
             default => (function (array $newMembers) use ($offset, $members) {
                 array_splice($newMembers, $offset, 0, $members);
 
-                return $this->newInstance($newMembers);
+                return new self(...$newMembers);
             })($this->members),
         };
     }
 
-    public function replace(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|Stringable|string|int|float|bool $member): static
+    public function replace(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         if (null === ($offset = $this->filterIndex($key))) {
             throw InvalidOffset::dueToIndexNotFound($key);
@@ -242,7 +236,7 @@ final class OuterList implements MemberList
         $members = $this->members;
         $members[$offset] = $member;
 
-        return $this->newInstance($members);
+        return new self(...$members);
     }
 
     /**
@@ -262,11 +256,10 @@ final class OuterList implements MemberList
             return $this;
         }
 
-        $members = $this->members;
-        foreach ($offsets as $offset) {
-            unset($members[$offset]);
-        }
-
-        return $this->newInstance($members);
+        return new self(...array_filter(
+            $this->members,
+            fn (int $key): bool => !in_array($key, $offsets, true),
+            ARRAY_FILTER_USE_KEY
+        ));
     }
 }

@@ -85,6 +85,14 @@ final class OuterListTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_fails_to_insert_somethine_other_than_a_inner_list_or_an_item(): void
+    {
+        $this->expectException(InvalidArgument::class);
+
+        OuterList::new()->push(Dictionary::fromAssociative(['foo' => 'bar']));
+    }
+
+    #[Test]
     public function it_fails_to_insert_at_an_invalid_index(): void
     {
         $this->expectException(InvalidOffset::class);
