@@ -83,7 +83,7 @@ final class Item implements ParameterAccess, ValueAccess
         }
 
         if (2 !== count($pair)) { /* @phpstan-ignore-line */
-            throw new SyntaxError('The pair first member must be the item value and the optional second member the item parameters.');
+            throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.');
         }
 
         if (!$pair[1] instanceof Parameters) {

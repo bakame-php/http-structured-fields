@@ -22,6 +22,7 @@ use const ARRAY_FILTER_USE_KEY;
  *
  * @phpstan-import-type SfItem from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
+ *
  * @implements MemberList<int, SfItem>
  */
 final class InnerList implements MemberList, ParameterAccess
@@ -62,11 +63,18 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * Returns a new instance.
+     * Returns a new instance with an iter.
+     *
+     * @param iterable<SfItemInput> $value
+     * @param iterable<string, SfItemInput> $parameters
      */
-    public static function new(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): self
+    public static function fromAssociative(iterable $value, iterable $parameters): self
     {
-        return new self($members, Parameters::new());
+        if (!$parameters instanceof Parameters) {
+            $parameters = Parameters::fromAssociative($parameters);
+        }
+
+        return new self($value, $parameters);
     }
 
     /**
@@ -93,32 +101,11 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * Returns a new instance with an iter.
-     *
-     * @param iterable<SfItemInput> $value
-     * @param iterable<string, SfItemInput> $parameters
+     * Returns a new instance.
      */
-    public static function fromAssociative(iterable $value, iterable $parameters): self
+    public static function new(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): self
     {
-        if (!$parameters instanceof Parameters) {
-            $parameters = Parameters::fromAssociative($parameters);
-        }
-
-        return new self($value, $parameters);
-    }
-
-    public function parameters(): Parameters
-    {
-        return $this->parameters;
-    }
-
-    public function parameter(string $key): mixed
-    {
-        try {
-            return $this->parameters->get($key)->value();
-        } catch (StructuredFieldError) {
-            return null;
-        }
+        return new self($members, Parameters::new());
     }
 
     public function toHttpValue(): string
@@ -137,6 +124,25 @@ final class InnerList implements MemberList, ParameterAccess
     public function toPair(): array
     {
         return [$this->members, $this->parameters];
+    }
+
+    public function getIterator(): Iterator
+    {
+        yield from $this->members;
+    }
+
+    public function parameters(): Parameters
+    {
+        return $this->parameters;
+    }
+
+    public function parameter(string $key): mixed
+    {
+        try {
+            return $this->parameters->get($key)->value();
+        } catch (StructuredFieldError) {
+            return null;
+        }
     }
 
     public function count(): int
@@ -160,11 +166,6 @@ final class InnerList implements MemberList, ParameterAccess
     public function keys(): array
     {
         return array_keys($this->members);
-    }
-
-    public function getIterator(): Iterator
-    {
-        yield from $this->members;
     }
 
     public function has(string|int ...$keys): bool
@@ -206,34 +207,6 @@ final class InnerList implements MemberList, ParameterAccess
         }
 
         return $this->members[$index];
-    }
-
-    /**
-     * @param int $offset
-     */
-    public function offsetExists(mixed $offset): bool
-    {
-        return $this->has($offset);
-    }
-
-    /**
-     * @param int $offset
-     *
-     * @return SfItem
-     */
-    public function offsetGet(mixed $offset): mixed
-    {
-        return $this->get($offset);
-    }
-
-    public function offsetUnset(mixed $offset): void
-    {
-        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
-    }
-
-    public function offsetSet(mixed $offset, mixed $value): void
-    {
-        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 
     /**
@@ -288,8 +261,13 @@ final class InnerList implements MemberList, ParameterAccess
             throw InvalidOffset::dueToIndexNotFound($key);
         }
 
+        $member = self::filterMember($member);
+        if ($member == $this->members[$offset]) {
+            return $this;
+        }
+
         $members = $this->members;
-        $members[$offset] = $member;
+        $members[$offset] = self::filterMember($member);
 
         return new self($members, $this->parameters);
     }
@@ -313,6 +291,34 @@ final class InnerList implements MemberList, ParameterAccess
             fn (int $key): bool => !in_array($key, $offsets, true),
             ARRAY_FILTER_USE_KEY
         ), $this->parameters);
+    }
+
+    /**
+     * @param int $offset
+     */
+    public function offsetExists(mixed $offset): bool
+    {
+        return $this->has($offset);
+    }
+
+    /**
+     * @param int $offset
+     *
+     * @return SfItem
+     */
+    public function offsetGet(mixed $offset): mixed
+    {
+        return $this->get($offset);
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 
     public function withParameters(Parameters $parameters): static

@@ -76,6 +76,15 @@ final class InnerListTest extends TestCase
     }
 
     #[Test]
+    public function it_can_return_the_same_object_if_no_replace_is_needed(): void
+    {
+        $item = Item::new(ByteSequence::fromDecoded('Hello World'));
+        $field = InnerList::new($item);
+
+        self::assertSame($field, $field->replace(0, ByteSequence::fromDecoded('Hello World')));
+    }
+
+    #[Test]
     public function it_returns_the_same_object_if_nothing_is_changed(): void
     {
         $container = InnerList::new(42, 'forty-two');

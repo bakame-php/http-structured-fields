@@ -15,6 +15,7 @@ use function array_values;
 use function count;
 use function implode;
 use function is_array;
+use function is_int;
 use const ARRAY_FILTER_USE_KEY;
 
 /**
@@ -47,19 +48,10 @@ final class OuterList implements MemberList
     {
         return match (true) {
             $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
-            !$member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess),
-            $member instanceof MemberOrderedMap => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
+            $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             is_iterable($member) => InnerList::new(...$member),
             default => Item::new($member),
         };
-    }
-
-    /**
-     * @param SfMember|SfMemberInput ...$members
-     */
-    public static function new(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): self
-    {
-        return new self(...$members);
     }
 
     /**
@@ -75,6 +67,14 @@ final class OuterList implements MemberList
         ));
     }
 
+    /**
+     * @param SfMember|SfMemberInput ...$members
+     */
+    public static function new(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): self
+    {
+        return new self(...$members);
+    }
+
     public function toHttpValue(): string
     {
         return implode(', ', array_map(fn (StructuredField $member): string => $member->toHttpValue(), $this->members));
@@ -83,6 +83,11 @@ final class OuterList implements MemberList
     public function __toString(): string
     {
         return $this->toHttpValue();
+    }
+
+    public function getIterator(): Iterator
+    {
+        yield from $this->members;
     }
 
     public function count(): int
@@ -106,11 +111,6 @@ final class OuterList implements MemberList
     public function keys(): array
     {
         return array_keys($this->members);
-    }
-
-    public function getIterator(): Iterator
-    {
-        yield from $this->members;
     }
 
     public function has(string|int ...$keys): bool
@@ -152,34 +152,6 @@ final class OuterList implements MemberList
         }
 
         return $this->members[$index];
-    }
-
-    /**
-     * @param int $offset
-     */
-    public function offsetExists(mixed $offset): bool
-    {
-        return $this->has($offset);
-    }
-
-    /**
-     * @param int $offset
-     *
-     * @return SfMember
-     */
-    public function offsetGet(mixed $offset): mixed
-    {
-        return $this->get($offset);
-    }
-
-    public function offsetUnset(mixed $offset): void
-    {
-        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
-    }
-
-    public function offsetSet(mixed $offset, mixed $value): void
-    {
-        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 
     /**
@@ -234,15 +206,17 @@ final class OuterList implements MemberList
             throw InvalidOffset::dueToIndexNotFound($key);
         }
 
+        $member = self::filterMember($member);
+        if ($member == $this->members[$offset]) {
+            return $this;
+        }
+
         $members = $this->members;
-        $members[$offset] = $member;
+        $members[$offset] = self::filterMember($member);
 
         return new self(...$members);
     }
 
-    /**
-     * Deletes members associated with the list of instance indexes.
-     */
     public function remove(string|int ...$keys): static
     {
         $offsets = array_filter(
@@ -262,5 +236,33 @@ final class OuterList implements MemberList
             fn (int $key): bool => !in_array($key, $offsets, true),
             ARRAY_FILTER_USE_KEY
         ));
+    }
+
+    /**
+     * @param int $offset
+     */
+    public function offsetExists(mixed $offset): bool
+    {
+        return $this->has($offset);
+    }
+
+    /**
+     * @param int $offset
+     *
+     * @return SfMember
+     */
+    public function offsetGet(mixed $offset): mixed
+    {
+        return $this->get($offset);
+    }
+
+    public function offsetUnset(mixed $offset): void
+    {
+        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
+    }
+
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
     }
 }

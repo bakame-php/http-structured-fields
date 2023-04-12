@@ -53,8 +53,7 @@ final class Dictionary implements MemberOrderedMap
     {
         return match (true) {
             $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
-            !$member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess),
-            $member instanceof MemberOrderedMap => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
+            $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             is_iterable($member) => InnerList::new(...$member),
             default => Item::new($member),
         };
@@ -186,6 +185,8 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @throws SyntaxError   If the key is invalid
      * @throws InvalidOffset If the key is not found
+     *
+     * @return SfMember
      */
     public function get(string|int $key): StructuredField
     {
@@ -236,7 +237,7 @@ final class Dictionary implements MemberOrderedMap
     public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
-        $members[$key] = self::filterMember($member);
+        $members[MapKey::from($key)->value] = self::filterMember($member);
 
         return $this->newInstance($members);
     }
@@ -244,7 +245,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @param array<string, SfMember> $members
      */
-    private function newInstance(array $members): static
+    private function newInstance(array $members): self
     {
         if ($members == $this->members) {
             return $this;
@@ -268,7 +269,7 @@ final class Dictionary implements MemberOrderedMap
     {
         $members = $this->members;
         unset($members[$key]);
-        $members[$key] = self::filterMember($member);
+        $members[MapKey::from($key)->value] = self::filterMember($member);
 
         return $this->newInstance($members);
     }
@@ -277,7 +278,7 @@ final class Dictionary implements MemberOrderedMap
     {
         $members = $this->members;
         unset($members[$key]);
-        $members = [$key => self::filterMember($member), ...$members];
+        $members = [MapKey::from($key)->value => self::filterMember($member), ...$members];
 
         return $this->newInstance($members);
     }

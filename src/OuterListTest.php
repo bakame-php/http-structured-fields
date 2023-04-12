@@ -85,7 +85,16 @@ final class OuterListTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function it_fails_to_insert_somethine_other_than_a_inner_list_or_an_item(): void
+    public function it_can_return_the_same_object_if_no_replace_is_needed(): void
+    {
+        $item = Item::new(ByteSequence::fromDecoded('Hello World'));
+        $field = OuterList::new($item);
+
+        self::assertSame($field, $field->replace(0, ByteSequence::fromDecoded('Hello World')));
+    }
+
+    #[Test]
+    public function it_fails_to_insert_something_other_than_a_inner_list_or_an_item(): void
     {
         $this->expectException(InvalidArgument::class);
 

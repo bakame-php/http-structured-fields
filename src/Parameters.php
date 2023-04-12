@@ -23,6 +23,7 @@ use const ARRAY_FILTER_USE_KEY;
  * @phpstan-import-type SfTypeInput from StructuredField
  * @phpstan-import-type SfItem from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
+ *
  * @implements MemberOrderedMap<string, SfItem>
  */
 final class Parameters implements MemberOrderedMap
@@ -50,11 +51,8 @@ final class Parameters implements MemberOrderedMap
      */
     private static function filterMember(mixed $member): object
     {
-        $isItem = $member instanceof ValueAccess && $member instanceof ParameterAccess;
-
         return match (true) {
-            $isItem && $member->parameters()->hasNoMembers() => $member,
-            $isItem && $member->parameters()->hasMembers() => throw new InvalidArgument('The instance of "'.$member::class.'" is not a Bare Item instance.'),
+            $member instanceof ValueAccess && $member instanceof ParameterAccess => $member->parameters()->hasNoMembers() ? $member : throw new InvalidArgument('The instance of "'.$member::class.'" is not a Bare Item.'),
             $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             default => Item::new($member),
         };
@@ -176,8 +174,8 @@ final class Parameters implements MemberOrderedMap
 
     public function has(string|int ...$keys): bool
     {
-        foreach ($keys as $offset) {
-            if (!is_string($offset) || !array_key_exists($offset, $this->members)) {
+        foreach ($keys as $key) {
+            if (!is_string($key) || !array_key_exists($key, $this->members)) {
                 return false;
             }
         }
@@ -240,7 +238,19 @@ final class Parameters implements MemberOrderedMap
     public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
-        $members[$key] = $member;
+        $members[MapKey::from($key)->value] = self::filterMember($member);
+
+        return $this->newInstance($members);
+    }
+
+    /**
+     * @param array<string, SfItem> $members
+     */
+    private function newInstance(array $members): self
+    {
+        if ($members == $this->members) {
+            return $this;
+        }
 
         return new self($members);
     }
@@ -253,32 +263,25 @@ final class Parameters implements MemberOrderedMap
             ARRAY_FILTER_USE_KEY
         );
 
-        if ($members === $this->members) {
-            return $this;
-        }
-
-        return new self($members);
+        return $this->newInstance($members);
     }
 
     public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         unset($members[$key]);
-        $members[$key] = $member;
+        $members[MapKey::from($key)->value] = self::filterMember($member);
 
-        if ($members == $this->members) {
-            return $this;
-        }
-
-        return new self($members);
+        return $this->newInstance($members);
     }
 
     public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         unset($members[$key]);
+        $members = [MapKey::from($key)->value => self::filterMember($member), ...$members];
 
-        return new self([$key => $member, ...$members]);
+        return $this->newInstance($members);
     }
 
     /**

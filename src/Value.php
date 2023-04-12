@@ -9,6 +9,18 @@ use DateTimeInterface;
 use DateTimeZone;
 use Stringable;
 use Throwable;
+use function abs;
+use function date_default_timezone_get;
+use function floor;
+use function is_bool;
+use function is_float;
+use function is_int;
+use function is_string;
+use function json_encode;
+use function preg_match;
+use function preg_replace;
+use function round;
+use function str_contains;
 use const PHP_ROUND_HALF_EVEN;
 
 /**

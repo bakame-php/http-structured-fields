@@ -123,7 +123,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function it_fails_to_insert_somethine_other_than_a_inner_list_or_an_item(): void
+    public function it_fails_to_insert_something_other_than_a_inner_list_or_an_item(): void
     {
         $this->expectException(InvalidArgument::class);
 
