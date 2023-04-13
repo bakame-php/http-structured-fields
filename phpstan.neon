@@ -8,5 +8,6 @@ parameters:
     paths:
         - src
     ignoreErrors:
-        - '#it_fails_to_create_an_item_from_an_array_of_pairs\(\)#'
+        - message: '#it_fails_to_create_an_item_from_an_array_of_pairs\(\)#'
+          path: src/ItemTest.php
     reportUnmatchedIgnoredErrors: true

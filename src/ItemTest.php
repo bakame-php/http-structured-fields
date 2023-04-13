@@ -362,7 +362,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     #[DataProvider('invalidPairProvider')]
     /**
-     * @param array<mixed> $pair
+     * @param array<int|string|array<int|string>> $pair
      */
     public function it_fails_to_create_an_item_from_an_array_of_pairs(array $pair): void
     {
@@ -372,7 +372,7 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     /**
-     * @return iterable<string, array{pair:array<mixed>}>
+     * @return iterable<string, array{pair:array<int|string|array<int|string>>}>
      */
     public static function invalidPairProvider(): iterable
     {
