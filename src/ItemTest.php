@@ -32,7 +32,7 @@ final class ItemTest extends StructuredFieldTestCase
 
     #[Test]
     #[DataProvider('provideInvalidArguments')]
-    public function it_fails_to_instantiate_an_item(mixed $value): void
+    public function it_fails_to_instantiate_an_item(ByteSequence|Token|DateTimeInterface|string|int|float|bool $value): void
     {
         $this->expectException(SyntaxError::class);
 
@@ -75,19 +75,16 @@ final class ItemTest extends StructuredFieldTestCase
 
     #[Test]
     #[DataProvider('provideFrom1stArgument')]
-    public function it_instantiate_many_types(ValueAccess|ByteSequence|Token|DateTimeInterface|string|int|float|bool $value, string $expected): void
+    public function it_instantiate_many_types(ByteSequence|Token|DateTimeInterface|string|int|float|bool $value, string $expected): void
     {
         self::assertSame($expected, Item::new($value)->toHttpValue());
     }
 
     #[Test]
     #[DataProvider('provideFrom1stArgument')]
-    public function it_updates_item(ValueAccess|ByteSequence|Token|DateTimeInterface|string|int|float|bool $value, string $expected): void
+    public function it_updates_item(ByteSequence|Token|DateTimeInterface|string|int|float|bool $value, string $expected): void
     {
         $parameters = Parameters::fromAssociative(['foo' => 'bar']);
-        if ($value instanceof ParameterAccess && $value instanceof ValueAccess) {
-            $expected = $value->withoutAnyParameter()->toHttpValue();
-        }
 
         self::assertSame(
             $expected.$parameters->toHttpValue(),
@@ -100,8 +97,6 @@ final class ItemTest extends StructuredFieldTestCase
      */
     public static function provideFrom1stArgument(): iterable
     {
-        $item = Item::new(42);
-
         return [
             'decimal' => ['value' => 42.0, 'expected' => '42.0'],
             'string' => ['value' => 'forty-two', 'expected' => '"forty-two"'],
@@ -111,7 +106,6 @@ final class ItemTest extends StructuredFieldTestCase
             'token' => ['value' => Token::fromString('helloworld'), 'expected' => 'helloworld'],
             'byte sequence' => ['value' => ByteSequence::fromDecoded('foobar'), 'expected' => ':Zm9vYmFy:'],
             'datetime' => ['value' => new DateTime('2020-03-04 19:23:15'), 'expected' => '@1583349795'],
-            'value' => ['value' => $item, 'expected' => $item->toHttpValue()],
         ];
     }
 

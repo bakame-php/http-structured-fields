@@ -15,7 +15,6 @@ use function floor;
 use function is_bool;
 use function is_float;
 use function is_int;
-use function is_string;
 use function json_encode;
 use function preg_match;
 use function preg_replace;
@@ -32,7 +31,7 @@ final class Value
     public readonly Token|ByteSequence|DateTimeImmutable|int|float|string|bool $value;
     public readonly Type $type;
 
-    public function __construct(mixed $value)
+    public function __construct(ValueAccess|Token|ByteSequence|DateTimeInterface|int|float|string|bool $value)
     {
         [$this->value, $this->type] = match (true) {
             $value instanceof ValueAccess => [$value->value(), $value->type()],
@@ -42,8 +41,7 @@ final class Value
             is_int($value) => [self::filterIntegerRange($value, 'Integer'), Type::Integer],
             is_float($value) => [self::filterDecimal($value), Type::Decimal],
             is_bool($value) => [$value, Type::Boolean],
-            is_string($value) => [self::filterString($value), Type::String],
-            default => throw new InvalidArgument('The type "'.(is_object($value) ? $value::class : gettype($value)).'" is not supported.')
+            default => [self::filterString($value), Type::String],
         };
     }
 
@@ -216,13 +214,13 @@ final class Value
     public function serialize(): string
     {
         return match (true) {
-            is_string($this->value) => '"'.preg_replace('/(["\\\])/', '\\\$1', $this->value).'"',
+            $this->value instanceof DateTimeImmutable => '@'.$this->value->getTimestamp(),
+            $this->value instanceof Token => $this->value->toString(),
+            $this->value instanceof ByteSequence => ':'.$this->value->encoded().':',
             is_int($this->value) => (string) $this->value,
             is_float($this->value) => self::serializeDecimal($this->value),
             is_bool($this->value) => '?'.($this->value ? '1' : '0'),
-            $this->value instanceof Token => $this->value->toString(),
-            $this->value instanceof DateTimeImmutable => '@'.$this->value->getTimestamp(),
-            default => ':'.$this->value->encoded().':',
+            default => '"'.preg_replace('/(["\\\])/', '\\\$1', $this->value).'"',
         };
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use DateTimeInterface;
 use Throwable;
 
 /**
@@ -28,7 +29,7 @@ enum Type
         return $other instanceof self && $other === $this;
     }
 
-    public static function fromValue(mixed $value): self
+    public static function fromValue(ValueAccess|Token|ByteSequence|DateTimeInterface|int|float|string|bool $value): self
     {
         return (new Value($value))->type;
     }
@@ -36,7 +37,7 @@ enum Type
     public static function tryFromValue(mixed $value): self|null
     {
         try {
-            return self::fromValue($value);
+            return self::fromValue($value); /* @phpstan-ignore-line */
         } catch (Throwable) {
             return null;
         }

@@ -20,7 +20,6 @@ use const ARRAY_FILTER_USE_KEY;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.2
  *
- * @phpstan-import-type SfTypeInput from StructuredField
  * @phpstan-import-type SfItem from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
  *

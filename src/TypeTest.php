@@ -13,14 +13,6 @@ use PHPUnit\Framework\TestCase;
 final class TypeTest extends TestCase
 {
     #[Test]
-    public function it_will_throw_if_the_type_is_no_supported(): void
-    {
-        $this->expectException(InvalidArgument::class);
-
-        Type::fromValue([]);
-    }
-
-    #[Test]
     public function it_will_return_null_if_the_type_is_no_supported(): void
     {
         self::assertNull(Type::tryFromValue([]));
@@ -43,7 +35,7 @@ final class TypeTest extends TestCase
     #[DataProvider('itemTypeProvider')]
     public function it_can_tell_the_item_type(mixed $value, Type $expectedType): void
     {
-        self::assertTrue($expectedType->equals(Type::fromValue($value)));
+        self::assertTrue($expectedType->equals(Type::fromValue($value))); /* @phpstan-ignore-line */
         self::assertTrue($expectedType->equals(Type::tryFromValue($value)));
     }
 

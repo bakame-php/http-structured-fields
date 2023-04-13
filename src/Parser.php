@@ -187,7 +187,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.1
      *
-     * @return array{0:SfTypeInput, 1:int}
+     * @return array{0:ByteSequence|Token|DateTimeImmutable|string|int|float|bool, 1:int}
      */
     public static function parseBareItem(string $httpValue): array
     {

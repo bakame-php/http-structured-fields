@@ -59,7 +59,7 @@ final class Item implements ParameterAccess, ValueAccess
      *
      * @throws SyntaxError If the value or the parameters are not valid
      */
-    public static function fromAssociative(mixed $value, iterable $parameters): self
+    public static function fromAssociative(DateTimeInterface|ByteSequence|Token|string|int|float|bool $value, iterable $parameters): self
     {
         if (!$parameters instanceof Parameters) {
             $parameters = Parameters::fromAssociative($parameters);
@@ -70,7 +70,7 @@ final class Item implements ParameterAccess, ValueAccess
 
     /**
      * @param array{
-     *     0:SfItemInput,
+     *     0:DateTimeInterface|ByteSequence|Token|string|int|float|bool,
      *     1:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>
      * } $pair
      *
@@ -78,19 +78,11 @@ final class Item implements ParameterAccess, ValueAccess
      */
     public static function fromPair(array $pair): self
     {
-        if (!array_is_list($pair)) { /* @phpstan-ignore-line */
-            throw new SyntaxError('The pair must be represented by an array as a list.');
-        }
-
-        if (2 !== count($pair)) { /* @phpstan-ignore-line */
-            throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.');
-        }
-
-        if (!$pair[1] instanceof Parameters) {
-            $pair[1] = Parameters::fromPairs($pair[1]);
-        }
-
-        return new self(new Value($pair[0]), $pair[1]);
+        return match (true) {
+            !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'), /* @phpstan-ignore-line */
+            2 !== count($pair) => throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.'), /* @phpstan-ignore-line */
+            default => new self(new Value($pair[0]), $pair[1] instanceof Parameters ? $pair[1] : Parameters::fromPairs($pair[1])),
+        };
     }
 
     /**
@@ -98,7 +90,7 @@ final class Item implements ParameterAccess, ValueAccess
      *
      * @throws SyntaxError If the value is not valid.
      */
-    public static function new(mixed $value): self
+    public static function new(DateTimeInterface|ByteSequence|Token|string|int|float|bool $value): self
     {
         return self::fromValue(new Value($value));
     }
@@ -242,7 +234,7 @@ final class Item implements ParameterAccess, ValueAccess
         return $this->parameters;
     }
 
-    public function parameter(string $key): mixed
+    public function parameter(string $key): Token|ByteSequence|DateTimeImmutable|int|float|string|bool|null
     {
         try {
             return $this->parameters->get($key)->value();
@@ -274,7 +266,7 @@ final class Item implements ParameterAccess, ValueAccess
         return [$this->value->value, $this->parameters];
     }
 
-    public function withValue(mixed $value): static
+    public function withValue(DateTimeInterface|ByteSequence|Token|string|int|float|bool $value): static
     {
         $value = new Value($value);
         if ($value->equals($this->value)) {

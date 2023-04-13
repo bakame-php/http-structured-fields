@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use DateTimeImmutable;
+use DateTimeInterface;
 
-/**
- * @phpstan-import-type SfTypeInput from StructuredField
- */
 interface ValueAccess extends StructuredField
 {
     /**
@@ -27,9 +25,7 @@ interface ValueAccess extends StructuredField
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified value change.
      *
-     * @param ValueAccess|SfTypeInput $value
-     *
      * @throws SyntaxError If the value is invalid or not supported
      */
-    public function withValue(mixed $value): static;
+    public function withValue(DateTimeInterface|ByteSequence|Token|string|int|float|bool $value): static;
 }

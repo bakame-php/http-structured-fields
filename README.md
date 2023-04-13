@@ -213,9 +213,11 @@ The `Item` value object exposes a number of named constructors to construct
 bare items (ie: item without parameters attached to them).
 
 ```php
+use Bakame\Http\StructuredFields\ByteSequence;
 use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Token;
 
-Item::new(mixed $value): self;
+Item:new(DateTimeInterface|ByteSequence|Token|string|int|float|bool $value): self
 Item::fromDecodedByteSequence(Stringable|string $value): self;
 Item::fromEncodedByteSequence(Stringable|string $value): self;
 Item::fromToken(Stringable|string $value): self;

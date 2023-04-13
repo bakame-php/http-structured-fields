@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use DateTimeImmutable;
+
 /**
- * @phpstan-import-type SfTypeInput from StructuredField
  * @phpstan-import-type SfItem from StructuredField
  */
 interface ParameterAccess
@@ -22,10 +23,8 @@ interface ParameterAccess
 
     /**
      * Returns the member value or null if no members value exists.
-     *
-     * @return SfTypeInput|null
      */
-    public function parameter(string $key): mixed;
+    public function parameter(string $key): Token|ByteSequence|DateTimeImmutable|int|float|string|bool|null;
 
     /**
      * Adds a member if its key is not present at the of the associated parameter instance or update the instance at the given key.

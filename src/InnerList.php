@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Iterator;
 use Stringable;
@@ -66,7 +67,7 @@ final class InnerList implements MemberList, ParameterAccess
      * Returns a new instance with an iter.
      *
      * @param iterable<SfItemInput> $value
-     * @param iterable<string, SfItemInput> $parameters
+     * @param MemberOrderedMap<string, SfItem>|iterable<string, SfItemInput> $parameters
      */
     public static function fromAssociative(iterable $value, iterable $parameters): self
     {
@@ -85,19 +86,11 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function fromPair(array $pair): self
     {
-        if (!array_is_list($pair)) { /* @phpstan-ignore-line */
-            throw new SyntaxError('The pair must be represented by an array as a list.');
-        }
-
-        if (2 !== count($pair)) { /* @phpstan-ignore-line */
-            throw new SyntaxError('The pair first member must be the member list and the optional second member the inner list parameters.');
-        }
-
-        if (!$pair[1] instanceof Parameters) {
-            $pair[1] = Parameters::fromPairs($pair[1]);
-        }
-
-        return new self($pair[0], $pair[1]);
+        return match (true) {
+            !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'), /* @phpstan-ignore-line */
+            2 !== count($pair) => throw new SyntaxError('The pair first member must be the member list and the second member the inner list parameters.'), /* @phpstan-ignore-line */
+            default => new self($pair[0], !$pair[1] instanceof Parameters ? Parameters::fromPairs($pair[1]) : $pair[1]),
+        };
     }
 
     /**
@@ -136,7 +129,7 @@ final class InnerList implements MemberList, ParameterAccess
         return $this->parameters;
     }
 
-    public function parameter(string $key): mixed
+    public function parameter(string $key): Token|ByteSequence|DateTimeImmutable|int|float|string|bool|null
     {
         try {
             return $this->parameters->get($key)->value();
