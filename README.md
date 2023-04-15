@@ -18,34 +18,27 @@ use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\OuterList;
 use Bakame\Http\StructuredFields\Token;
 
-echo OuterList::new()
-    ->push(
-        InnerList::new(Item::fromString('foo'), Item::fromString('bar'))
-            ->addParameter('expire', Item::fromDateString('+30 minutes'))
-            ->addParameter('path', '/')
-            ->addParameter('max-age', 2500)
-            ->addParameter('secure', true)
-            ->addParameter('httponly', false)
-            ->addParameter('samesite', Token::fromString('lax'))
+//1 - parsing an Accept Header
+$acceptHeaderValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
+$field = OuterList::fromHttpValue($acceptHeaderValue);
+$field[2]->value()->toString(); // returns 'application/xml'
+$field[2]->parameter('q');      // returns (float) 0.9
+$field[0]->value()->toString(); // returns 'text/html'
+$field[0]->parameter('q');      // returns null
+
+//2 - building a Retrofit Cookie Header
+echo OuterList::new(
+        InnerList::fromAssociative(['foo', 'bar'], [
+            'expire' => $expire,
+            'path' => '/',
+            'max-age' => 2500,
+            'secure' => true,
+            'httponly' => true,
+            'samesite' => BakameToken::fromString('lax'),
+        ])
     )
     ->toHttpValue();
-
-// or
-
-echo OuterList::new(
-    InnerList::fromAssociative(['foo', 'bar'], [
-        'expire' => new DateTimeImmutable('+30 minutes'),
-        'path' => '/',
-        'max-age' => 2500,
-        'secure' => true,
-        'httponly' => true,
-        'samesite' => Token::fromString('lax'),
-    ])
-);
-
-// Both code snippet return
-// ("foo" "bar");expire=@1681504328;path="/";max-age=2500;secure;httponly=?0;samesite=lax
-// the retrofit representation of the cookie header
+// return ("foo" "bar");expire=@1681504328;path="/";max-age=2500;secure;httponly=?0;samesite=lax
 ```
 
 ## System Requirements
@@ -61,6 +54,13 @@ composer require bakame/http-structured-fields
 ```
 
 ## Documentation
+
+### Foreword
+
+**While this package parses, builds, updates and serializes the header value,
+it does not in any shape or form validate its content. It is still required
+to validate the parse data against the RFC rules of the corresponding header.
+Content validation is out of scope for this library.**
 
 ### Parsing and Serializing Structured Fields
 
@@ -84,11 +84,12 @@ $field->value();          // returns Token::fromString('bar); the found token va
 $field->parameter('baz'); // returns 42; the value of the parameter or null if the parameter is not defined.
 ```
 
-The `fromHttpValue` method returns an instance which implements the`StructuredField` interface.
-The interface provides the `toHttpValue` method that serializes it into a normalized
-RFC compliant HTTP field string value.
-
-To ease integration, the `__toString` method is implemented as an alias to the `toHttpValue` method.
+The `fromHttpValue` method returns an instance which implements
+the `StructuredField` interface. The interface provides the 
+`toHttpValue` method that serializes it into a normalized
+RFC compliant HTTP field string value. To ease integration,
+the `__toString` method is implemented as an alias to the
+`toHttpValue` method.
 
 ````php
 use Bakame\Http\StructuredFields\Item;
@@ -149,8 +150,8 @@ ByteSequence::fromDecoded(string|Stringable $value): ByteSequence;
 ByteSequence::fromEncoded(string|Stringable $value): ByteSequence;
 ```
 
-Both classes are final and immutable; their value can not be modified once instantiated.
-To access their value, they expose the following API:
+Both classes are final and immutable; their value can not be modified once
+instantiated. To access their value, they expose the following API:
 
 ```php
 use Bakame\Http\StructuredFields\Token;
@@ -175,8 +176,8 @@ from a string or a string like object**
 
 #### Item
 
-The defined types are all attached to the `Item` object where their values and types
-are accessible using the following methods:
+The defined types are all attached to the `Item` object where their values and
+types are accessible using the following methods:
 
 ```php
 use Bakame\Http\StructuredFields\Item;
@@ -335,23 +336,28 @@ use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 
 $value = Dictionary::new()
-    ->add('a', InnerList::new(Item::fromToken('bar'), tem::fromString('bar'))
+    ->add('a', InnerList::new(
+        Item::fromToken('bar'),
+        Item::fromString('42'),
+        Item::fromInteger(42),
+        Item::fromDecimal(42)
+     ))
     ->prepend('b', Item::false())
     ->append('c', Item::fromDateString('2022-12-23 13:00:23'))
 ;
 
-echo $value->toHttpValue(); //b=?0, a=(bar "bar"), c=@1671800423
-echo $value;                //b=?0, a=(bar "bar"), c=@1671800423
+echo $value->toHttpValue(); //b=?0, a=(bar "42" 42 42.0), c=@1671800423
+echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
 
 #### Automatic conversion.
 
-For all containers to ease instantiaiton the following automatic conversion are applied on
+For all containers, to ease instantiation the following automatic conversion are applied on
 the member argument of each modifying methods, if the submitted type is:
 
 -  a `StructuredField` implementing object, it will be passed as is
--  an iterable structure it will be converted to an `InnerList` instance using `InnerList::new`
--  otherwise the value will be converted to an `Item` using `Item::new`.
+-  an iterable structure, it will be converted to an `InnerList` instance using `InnerList::new`
+-  otherwise, the method will try to convert it into an `Item` using `Item::new` following the conversion rule in the table above.
 
 This means that the previous example can be rewritten like this:
 
@@ -361,13 +367,13 @@ use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 
 $value = Dictionary::new()
-    ->add('a', [Token::fromString('bar'), 'bar'])
+    ->add('a', [Token::fromString('bar'), '42', 42, 42.0])
     ->prepend('b', false)
     ->append('c', new DateTimeImmutable('2022-12-23 13:00:23'))
 ;
 
-echo $value->toHttpValue(); //"b=?0, a=bar, c=@1671800423"
-echo $value;                //"b=?0, a=bar, c=@1671800423"
+echo $value->toHttpValue(); //b=?0, a=(bar "42" 42 42.0), c=@1671800423
+echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
 
 #### Lists
