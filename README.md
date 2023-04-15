@@ -335,18 +335,23 @@ use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 
 $value = Dictionary::new()
-    ->add('a', Item::fromToken('bar'))
+    ->add('a', InnerList::new(Item::fromToken('bar'), tem::fromString('bar'))
     ->prepend('b', Item::false())
     ->append('c', Item::fromDateString('2022-12-23 13:00:23'))
 ;
 
-echo $value->toHttpValue(); //"b=?0, a=bar, c=@1671800423"
-echo $value;                //"b=?0, a=bar, c=@1671800423"
+echo $value->toHttpValue(); //b=?0, a=(bar "bar"), c=@1671800423
+echo $value;                //b=?0, a=(bar "bar"), c=@1671800423
 ```
 
-**Of note: For all containers, if the submitted type is not a `StructuredField`
-implementing object, it will be passed to `Item::new` to convert it into a
-bare `Item` instances.**
+#### Automatic conversion.
+
+For all containers to ease instantiaiton the following automatic conversion are applied on
+the member argument of each modifying methods, if the submitted type is:
+
+-  a `StructuredField` implementing object, it will be passed as is
+-  an iterable structure it will be converted to an `InnerList` instance using `InnerList::new`
+-  otherwise the value will be converted to an `Item` using `Item::new`.
 
 This means that the previous example can be rewritten like this:
 
@@ -356,7 +361,7 @@ use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 
 $value = Dictionary::new()
-    ->add('a', 'bar')
+    ->add('a', [Token::fromString('bar'), 'bar'])
     ->prepend('b', false)
     ->append('c', new DateTimeImmutable('2022-12-23 13:00:23'))
 ;

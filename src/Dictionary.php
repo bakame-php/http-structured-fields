@@ -234,7 +234,10 @@ final class Dictionary implements MemberOrderedMap
         return [...$this->toPairs()][$this->filterIndex($index)];
     }
 
-    public function add(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
+    /**
+     * @param SfMember|SfMemberInput $member
+     */
+    public function add(string $key, iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
@@ -265,7 +268,10 @@ final class Dictionary implements MemberOrderedMap
         return $this->newInstance($members);
     }
 
-    public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
+    /**
+     * @param SfMember|SfMemberInput $member
+     */
+    public function append(string $key, iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         unset($members[$key]);
@@ -274,7 +280,10 @@ final class Dictionary implements MemberOrderedMap
         return $this->newInstance($members);
     }
 
-    public function prepend(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
+    /**
+     * @param SfMember|SfMemberInput $member
+     */
+    public function prepend(string $key, iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         unset($members[$key]);

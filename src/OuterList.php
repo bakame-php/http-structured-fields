@@ -156,8 +156,10 @@ final class OuterList implements MemberList
 
     /**
      * Inserts members at the beginning of the list.
+     *
+     * @param SfMember|SfMemberInput ...$members
      */
-    public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
+    public function unshift(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
     {
         if ([] === $members) {
             return $this;
@@ -168,8 +170,10 @@ final class OuterList implements MemberList
 
     /**
      * Inserts members at the end of the list.
+     *
+     * @param SfMember|SfMemberInput ...$members
      */
-    public function push(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
+    public function push(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
     {
         if ([] === $members) {
             return $this;
@@ -181,9 +185,11 @@ final class OuterList implements MemberList
     /**
      * Inserts members starting at the given index.
      *
+     * @param SfMember|SfMemberInput ...$members
+     *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
+    public function insert(int $key, iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
     {
         $offset = $this->filterIndex($key);
 
@@ -200,7 +206,10 @@ final class OuterList implements MemberList
         };
     }
 
-    public function replace(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
+    /**
+     * @param SfMember|SfMemberInput $member
+     */
+    public function replace(int $key, iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         if (null === ($offset = $this->filterIndex($key))) {
             throw InvalidOffset::dueToIndexNotFound($key);
