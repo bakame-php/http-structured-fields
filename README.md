@@ -19,8 +19,8 @@ use Bakame\Http\StructuredFields\OuterList;
 use Bakame\Http\StructuredFields\Token;
 
 //1 - parsing an Accept Header
-$acceptHeaderValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
-$field = OuterList::fromHttpValue($acceptHeaderValue);
+$headerValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
+$field = OuterList::fromHttpValue($headerValue);
 $field[2]->value()->toString(); // returns 'application/xml'
 $field[2]->parameter('q');      // returns (float) 0.9
 $field[0]->value()->toString(); // returns 'text/html'
@@ -38,7 +38,7 @@ echo OuterList::new(
         ])
     )
     ->toHttpValue();
-// return ("foo" "bar");expire=@1681504328;path="/";max-age=2500;secure;httponly=?0;samesite=lax
+// returns ("foo" "bar");expire=@1681504328;path="/";max-age=2500;secure;httponly=?0;samesite=lax
 ```
 
 ## System Requirements
@@ -57,15 +57,15 @@ composer require bakame/http-structured-fields
 
 ### Foreword
 
-**While this package parses, builds, updates and serializes the header value,
-it does not in any shape or form validate its content. It is still required
-to validate the parse data against the RFC rules of the corresponding header.
-Content validation is out of scope for this library.**
+**While this package parses and serializes the header value, it does not validate its content.
+It is still required to validate the parsed data against the constraints of the corresponding
+header. Content validation is out of scope for this library.**
 
 ### Parsing and Serializing Structured Fields
 
-Parsing the header value is done via the `fromHttpValue` named constructor
-attached to each library's structured fields representation as shown below:
+Parsing the header value is done via the `fromHttpValue` named constructor.
+The method is attached to each library's structured fields representation
+as shown below:
 
 ```php
 declare(strict_types=1);
@@ -75,35 +75,32 @@ require 'vendor/autoload.php';
 use Bakame\Http\StructuredFields\Item;
 
 // the raw HTTP field value is given by your application
-// via any given framework or package or super global.
-// We are using a PSR-7 Request object in this example
+// via any given framework, package or super global.
 
-$headerLine = $request->getHeaderLine('foo'); // 'foo: bar;baz=42' the raw header line is a structured field item
+$headerLine = 'bar;baz=42'; //the raw header line is a structured field item
 $field = Item::fromHttpValue($headerLine);
 $field->value();          // returns Token::fromString('bar); the found token value 
 $field->parameter('baz'); // returns 42; the value of the parameter or null if the parameter is not defined.
 ```
 
-The `fromHttpValue` method returns an instance which implements
-the `StructuredField` interface. The interface provides the 
-`toHttpValue` method that serializes it into a normalized
-RFC compliant HTTP field string value. To ease integration,
-the `__toString` method is implemented as an alias to the
-`toHttpValue` method.
+The `fromHttpValue` method returns an instance which implements the `StructuredField` interface.
+The interface provides the `toHttpValue` method that serializes it into a normalized RFC
+compliant HTTP field string value. To ease integration, the `__toString` method is
+implemented as an alias to the `toHttpValue` method.
 
 ````php
 use Bakame\Http\StructuredFields\Item;
 
-$bar = Item::fromHttpValue('bar;    baz=42;     secure=?1');
-echo $bar->toHttpValue(); // return 'bar;baz=42;secure' on serialization the field has been normalized
+$field = Item::fromHttpValue('bar;    baz=42;     secure=?1');
+echo $field->toHttpValue(); // return 'bar;baz=42;secure'
+// on serialization the field has been normalized
 
-// the HTTP response object is build by your application
-// via your framework, a package or a native PHP function.
-// We are using Symfony Response object in this example
+// the HTTP response is build by your application
+// via any given framework, package or PHP native function.
 
-$newResponse = $response->headers->set('foo', $bar->toHttpValue());
+header('foo: '. $field->toHttpValue());
 //or
-$newResponse = $response->headers->set('foo', $bar);
+header('foo: '. $field);
 ````
 
 All five (5) structured data type as defined in the RFC are provided inside the
@@ -176,8 +173,8 @@ from a string or a string like object**
 
 #### Item
 
-The defined types are all attached to the `Item` object where their values and
-types are accessible using the following methods:
+The defined types are all attached to an `Item` object where their value and
+type are accessible using the following methods:
 
 ```php
 use Bakame\Http\StructuredFields\Item;
@@ -185,7 +182,7 @@ use Bakame\Http\StructuredFields\Type;
 
 $item = Item::fromHttpValue('@1234567890');
 $item->type();  // return Type::Date;
-$item->value()  // return the equivalent to DateTimeImmutable('2009-02-13T23:31:30.000+00:00');
+$item->value()  // return the equivalent to DateTimeImmutable('@1234567890');
 // you can also do 
 Type::Date->equals($item); // returns true
 ```
@@ -196,12 +193,14 @@ All containers objects implement PHP `IteratorAggregate`, `Countable` and `Array
 interfaces. Their members can be accessed using the following shared methods
 
 ```php
-$container->keys(): array<string>;
+$container->keys(): array<string|int>;
 $container->has(string|int ...$offsets): bool;
 $container->get(string|int $offset): StrucuredField;
 $container->hasMembers(): bool;
 $container->hasNoMembers(): bool;
 ```
+
+**The `get` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.**
 
 To avoid invalid states, `ArrayAccess` modifying methods throw a `ForbiddenOperation`
 if you try to use them on any container object:
@@ -225,6 +224,8 @@ $container->pair(int $offset): array{0:string, 1:StructuredField};
 $container->toPairs(): iterable<array{0:string, 1:StructuredField}>;
 ```
 
+**The `pair` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.**
+
 #### Accessing the parameters values
 
 Accessing the associated `Parameters` instance attached to an `InnerList` or a `Item` instances
@@ -241,7 +242,7 @@ InnerList::toPair(): array{0:list<Item>, 1:Parameters}>};
 Item::toPair(): array{0:ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|bool, 1:Parameters}>};
 ```
 
-**Of note: the `parameter` method will return `null` if no value is found for the given index.**
+**The `parameter` method will return `null` if no value is found for the given index.**
 
 ### Building and Updating Structured Fields Values
 
@@ -315,10 +316,12 @@ echo $value->toHttpValue(); //;b=?0;a=bar;c=@1671800423
 echo $value;                //;b=?0;a=bar;c=@1671800423
 ```
 
-If the preference is to use the builder pattern, the same result can be achieved with the following steps.
-First create a `Parameters` or a `Dictionary` instance using the `new` named constructor which
-returns a new instance with no members. And then, use any of the following modifying methods
-to populate it.
+If the preference is to use the builder pattern, the same result can be achieved with the 
+following steps:
+
+- First create a `Parameters` or a `Dictionary` instance using the `new` named constructor which
+returns a new instance with no members.
+- And then, use any of the following modifying methods to populate it.
 
 ```php
 $map->add(string $key, $value): static;
@@ -350,14 +353,18 @@ echo $value->toHttpValue(); //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
 
-#### Automatic conversion.
+#### Automatic conversion
 
 For all containers, to ease instantiation the following automatic conversion are applied on
-the member argument of each modifying methods, if the submitted type is:
+the member argument of each modifying methods.
+
+If the submitted type is:
 
 -  a `StructuredField` implementing object, it will be passed as is
 -  an iterable structure, it will be converted to an `InnerList` instance using `InnerList::new`
--  otherwise, the method will try to convert it into an `Item` using `Item::new` following the conversion rule in the table above.
+-  otherwise, it is converted into an `Item` using `Item::new` following the conversion rules explained in the table above.
+
+If no conversion is possible an `InvalidArgument` exception will be thrown.
 
 This means that the previous example can be rewritten like this:
 
@@ -376,10 +383,12 @@ echo $value->toHttpValue(); //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
 
+Of course, it is possible to mix both notation as shown in the example.
+
 #### Lists
 
-To Create `OuterList` and `InnerList` instances you can use the `new` named constructor
-which takes fron 0 to n members:
+To create `OuterList` and `InnerList` instances you can use the `new` named constructor
+which takes a single variadic parameter `$members`:
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
@@ -395,9 +404,8 @@ echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 ```
 
-Once again, the builder pattern can be achieved with a combinason of
-using the `new` named constructor and the using any of the following
-modifying methods.
+Once again, the builder pattern can be used via a combination of the `new`
+named constructor and the use any of the following modifying methods.
 
 ```php
 $list->unshift(...$members): static;
