@@ -61,10 +61,18 @@ final class OuterList implements MemberList
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        return self::new(...array_map(
-            fn (mixed $value) => is_array($value) ? InnerList::fromAssociative($value[0], $value[1]) : $value,
-            Parser::parseList($httpValue)
-        ));
+        return self::new(...(function (iterable $members) {
+            foreach ($members as $member) {
+                if (!is_array($member[0])) {
+                    yield Item::fromAssociative(...$member);
+
+                    continue;
+                }
+
+                $member[0] = array_map(fn (array $item) => Item::fromAssociative(...$item), $member[0]);
+                yield InnerList::fromAssociative(...$member);
+            }
+        })(Parser::parseList($httpValue)));
     }
 
     /**

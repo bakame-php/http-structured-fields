@@ -19,7 +19,7 @@ use function json_encode;
 use function preg_match;
 use function preg_replace;
 use function round;
-use function str_contains;
+use const JSON_PRESERVE_ZERO_FRACTION;
 use const PHP_ROUND_HALF_EVEN;
 
 /**
@@ -218,23 +218,10 @@ final class Value
             $this->value instanceof Token => $this->value->toString(),
             $this->value instanceof ByteSequence => ':'.$this->value->encoded().':',
             is_int($this->value) => (string) $this->value,
-            is_float($this->value) => self::serializeDecimal($this->value),
+            is_float($this->value) => (string) json_encode(round($this->value, 3, PHP_ROUND_HALF_EVEN), JSON_PRESERVE_ZERO_FRACTION),
             is_bool($this->value) => '?'.($this->value ? '1' : '0'),
             default => '"'.preg_replace('/(["\\\])/', '\\\$1', $this->value).'"',
         };
-    }
-
-    /**
-     * Serialize the Item decimal value according to RFC8941.
-     *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.1.5
-     */
-    private static function serializeDecimal(float $value): string
-    {
-        /** @var string $result */
-        $result = json_encode(round($value, 3, PHP_ROUND_HALF_EVEN));
-
-        return str_contains($result, '.') ? $result : $result.'.0';
     }
 
     public function equals(mixed $value): bool

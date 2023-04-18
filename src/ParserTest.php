@@ -45,8 +45,8 @@ final class ParserTest extends StructuredFieldTestCase
     {
         $field = Parser::parseDictionary('a=@12345678;key=1');
 
-        self::assertInstanceOf(Item::class, $field['a']);
-        self::assertInstanceOf(DateTimeImmutable::class, $field['a']->value());
+        self::assertInstanceOf(DateTimeImmutable::class, $field['a'][0]);
+        self::assertSame(1, $field['a'][1]['key']);
     }
 
     #[Test]

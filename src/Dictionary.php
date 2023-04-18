@@ -113,7 +113,14 @@ final class Dictionary implements MemberOrderedMap
     {
         return new self((function (iterable $members) {
             foreach ($members as $key => $member) {
-                yield $key => is_array($member) ? InnerList::fromAssociative($member[0], $member[1]) : $member;
+                if (!is_array($member[0])) {
+                    yield $key => Item::fromAssociative(...$member);
+
+                    continue;
+                }
+
+                $member[0] = array_map(fn (array $item) => Item::fromAssociative(...$item), $member[0]);
+                yield $key => InnerList::fromAssociative(...$member);
             }
         })(Parser::parseDictionary($httpValue)));
     }

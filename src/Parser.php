@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use DateTimeImmutable;
-use DateTimeZone;
 use Stringable;
 use function in_array;
 use function ltrim;
@@ -25,7 +24,7 @@ use function substr;
  * @internal Use Dictionary::fromHttpValue(), Parameters::fromHttpValue(),
  *               OuterList::fromHttpValue(), InnerList::fromHttpValue() or Item::fromHttpValue() instead
  *
- * @phpstan-import-type SfTypeInput from StructuredField
+ * @phpstan-import-type SfType from StructuredField
  * @phpstan-import-type SfItem from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
  */
@@ -36,7 +35,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1
      *
-     * @return array<SfItemInput|array{0:array<SfItemInput>, 1:array<string, SfItemInput>}>
+     * @return array<array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}>
      */
     public static function parseList(Stringable|string $httpValue): array
     {
@@ -55,7 +54,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.2
      *
-     * @return array<string, SfItemInput|array{0:array<SfItemInput>, 1:array<string,SfItemInput>}>
+     * @return array<string, array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}>
      */
     public static function parseDictionary(Stringable|string $httpValue): array
     {
@@ -80,7 +79,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
-     * @return array{0:array<SfItemInput>, 1:array<string, SfItemInput>}
+     * @return array{0:array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}
      */
     public static function parseInnerList(Stringable|string $httpValue): array
     {
@@ -137,7 +136,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
      *
-     * @return array{0:array{0:array<SfItemInput>, 1:array<string,SfItemInput>}|SfItem, 1:int}
+     * @return array{0:array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}, 1:int}
      */
     private static function parseItemOrInnerList(string $httpValue): array
     {
@@ -155,7 +154,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
      *
-     * @return array{0:array{0:array<SfItemInput>, 1:array<string, SfItemInput>}, 1:int}
+     * @return array{0:array{0:array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}, 1:int}
      */
     private static function parseInnerListValue(string $httpValue): array
     {
@@ -183,11 +182,23 @@ final class Parser
     }
 
     /**
+     * @return array{0:array{0:SfType, 1:array<string, SfType>}, 1:string}
+     */
+    private static function parseItem(string $remainder): array
+    {
+        [$value, $offset] = self::parseBareItem($remainder);
+        $remainder = substr($remainder, $offset);
+        [$parameters, $offset] = self::parseParameters($remainder);
+
+        return [[$value, $parameters], substr($remainder, $offset)];
+    }
+
+    /**
      * Returns an Item value from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.1
      *
-     * @return array{0:ByteSequence|Token|DateTimeImmutable|string|int|float|bool, 1:int}
+     * @return array{0:SfType, 1:int}
      */
     public static function parseBareItem(string $httpValue): array
     {
@@ -207,7 +218,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.2
      *
-     * @return array{0:array<string, SfTypeInput>, 1:int}
+     * @return array{0:array<string, SfType>, 1:int}
      */
     public static function parseParameters(string $httpValue): array
     {
@@ -280,10 +291,7 @@ final class Parser
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Date contains invalid characters.");
         }
 
-        return [
-            (new DateTimeImmutable('NOW', new DateTimeZone('UTC')))->setTimestamp((int) $found['date']),
-            strlen($found['date']) + 1,
-        ];
+        return [new DateTimeImmutable('@'.$found['date']), strlen($found['date']) + 1];
     }
 
     /**
@@ -361,17 +369,5 @@ final class Parser
         }
 
         return [ByteSequence::fromEncoded($matches['byte']), strlen($matches['sequence'])];
-    }
-
-    /**
-     * @return array{0:SfItem, 1:string}
-     */
-    private static function parseItem(string $remainder): array
-    {
-        [$value, $offset] = self::parseBareItem($remainder);
-        $remainder = substr($remainder, $offset);
-        [$parameters, $offset] = self::parseParameters($remainder);
-
-        return [Item::fromAssociative($value, $parameters), substr($remainder, $offset)];
     }
 }
