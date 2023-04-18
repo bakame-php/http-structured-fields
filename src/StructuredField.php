@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-use DateTimeInterface;
 use Stringable;
 
 /**
- * @phpstan-type SfType ByteSequence|Token|DateTimeInterface|string|int|float|bool
+ * @phpstan-type SfType ByteSequence|Token|\DateTimeInterface|string|int|float|bool
  * @phpstan-type SfTypeInput StructuredField|SfType
  * @phpstan-type SfItem ValueAccess&ParameterAccess
  * @phpstan-type SfItemInput SfItem|SfTypeInput

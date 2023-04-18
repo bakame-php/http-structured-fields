@@ -25,8 +25,6 @@ use function substr;
  *               OuterList::fromHttpValue(), InnerList::fromHttpValue() or Item::fromHttpValue() instead
  *
  * @phpstan-import-type SfType from StructuredField
- * @phpstan-import-type SfItem from StructuredField
- * @phpstan-import-type SfItemInput from StructuredField
  */
 final class Parser
 {
