@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use LogicException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
 final class ParametersTest extends StructuredFieldTestCase
@@ -63,11 +64,21 @@ final class ParametersTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function it_fails_to_instantiate_with_an_parameter_key_as_int(): void
+    #[DataProvider('invalidMapKeyProvider')]
+    public function it_fails_to_instantiate_with_a_parameter_and_an_invalid_key(string|int $key): void
     {
         $this->expectException(SyntaxError::class);
 
-        Parameters::fromAssociative([1 => Item::true()]); // @phpstan-ignore-line
+        Parameters::fromAssociative([$key => Item::true()]); // @phpstan-ignore-line
+    }
+
+    /**
+     * @return iterable<string,array{key:string|int}>
+     */
+    public static function invalidMapKeyProvider(): iterable
+    {
+        yield 'key is an integer' => ['key' => 42];
+        yield 'key start with an integer' => ['key' => '1b'];
     }
 
     #[Test]

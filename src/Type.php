@@ -37,7 +37,7 @@ enum Type
     public static function tryFromValue(mixed $value): self|null
     {
         try {
-            return self::fromValue($value); /* @phpstan-ignore-line */
+            return self::fromValue($value); // @phpstan-ignore-line
         } catch (Throwable) {
             return null;
         }

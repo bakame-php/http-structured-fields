@@ -35,7 +35,7 @@ final class TypeTest extends TestCase
     #[DataProvider('itemTypeProvider')]
     public function it_can_tell_the_item_type(mixed $value, Type $expectedType): void
     {
-        self::assertTrue($expectedType->equals(Type::fromValue($value))); /* @phpstan-ignore-line */
+        self::assertTrue($expectedType->equals(Type::fromValue($value))); // @phpstan-ignore-line
         self::assertTrue($expectedType->equals(Type::tryFromValue($value)));
     }
 

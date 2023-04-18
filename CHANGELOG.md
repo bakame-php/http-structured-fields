@@ -10,10 +10,11 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Fixed
 
-- `Parser` no longer returns the `Item` instance
-- `Parser` improve internal Date generation
-- `Value` improve float serialization
+- `Parser` no longer instantiate an `Item` object
+- `Parser` internal Date generation simplified
+- `Value` float serialization simplified
 - `OuterList::fromHttpValue`, `InnerList::fromHttpValue`, `Dictionnary::fromHttpValue` rewritten to improve decoupling from `Parser`
+- Adding missing interoperability test for the `Token` type
 
 ### Deprecated
 

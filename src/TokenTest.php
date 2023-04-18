@@ -6,10 +6,15 @@ namespace Bakame\Http\StructuredFields;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\TestCase;
 
-final class TokenTest extends TestCase
+final class TokenTest extends StructuredFieldTestCase
 {
+    /** @var array<string> */
+    protected static array $httpWgTestFilenames = [
+        'token.json',
+        'token-generated.json',
+    ];
+
     #[Test]
     #[DataProvider('invalidTokenString')]
     public function it_will_fail_on_invalid_token_string(string $httpValue): void
