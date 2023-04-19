@@ -11,7 +11,6 @@ use Stringable;
 use function count;
 use function preg_match;
 use function str_contains;
-use function strlen;
 use function substr;
 use function trim;
 
@@ -45,11 +44,12 @@ final class Item implements ParameterAccess, ValueAccess
         }
 
         [$value, $offset] = Parser::parseBareItem($itemString);
-        if (!str_contains($itemString, ';') && $offset !== strlen($itemString)) {
+        $remainder = substr($itemString, $offset);
+        if ('' !== $remainder && !str_contains($remainder, ';')) {
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
         }
 
-        return new self(new Value($value), Parameters::fromHttpValue(substr($itemString, $offset)));
+        return new self(new Value($value), Parameters::fromHttpValue($remainder));
     }
 
     /**

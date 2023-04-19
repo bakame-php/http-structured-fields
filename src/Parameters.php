@@ -51,7 +51,7 @@ final class Parameters implements MemberOrderedMap
     private static function filterMember(mixed $member): object
     {
         return match (true) {
-            $member instanceof ValueAccess && $member instanceof ParameterAccess => $member->parameters()->hasNoMembers() ? $member : throw new InvalidArgument('The instance of "'.$member::class.'" is not a Bare Item.'),
+            $member instanceof ValueAccess && $member instanceof ParameterAccess => $member->parameters()->hasNoMembers() ? $member : throw new InvalidArgument('The "'.$member::class.'" instance is not a Bare Item.'),
             $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             default => Item::new($member),
         };
