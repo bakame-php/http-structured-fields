@@ -11,6 +11,7 @@ use Iterator;
 use Stringable;
 use function array_filter;
 use function array_map;
+use function array_replace;
 use function array_splice;
 use function array_values;
 use function count;
@@ -260,14 +261,11 @@ final class InnerList implements MemberList, ParameterAccess
         }
 
         $member = self::filterMember($member);
-        if ($member == $this->members[$offset]) {
+        if ($member->toHttpValue() === $this->members[$offset]->toHttpValue()) {
             return $this;
         }
 
-        $members = $this->members;
-        $members[$offset] = self::filterMember($member);
-
-        return new self($members, $this->parameters);
+        return new self(array_replace($this->members, [$offset => $member]), $this->parameters);
     }
 
     public function remove(string|int ...$keys): static

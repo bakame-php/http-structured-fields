@@ -127,12 +127,15 @@ final class Dictionary implements MemberOrderedMap
 
     public function toHttpValue(): string
     {
-        $formatter = static fn (StructuredField $member, string $key): string => match (true) {
-            $member instanceof ValueAccess && $member instanceof ParameterAccess && true === $member->value() => $key.$member->parameters()->toHttpValue(),
-            default => $key.'='.$member->toHttpValue(),
-        };
+        $members = [];
+        foreach ($this->members as $key => $member) {
+            $members[] = match (true) {
+                $member instanceof ValueAccess && true === $member->value() => $key.$member->parameters()->toHttpValue(),
+                default => $key.'='.$member->toHttpValue(),
+            };
+        }
 
-        return implode(', ', array_map($formatter, $this->members, array_keys($this->members)));
+        return implode(', ', $members);
     }
 
     public function __toString(): string
