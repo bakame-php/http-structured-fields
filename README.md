@@ -34,7 +34,7 @@ echo OuterList::new(
             'max-age' => 2500,
             'secure' => true,
             'httponly' => true,
-            'samesite' => BakameToken::fromString('lax'),
+            'samesite' => Token::fromString('lax'),
         ])
     )
     ->toHttpValue();
@@ -134,7 +134,34 @@ The table below summarizes the item value type.
 | Byte Sequence | class `ByteSequence`      | `Type::ByteSequence` |
 | Date          | class `DateTimeImmutable` | `Type::Date`         |
 
-The RFC define two (2) specific data types that can not be represented by
+The Enum `Type` which list all available types can be use to determine the RFC type
+corresponding to a PHP structure using the `Type::fromValue` static method.
+The method will throw if the structure is not recognized Alternatively it is possible
+to use the `Type::tryFromValue` which will instead return `null` on unindentified type.
+On success both methods returns the corresponding enum `Type`.
+
+```php
+use Bakame\Http\StructuredFields\Type;
+
+echo Type::fromValue(42);         // returns Type::Integer
+echo Type::fromValue(42.0)->name; // returns 'Decimal'
+echo Type::fromValue(new SplTempFileObject());    // throws TypeError
+echo Type::tryFromValue(new SplTempFileObject()); // returns null
+```
+
+To ease validation a `Type::equals` method is exposed to check if the `Item` has
+the expected type. It can also be used to compare types.
+
+```php
+use Bakame\Http\StructuredFields\Type;
+
+$field = Item::fromHttpValue('"foo"');
+Type::Date->equals($field);          // returns false
+Type::String->equals($field);        // returns true;
+Type::Boolean->equals(Type::String); // returns false
+```
+
+The RFC defines two (2) specific data types that can not be represented by
 PHP default type system, for them, we have defined two classes `Token` 
 and `ByteSequence` to help with their representation.
 
@@ -183,8 +210,6 @@ use Bakame\Http\StructuredFields\Type;
 $item = Item::fromHttpValue('@1234567890');
 $item->type();  // return Type::Date;
 $item->value()  // return the equivalent to DateTimeImmutable('@1234567890');
-// you can also do 
-Type::Date->equals($item); // returns true
 ```
 
 #### Containers
