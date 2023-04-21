@@ -14,7 +14,6 @@ use function array_map;
 use function count;
 use function implode;
 use function is_string;
-use function trim;
 use const ARRAY_FILTER_USE_KEY;
 
 /**
@@ -90,7 +89,7 @@ final class Parameters implements MemberOrderedMap
     public static function fromPairs(iterable $pairs): self
     {
         if ($pairs instanceof MemberOrderedMap) {
-            $pairs = $pairs->toPairs();
+            return new self($pairs);
         }
 
         return new self((function (iterable $pairs) {
@@ -109,13 +108,7 @@ final class Parameters implements MemberOrderedMap
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        $httpValue = trim((string) $httpValue);
-        [$parameters, $offset] = Parser::parseParameters($httpValue);
-        if (strlen($httpValue) !== $offset) {
-            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for Parameters contains invalid characters.');
-        }
-
-        return self::fromAssociative($parameters);
+        return new self(Parser::parseParameters($httpValue));
     }
 
     public function toHttpValue(): string

@@ -9,10 +9,6 @@ use DateTimeInterface;
 use DateTimeZone;
 use Stringable;
 use function count;
-use function preg_match;
-use function str_contains;
-use function substr;
-use function trim;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
@@ -38,18 +34,7 @@ final class Item implements ParameterAccess, ValueAccess
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        $itemString = trim((string) $httpValue, ' ');
-        if ('' === $itemString || 1 === preg_match("/[\r\t\n]|[^\x20-\x7E]/", $itemString)) {
-            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
-        }
-
-        [$value, $offset] = Parser::parseBareItem($itemString);
-        $remainder = substr($itemString, $offset);
-        if ('' !== $remainder && !str_contains($remainder, ';')) {
-            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
-        }
-
-        return new self(new Value($value), Parameters::fromHttpValue($remainder));
+        return self::fromAssociative(...Parser::parseItem($httpValue));
     }
 
     /**

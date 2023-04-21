@@ -92,7 +92,7 @@ final class Dictionary implements MemberOrderedMap
     public static function fromPairs(iterable $pairs): self
     {
         if ($pairs instanceof MemberOrderedMap) {
-            $pairs = $pairs->toPairs();
+            return new self($pairs);
         }
 
         return new self((function (iterable $pairs) {

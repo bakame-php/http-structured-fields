@@ -62,7 +62,7 @@ final class OuterList implements MemberList
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        return self::new(...(function (iterable $members) {
+        return new self(...(function (iterable $members) {
             foreach ($members as $member) {
                 if (!is_array($member[0])) {
                     yield Item::fromAssociative(...$member);

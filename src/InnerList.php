@@ -63,9 +63,9 @@ final class InnerList implements MemberList, ParameterAccess
     {
         [$membersList, $parameters] = Parser::parseInnerList($httpValue);
 
-        return self::fromAssociative(
+        return new self(
             array_map(fn (array $member): Item => Item::fromAssociative(...$member), $membersList),
-            $parameters
+            Parameters::fromAssociative($parameters)
         );
     }
 
