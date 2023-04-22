@@ -135,15 +135,26 @@ final class InnerList implements MemberList, ParameterAccess
         return $this->parameters;
     }
 
-    public function parameter(string|int $key): Token|ByteSequence|DateTimeImmutable|int|float|string|bool|null
+    public function parameter(string $key): Token|ByteSequence|DateTimeImmutable|int|float|string|bool|null
     {
         try {
-            return match (true) {
-                is_int($key) => $this->parameters->pair($key)[1]->value(),
-                default => $this->parameters->get($key)->value(),
-            };
+            return $this->parameters->get($key)->value();
         } catch (StructuredFieldError) {
             return null;
+        }
+    }
+
+    /**
+     * @return array{0:string, 1:Token|ByteSequence|DateTimeImmutable|int|float|string|bool}|array{}
+     */
+    public function parameterByIndex(int $index): array
+    {
+        try {
+            $tuple = $this->parameters->pair($index);
+
+            return [$tuple[0], $tuple[1]->value()];
+        } catch (StructuredFieldError) {
+            return [];
         }
     }
 

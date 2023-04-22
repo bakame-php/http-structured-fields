@@ -8,6 +8,8 @@ use DateTimeImmutable;
 
 /**
  * @phpstan-import-type SfItem from StructuredField
+ *
+ * @method array{0:string, 1:Token|ByteSequence|DateTimeImmutable|int|float|string|bool}|array{} parameterByIndex(int $index) returns the tuple representation of the parameter
  */
 interface ParameterAccess
 {

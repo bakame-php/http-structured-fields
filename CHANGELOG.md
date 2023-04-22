@@ -6,11 +6,11 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
-- None
+- `Item::parameterByOffset` and `InnerList::parameterByOffset` tu returns the parameter as a tuple.
 
 ### Fixed
 
-- `Item::parameter` and `InnerList::parameter` now supports accessing parameters value per index.
+- `Parser` class is no longer internal
 
 ### Deprecated
 

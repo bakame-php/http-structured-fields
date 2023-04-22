@@ -429,11 +429,11 @@ final class ItemTest extends StructuredFieldTestCase
         self::assertEquals($instance1->value(), $instance3->value());
         self::assertSame($instance1, $instance4);
         self::assertTrue($instance1->parameter('a'));
-        self::assertTrue($instance1->parameter(0));
+        self::assertSame(['a', true], $instance1->parameterByIndex(0));
         self::assertNull($instance5->parameter('a'));
         self::assertTrue($instance5->parameters()->hasNoMembers());
         self::assertTrue($instance6->parameters()->hasNoMembers());
         self::assertNull($instance1->parameter('non-existing-key'));
-        self::assertNull($instance1->parameter(-42));
+        self::assertSame([], $instance1->parameterByIndex(42));
     }
 }

@@ -132,9 +132,9 @@ final class InnerListTest extends TestCase
 
         self::assertSame('bar', $instance->parameters()->get('foo')->value());
         self::assertSame('bar', $instance->parameter('foo'));
-        self::assertSame('bar', $instance->parameter(0));
+        self::assertSame(['foo', 'bar'], $instance->parameterByIndex(0));
         self::assertNull($instance->parameter('non-existing-key'));
-        self::assertNull($instance->parameter(-42));
+        self::assertSame([], $instance->parameterByIndex(42));
     }
 
     #[Test]

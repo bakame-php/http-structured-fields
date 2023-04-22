@@ -263,11 +263,13 @@ use Bakame\Http\StructuredFields\Parameters;
 
 $field->parameter(string $key): ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|bool|null;
 $field->parameters(): Parameters;
+$field->parameterByIndex(int $index): array{0:string, 1:ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|boo}|array{}
 InnerList::toPair(): array{0:list<Item>, 1:Parameters}>};
 Item::toPair(): array{0:ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|bool, 1:Parameters}>};
 ```
 
-**The `parameter` method will return `null` if no value is found for the given index.**
+**The `parameter` method will return `null` if no value is found for the given key.**
+**The `parameterByIndex` method is added in `version 1.1.0` and returns an empty array if no parameter is found for the given index.**
 
 ### Building and Updating Structured Fields Values
 
@@ -524,6 +526,22 @@ echo InnerList::new('foo', 'bar')
 // return the InnerList HTTP value 
 // ("foo" "bar");expire=@1681538756;path="/";max-age=2500
 ```
+
+### Advanced usages
+
+Starting with version `1.1.0` the parser is made public with the following static methods:
+
+- `Parser::parseList(Stringable|String $value): array`
+- `Parser::parseInnerList(Stringable|String $value): array`
+- `Parser::parseDictionary(Stringable|String $value): array`
+- `Parser::parseItem(Stringable|String $value): array`
+- `Parser::parseParameters(Stringable|String $value): array`
+
+All these static methods parse the HTTP Header string value and return a `array` structure
+representing the parsed string. It is possible to use this representation if you want
+to build your own structure field objects. Those methods are the ones used by all the 
+`fromHttpValue` named constructors to generate `StructuredField` instances from their
+returned `array`.
 
 ## Contributing
 
