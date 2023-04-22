@@ -268,8 +268,8 @@ InnerList::toPair(): array{0:list<Item>, 1:Parameters}>};
 Item::toPair(): array{0:ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|bool, 1:Parameters}>};
 ```
 
-**The `parameter` method will return `null` if no value is found for the given key.**
-**The `parameterByIndex` method is added in `version 1.1.0` and returns an empty array if no parameter is found for the given index.**
+- **The `parameter` method will return `null` if no value is found for the given key.**
+- **The `parameterByIndex` method is added in `version 1.1.0` and returns an empty array if no parameter is found for the given index.**
 
 ### Building and Updating Structured Fields Values
 
