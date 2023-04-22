@@ -2,6 +2,24 @@
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file.
 
+## [Next] - TBD
+
+### Added
+
+- None
+
+### Fixed
+
+- `Item::parameter` and `InnerList::parameter` now supports accessing parameters value per index.
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
+
 ## [1.0.1] - 2023-04-20
 
 ### Added

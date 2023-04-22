@@ -219,10 +219,13 @@ final class Item implements ParameterAccess, ValueAccess
         return $this->parameters;
     }
 
-    public function parameter(string $key): Token|ByteSequence|DateTimeImmutable|int|float|string|bool|null
+    public function parameter(string|int $key): Token|ByteSequence|DateTimeImmutable|int|float|string|bool|null
     {
         try {
-            return $this->parameters->get($key)->value();
+            return match (true) {
+                is_int($key) => $this->parameters->pair($key)[1]->value(),
+                default => $this->parameters->get($key)->value(),
+            };
         } catch (StructuredFieldError) {
             return null;
         }

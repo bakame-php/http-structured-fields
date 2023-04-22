@@ -51,7 +51,7 @@ final class Parser
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
         }
 
-        [$value, $offset] = Parser::parseBareItem($itemString);
+        [$value, $offset] = Parser::parseValue($itemString);
         $remainder = substr($itemString, $offset);
         if ('' !== $remainder && !str_contains($remainder, ';')) {
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
@@ -72,7 +72,7 @@ final class Parser
     public static function parseParameters(Stringable|string $httpValue): array
     {
         $httpValue = trim((string) $httpValue);
-        [$parameters, $offset] = Parser::parseContainedParameters($httpValue);
+        [$parameters, $offset] = Parser::parseParametersValues($httpValue);
         if (strlen($httpValue) !== $offset) {
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for Parameters contains invalid characters.');
         }
@@ -194,7 +194,7 @@ final class Parser
             return self::parseInnerListValue($httpValue);
         }
 
-        [$item, $remainder] = self::parseContainedItem($httpValue);
+        [$item, $remainder] = self::parseItemValue($httpValue);
 
         return [$item, strlen($httpValue) - strlen($remainder)];
     }
@@ -215,13 +215,13 @@ final class Parser
 
             if (')' === $remainder[0]) {
                 $remainder = substr($remainder, 1);
-                [$parameters, $offset] = self::parseContainedParameters($remainder);
+                [$parameters, $offset] = self::parseParametersValues($remainder);
                 $remainder = substr($remainder, $offset);
 
                 return [[$list, $parameters], strlen($httpValue) - strlen($remainder)];
             }
 
-            [$list[], $remainder] = self::parseContainedItem($remainder);
+            [$list[], $remainder] = self::parseItemValue($remainder);
 
             if ('' !== $remainder && !in_array($remainder[0], [' ', ')'], true)) {
                 throw new SyntaxError("The HTTP textual representation \"$remainder\" for a inner list is using invalid characters.");
@@ -236,11 +236,11 @@ final class Parser
      *
      * @return array{0:array{0:SfType, 1:array<string, SfType>}, 1:string}
      */
-    private static function parseContainedItem(string $remainder): array
+    private static function parseItemValue(string $remainder): array
     {
-        [$value, $offset] = self::parseBareItem($remainder);
+        [$value, $offset] = self::parseValue($remainder);
         $remainder = substr($remainder, $offset);
-        [$parameters, $offset] = self::parseContainedParameters($remainder);
+        [$parameters, $offset] = self::parseParametersValues($remainder);
 
         return [[$value, $parameters], substr($remainder, $offset)];
     }
@@ -252,7 +252,7 @@ final class Parser
      *
      * @return array{0:SfType, 1:int}
      */
-    private static function parseBareItem(string $httpValue): array
+    private static function parseValue(string $httpValue): array
     {
         return match (true) {
             '"' === $httpValue[0] => self::parseString($httpValue),
@@ -272,7 +272,7 @@ final class Parser
      *
      * @return array{0:array<string, SfType>, 1:int}
      */
-    private static function parseContainedParameters(Stringable|string $httpValue): array
+    private static function parseParametersValues(Stringable|string $httpValue): array
     {
         $map = [];
         $httpValue = (string) $httpValue;
@@ -287,7 +287,7 @@ final class Parser
             if ('' !== $remainder && '=' === $remainder[0]) {
                 $remainder = substr($remainder, 1);
 
-                [$map[$key], $offset] = self::parseBareItem($remainder);
+                [$map[$key], $offset] = self::parseValue($remainder);
                 $remainder = substr($remainder, $offset);
             }
         }
