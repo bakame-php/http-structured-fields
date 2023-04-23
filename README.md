@@ -527,24 +527,6 @@ echo InnerList::new('foo', 'bar')
 // ("foo" "bar");expire=@1681538756;path="/";max-age=2500
 ```
 
-### Advanced usages
-
-Starting with version `1.1.0` the parser is made public with the following public static methods:
-
-```php
-Parser::parseList(Stringable|String $value): array
-Parser::parseDictionary(Stringable|String $value): array
-Parser::parseItem(Stringable|String $value): array
-Parser::parseInnerList(Stringable|String $value): array
-Parser::parseParameters(Stringable|String $value): array
-```
-
-All these static methods parse the HTTP Header string value and return an `array` structure
-representing the parsed string. It is possible to use this representation if you want
-to build your own structure field objects. Those methods are the ones used inside the
-respective `fromHttpValue` named constructors to generate `StructuredField` instances
-from their returned value.
-
 ## Contributing
 
 Contributions are welcome and will be fully credited. Please see [CONTRIBUTING](.github/CONTRIBUTING.md) and [CODE OF CONDUCT](.github/CODE_OF_CONDUCT.md) for details.
