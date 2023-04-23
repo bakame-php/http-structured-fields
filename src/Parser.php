@@ -48,7 +48,7 @@ final class Parser
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
         }
 
-        [$value, $offset] = Parser::parseValue($itemString);
+        [$value, $offset] = Parser::extractValue($itemString);
         $remainder = substr($itemString, $offset);
         if ('' !== $remainder && !str_contains($remainder, ';')) {
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
@@ -69,7 +69,7 @@ final class Parser
     public static function parseParameters(Stringable|string $httpValue): array
     {
         $httpValue = trim((string) $httpValue);
-        [$parameters, $offset] = Parser::parseParametersValues($httpValue);
+        [$parameters, $offset] = Parser::extractParametersValues($httpValue);
         if (strlen($httpValue) !== $offset) {
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for Parameters contains invalid characters.');
         }
@@ -212,7 +212,7 @@ final class Parser
 
             if (')' === $remainder[0]) {
                 $remainder = substr($remainder, 1);
-                [$parameters, $offset] = self::parseParametersValues($remainder);
+                [$parameters, $offset] = self::extractParametersValues($remainder);
                 $remainder = substr($remainder, $offset);
 
                 return [[$list, $parameters], strlen($httpValue) - strlen($remainder)];
@@ -235,9 +235,9 @@ final class Parser
      */
     private static function parseItemValue(string $remainder): array
     {
-        [$value, $offset] = self::parseValue($remainder);
+        [$value, $offset] = self::extractValue($remainder);
         $remainder = substr($remainder, $offset);
-        [$parameters, $offset] = self::parseParametersValues($remainder);
+        [$parameters, $offset] = self::extractParametersValues($remainder);
 
         return [[$value, $parameters], substr($remainder, $offset)];
     }
@@ -249,7 +249,7 @@ final class Parser
      *
      * @return array{0:SfType, 1:int}
      */
-    private static function parseValue(string $httpValue): array
+    private static function extractValue(string $httpValue): array
     {
         return match (true) {
             '"' === $httpValue[0] => self::parseString($httpValue),
@@ -269,7 +269,7 @@ final class Parser
      *
      * @return array{0:array<string, SfType>, 1:int}
      */
-    private static function parseParametersValues(Stringable|string $httpValue): array
+    private static function extractParametersValues(Stringable|string $httpValue): array
     {
         $map = [];
         $httpValue = (string) $httpValue;
@@ -284,7 +284,7 @@ final class Parser
             if ('' !== $remainder && '=' === $remainder[0]) {
                 $remainder = substr($remainder, 1);
 
-                [$map[$key], $offset] = self::parseValue($remainder);
+                [$map[$key], $offset] = self::extractValue($remainder);
                 $remainder = substr($remainder, $offset);
             }
         }
