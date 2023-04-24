@@ -57,7 +57,7 @@ composer require bakame/http-structured-fields
 
 ### Foreword
 
-**While this package parses and serializes the header value, it does not validate its content.
+**⚠️WARNING: While this package parses and serializes the header value, it does not validate its content.
 It is still required to validate the parsed data against the constraints of the corresponding
 header. Content validation is out of scope for this library.**
 
@@ -195,7 +195,7 @@ $token->type(); // returns Type::Token enum
 $byte->type();  // returns Type::ByteSequence
 ```
 
-**Both classes DO NOT expose the `Stringable` interface to distinguish them
+**⚠️WARNING: Both classes DO NOT expose the `Stringable` interface to distinguish them
 from a string or a string like object**
 
 #### Item
@@ -310,9 +310,9 @@ use Bakame\Http\StructuredFields\Item;
 Item::withValue(DateTimeInterface|ByteSequence|Token|string|int|float|bool $value): static
 ```
 
-#### Dictionaries
+#### Ordered Maps
 
-The `Dictionary` and `Parameters` instances can be build with an associative iterable structure as shown below
+The `Dictionary` and `Parameters` are ordered map instances. They can be built using their keys with an associative iterable structure as shown below
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
@@ -327,7 +327,7 @@ echo $value->toHttpValue(); //"b=?0, a=bar, c=@1671800423"
 echo $value;                //"b=?0, a=bar, c=@1671800423"
 ```
 
-or with an iterable structure of pairs (tuple) as defined in the RFC:
+or using their indexes with an iterable structure of pairs (tuple) as defined in the RFC:
 
 ```php
 use Bakame\Http\StructuredFields\Parameters;
@@ -358,6 +358,7 @@ $map->mergeAssociative(...$others): static;
 $map->mergePairs(...$others): static;
 $map->remove(string ...$key): static;
 ```
+
 As shown below:
 `
 ```php
@@ -379,6 +380,49 @@ $value = Dictionary::new()
 echo $value->toHttpValue(); //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
+
+Since version `1.1.0` it is possible to also build `Dictionary` and `Parameters` instances
+using indexes and pair as per described in the RFC.
+
+The `$pair` parameter is a tuple (ie: an array as list with exactly two members) where:
+
+- the first array member is the parameter `$key`
+- the second array member is the parameter `$value`
+
+```php
+// since version 1.1
+$map->unshift(array ...$pairs): static;
+$map->push(array ...$pairs): static;
+$map->insert(int $key, array ...$pairs): static;
+$map->replace(int $key, array $pair): static;
+```
+
+We can rewrite the previous example
+
+```php
+use Bakame\Http\StructuredFields\Dictionary;
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Token;
+
+$value = Dictionary::new()
+    ->push(
+        ['a', InnerList::new(
+            Item::fromToken('bar'),
+            Item::fromString('42'),
+            Item::fromInteger(42),
+            Item::fromDecimal(42)
+         )],
+         ['c', true]
+     )
+    ->unshift(['b', Item::false()])
+    ->replace(2, ['c', Item::fromDateString('2022-12-23 13:00:23')])
+;
+
+echo $value->toHttpValue(); //b=?0, a=(bar "42" 42 42.0), c=@1671800423
+echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
+```
+
+**⚠️WARNING: on duplication parameters with the same `keys` are merged as per RFC logic.**
 
 #### Automatic conversion
 
@@ -501,8 +545,6 @@ Both objects provide additional modifying methods to help deal with parameters.
 You can attach and update the associated `Parameters` instance using the following methods.
 
 ```php
-use Bakame\Http\StructuredFields\Parameters;
-
 $field->addParameter(string $key, mixed $value): static;
 $field->appendParameter(string $key, mixed $value): static;
 $field->prependParameter(string $key, mixed $value): static;
@@ -510,8 +552,22 @@ $field->withoutParameters(string ...$keys): static;
 $field->withoutAnyParameter(): static;
 $field->withParameters(Parameters $parameters): static;
 ```
+Since verrsion `1.1` it is also possible to use the index of each member to perform additional
+modifications.
 
-**The return value will be the parent class an NOT a `Parameters` instance**
+```php
+$field->pushParameters(array ...$pairs): static
+$field->unshiftParameters(array ...$pairs): static
+$field->insertParameters(int $index, array ...$pairs): static
+$field->replaceParameter(int $index, array $pair): static
+```
+
+The `$pair` parameter is a tuple (ie: an array as list with exactly two members) where:
+
+- the first array member is the parameter `$key`
+- the second array member is the parameter `$value`
+
+**⚠️WARNING: The return value will be the parent class an NOT a `Parameters` instance**
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
@@ -523,7 +579,15 @@ echo InnerList::new('foo', 'bar')
     ->addParameter('max-age', 2500)
     ->toHttpValue();
 
-// return the InnerList HTTP value 
+echo InnerList::new('foo', 'bar')
+    ->pushParameter(
+        ['expire', Item::fromDateString('+30 minutes')],
+        ['path', '/'],
+        ['max-age', 2500],
+    )
+    ->toHttpValue();
+
+// both flow return the InnerList HTTP value 
 // ("foo" "bar");expire=@1681538756;path="/";max-age=2500
 ```
 

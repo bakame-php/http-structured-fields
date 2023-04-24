@@ -351,7 +351,44 @@ final class InnerList implements MemberList, ParameterAccess
         return $this->withParameters($this->parameters()->append($key, $member));
     }
 
+    /**
+     * @param array{0:string, 1:SfItemInput} ...$pairs
+     */
+    public function pushParameters(array ...$pairs): self
+    {
+        return $this->withParameters($this->parameters()->push(...$pairs));
+    }
+
+    /**
+     * @param array{0:string, 1:SfItemInput} ...$pairs
+     */
+    public function unshiftParameters(array ...$pairs): self
+    {
+        return $this->withParameters($this->parameters()->unshift(...$pairs));
+    }
+
+    /**
+     * @param array{0:string, 1:SfItemInput} ...$pairs
+     */
+    public function insertParameters(int $index, array ...$pairs): self
+    {
+        return $this->withParameters($this->parameters()->insert($index, ...$pairs));
+    }
+
+    /**
+     * @param array{0:string, 1:SfItemInput} $pair
+     */
+    public function replaceParameter(int $index, array $pair): self
+    {
+        return $this->withParameters($this->parameters()->replace($index, $pair));
+    }
+
     public function withoutParameter(string ...$keys): static
+    {
+        return $this->withParameters($this->parameters()->remove(...$keys));
+    }
+
+    public function withoutParameterByIndexes(int ...$keys): static
     {
         return $this->withParameters($this->parameters()->remove(...$keys));
     }

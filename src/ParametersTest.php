@@ -95,9 +95,7 @@ final class ParametersTest extends StructuredFieldTestCase
             [...$instance->toPairs()]
         );
 
-
         $deletedInstance = $instance->remove('boolean');
-
         self::assertCount(1, $deletedInstance);
         self::assertFalse($deletedInstance->has('boolean'));
         self::assertFalse($deletedInstance->hasPair(1));
@@ -177,6 +175,65 @@ final class ParametersTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_can_push_and_unshift_new_pair(): void
+    {
+        $instance = Parameters::new()
+            ->push(['a', false])
+            ->unshift(['b', true]);
+
+        self::assertSame(';b;a=?0', $instance->toHttpValue());
+        self::assertSame(';b;a=?0', (string) $instance);
+    }
+
+    #[Test]
+    public function it_fails_to_insert_at_an_invalid_index(): void
+    {
+        $this->expectException(InvalidOffset::class);
+
+        Parameters::new()->insert(3, ['a', 1]);
+    }
+
+    #[Test]
+    public function it_can_returns_the_container_member_keys_with_pairs(): void
+    {
+        $instance = Parameters::new();
+
+        self::assertSame([], $instance->keys());
+        self::assertSame(['a', 'b'], $instance->push(['a', false], ['b', true])->keys());
+
+        $container = Parameters::new()
+            ->unshift(['a', '42'])
+            ->push(['b', 42])
+            ->insert(1, ['c', 42.0])
+            ->replace(0, ['d', 'forty-two']);
+
+        self::assertSame(['d', 'c', 'b'], $container->keys());
+        self::assertSame(';d="forty-two";c=42.0;b=42', $container->toHttpValue());
+    }
+
+    #[Test]
+    public function it_can_push_nothing(): void
+    {
+        self::assertEquals(Parameters::new()->push()->unshift(), Parameters::new());
+    }
+
+    #[Test]
+    public function it_fails_to_replace_unknown_index(): void
+    {
+        $this->expectException(InvalidOffset::class);
+
+        Parameters::new()->replace(0, ['a', true]);
+    }
+
+    #[Test]
+    public function it_returns_the_same_instance_if_nothing_is_replaced(): void
+    {
+        $field = Parameters::new()->push(['a', true]);
+
+        self::assertSame($field->replace(0, ['a', true]), $field);
+    }
+
+    #[Test]
     public function it_can_returns_the_container_member_keys(): void
     {
         $instance = Parameters::new();
@@ -193,7 +250,7 @@ final class ParametersTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_merge_one_or_more_instances(): void
     {
-        $instance1 = Parameters::fromAssociative(['a' =>false]);
+        $instance1 = Parameters::fromAssociative(['a' => false]);
         $instance2 = Parameters::fromAssociative(['b' => true]);
         $instance3 = Parameters::fromAssociative(['a' => 42]);
 

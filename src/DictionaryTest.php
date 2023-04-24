@@ -316,4 +316,63 @@ final class DictionaryTest extends StructuredFieldTestCase
 
         Dictionary::fromPairs([['foobar', 'foobar'], ['zero', 0]])['foobar'] = Item::false();
     }
+
+    #[Test]
+    public function it_can_returns_the_container_member_keys_with_pairs(): void
+    {
+        $instance = Dictionary::new();
+
+        self::assertSame([], $instance->keys());
+        self::assertSame(['a', 'b'], $instance->push(['a', false], ['b', true])->keys());
+
+        $container = Dictionary::new()
+            ->unshift(['a', '42'])
+            ->push(['b', 42])
+            ->insert(1, ['c', 42.0])
+            ->replace(0, ['d', 'forty-two']);
+
+        self::assertSame(['d', 'c', 'b'], $container->keys());
+        self::assertSame('d="forty-two", c=42.0, b=42', $container->toHttpValue());
+    }
+
+    #[Test]
+    public function it_can_push_and_unshift_new_pair(): void
+    {
+        $instance = Dictionary::new()
+            ->push(['a', false])
+            ->unshift(['b', true]);
+
+        self::assertSame('b, a=?0', $instance->toHttpValue());
+        self::assertSame('b, a=?0', (string) $instance);
+    }
+
+    #[Test]
+    public function it_fails_to_insert_at_an_invalid_index(): void
+    {
+        $this->expectException(InvalidOffset::class);
+
+        Dictionary::new()->insert(3, ['a', 1]);
+    }
+
+    #[Test]
+    public function it_can_push_nothing(): void
+    {
+        self::assertEquals(Dictionary::new()->push()->unshift(), Dictionary::new());
+    }
+
+    #[Test]
+    public function it_fails_to_replace_unknown_index(): void
+    {
+        $this->expectException(InvalidOffset::class);
+
+        Dictionary::new()->replace(0, ['a', true]);
+    }
+
+    #[Test]
+    public function it_returns_the_same_instance_if_nothing_is_replaced(): void
+    {
+        $field = Dictionary::new()->push(['a', true]);
+
+        self::assertSame($field->replace(0, ['a', true]), $field);
+    }
 }

@@ -16,7 +16,6 @@ use function implode;
 use function is_array;
 use function is_iterable;
 use function is_string;
-use const ARRAY_FILTER_USE_KEY;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
@@ -210,9 +209,7 @@ final class Dictionary implements MemberOrderedMap
     public function hasPair(int ...$indexes): bool
     {
         foreach ($indexes as $index) {
-            try {
-                $this->filterIndex($index);
-            } catch (InvalidOffset) {
+            if (null === $this->filterIndex($index)) {
                 return false;
             }
         }
@@ -223,12 +220,12 @@ final class Dictionary implements MemberOrderedMap
     /**
      * Filters and format instance index.
      */
-    private function filterIndex(int $index): int
+    private function filterIndex(int $index): int|null
     {
         $max = count($this->members);
 
         return match (true) {
-            [] === $this->members, 0 > $max + $index, 0 > $max - $index - 1 => throw InvalidOffset::dueToIndexNotFound($index),
+            [] === $this->members, 0 > $max + $index, 0 > $max - $index - 1 => null,
             0 > $index => $max + $index,
             default => $index,
         };
@@ -241,7 +238,12 @@ final class Dictionary implements MemberOrderedMap
      */
     public function pair(int $index): array
     {
-        return [...$this->toPairs()][$this->filterIndex($index)];
+        $offset = $this->filterIndex($index);
+        if (null === $offset) {
+            throw InvalidOffset::dueToIndexNotFound($index);
+        }
+
+        return [...$this->toPairs()][$offset];
     }
 
     /**
@@ -269,13 +271,20 @@ final class Dictionary implements MemberOrderedMap
 
     public function remove(string|int ...$keys): static
     {
-        $members = array_filter(
-            $this->members,
-            fn (string|int $key): bool => !in_array($key, $keys, true),
-            ARRAY_FILTER_USE_KEY
-        );
+        /** @var array<array-key, true> $indexes */
+        $indexes = array_fill_keys($keys, true);
+        $pairs = [];
+        foreach ($this->toPairs() as $index => $pair) {
+            if (!isset($indexes[$index]) && !isset($indexes[$pair[0]])) {
+                $pairs[] = $pair;
+            }
+        }
 
-        return $this->newInstance($members);
+        if (count($this->members) === count($pairs)) {
+            return $this;
+        }
+
+        return self::fromPairs($pairs);
     }
 
     /**
@@ -300,6 +309,79 @@ final class Dictionary implements MemberOrderedMap
         $members = [MapKey::from($key)->value => self::filterMember($member), ...$members];
 
         return $this->newInstance($members);
+    }
+
+    /**
+     * @param array{0:string, 1:SfMember|SfMemberInput} ...$pairs
+     */
+    public function push(array ...$pairs): self
+    {
+        if ([] === $pairs) {
+            return $this;
+        }
+
+        $newPairs = iterator_to_array($this->toPairs());
+        foreach ($pairs as $pair) {
+            $newPairs[] = $pair;
+        }
+
+        return self::fromPairs($newPairs);
+    }
+
+    /**
+     * @param array{0:string, 1:SfMember|SfMemberInput} ...$pairs
+     */
+    public function unshift(array ...$pairs): self
+    {
+        if ([] === $pairs) {
+            return $this;
+        }
+
+        foreach ($this->members as $key => $member) {
+            $pairs[] = [$key, $member];
+        }
+
+        return self::fromPairs($pairs);
+    }
+
+    /**
+     * @param array{0:string, 1:SfMember|SfMemberInput} ...$members
+     */
+    public function insert(int $index, array ...$members): static
+    {
+        $offset = $this->filterIndex($index);
+
+        return match (true) {
+            null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
+            [] === $members => $this,
+            0 === $offset => $this->unshift(...$members),
+            count($this->members) === $offset => $this->push(...$members),
+            default => (function (Iterator $newMembers) use ($offset, $members) {
+                $newMembers = iterator_to_array($newMembers);
+                array_splice($newMembers, $offset, 0, $members);
+
+                return self::fromPairs($newMembers);
+            })($this->toPairs()),
+        };
+    }
+
+    /**
+     * @param array{0:string, 1:SfMember|SfMemberInput} $member
+     */
+    public function replace(int $index, array $member): static
+    {
+        $offset = $this->filterIndex($index);
+        if (null === $offset) {
+            throw InvalidOffset::dueToIndexNotFound($index);
+        }
+
+        $member[1] = self::filterMember($member[1]);
+        $pairs = iterator_to_array($this->toPairs());
+        if ($pairs[$offset] == $member) {
+            return $this;
+        }
+
+        return self::fromPairs(array_replace($pairs, [$offset => $member]));
     }
 
     /**

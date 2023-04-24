@@ -10,6 +10,10 @@ use DateTimeImmutable;
  * @phpstan-import-type SfItem from StructuredField
  *
  * @method array{0:string, 1:Token|ByteSequence|DateTimeImmutable|int|float|string|bool}|array{} parameterByIndex(int $index) returns the tuple representation of the parameter
+ * @method static pushParameters(array ...$pairs) Inserts pair at the end of the member list
+ * @method static unshiftParameters(array ...$pairs) Inserts pair at the start of the member list
+ * @method static insertParameters(int $index, array ...$pairs) Inserts pairs at the index
+ * @method static replaceParameter(int $index, array $pair) Inserts pair at the end of the member list
  */
 interface ParameterAccess
 {
