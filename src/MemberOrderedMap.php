@@ -10,6 +10,11 @@ use Iterator;
  * @template TKey
  * @template TValue of StructuredField
  * @template-extends MemberContainer<TKey, TValue>
+ *
+ * @method static push(array ...$pairs) Inserts pair at the end of the member list
+ * @method static unshift(array ...$pairs) Inserts pair at the start of the member list
+ * @method static insert(int $index, array ...$pairs) Inserts pairs at the index
+ * @method static replace(int $index, array $pair) Replaces the pair at the given index
  */
 interface MemberOrderedMap extends MemberContainer
 {
