@@ -422,7 +422,7 @@ echo $value->toHttpValue(); //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
 
-**⚠️WARNING: on duplication parameters with the same `keys` are merged as per RFC logic.**
+**⚠️WARNING: on duplicate `keys` pair values are merged as per RFC logic.**
 
 #### Automatic conversion
 
@@ -437,21 +437,33 @@ If the submitted type is:
 
 If no conversion is possible an `InvalidArgument` exception will be thrown.
 
-This means that the previous example can be rewritten like this:
+This means that both constructs below built equal objects
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 
-$value = Dictionary::new()
+echo Dictionary::new()
+    ->add('a', InnerList::new(
+        Item::fromToken('bar'),
+        Item::fromString('42'),
+        Item::fromInteger(42),
+        Item::fromDecimal(42)
+     ))
+    ->prepend('b', Item::false())
+    ->append('c', Item::fromDateString('2022-12-23 13:00:23'))
+    ->toHttpValue()
+;
+
+echo Dictionary::new()
     ->add('a', [Token::fromString('bar'), '42', 42, 42.0])
     ->prepend('b', false)
     ->append('c', new DateTimeImmutable('2022-12-23 13:00:23'))
+    ->toHttpValue()
 ;
 
-echo $value->toHttpValue(); //b=?0, a=(bar "42" 42 42.0), c=@1671800423
-echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
+ // both will return 'b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
 
 Of course, it is possible to mix both notation as shown in the example.
