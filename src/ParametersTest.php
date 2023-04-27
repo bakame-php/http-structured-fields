@@ -86,8 +86,7 @@ final class ParametersTest extends StructuredFieldTestCase
     {
         $stringItem = Item::fromString('helloWorld');
         $booleanItem = Item::true();
-        $arrayParams = ['string' => $stringItem, 'boolean' => $booleanItem];
-        $instance = Parameters::fromAssociative($arrayParams);
+        $instance = Parameters::fromAssociative(['string' => 'helloWorld', 'boolean' => true]);
 
         self::assertCount(2, $instance);
         self::assertEquals(
@@ -347,7 +346,11 @@ final class ParametersTest extends StructuredFieldTestCase
         $instance = Parameters::new()->add('foo', 'bar');
 
         self::assertTrue($instance->hasMembers());
+        self::assertSame($instance->remove(), $instance);
         self::assertFalse($instance->remove('foo')->hasMembers());
+
+        $instanceWithoutMembers = Parameters::new();
+        self::assertSame($instanceWithoutMembers->remove(), $instanceWithoutMembers);
     }
 
     #[Test]

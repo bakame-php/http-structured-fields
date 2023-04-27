@@ -21,7 +21,7 @@ interface MemberOrderedMap extends MemberContainer
     /**
      * Returns an iterable construct of dictionary pairs.
      *
-     * @return Iterator<array{0:TKey, 1:TValue}>
+     * @return Iterator<int, array{0:TKey, 1:TValue}>
      */
     public function toPairs(): Iterator;
 

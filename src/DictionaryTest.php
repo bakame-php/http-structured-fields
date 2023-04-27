@@ -255,6 +255,10 @@ final class DictionaryTest extends StructuredFieldTestCase
         self::assertSame($newInstance, $newInstance2);
 
         self::assertFalse($newInstance->remove('foo')->hasMembers());
+        self::assertSame($newInstance, $newInstance->remove('baz', 'bar', 'yolo-not-there', 325));
+
+        $instanceWithoutMember = Dictionary::new();
+        self::assertSame($instanceWithoutMember->remove(), $instanceWithoutMember);
     }
 
     #[Test]
@@ -374,5 +378,25 @@ final class DictionaryTest extends StructuredFieldTestCase
         $field = Dictionary::new()->push(['a', true]);
 
         self::assertSame($field->replace(0, ['a', true]), $field);
+    }
+
+    #[Test]
+    public function it_can_create_a_new_instance_using_parameters_position_modifying_methods(): void
+    {
+        $instance1 = Dictionary::new();
+        $instance2 = $instance1
+            ->push(['a', true], ['v', ByteSequence::fromDecoded('I will be removed')], ['c', 'true'])
+            ->unshift(['b', Item::false()])
+            ->replace(1, ['a', 'false'])
+            ->remove(-2, 'toto')
+            ->insert(1, ['d', Token::fromString('*/*')]);
+
+        self::assertTrue($instance1->hasNoMembers());
+        self::assertTrue($instance2->hasMembers());
+        self::assertCount(4, $instance2);
+        self::assertEquals(['d', Item::fromToken('*/*')], $instance2->pair(1));
+        self::assertEquals(['b', Item::false()], $instance2->pair(0));
+        self::assertEquals(['c', Item::fromString('true')], $instance2->pair(-1));
+        self::assertSame('b=?0, d=*/*, a="false", c="true"', $instance2->toHttpValue());
     }
 }

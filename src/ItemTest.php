@@ -419,8 +419,8 @@ final class ItemTest extends StructuredFieldTestCase
         $instance7 = $instance1->addParameter('a', true);
         $instance2 = $instance1->appendParameter('a', true);
         $instance3 = $instance1->prependParameter('a', false);
-        $instance4 = $instance1->withoutParameter('b');
-        $instance5 = $instance1->withoutParameter('a');
+        $instance4 = $instance1->withoutParameterByKeys('b');
+        $instance5 = $instance1->withoutParameterByKeys('a');
         $instance6 = $instance1->withoutAnyParameter();
 
         self::assertSame($instance1, $instance2);
@@ -435,5 +435,25 @@ final class ItemTest extends StructuredFieldTestCase
         self::assertTrue($instance6->parameters()->hasNoMembers());
         self::assertNull($instance1->parameter('non-existing-key'));
         self::assertSame([], $instance1->parameterByIndex(42));
+    }
+
+    #[Test]
+    public function it_can_create_a_new_instance_using_parameters_position_modifying_methods(): void
+    {
+        $instance1 = Item::new(Token::fromString('babayaga'));
+        $instance2 = $instance1
+            ->pushParameters(['a', true], ['v', ByteSequence::fromDecoded('I will be removed')], ['c', 'true'])
+            ->unshiftParameters(['b', Item::false()])
+            ->replaceParameter(1, ['a', 'false'])
+            ->withoutParameterByIndices(-2)
+            ->insertParameters(1, ['d', Token::fromString('*/*')]);
+
+        self::assertTrue($instance1->parameters()->hasNoMembers());
+        self::assertTrue($instance2->parameters()->hasMembers());
+        self::assertCount(4, $instance2->parameters());
+        self::assertEquals(['d', Token::fromString('*/*')], $instance2->parameterByIndex(1));
+        self::assertSame(['b', false], $instance2->parameterByIndex(0));
+        self::assertSame(['c', 'true'], $instance2->parameterByIndex(-1));
+        self::assertSame(';b=?0;d=*/*;a="false";c="true"', $instance2->parameters()->toHttpValue());
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use DateTimeInterface;
-use Throwable;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
@@ -22,24 +21,32 @@ enum Type
 
     public function equals(mixed $other): bool
     {
-        if ($other instanceof ValueAccess) {
-            $other = $other->type();
-        }
-
-        return $other instanceof self && $other === $this;
+        return match (true) {
+            $other instanceof ValueAccess => $other->type() === $this,
+            default => $other instanceof self && $other === $this,
+        };
     }
 
-    public static function fromValue(ValueAccess|Token|ByteSequence|DateTimeInterface|int|float|string|bool $value): self
+    /**
+     * @throws InvalidArgument if the value can not be resolved into a supported HTTP structured field data type
+     */
+    public static function fromValue(mixed $value): self
     {
-        return (new Value($value))->type;
+        return self::tryFromValue($value) ?? throw new InvalidArgument((is_object($value) ? 'An instance of "'.$value::class.'"' : 'A value of type "'.gettype($value).'"').' can not be used as an HTTP structured field data type.');
     }
 
     public static function tryFromValue(mixed $value): self|null
     {
-        try {
-            return self::fromValue($value); // @phpstan-ignore-line
-        } catch (Throwable) {
-            return null;
-        }
+        return match (true) {
+            $value instanceof ValueAccess,
+            $value instanceof Token,
+            $value instanceof ByteSequence => $value->type(),
+            $value instanceof DateTimeInterface => Type::Date,
+            is_int($value) => Type::Integer,
+            is_float($value) => Type::Decimal,
+            is_bool($value) => Type::Boolean,
+            is_string($value) => Type::String,
+            default => null,
+        };
     }
 }

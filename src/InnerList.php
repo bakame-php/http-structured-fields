@@ -183,8 +183,9 @@ final class InnerList implements MemberList, ParameterAccess
 
     public function has(string|int ...$keys): bool
     {
+        $max = count($this->members);
         foreach ($keys as $offset) {
-            if (null === $this->filterIndex($offset)) {
+            if (null === $this->filterIndex($offset, $max)) {
                 return false;
             }
         }
@@ -192,13 +193,13 @@ final class InnerList implements MemberList, ParameterAccess
         return [] !== $keys;
     }
 
-    private function filterIndex(string|int $index): int|null
+    private function filterIndex(string|int $index, int|null $max = null): int|null
     {
         if (!is_int($index)) {
             return null;
         }
 
-        $max = count($this->members);
+        $max ??= count($this->members);
 
         return match (true) {
             [] === $this->members,
@@ -214,12 +215,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public function get(string|int $key): StructuredField
     {
-        $index = $this->filterIndex($key);
-        if (null === $index) {
-            throw InvalidOffset::dueToIndexNotFound($key);
-        }
-
-        return $this->members[$index];
+        return $this->members[$this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key)];
     }
 
     /**
@@ -227,11 +223,10 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
     {
-        if ([] === $members) {
-            return $this;
-        }
-
-        return new self([...array_values($members), ...$this->members], $this->parameters);
+        return match (true) {
+            [] === $members => $this,
+            default => new self([...array_values($members), ...$this->members], $this->parameters),
+        };
     }
 
     /**
@@ -239,11 +234,10 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public function push(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
     {
-        if ([] === $members) {
-            return $this;
-        }
-
-        return new self([...$this->members, ...array_values($members)], $this->parameters);
+        return match (true) {
+            [] === $members => $this,
+            default => new self([...$this->members, ...array_values($members)], $this->parameters),
+        };
     }
 
     /**
@@ -253,10 +247,9 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public function insert(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
     {
-        $offset = $this->filterIndex($key);
+        $offset = $this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key);
 
         return match (true) {
-            null === $offset => throw InvalidOffset::dueToIndexNotFound($key),
             0 === $offset => $this->unshift(...$members),
             count($this->members) === $offset => $this->push(...$members),
             [] === $members => $this,
@@ -270,37 +263,35 @@ final class InnerList implements MemberList, ParameterAccess
 
     public function replace(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
-        if (null === ($offset = $this->filterIndex($key))) {
-            throw InvalidOffset::dueToIndexNotFound($key);
-        }
-
+        $offset = $this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key);
         $member = self::filterMember($member);
-        if ($member->toHttpValue() === $this->members[$offset]->toHttpValue()) {
-            return $this;
-        }
 
-        return new self(array_replace($this->members, [$offset => $member]), $this->parameters);
+        return match (true) {
+            $member->toHttpValue() === $this->members[$offset]->toHttpValue() => $this,
+            default => new self(array_replace($this->members, [$offset => $member]), $this->parameters),
+        };
     }
 
     public function remove(string|int ...$keys): static
     {
-        $offsets = array_filter(
+        $max = count($this->members);
+        $indices = array_filter(
             array_map(
-                fn (int $index): int|null => $this->filterIndex($index),
+                fn (int $index): int|null => $this->filterIndex($index, $max),
                 array_filter($keys, static fn (string|int $key): bool => is_int($key))
             ),
             fn (int|null $index): bool => null !== $index
         );
 
-        if ([] === $offsets) {
-            return $this;
-        }
-
-        return new self(array_filter(
-            $this->members,
-            fn (int $key): bool => !in_array($key, $offsets, true),
-            ARRAY_FILTER_USE_KEY
-        ), $this->parameters);
+        return match (true) {
+            [] === $indices => $this,
+            $max === count($indices) => self::new(),
+            default => new self(array_filter(
+                $this->members,
+                fn (int $key): bool => !in_array($key, $indices, true),
+                ARRAY_FILTER_USE_KEY
+            ), $this->parameters),
+        };
     }
 
     /**
@@ -383,14 +374,24 @@ final class InnerList implements MemberList, ParameterAccess
         return $this->withParameters($this->parameters()->replace($index, $pair));
     }
 
+    /**
+     * @deprecated since version 1.1
+     * @see ParameterAccess::withoutParameterByKeys()
+     * @codeCoverageIgnore
+     */
     public function withoutParameter(string ...$keys): static
+    {
+        return $this->withoutParameterByKeys(...$keys);
+    }
+
+    public function withoutParameterByKeys(string ...$keys): static
     {
         return $this->withParameters($this->parameters()->remove(...$keys));
     }
 
-    public function withoutParameterByIndexes(int ...$keys): static
+    public function withoutParameterByIndices(int ...$indices): static
     {
-        return $this->withParameters($this->parameters()->remove(...$keys));
+        return $this->withParameters($this->parameters()->remove(...$indices));
     }
 
     public function withoutAnyParameter(): static

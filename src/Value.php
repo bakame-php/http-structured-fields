@@ -33,16 +33,17 @@ final class Value
 
     public function __construct(ValueAccess|Token|ByteSequence|DateTimeInterface|int|float|string|bool $value)
     {
-        [$this->value, $this->type] = match (true) {
-            $value instanceof ValueAccess => [$value->value(), $value->type()],
+        $this->value = match (true) {
+            $value instanceof ValueAccess => $value->value(),
             $value instanceof Token,
-            $value instanceof ByteSequence => [$value, $value->type()],
-            $value instanceof DateTimeInterface => [self::filterDate($value), Type::Date],
-            is_int($value) => [self::filterIntegerRange($value, 'Integer'), Type::Integer],
-            is_float($value) => [self::filterDecimal($value), Type::Decimal],
-            is_bool($value) => [$value, Type::Boolean],
-            default => [self::filterString($value), Type::String],
+            $value instanceof ByteSequence => $value,
+            $value instanceof DateTimeInterface => self::filterDate($value),
+            is_int($value) => self::filterIntegerRange($value, 'Integer'),
+            is_float($value) => self::filterDecimal($value),
+            is_bool($value) => $value,
+            default => self::filterString($value),
         };
+        $this->type = Type::fromValue($value);
     }
 
     /**

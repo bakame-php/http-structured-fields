@@ -8,12 +8,15 @@ use DateTimeImmutable;
 
 /**
  * @phpstan-import-type SfItem from StructuredField
+ * @phpstan-import-type SfType from StructuredField
  *
- * @method array{0:string, 1:Token|ByteSequence|DateTimeImmutable|int|float|string|bool}|array{} parameterByIndex(int $index) returns the tuple representation of the parameter
+ * @method array{0:string, 1:SfType}|array{} parameterByIndex(int $index) returns the tuple representation of the parameter
  * @method static pushParameters(array ...$pairs) Inserts pair at the end of the member list
  * @method static unshiftParameters(array ...$pairs) Inserts pair at the start of the member list
  * @method static insertParameters(int $index, array ...$pairs) Inserts pairs at the index
  * @method static replaceParameter(int $index, array $pair) Inserts pair at the end of the member list
+ * @method static withoutParameterByKeys(string ...$keys) Remove members associated with the list of submitted keys in the associated parameter instance.
+ * @method static withoutParameterByIndices(int ...$indices) Remove parameters using their position
  */
 interface ParameterAccess
 {
@@ -63,6 +66,11 @@ interface ParameterAccess
     public function appendParameter(string $key, ValueAccess $member): static;
 
     /**
+     * DEPRECATION WARNING! This method will be removed in the next major point release.
+     *
+     * @deprecated since version 1.1
+     * @see ParameterAccess::withoutParameterByKeys()
+     *
      * Deletes members associated with the list of submitted keys in the associated parameter intance.
      *
      * This method MUST retain the state of the current instance, and return

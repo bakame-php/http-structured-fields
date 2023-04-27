@@ -145,7 +145,7 @@ use Bakame\Http\StructuredFields\Type;
 
 echo Type::fromValue(42);         // returns Type::Integer
 echo Type::fromValue(42.0)->name; // returns 'Decimal'
-echo Type::fromValue(new SplTempFileObject());    // throws TypeError
+echo Type::fromValue(new SplTempFileObject());    // throws InvalidArgument
 echo Type::tryFromValue(new SplTempFileObject()); // returns null
 ```
 
@@ -236,7 +236,7 @@ use Bakame\Http\StructuredFields\Parameters;
 $value = Parameters::fromHttpValue(';a=foobar']);
 $value->has('b');     // return false
 $value['a']->value(); // return 'foobar'
-$value['b'];          // triggers a SyntaxError exception, the index does not exist
+$value['b'];          // triggers a InvalidOffset exception, the index does not exist
 $value['a'] = 23      // triggers a ForbiddenOperation exception
 unset($value['a']);   // triggers a ForbiddenOperation exception
 ```
@@ -412,7 +412,7 @@ $value = Dictionary::new()
             Item::fromInteger(42),
             Item::fromDecimal(42)
          )],
-         ['c', true]
+         ['c', Item::true()]
      )
     ->unshift(['b', Item::false()])
     ->replace(2, ['c', Item::fromDateString('2022-12-23 13:00:23')])
@@ -433,7 +433,7 @@ If the submitted type is:
 
 -  a `StructuredField` implementing object, it will be passed as is
 -  an iterable structure, it will be converted to an `InnerList` instance using `InnerList::new`
--  otherwise, it is converted into an `Item` using `Item::new` following the conversion rules explained in the table above.
+-  otherwise, it is converted into an `Item` using the `Item::new` named constructor.
 
 If no conversion is possible an `InvalidArgument` exception will be thrown.
 
@@ -466,7 +466,7 @@ echo Dictionary::new()
  // both will return 'b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
 
-Of course, it is possible to mix both notation as shown in the example.
+Of course, it is possible to mix both notations.
 
 #### Lists
 
@@ -564,7 +564,7 @@ $field->withoutParameters(string ...$keys): static;
 $field->withoutAnyParameter(): static;
 $field->withParameters(Parameters $parameters): static;
 ```
-Since verrsion `1.1` it is also possible to use the index of each member to perform additional
+Since version `1.1` it is also possible to use the index of each member to perform additional
 modifications.
 
 ```php

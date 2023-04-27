@@ -24,7 +24,7 @@ final class ParserBench
     {
         $httpValue = '"lang"; expires=@1623233894; samesite=Strict; secure';
         for ($i = 0; $i < 100_000; $i++) {
-            Item::fromHttpValue($httpValue);
+            Parser::parseItem($httpValue);
         }
     }
 

@@ -14,6 +14,7 @@ use function array_map;
 use function count;
 use function implode;
 use function is_array;
+use function is_int;
 use function is_iterable;
 use function is_string;
 
@@ -90,15 +91,14 @@ final class Dictionary implements MemberOrderedMap
      */
     public static function fromPairs(iterable $pairs): self
     {
-        if ($pairs instanceof MemberOrderedMap) {
-            return new self($pairs);
-        }
-
-        return new self((function (iterable $pairs) {
-            foreach ($pairs as [$key, $member]) {
-                yield $key => $member;
-            }
-        })($pairs));
+        return match (true) {
+            $pairs instanceof MemberOrderedMap => new self($pairs),
+            default => new self((function (iterable $pairs) {
+                foreach ($pairs as [$key, $member]) {
+                    yield $key => $member;
+                }
+            })($pairs)),
+        };
     }
 
     /**
@@ -110,18 +110,15 @@ final class Dictionary implements MemberOrderedMap
      */
     public static function fromHttpValue(Stringable|string $httpValue): self
     {
-        return new self((function (iterable $members) {
-            foreach ($members as $key => $member) {
-                if (!is_array($member[0])) {
-                    yield $key => Item::fromAssociative(...$member);
+        $converter = fn (array $member): InnerList|Item => match (true) {
+            is_array($member[0]) => InnerList::fromAssociative(
+                array_map(fn (array $item) => Item::fromAssociative(...$item), $member[0]),
+                $member[1]
+            ),
+            default => Item::fromAssociative($member[0], $member[1]),
+        };
 
-                    continue;
-                }
-
-                $member[0] = array_map(fn (array $item) => Item::fromAssociative(...$item), $member[0]);
-                yield $key => InnerList::fromAssociative(...$member);
-            }
-        })(Parser::parseDictionary($httpValue)));
+        return new self(array_map($converter, Parser::parseDictionary($httpValue)));
     }
 
     public function toHttpValue(): string
@@ -163,7 +160,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @return Iterator<array{0:string, 1:SfMember}>
+     * @return Iterator<int, array{0:string, 1:SfMember}>
      */
     public function toPairs(): Iterator
     {
@@ -199,17 +196,14 @@ final class Dictionary implements MemberOrderedMap
      */
     public function get(string|int $key): StructuredField
     {
-        if (!$this->has($key)) {
-            throw InvalidOffset::dueToKeyNotFound($key);
-        }
-
-        return $this->members[$key];
+        return $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
     }
 
     public function hasPair(int ...$indexes): bool
     {
+        $max = count($this->members);
         foreach ($indexes as $index) {
-            if (null === $this->filterIndex($index)) {
+            if (null === $this->filterIndex($index, $max)) {
                 return false;
             }
         }
@@ -220,12 +214,14 @@ final class Dictionary implements MemberOrderedMap
     /**
      * Filters and format instance index.
      */
-    private function filterIndex(int $index): int|null
+    private function filterIndex(int $index, int|null $max = null): int|null
     {
-        $max = count($this->members);
+        $max ??= count($this->members);
 
         return match (true) {
-            [] === $this->members, 0 > $max + $index, 0 > $max - $index - 1 => null,
+            [] === $this->members,
+            0 > $max + $index,
+            0 > $max - $index - 1 => null,
             0 > $index => $max + $index,
             default => $index,
         };
@@ -238,10 +234,7 @@ final class Dictionary implements MemberOrderedMap
      */
     public function pair(int $index): array
     {
-        $offset = $this->filterIndex($index);
-        if (null === $offset) {
-            throw InvalidOffset::dueToIndexNotFound($index);
-        }
+        $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
         return [...$this->toPairs()][$offset];
     }
@@ -262,29 +255,39 @@ final class Dictionary implements MemberOrderedMap
      */
     private function newInstance(array $members): self
     {
-        if ($members == $this->members) {
-            return $this;
-        }
-
-        return new self($members);
+        return match (true) {
+            $members == $this->members => $this,
+            default => new self($members),
+        };
     }
 
     public function remove(string|int ...$keys): static
     {
-        /** @var array<array-key, true> $indexes */
-        $indexes = array_fill_keys($keys, true);
-        $pairs = [];
-        foreach ($this->toPairs() as $index => $pair) {
-            if (!isset($indexes[$index]) && !isset($indexes[$pair[0]])) {
-                $pairs[] = $pair;
-            }
-        }
-
-        if (count($this->members) === count($pairs)) {
+        if ([] === $this->members || [] === $keys) {
             return $this;
         }
 
-        return self::fromPairs($pairs);
+        $offsets = array_keys($this->members);
+        $max = count($offsets);
+        $reducer = fn (array $carry, string|int $key): array => match (true) {
+            is_string($key) && (false !== ($position = array_search($key, $offsets, true))),
+            is_int($key) && (null !== ($position = $this->filterIndex($key, $max))) => [$position => true] + $carry,
+            default => $carry,
+        };
+
+        $indices = array_reduce($keys, $reducer, []);
+
+        return match (true) {
+            [] === $indices => $this,
+            $max === count($indices) => self::new(),
+            default => self::fromPairs((function (array $offsets) {
+                foreach ($this->toPairs() as $offset => $pair) {
+                    if (!array_key_exists($offset, $offsets)) {
+                        yield $pair;
+                    }
+                }
+            })($indices)),
+        };
     }
 
     /**
@@ -294,9 +297,8 @@ final class Dictionary implements MemberOrderedMap
     {
         $members = $this->members;
         unset($members[$key]);
-        $members[MapKey::from($key)->value] = self::filterMember($member);
 
-        return $this->newInstance($members);
+        return $this->newInstance([...$members, MapKey::from($key)->value => self::filterMember($member)]);
     }
 
     /**
@@ -306,9 +308,8 @@ final class Dictionary implements MemberOrderedMap
     {
         $members = $this->members;
         unset($members[$key]);
-        $members = [MapKey::from($key)->value => self::filterMember($member), ...$members];
 
-        return $this->newInstance($members);
+        return $this->newInstance([MapKey::from($key)->value => self::filterMember($member), ...$members]);
     }
 
     /**
@@ -316,16 +317,13 @@ final class Dictionary implements MemberOrderedMap
      */
     public function push(array ...$pairs): self
     {
-        if ([] === $pairs) {
-            return $this;
-        }
-
-        $newPairs = iterator_to_array($this->toPairs());
-        foreach ($pairs as $pair) {
-            $newPairs[] = $pair;
-        }
-
-        return self::fromPairs($newPairs);
+        return match (true) {
+            [] === $pairs => $this,
+            default => self::fromPairs((function (iterable $pairs) {
+                yield from $this->toPairs();
+                yield from $pairs;
+            })($pairs)),
+        };
     }
 
     /**
@@ -333,15 +331,13 @@ final class Dictionary implements MemberOrderedMap
      */
     public function unshift(array ...$pairs): self
     {
-        if ([] === $pairs) {
-            return $this;
-        }
-
-        foreach ($this->members as $key => $member) {
-            $pairs[] = [$key, $member];
-        }
-
-        return self::fromPairs($pairs);
+        return match (true) {
+            [] === $pairs => $this,
+            default => self::fromPairs((function (iterable $pairs) {
+                yield from $pairs;
+                yield from $this->toPairs();
+            })($pairs)),
+        };
     }
 
     /**
@@ -349,10 +345,9 @@ final class Dictionary implements MemberOrderedMap
      */
     public function insert(int $index, array ...$members): static
     {
-        $offset = $this->filterIndex($index);
+        $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
         return match (true) {
-            null === $offset => throw InvalidOffset::dueToIndexNotFound($index),
             [] === $members => $this,
             0 === $offset => $this->unshift(...$members),
             count($this->members) === $offset => $this->push(...$members),
@@ -370,18 +365,14 @@ final class Dictionary implements MemberOrderedMap
      */
     public function replace(int $index, array $member): static
     {
-        $offset = $this->filterIndex($index);
-        if (null === $offset) {
-            throw InvalidOffset::dueToIndexNotFound($index);
-        }
-
+        $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         $member[1] = self::filterMember($member[1]);
         $pairs = iterator_to_array($this->toPairs());
-        if ($pairs[$offset] == $member) {
-            return $this;
-        }
 
-        return self::fromPairs(array_replace($pairs, [$offset => $member]));
+        return match (true) {
+            $pairs[$offset] == $member => $this,
+            default => self::fromPairs(array_replace($pairs, [$offset => $member])),
+        };
     }
 
     /**

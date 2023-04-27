@@ -327,14 +327,24 @@ final class Item implements ParameterAccess, ValueAccess
         return $this->withParameters($this->parameters()->replace($index, $pair));
     }
 
+    /**
+     * @deprecated since version 1.1
+     * @see ParameterAccess::withoutParameterByKeys()
+     * @codeCoverageIgnore
+     */
     public function withoutParameter(string ...$keys): static
+    {
+        return $this->withoutParameterByKeys(...$keys);
+    }
+
+    public function withoutParameterByKeys(string ...$keys): static
     {
         return $this->withParameters($this->parameters()->remove(...$keys));
     }
 
-    public function withoutParameterByIndexes(int ...$keys): static
+    public function withoutParameterByIndices(int ...$indices): static
     {
-        return $this->withParameters($this->parameters()->remove(...$keys));
+        return $this->withParameters($this->parameters()->remove(...$indices));
     }
 
     public function withoutAnyParameter(): static

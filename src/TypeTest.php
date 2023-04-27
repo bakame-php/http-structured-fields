@@ -19,9 +19,9 @@ final class TypeTest extends TestCase
     }
 
     #[Test]
-    public function it_will_return_null_if_the_type_is_invalid(): void
+    public function it_will_return_true_if_the_type_is_valid_but_its_value_is_invalid(): void
     {
-        self::assertNull(Type::tryFromValue(1_000_000_000_000_000));
+        self::assertTrue(Type::Integer->equals(Type::tryFromValue(1_000_000_000_000_000)));
     }
 
     #[Test]
@@ -35,7 +35,7 @@ final class TypeTest extends TestCase
     #[DataProvider('itemTypeProvider')]
     public function it_can_tell_the_item_type(mixed $value, Type $expectedType): void
     {
-        self::assertTrue($expectedType->equals(Type::fromValue($value))); // @phpstan-ignore-line
+        self::assertTrue($expectedType->equals(Type::fromValue($value)));
         self::assertTrue($expectedType->equals(Type::tryFromValue($value)));
     }
 

@@ -22,11 +22,11 @@ use function substr;
  *
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2
  *
- * @internal Use Dictionary::fromHttpValue(),
- *               Parameters::fromHttpValue(),
- *               OuterList::fromHttpValue(),
- *               InnerList::fromHttpValue()
- *               or Item::fromHttpValue() instead
+ * @see Dictionary::fromHttpValue(),
+ * @see Parameters::fromHttpValue(),
+ * @see OuterList::fromHttpValue(),
+ * @see InnerList::fromHttpValue()
+ * @see Item::fromHttpValue() instead
  *
  * @phpstan-import-type SfType from StructuredField
  */
@@ -54,7 +54,7 @@ final class Parser
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
         }
 
-        [$value, $offset] = Parser::extractValue($itemString);
+        [$value, $offset] = self::extractValue($itemString);
         $remainder = substr($itemString, $offset);
         if ('' !== $remainder && !str_contains($remainder, ';')) {
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
@@ -74,9 +74,9 @@ final class Parser
      */
     public static function parseParameters(Stringable|string $httpValue): array
     {
-        $httpValue = trim((string) $httpValue);
-        [$parameters, $offset] = Parser::extractParametersValues($httpValue);
-        if (strlen($httpValue) !== $offset) {
+        $parameterString = trim((string) $httpValue);
+        [$parameters, $offset] = self::extractParametersValues($parameterString);
+        if (strlen($parameterString) !== $offset) {
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for Parameters contains invalid characters.');
         }
 
@@ -95,7 +95,7 @@ final class Parser
         $list = [];
         $remainder = ltrim((string) $httpValue, ' ');
         while ('' !== $remainder) {
-            [$list[], $offset] = self::parseItemOrInnerList($remainder);
+            [$list[], $offset] = self::extractItemOrInnerList($remainder);
             $remainder = self::removeCommaSeparatedWhiteSpaces($remainder, $offset);
         }
 
@@ -120,7 +120,7 @@ final class Parser
                 $remainder = '=?1'.$remainder;
             }
 
-            [$map[$key], $offset] = self::parseItemOrInnerList(substr($remainder, 1));
+            [$map[$key], $offset] = self::extractItemOrInnerList(substr($remainder, 1));
             $remainder = self::removeCommaSeparatedWhiteSpaces($remainder, ++$offset);
         }
 
@@ -141,7 +141,7 @@ final class Parser
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list is missing a parenthesis.");
         }
 
-        [$list, $offset] = self::parseInnerListValue($remainder);
+        [$list, $offset] = self::extractInnerList($remainder);
         $remainder = self::removeOptionalWhiteSpaces(substr($remainder, $offset));
         if ('' !== $remainder) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list contains invalid data.");
@@ -191,13 +191,13 @@ final class Parser
      *
      * @return array{0:array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}, 1:int}
      */
-    private static function parseItemOrInnerList(string $httpValue): array
+    private static function extractItemOrInnerList(string $httpValue): array
     {
         if ('(' === $httpValue[0]) {
-            return self::parseInnerListValue($httpValue);
+            return self::extractInnerList($httpValue);
         }
 
-        [$item, $remainder] = self::parseItemValue($httpValue);
+        [$item, $remainder] = self::extractItem($httpValue);
 
         return [$item, strlen($httpValue) - strlen($remainder)];
     }
@@ -209,7 +209,7 @@ final class Parser
      *
      * @return array{0:array{0:array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}, 1:int}
      */
-    private static function parseInnerListValue(string $httpValue): array
+    private static function extractInnerList(string $httpValue): array
     {
         $list = [];
         $remainder = substr($httpValue, 1);
@@ -224,7 +224,7 @@ final class Parser
                 return [[$list, $parameters], strlen($httpValue) - strlen($remainder)];
             }
 
-            [$list[], $remainder] = self::parseItemValue($remainder);
+            [$list[], $remainder] = self::extractItem($remainder);
 
             if ('' !== $remainder && !in_array($remainder[0], [' ', ')'], true)) {
                 throw new SyntaxError("The HTTP textual representation \"$remainder\" for a inner list is using invalid characters.");
@@ -239,7 +239,7 @@ final class Parser
      *
      * @return array{0:array{0:SfType, 1:array<string, SfType>}, 1:string}
      */
-    private static function parseItemValue(string $remainder): array
+    private static function extractItem(string $remainder): array
     {
         [$value, $offset] = self::extractValue($remainder);
         $remainder = substr($remainder, $offset);
@@ -258,12 +258,12 @@ final class Parser
     private static function extractValue(string $httpValue): array
     {
         return match (true) {
-            '"' === $httpValue[0] => self::parseString($httpValue),
-            ':' === $httpValue[0] => self::parseByteSequence($httpValue),
-            '?' === $httpValue[0] => self::parseBoolean($httpValue),
-            '@' === $httpValue[0] => self::parseDate($httpValue),
-            str_contains(self::FIRST_CHARACTER_RANGE_NUMBER, $httpValue[0]) => self::parseNumber($httpValue),
-            str_contains(self::FIRST_CHARACTER_RANGE_TOKEN, $httpValue[0]) => self::parseToken($httpValue),
+            '"' === $httpValue[0] => self::extractString($httpValue),
+            ':' === $httpValue[0] => self::extractByteSequence($httpValue),
+            '?' === $httpValue[0] => self::extractBoolean($httpValue),
+            '@' === $httpValue[0] => self::extractDate($httpValue),
+            str_contains(self::FIRST_CHARACTER_RANGE_NUMBER, $httpValue[0]) => self::extractNumber($httpValue),
+            str_contains(self::FIRST_CHARACTER_RANGE_TOKEN, $httpValue[0]) => self::extractToken($httpValue),
             default => throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an Item is unknown or unsupported."),
         };
     }
@@ -305,7 +305,7 @@ final class Parser
      *
      * @return array{0:bool, 1:int}
      */
-    private static function parseBoolean(string $httpValue): array
+    private static function extractBoolean(string $httpValue): array
     {
         if (1 !== preg_match(self::REGEXP_BOOLEAN, $httpValue)) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Boolean contains invalid characters.");
@@ -321,7 +321,7 @@ final class Parser
      *
      * @return array{0:int|float, 1:int}
      */
-    private static function parseNumber(string $httpValue): array
+    private static function extractNumber(string $httpValue): array
     {
         if (1 !== preg_match(self::REGEXP_VALID_NUMBER, $httpValue, $found)) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Number contains invalid characters.");
@@ -341,7 +341,7 @@ final class Parser
      *
      * @return array{0:DateTimeImmutable, 1:int}
      */
-    private static function parseDate(string $httpValue): array
+    private static function extractDate(string $httpValue): array
     {
         if (1 !== preg_match(self::REGEXP_DATE, $httpValue, $found)) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Date contains invalid characters.");
@@ -357,7 +357,7 @@ final class Parser
      *
      * @return array{0:string, 1:int}
      */
-    private static function parseString(string $httpValue): array
+    private static function extractString(string $httpValue): array
     {
         $offset = 1;
         $originalHttpValue = $httpValue;
@@ -404,7 +404,7 @@ final class Parser
      *
      * @return array{0:Token, 1:int}
      */
-    private static function parseToken(string $httpValue): array
+    private static function extractToken(string $httpValue): array
     {
         preg_match(self::REGEXP_TOKEN, $httpValue, $found);
 
@@ -418,7 +418,7 @@ final class Parser
      *
      * @return array{0:ByteSequence, 1:int}
      */
-    private static function parseByteSequence(string $httpValue): array
+    private static function extractByteSequence(string $httpValue): array
     {
         if (1 !== preg_match(self::REGEXP_BYTE_SEQUENCE, $httpValue, $matches)) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Byte Sequence contains invalid characters.");

@@ -11,6 +11,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Fixed
 
 - `Parameters::remove` also removes parameters per indexes
+- `Type::fromValue` throws an `InvalidArgument` exception.
+- `Type::fromValue` and `Type::tryFromValue` should only check the PHP variable type and not take into account the variable value.
 
 ### Deprecated
 
