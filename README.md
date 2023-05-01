@@ -560,7 +560,7 @@ You can attach and update the associated `Parameters` instance using the followi
 $field->addParameter(string $key, mixed $value): static;
 $field->appendParameter(string $key, mixed $value): static;
 $field->prependParameter(string $key, mixed $value): static;
-$field->withoutParameters(string ...$keys): static;
+$field->withoutParameters(string ...$keys): static; // this method is deprecated as of version 1.1 use withoutParametersByKeys instead
 $field->withoutAnyParameter(): static;
 $field->withParameters(Parameters $parameters): static;
 ```
@@ -572,6 +572,8 @@ $field->pushParameters(array ...$pairs): static
 $field->unshiftParameters(array ...$pairs): static
 $field->insertParameters(int $index, array ...$pairs): static
 $field->replaceParameter(int $index, array $pair): static
+$field->withoutParametersByKeys(string ...$keys): static
+$field->withoutParametersByIndices(int ...$indices): static
 ```
 
 The `$pair` parameter is a tuple (ie: an array as list with exactly two members) where:

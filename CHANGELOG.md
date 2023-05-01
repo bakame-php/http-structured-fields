@@ -6,17 +6,26 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
-- Public API around accessing parameters using their index instead of their key.
+- `OrederedMap::push`
+- `OrederedMap::unshift`
+- `OrederedMap::insert`
+- `OrederedMap::replace`
+- `ParameterAccess::pushParanmeters`
+- `ParameterAccess::unshiftParamaters`
+- `ParameterAccess::insertParamaters`
+- `ParameterAccess::replaceParamater`
+- `ParameterAccess::withoutParametersByKeys`
+- `ParameterAccess::withoutParametersByIndices`
 
 ### Fixed
 
-- `Parameters::remove` also removes parameters per indexes
+- `Parameters::remove` also removes parameters per indices
 - `Type::fromValue` throws an `InvalidArgument` exception.
 - `Type::fromValue` and `Type::tryFromValue` should only check the PHP variable type and not take into account the variable value.
 
 ### Deprecated
 
-- None
+- `ParameterAccess::withoutParameters` replaced by `ParameterAccess::withoutParametersBykeys`
 
 ### Removed
 

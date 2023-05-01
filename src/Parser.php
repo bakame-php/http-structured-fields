@@ -22,11 +22,11 @@ use function substr;
  *
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2
  *
- * @see Dictionary::fromHttpValue(),
- * @see Parameters::fromHttpValue(),
- * @see OuterList::fromHttpValue(),
- * @see InnerList::fromHttpValue()
- * @see Item::fromHttpValue() instead
+ * @internal Use Dictionary::fromHttpValue(),
+ *               Parameters::fromHttpValue(),
+ *               OuterList::fromHttpValue(),
+ *               InnerList::fromHttpValue()
+ *            or Item::fromHttpValue() instead
  *
  * @phpstan-import-type SfType from StructuredField
  */
