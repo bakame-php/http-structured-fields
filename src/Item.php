@@ -32,9 +32,9 @@ final class Item implements ParameterAccess, ValueAccess
      *
      * @throws SyntaxError If the HTTP value can not be parsed
      */
-    public static function fromHttpValue(Stringable|string $httpValue): self
+    public static function fromHttpValue(Stringable|string $httpValue, ItemParser $parser = new Parser()): self
     {
-        return self::fromAssociative(...Parser::parseItem($httpValue));
+        return self::fromAssociative(...$parser->parseItem($httpValue));
     }
 
     /**

@@ -16,6 +16,18 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `ParameterAccess::replaceParamater`
 - `ParameterAccess::withoutParametersByKeys`
 - `ParameterAccess::withoutParametersByIndices`
+- `ItemParser` interface to return an array representation of a Structured Field as an item.
+- `ParametersParser` interface to return an array representation of a Structured Field parameter container.
+- `DictionaryParser` interface to return an array representation of a Structured Field dictionary container.
+- `ListParser` interface to return an array representation of a Structured Field list container.
+- `InnerListParser` interface to return an array representation of a Structured Field inner list container.
+- `ValueParser` interface to return a PHP type of a Structured Field Value string representation.
+- `Parser` is now part of the public API
+- `Item::fromHttpValue` now has an optional second parameter to shift the parser implementation used
+- `Parameters::fromHttpValue` now has an optional second parameter to shift the parser implementation used
+- `Dictionary::fromHttpValue` now has an optional second parameter to shift the parser implementation used
+- `OuterList::fromHttpValue` now has an optional second parameter to shift the parser implementation used
+- `InnerList::fromHttpValue` now has an optional second parameter to shift the parser implementation used
 
 ### Fixed
 

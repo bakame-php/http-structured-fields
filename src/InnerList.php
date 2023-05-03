@@ -59,12 +59,12 @@ final class InnerList implements MemberList, ParameterAccess
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1
      */
-    public static function fromHttpValue(Stringable|string $httpValue): self
+    public static function fromHttpValue(Stringable|string $httpValue, InnerListParser $parser = new Parser()): self
     {
-        [$membersList, $parameters] = Parser::parseInnerList($httpValue);
+        [$members, $parameters] = $parser->parseInnerList($httpValue);
 
         return new self(
-            array_map(fn (array $member): Item => Item::fromAssociative(...$member), $membersList),
+            array_map(fn (array $member): Item => Item::fromAssociative(...$member), $members),
             Parameters::fromAssociative($parameters)
         );
     }

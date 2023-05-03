@@ -13,8 +13,9 @@ final class ParserBench
     public function benchParsingAListFormAnHTTPHeaderValue(): void
     {
         $httpValue = '("lang" "en-US"); expires=@1623233894; samesite=Strict; secure';
+        $parser = new Parser();
         for ($i = 0; $i < 100_000; $i++) {
-            Parser::parseList($httpValue);
+            $parser->parseList($httpValue);
         }
     }
 
@@ -23,8 +24,9 @@ final class ParserBench
     public function benchParsingAnItemFormAnHTTPHeaderValue(): void
     {
         $httpValue = '"lang"; expires=@1623233894; samesite=Strict; secure';
+        $parser = new Parser();
         for ($i = 0; $i < 100_000; $i++) {
-            Parser::parseItem($httpValue);
+            $parser->parseItem($httpValue);
         }
     }
 
@@ -33,8 +35,9 @@ final class ParserBench
     public function benchParsingAnDictionaryFormAnHTTPHeaderValue(): void
     {
         $httpValue = 'lang="en-US"; samesite=Strict; secure, type=42.0; expires=@1623233894';
+        $parser = new Parser();
         for ($i = 0; $i < 100_000; $i++) {
-            Parser::parseDictionary($httpValue);
+            $parser->parseDictionary($httpValue);
         }
     }
 }

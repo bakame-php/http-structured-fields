@@ -105,9 +105,9 @@ final class Parameters implements MemberOrderedMap
      *
      * @throws SyntaxError If the string is not a valid
      */
-    public static function fromHttpValue(Stringable|string $httpValue): self
+    public static function fromHttpValue(Stringable|string $httpValue, ParametersParser $parser = new Parser()): self
     {
-        return new self(Parser::parseParameters($httpValue));
+        return new self($parser->parseParameters($httpValue));
     }
 
     public function toHttpValue(): string

@@ -5,8 +5,12 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use DateTimeImmutable;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
+/**
+ * @phpstan-import-type SfType from StructuredField
+ */
 final class ParserTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
@@ -16,12 +20,20 @@ final class ParserTest extends StructuredFieldTestCase
         'large-generated.json',
     ];
 
+    private Parser $parser;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->parser = new Parser();
+    }
+
     #[Test]
     public function it_will_fail_with_wrong_boolean(): void
     {
         $this->expectException(SyntaxError::class);
 
-        Parser::parseDictionary('a=1, b=?3;foo=9, c=3');
+        $this->parser->parseDictionary('a=1, b=?3;foo=9, c=3');
     }
 
     #[Test]
@@ -29,7 +41,7 @@ final class ParserTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Parser::parseDictionary('key=-1ab');
+        $this->parser->parseDictionary('key=-1ab');
     }
 
     #[Test]
@@ -37,13 +49,13 @@ final class ParserTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Parser::parseDictionary('a=:toto89é:');
+        $this->parser->parseDictionary('a=:toto89é:');
     }
 
     #[Test]
     public function it_parse_a_date_item(): void
     {
-        $field = Parser::parseDictionary('a=@12345678;key=1');
+        $field = $this->parser->parseDictionary('a=@12345678;key=1');
 
         self::assertInstanceOf(DateTimeImmutable::class, $field['a'][0]);
         self::assertSame(1, $field['a'][1]['key']);
@@ -54,7 +66,7 @@ final class ParserTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Parser::parseDictionary('a=@12345.678');
+        $this->parser->parseDictionary('a=@12345.678');
     }
 
     #[Test]
@@ -62,7 +74,7 @@ final class ParserTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Parser::parseDictionary('a=@'. 1_000_000_000_000_000);
+        $this->parser->parseDictionary('a=@'. 1_000_000_000_000_000);
     }
 
     #[Test]
@@ -70,7 +82,7 @@ final class ParserTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Parser::parseDictionary('a="foo \O bar"');
+        $this->parser->parseDictionary('a="foo \O bar"');
     }
 
     #[Test]
@@ -78,7 +90,7 @@ final class ParserTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Parser::parseDictionary('a="foébar"');
+        $this->parser->parseDictionary('a="foébar"');
     }
 
     #[Test]
@@ -86,7 +98,7 @@ final class ParserTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Parser::parseList('(foo;number="hello\")');
+        $this->parser->parseList('(foo;number="hello\")');
     }
 
     #[Test]
@@ -94,7 +106,7 @@ final class ParserTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Parser::parseDictionary('number="hell\o"');
+        $this->parser->parseDictionary('number="hell\o"');
     }
 
     #[Test]
@@ -102,7 +114,7 @@ final class ParserTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Parser::parseInnerList('("hello)world" 42 42.0;john=doe);foo="bar(" toto');
+        $this->parser->parseInnerList('("hello)world" 42 42.0;john=doe);foo="bar(" toto');
     }
 
     #[Test]
@@ -110,6 +122,87 @@ final class ParserTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Parser::parseInnerList('"hello)world" 42 42.0;john=doe);foo="bar("');
+        $this->parser->parseInnerList('"hello)world" 42 42.0;john=doe);foo="bar("');
+    }
+
+    #[Test]
+    #[DataProvider('provideHttpValueForDataType')]
+    public function it_parses_basic_data_type(string $httpValue, ByteSequence|Token|DateTimeImmutable|string|int|float|bool $expected): void
+    {
+        $field = $this->parser->parseValue($httpValue);
+        if (is_scalar($expected)) {
+            self::assertSame($expected, $field);
+        } else {
+            self::assertEquals($expected, $field);
+        }
+    }
+
+    /**
+     * @return iterable<array{httpValue:string, expected:SfType}>
+     */
+    public static function provideHttpValueForDataType(): iterable
+    {
+        yield 'it parses a string' => [
+            'httpValue' => '"hello world!"',
+            'expected' => 'hello world!',
+        ];
+
+        yield 'it parses a float' => [
+            'httpValue' => '1.23',
+            'expected' => 1.23,
+        ];
+
+        yield 'it parses an integer' => [
+            'httpValue' => '23',
+            'expected' => 23,
+        ];
+
+        yield 'it parses an byte sequence' => [
+            'httpValue' => ':cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==:',
+            'expected' => ByteSequence::fromEncoded('cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg=='),
+        ];
+
+        yield 'it parses an token' => [
+            'httpValue' => 'text/csv',
+            'expected' => Token::fromString('text/csv'),
+        ];
+
+        yield 'it parses an date' => [
+            'httpValue' => '@1234567890',
+            'expected' => new DateTimeImmutable('@1234567890'),
+        ];
+
+        yield 'it parses true' => [
+            'httpValue' => '?1',
+            'expected' => true,
+        ];
+
+        yield 'it parses false' => [
+            'httpValue' => '?0',
+            'expected' => false,
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('provideInvalidHttpValueForDataType')]
+    public function it_fails_to_parse_basic_data_type(string $httpValue): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        $this->parser->parseValue($httpValue);
+    }
+
+    /**
+     * @return array<array<string>>
+     */
+    public static function provideInvalidHttpValueForDataType(): array
+    {
+        return [
+            ['!invalid'],
+            ['"inva'."\n".'lid"'],
+            ['@1_000_000_000_000.0'],
+            ['-1_000_000_000_000.0'],
+            ['      '],
+        ];
     }
 }

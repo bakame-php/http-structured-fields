@@ -108,17 +108,17 @@ final class Dictionary implements MemberOrderedMap
      *
      * @throws SyntaxError If the string is not a valid
      */
-    public static function fromHttpValue(Stringable|string $httpValue): self
+    public static function fromHttpValue(Stringable|string $httpValue, DictionaryParser $parser = new Parser()): self
     {
         $converter = fn (array $member): InnerList|Item => match (true) {
             is_array($member[0]) => InnerList::fromAssociative(
                 array_map(fn (array $item) => Item::fromAssociative(...$item), $member[0]),
                 $member[1]
             ),
-            default => Item::fromAssociative($member[0], $member[1]),
+            default => Item::fromAssociative(...$member),
         };
 
-        return new self(array_map($converter, Parser::parseDictionary($httpValue)));
+        return new self(array_map($converter, $parser->parseDictionary($httpValue)));
     }
 
     public function toHttpValue(): string

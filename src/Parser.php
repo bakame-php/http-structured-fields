@@ -22,15 +22,15 @@ use function substr;
  *
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2
  *
- * @internal Use Dictionary::fromHttpValue(),
- *               Parameters::fromHttpValue(),
- *               OuterList::fromHttpValue(),
- *               InnerList::fromHttpValue()
- *            or Item::fromHttpValue() instead
+ * @see Dictionary::fromHttpValue()
+ * @see Parameters::fromHttpValue()
+ * @see OuterList::fromHttpValue()
+ * @see InnerList::fromHttpValue()
+ * @see Item::fromHttpValue()
  *
  * @phpstan-import-type SfType from StructuredField
  */
-final class Parser
+final class Parser implements DictionaryParser, InnerListParser, ItemParser, ListParser, ParametersParser, ValueParser
 {
     private const REGEXP_BYTE_SEQUENCE = '/^(?<sequence>:(?<byte>[a-z\d+\/=]*):)/i';
     private const REGEXP_BOOLEAN = '/^\?[01]/';
@@ -44,10 +44,25 @@ final class Parser
     private const FIRST_CHARACTER_RANGE_NUMBER = '-1234567890';
     private const FIRST_CHARACTER_RANGE_TOKEN = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*';
 
+    public function parseValue(Stringable|string $httpValue): ByteSequence|Token|DateTimeImmutable|string|int|float|bool
+    {
+        $itemString = trim((string) $httpValue, ' ');
+        if ('' === $itemString || 1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $itemString)) {
+            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item value contains invalid characters.');
+        }
+
+        [$value, $offset] = self::extractValue($itemString);
+        if ('' !== substr($itemString, $offset)) {
+            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item value contains invalid characters.');
+        }
+
+        return $value;
+    }
+
     /**
      * @return array{0:SfType, 1:array<string, SfType>}
      */
-    public static function parseItem(Stringable|string $httpValue): array
+    public function parseItem(Stringable|string $httpValue): array
     {
         $itemString = trim((string) $httpValue, ' ');
         if ('' === $itemString || 1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $itemString)) {
@@ -60,7 +75,7 @@ final class Parser
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
         }
 
-        return [$value, self::parseParameters($remainder)];
+        return [$value, $this->parseParameters($remainder)];
     }
 
     /**
@@ -72,7 +87,7 @@ final class Parser
      *
      * @return array<string, SfType>
      */
-    public static function parseParameters(Stringable|string $httpValue): array
+    public function parseParameters(Stringable|string $httpValue): array
     {
         $parameterString = trim((string) $httpValue);
         [$parameters, $offset] = self::extractParametersValues($parameterString);
@@ -90,7 +105,7 @@ final class Parser
      *
      * @return array<array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}>
      */
-    public static function parseList(Stringable|string $httpValue): array
+    public function parseList(Stringable|string $httpValue): array
     {
         $list = [];
         $remainder = ltrim((string) $httpValue, ' ');
@@ -109,7 +124,7 @@ final class Parser
      *
      * @return array<string, array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}>
      */
-    public static function parseDictionary(Stringable|string $httpValue): array
+    public function parseDictionary(Stringable|string $httpValue): array
     {
         $map = [];
         $remainder = ltrim((string) $httpValue, ' ');
@@ -134,7 +149,7 @@ final class Parser
      *
      * @return array{0:array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}
      */
-    public static function parseInnerList(Stringable|string $httpValue): array
+    public function parseInnerList(Stringable|string $httpValue): array
     {
         $remainder = ltrim((string) $httpValue, ' ');
         if ('(' !== $remainder[0]) {
@@ -264,7 +279,7 @@ final class Parser
             '@' === $httpValue[0] => self::extractDate($httpValue),
             str_contains(self::FIRST_CHARACTER_RANGE_NUMBER, $httpValue[0]) => self::extractNumber($httpValue),
             str_contains(self::FIRST_CHARACTER_RANGE_TOKEN, $httpValue[0]) => self::extractToken($httpValue),
-            default => throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an Item is unknown or unsupported."),
+            default => throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item value is unknown or unsupported."),
         };
     }
 

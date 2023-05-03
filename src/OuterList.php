@@ -60,17 +60,17 @@ final class OuterList implements MemberList
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1
      */
-    public static function fromHttpValue(Stringable|string $httpValue): self
+    public static function fromHttpValue(Stringable|string $httpValue, ListParser $parser = new Parser()): self
     {
         $converter = fn (array $member): InnerList|Item => match (true) {
             is_array($member[0]) => InnerList::fromAssociative(
                 array_map(fn (array $item) => Item::fromAssociative(...$item), $member[0]),
                 $member[1]
             ),
-            default => Item::fromAssociative($member[0], $member[1]),
+            default => Item::fromAssociative(...$member),
         };
 
-        return new self(...array_map($converter, Parser::parseList($httpValue)));
+        return new self(...array_map($converter, $parser->parseList($httpValue)));
     }
 
     /**

@@ -113,6 +113,56 @@ All five (5) structured data type as defined in the RFC are provided inside the
 - `OuterList` (named `List` in the RFC but renamed in the package because `list` is a reserved word in PHP.)
 - `InnerList`
 
+#### Advance usage
+
+In order to allow:
+
+- clearer decoupling betwen parsing and objet building
+- different parsers implementations
+- improve the package usage in testing.
+
+Starting with version `1.1` the internal parser has been made public. The class exposes
+the following method each belonging to a different contract or interface.
+
+```php
+Parser::parseValue(Stringable|string $httpValue): ByteSequence|Token|DateTimeImmutable|string|int|float|bool;
+Parser::parseItem(Stringable|string $httpValue): array;
+Parser::parseParameters(Stringable|string $httpValue): array;
+Parser::parseInnerList(Stringable|string $httpValue): array;
+Parser::parseList(Stringable|string $httpValue): array;
+Parser::parseDictionary(Stringable|string $httpValue): array;
+```
+
+While the provided default `Parser` class implements all these methods
+you are free to only implement the methods you need.
+
+```php
+use Bakame\Http\StructuredFields\Parser;
+
+$parser = new Parser();
+$parser->parseValue('text/csv'); //returns Token::fromString('text/csv')
+$parser->parseItem('@1234567890;file=24'); 
+//returns an array
+//  [
+//    new DateTimeImmutable('@1234567890'),
+//    ['file' => 24],
+//  ]
+```
+
+Each `fromHttpValue` method signature has been updated to take a second optional argument
+that represents the parser interface to use in order to allow parsing of the HTTP string
+representation value.
+
+By default, if no parser is provided, the package will default to use the package `Parser` class,
+
+```php
+Item::fromHttpValue(Stringable|string $httpValue, ItemParser $parser = new Parser()): Item;
+InnerList::fromHttpValue(Stringable|string $httpValue, InnerListParser $parser = new Parser()): InnerList;
+Dictionary::fromHttpValue(Stringable|string $httpValue, DictionaryParser $parser = new Parser()): Dictionary;
+OuterList::fromHttpValue(Stringable|string $httpValue, ListParser $parser = new Parser()): OuterList;
+Parameters::fromHttpValue(Stringable|string $httpValue, ParametersParser $parser = new Parser()): Parameters;
+```
+
 ### Accessing Structured Fields Values
 
 #### RFC Value type
