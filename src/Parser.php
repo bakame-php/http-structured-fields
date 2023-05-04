@@ -46,13 +46,13 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
 
     public function parseValue(Stringable|string $httpValue): ByteSequence|Token|DateTimeImmutable|string|int|float|bool
     {
-        $itemString = trim((string) $httpValue, ' ');
-        if ('' === $itemString || 1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $itemString)) {
+        $valueString = trim((string) $httpValue, ' ');
+        if ('' === $valueString || 1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $valueString)) {
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item value contains invalid characters.');
         }
 
-        [$value, $offset] = self::extractValue($itemString);
-        if ('' !== substr($itemString, $offset)) {
+        [$value, $offset] = self::extractValue($valueString);
+        if ('' !== substr($valueString, $offset)) {
             throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item value contains invalid characters.');
         }
 
@@ -297,14 +297,11 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
         $remainder = $httpValue;
         while ('' !== $remainder && ';' === $remainder[0]) {
             $remainder = ltrim(substr($remainder, 1), ' ');
-
             $key = MapKey::fromStringBeginning($remainder)->value;
             $map[$key] = true;
-
             $remainder = substr($remainder, strlen($key));
             if ('' !== $remainder && '=' === $remainder[0]) {
                 $remainder = substr($remainder, 1);
-
                 [$map[$key], $offset] = self::extractValue($remainder);
                 $remainder = substr($remainder, $offset);
             }

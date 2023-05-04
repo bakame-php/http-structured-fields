@@ -63,6 +63,8 @@ header. Content validation is out of scope for this library.**
 
 ### Parsing and Serializing Structured Fields
 
+#### Basic usage
+
 Parsing the header value is done via the `fromHttpValue` named constructor.
 The method is attached to each library's structured fields representation
 as shown below:
@@ -115,39 +117,11 @@ All five (5) structured data type as defined in the RFC are provided inside the
 
 #### Advance usage
 
-In order to allow:
+Starting with version `1.1` the internal parser has been made public in order to allow:
 
 - clearer decoupling betwen parsing and objet building
 - different parsers implementations
 - improve the package usage in testing.
-
-Starting with version `1.1` the internal parser has been made public. The class exposes
-the following method each belonging to a different contract or interface.
-
-```php
-Parser::parseValue(Stringable|string $httpValue): ByteSequence|Token|DateTimeImmutable|string|int|float|bool;
-Parser::parseItem(Stringable|string $httpValue): array;
-Parser::parseParameters(Stringable|string $httpValue): array;
-Parser::parseInnerList(Stringable|string $httpValue): array;
-Parser::parseList(Stringable|string $httpValue): array;
-Parser::parseDictionary(Stringable|string $httpValue): array;
-```
-
-While the provided default `Parser` class implements all these methods
-you are free to only implement the methods you need.
-
-```php
-use Bakame\Http\StructuredFields\Parser;
-
-$parser = new Parser();
-$parser->parseValue('text/csv'); //returns Token::fromString('text/csv')
-$parser->parseItem('@1234567890;file=24'); 
-//returns an array
-//  [
-//    new DateTimeImmutable('@1234567890'),
-//    ['file' => 24],
-//  ]
-```
 
 Each `fromHttpValue` method signature has been updated to take a second optional argument
 that represents the parser interface to use in order to allow parsing of the HTTP string
@@ -162,6 +136,35 @@ Dictionary::fromHttpValue(Stringable|string $httpValue, DictionaryParser $parser
 OuterList::fromHttpValue(Stringable|string $httpValue, ListParser $parser = new Parser()): OuterList;
 Parameters::fromHttpValue(Stringable|string $httpValue, ParametersParser $parser = new Parser()): Parameters;
 ```
+
+The `Parser` class exposes the following method each belonging to a different contract or interface.
+
+```php
+Parser::parseValue(Stringable|string $httpValue): ByteSequence|Token|DateTimeImmutable|string|int|float|bool;
+Parser::parseItem(Stringable|string $httpValue): array;
+Parser::parseParameters(Stringable|string $httpValue): array;
+Parser::parseInnerList(Stringable|string $httpValue): array;
+Parser::parseList(Stringable|string $httpValue): array;
+Parser::parseDictionary(Stringable|string $httpValue): array;
+```
+
+Once instantiated, calling one of the above listed method is straightforward:
+
+```php
+use Bakame\Http\StructuredFields\Parser;
+
+$parser = new Parser();
+$parser->parseValue('text/csv'); //returns Token::fromString('text/csv')
+$parser->parseItem('@1234567890;file=24'); 
+//returns an array
+//  [
+//    new DateTimeImmutable('@1234567890'),
+//    ['file' => 24],
+//  ]
+```
+
+**While the provided default `Parser` class implements all these methods you are free to only implement
+the methods you need.**
 
 ### Accessing Structured Fields Values
 
@@ -406,7 +409,7 @@ $map->append(string $key, $value): static;
 $map->prepend(string $key, $value): static;
 $map->mergeAssociative(...$others): static;
 $map->mergePairs(...$others): static;
-$map->remove(string ...$key): static;
+$map->remove(string|int ...$key): static;
 ```
 
 As shown below:
@@ -473,6 +476,19 @@ echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
 
 **⚠️WARNING: on duplicate `keys` pair values are merged as per RFC logic.**
+
+The `remove` always accepted string or integer as input. Since version `1.1` it will also remove
+the corresponding pair if its index is given to the method.
+
+```diff
+<?php
+
+use Bakame\Http\StructuredFields\Dictionary;
+
+$field = Dictionary::fromHttpValue('b=?0, a=(bar "42" 42 42.0), c=@1671800423');
+- echo $field->remove('b', 2)->toHttpValue(); // returns a=(bar "42" 42 42.0), c=@1671800423
++ echo $field->remove('b', 2)->toHttpValue(); // returns a=(bar "42" 42 42.0)
+```
 
 #### Automatic conversion
 
