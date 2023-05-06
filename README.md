@@ -448,6 +448,8 @@ $map->unshift(array ...$pairs): static;
 $map->push(array ...$pairs): static;
 $map->insert(int $key, array ...$pairs): static;
 $map->replace(int $key, array $pair): static;
+$map->removeByKeys(string ...$keys): static;
+$map->removeByIndices(int ...$indices): static;
 ```
 
 We can rewrite the previous example
@@ -477,8 +479,8 @@ echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 
 **⚠️WARNING: on duplicate `keys` pair values are merged as per RFC logic.**
 
-The `remove` always accepted string or integer as input. Since version `1.1` it will also remove
-the corresponding pair if its index is given to the method.
+The `remove` always accepted string or integer as input. Since version `1.1` the method is fixed to
+remove the corresponding pair if its index is given to the method.
 
 ```diff
 <?php
@@ -488,6 +490,16 @@ use Bakame\Http\StructuredFields\Dictionary;
 $field = Dictionary::fromHttpValue('b=?0, a=(bar "42" 42 42.0), c=@1671800423');
 - echo $field->remove('b', 2)->toHttpValue(); // returns a=(bar "42" 42 42.0), c=@1671800423
 + echo $field->remove('b', 2)->toHttpValue(); // returns a=(bar "42" 42 42.0)
+```
+
+If a stricter approach is needed, use the following new methods `removeByIndices` and/or `removeByKeys`:
+
+```php
+use Bakame\Http\StructuredFields\Parameters;
+
+$field = Parameters::fromHttpValue(';expire=@1681504328;path="/";max-age=2500;secure;httponly=?0;samesite=lax');
+echo $field->removeByIndices(4, 2, 0)->toHttpValue();                      // returns ;path="/";secure;samesite=lax
+echo $field->removeByKeys('expire', 'httponly', 'max-age')->toHttpValue(); // returns ;path="/";secure;samesite=lax
 ```
 
 #### Automatic conversion

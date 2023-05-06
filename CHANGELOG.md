@@ -10,6 +10,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `OrederedMap::unshift`
 - `OrederedMap::insert`
 - `OrederedMap::replace`
+- `OrederedMap::removeByIndices`
+- `OrederedMap::removeByKeys`
 - `ParameterAccess::pushParanmeters`
 - `ParameterAccess::unshiftParamaters`
 - `ParameterAccess::insertParamaters`

@@ -339,12 +339,12 @@ final class Item implements ParameterAccess, ValueAccess
 
     public function withoutParameterByKeys(string ...$keys): static
     {
-        return $this->withParameters($this->parameters()->remove(...$keys));
+        return $this->withParameters($this->parameters()->removeByKeys(...$keys));
     }
 
     public function withoutParameterByIndices(int ...$indices): static
     {
-        return $this->withParameters($this->parameters()->remove(...$indices));
+        return $this->withParameters($this->parameters()->removeByIndices(...$indices));
     }
 
     public function withoutAnyParameter(): static

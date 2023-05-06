@@ -272,6 +272,16 @@ final class Parameters implements MemberOrderedMap
         };
     }
 
+    public function removeByIndices(int ...$indices): static
+    {
+        return $this->remove(...$indices);
+    }
+
+    public function removeByKeys(string ...$keys): static
+    {
+        return $this->remove(...$keys);
+    }
+
     public function append(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;

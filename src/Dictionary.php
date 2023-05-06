@@ -290,6 +290,16 @@ final class Dictionary implements MemberOrderedMap
         };
     }
 
+    public function removeByIndices(int ...$indices): static
+    {
+        return $this->remove(...$indices);
+    }
+
+    public function removeByKeys(string ...$keys): static
+    {
+        return $this->remove(...$keys);
+    }
+
     /**
      * @param SfMember|SfMemberInput $member
      */

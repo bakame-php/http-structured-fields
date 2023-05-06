@@ -256,6 +256,8 @@ final class DictionaryTest extends StructuredFieldTestCase
 
         self::assertFalse($newInstance->remove('foo')->hasMembers());
         self::assertSame($newInstance, $newInstance->remove('baz', 'bar', 'yolo-not-there', 325));
+        self::assertSame($newInstance, $newInstance->removeByKeys('baz', 'bar', 'yolo-not-there'));
+        self::assertSame($newInstance, $newInstance->removeByIndices(325));
 
         $instanceWithoutMember = Dictionary::new();
         self::assertSame($instanceWithoutMember->remove(), $instanceWithoutMember);

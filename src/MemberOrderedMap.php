@@ -15,6 +15,8 @@ use Iterator;
  * @method static unshift(array ...$pairs) Inserts pair at the start of the member list
  * @method static insert(int $index, array ...$pairs) Inserts pairs at the index
  * @method static replace(int $index, array $pair) Replaces the pair at the given index
+ * @method static removeByIndices(int ... $indices) Remove members by index
+ * @method static removeByKeys(string ...$keys) Remove members by keys
  */
 interface MemberOrderedMap extends MemberContainer
 {
