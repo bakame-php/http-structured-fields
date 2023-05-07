@@ -14,7 +14,7 @@ namespace Bakame\Http\StructuredFields;
  *     can_fail?: bool
  * }
  */
-final class TestRecord
+final class Record
 {
     private function __construct(
         public readonly string $name,

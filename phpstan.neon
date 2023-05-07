@@ -7,7 +7,8 @@ parameters:
     level: max
     paths:
         - src
+        - tests
     ignoreErrors:
         - message: '#it_fails_to_create_an_item_from_an_array_of_pairs\(\)#'
-          path: src/ItemTest.php
+          path: tests/ItemTest.php
     reportUnmatchedIgnoredErrors: true

@@ -13,17 +13,17 @@ use function file_get_contents;
 use function json_decode;
 
 /**
- * @implements IteratorAggregate<string, TestRecord>
- * @phpstan-import-type RecordData from TestRecord
+ * @implements IteratorAggregate<string, Record>
+ * @phpstan-import-type RecordData from Record
  */
-final class TestRecordCollection implements IteratorAggregate
+final class RecordCollection implements IteratorAggregate
 {
-    /** @param array<string, TestRecord> $elements */
+    /** @param array<string, Record> $elements */
     private function __construct(private array $elements = [])
     {
     }
 
-    public function add(TestRecord $test): void
+    public function add(Record $test): void
     {
         if (isset($this->elements[$test->name])) {
             throw new RuntimeException('Already existing test name `'.$test->name.'`.');
@@ -46,14 +46,14 @@ final class TestRecordCollection implements IteratorAggregate
         $records = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
         foreach ($records as $offset => $record) {
             $record['name'] = basename($path).' #'.($offset + 1).': '.$record['name'];
-            $suite->add(TestRecord::fromDecoded($record));
+            $suite->add(Record::fromDecoded($record));
         }
 
         return $suite;
     }
 
     /**
-     * @return Iterator<string, TestRecord>
+     * @return Iterator<string, Record>
      */
     public function getIterator(): Iterator
     {

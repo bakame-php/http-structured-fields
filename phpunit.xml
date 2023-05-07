@@ -19,7 +19,7 @@
   </coverage>
   <testsuites>
     <testsuite name="Http Structured Fields Test Suite">
-      <directory suffix="Test.php">src</directory>
+      <directory suffix="Test.php">tests</directory>
     </testsuite>
   </testsuites>
   <logging>
@@ -29,11 +29,5 @@
     <include>
       <directory suffix=".php">src</directory>
     </include>
-    <exclude>
-      <directory suffix="TestCase.php">src</directory>
-      <directory suffix="Test.php">src</directory>
-      <directory suffix="Bench.php">src</directory>
-      <directory prefix="Test">src</directory>
-    </exclude>
   </source>
 </phpunit>

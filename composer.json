@@ -41,12 +41,12 @@
     "autoload": {
         "psr-4": {
             "Bakame\\Http\\StructuredFields\\": "src/"
-        },
-        "exclude-from-classmap": [
-            "src/**Test.php",
-            "src/**TestCase.php",
-            "src/Test**"
-        ]
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Bakame\\Http\\StructuredFields\\": "tests/"
+        }
     },
     "scripts": {
         "benchmark": "phpbench run --report=default",
