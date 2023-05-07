@@ -2,6 +2,24 @@
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file.
 
+## [Next] - TBD
+
+### Added
+
+- None
+
+### Fixed
+
+- None
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
+
 ## [1.1.0] - 2023-05-07
 
 ### Added
