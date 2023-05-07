@@ -2,7 +2,7 @@
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file.
 
-## [Next] - TBD
+## [1.1.0] - 2023-05-07
 
 ### Added
 
@@ -332,7 +332,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 **Initial release!**
 
-[Next]:  https://github.com/bakame-php/http-structured-fields/compare/1.0.1...master
+[Next]: https://github.com/bakame-php/http-structured-fields/compare/1.1.0...master
+[1.1.0]: https://github.com/bakame-php/http-structured-fields/compare/1.0.1...1.1.0
 [1.0.1]: https://github.com/bakame-php/http-structured-fields/compare/1.0.0...1.0.1
 [1.0.0]: https://github.com/bakame-php/http-structured-fields/compare/0.8.0...1.0.0
 [0.8.0]: https://github.com/bakame-php/http-structured-fields/compare/0.7.0...0.8.0

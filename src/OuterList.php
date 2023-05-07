@@ -37,7 +37,7 @@ final class OuterList implements MemberList
      */
     private function __construct(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members)
     {
-        $this->members = array_map(self::filterMember(...), array_values([...$members]));
+        $this->members = array_map($this->filterMember(...), array_values([...$members]));
     }
 
     /**
@@ -45,7 +45,7 @@ final class OuterList implements MemberList
      *
      * @return SfMember
      */
-    private static function filterMember(mixed $member): object
+    private function filterMember(mixed $member): object
     {
         return match (true) {
             $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,

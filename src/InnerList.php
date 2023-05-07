@@ -37,7 +37,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     private function __construct(iterable $members, private readonly Parameters $parameters)
     {
-        $this->members = array_map(self::filterMember(...), array_values([...$members]));
+        $this->members = array_map($this->filterMember(...), array_values([...$members]));
     }
 
     /**
@@ -45,7 +45,7 @@ final class InnerList implements MemberList, ParameterAccess
      *
      * @return SfItem
      */
-    private static function filterMember(mixed $member): object
+    private function filterMember(mixed $member): object
     {
         return match (true) {
             $member instanceof ValueAccess && $member instanceof ParameterAccess => $member,
@@ -285,7 +285,7 @@ final class InnerList implements MemberList, ParameterAccess
 
         return match (true) {
             [] === $indices => $this,
-            $max === count($indices) => self::new(),
+            count($indices) === $max => self::new(),
             default => new self(array_filter(
                 $this->members,
                 fn (int $key): bool => !in_array($key, $indices, true),

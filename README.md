@@ -13,10 +13,7 @@ build and update HTTP Structured Fields in PHP according to the [RFC8941](https:
 Once installed you will be able to do the following:
 
 ```php
-use Bakame\Http\StructuredFields\InnerList;
-use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\OuterList;
-use Bakame\Http\StructuredFields\Token;
+use Bakame\Http\StructuredFields\{InnerList, Item, OuterList, Token};
 
 //1 - parsing an Accept Header
 $headerValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';

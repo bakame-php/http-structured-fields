@@ -46,14 +46,14 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
 
     public function parseValue(Stringable|string $httpValue): ByteSequence|Token|DateTimeImmutable|string|int|float|bool
     {
-        $valueString = trim((string) $httpValue, ' ');
-        if ('' === $valueString || 1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $valueString)) {
-            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item value contains invalid characters.');
+        $remainder = trim((string) $httpValue, ' ');
+        if ('' === $remainder || 1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $remainder)) {
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item value contains invalid characters.");
         }
 
-        [$value, $offset] = self::extractValue($valueString);
-        if ('' !== substr($valueString, $offset)) {
-            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item value contains invalid characters.');
+        [$value, $offset] = self::extractValue($remainder);
+        if ('' !== substr($remainder, $offset)) {
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item value contains invalid characters.");
         }
 
         return $value;
@@ -64,15 +64,15 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
      */
     public function parseItem(Stringable|string $httpValue): array
     {
-        $itemString = trim((string) $httpValue, ' ');
-        if ('' === $itemString || 1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $itemString)) {
-            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
+        $remainder = trim((string) $httpValue, ' ');
+        if ('' === $remainder || 1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $remainder)) {
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item contains invalid characters.");
         }
 
-        [$value, $offset] = self::extractValue($itemString);
-        $remainder = substr($itemString, $offset);
+        [$value, $offset] = self::extractValue($remainder);
+        $remainder = substr($remainder, $offset);
         if ('' !== $remainder && !str_contains($remainder, ';')) {
-            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for an item contains invalid characters.');
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item contains invalid characters.");
         }
 
         return [$value, $this->parseParameters($remainder)];
@@ -89,10 +89,10 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
      */
     public function parseParameters(Stringable|string $httpValue): array
     {
-        $parameterString = trim((string) $httpValue);
-        [$parameters, $offset] = self::extractParametersValues($parameterString);
-        if (strlen($parameterString) !== $offset) {
-            throw new SyntaxError('The HTTP textual representation "'.$httpValue.'" for Parameters contains invalid characters.');
+        $remainder = trim((string) $httpValue);
+        [$parameters, $offset] = self::extractParametersValues($remainder);
+        if (strlen($remainder) !== $offset) {
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for Parameters contains invalid characters.");
         }
 
         return $parameters;
@@ -170,23 +170,23 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
      *
      * @see https://tools.ietf.org/html/rfc7230#section-3.2.3
      */
-    private static function removeCommaSeparatedWhiteSpaces(string $httpValue, int $offset): string
+    private static function removeCommaSeparatedWhiteSpaces(string $remainder, int $offset): string
     {
-        $httpValue = self::removeOptionalWhiteSpaces(substr($httpValue, $offset));
-        if ('' === $httpValue) {
-            return $httpValue;
+        $remainder = self::removeOptionalWhiteSpaces(substr($remainder, $offset));
+        if ('' === $remainder) {
+            return '';
         }
 
-        if (1 !== preg_match(self::REGEXP_VALID_SPACE, $httpValue, $found)) {
+        if (1 !== preg_match(self::REGEXP_VALID_SPACE, $remainder, $found)) {
             throw new SyntaxError('The HTTP textual representation is missing an excepted comma.');
         }
 
-        $httpValue = substr($httpValue, strlen($found['space']));
-        if ('' === $httpValue) {
+        $remainder = substr($remainder, strlen($found['space']));
+        if ('' === $remainder) {
             throw new SyntaxError('The HTTP textual representation has an unexpected end of line.');
         }
 
-        return $httpValue;
+        return $remainder;
     }
 
     /**
@@ -242,11 +242,11 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
             [$list[], $remainder] = self::extractItem($remainder);
 
             if ('' !== $remainder && !in_array($remainder[0], [' ', ')'], true)) {
-                throw new SyntaxError("The HTTP textual representation \"$remainder\" for a inner list is using invalid characters.");
+                throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list is using invalid characters.");
             }
         }
 
-        throw new SyntaxError("The HTTP textual representation \"$remainder\" for a inner list has an unexpected end of line.");
+        throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list has an unexpected end of line.");
     }
 
     /**
@@ -372,12 +372,11 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     private static function extractString(string $httpValue): array
     {
         $offset = 1;
-        $originalHttpValue = $httpValue;
-        $httpValue = substr($httpValue, $offset);
+        $remainder = substr($httpValue, $offset);
         $output = '';
 
-        while ('' !== $httpValue) {
-            $char = $httpValue[0];
+        while ('' !== $remainder) {
+            $char = $remainder[0];
             $offset += 1;
 
             if ('"' === $char) {
@@ -385,28 +384,28 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
             }
 
             if (1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $char)) {
-                throw new SyntaxError("The HTTP textual representation \"$originalHttpValue\" for a String contains an invalid end string.");
+                throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a String contains an invalid end string.");
             }
 
-            $httpValue = substr($httpValue, 1);
+            $remainder = substr($remainder, 1);
 
             if ('\\' !== $char) {
                 $output .= $char;
                 continue;
             }
 
-            $char = $httpValue[0] ?? '';
+            $char = $remainder[0] ?? '';
             $offset += 1;
-            $httpValue = substr($httpValue, 1);
+            $remainder = substr($remainder, 1);
 
             if (!in_array($char, ['"', '\\'], true)) {
-                throw new SyntaxError("The HTTP textual representation \"$originalHttpValue\" for a String contains an invalid end string.");
+                throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a String contains an invalid end string.");
             }
 
             $output .= $char;
         }
 
-        throw new SyntaxError("The HTTP textual representation \"$originalHttpValue\" for a String contains an invalid end string.");
+        throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a String contains an invalid end string.");
     }
 
     /**
