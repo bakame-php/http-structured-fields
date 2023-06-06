@@ -16,21 +16,10 @@ use function json_decode;
  * @implements IteratorAggregate<string, Record>
  * @phpstan-import-type RecordData from Record
  */
-final class RecordCollection implements IteratorAggregate
+final class RecordAggregate implements IteratorAggregate
 {
-    /** @param array<string, Record> $elements */
-    private function __construct(private array $elements = [])
-    {
-    }
-
-    public function add(Record $test): void
-    {
-        if (isset($this->elements[$test->name])) {
-            throw new RuntimeException('Already existing test name `'.$test->name.'`.');
-        }
-
-        $this->elements[$test->name] = $test;
-    }
+    /** @var array<string, Record> */
+    private array $elements;
 
     /**
      * @throws JsonException|RuntimeException
@@ -45,11 +34,20 @@ final class RecordCollection implements IteratorAggregate
         /** @var array<RecordData> $records */
         $records = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
         foreach ($records as $offset => $record) {
-            $record['name'] = basename($path).' #'.($offset + 1).': '.$record['name'];
+            $record['name'] = basename($path).' test #'.($offset + 1).' : '.$record['name'];
             $suite->add(Record::fromDecoded($record));
         }
 
         return $suite;
+    }
+
+    public function add(Record $test): void
+    {
+        if (isset($this->elements[$test->name])) {
+            throw new RuntimeException('Already existing test name `'.$test->name.'`.');
+        }
+
+        $this->elements[$test->name] = $test;
     }
 
     /**
@@ -57,8 +55,6 @@ final class RecordCollection implements IteratorAggregate
      */
     public function getIterator(): Iterator
     {
-        foreach ($this->elements as $element) {
-            yield $element->name => $element;
-        }
+        yield from $this->elements;
     }
 }

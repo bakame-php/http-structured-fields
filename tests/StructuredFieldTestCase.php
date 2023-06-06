@@ -40,8 +40,8 @@ abstract class StructuredFieldTestCase extends TestCase
     public static function httpWgDataProvider(): iterable
     {
         foreach (static::$httpWgTestFilenames as $path) {
-            foreach (RecordCollection::fromPath(static::$rootPath.'/'.ltrim($path, '/')) as $test) {
-                yield $test->name => [$test];
+            foreach (RecordAggregate::fromPath(static::$rootPath.'/'.ltrim($path, '/')) as $record) {
+                yield $record->name => [$record];
             }
         }
     }
