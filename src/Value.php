@@ -36,11 +36,11 @@ final class Value
         $this->value = match (true) {
             $value instanceof ValueAccess => $value->value(),
             $value instanceof Token,
-            $value instanceof ByteSequence => $value,
+            $value instanceof ByteSequence,
+            is_bool($value) => $value,
             $value instanceof DateTimeInterface => self::filterDate($value),
             is_int($value) => self::filterIntegerRange($value, 'Integer'),
             is_float($value) => self::filterDecimal($value),
-            is_bool($value) => $value,
             default => self::filterString($value),
         };
         $this->type = Type::fromValue($value);
