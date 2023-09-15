@@ -6,6 +6,7 @@ namespace Bakame\Http\StructuredFields;
 
 use DateTimeImmutable;
 use Stringable;
+
 use function in_array;
 use function ltrim;
 use function preg_match;
@@ -319,11 +320,10 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
      */
     private static function extractBoolean(string $httpValue): array
     {
-        if (1 !== preg_match(self::REGEXP_BOOLEAN, $httpValue)) {
-            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Boolean contains invalid characters.");
-        }
-
-        return ['1' === $httpValue[1], 2];
+        return match (1) {
+            preg_match(self::REGEXP_BOOLEAN, $httpValue) => ['1' === $httpValue[1], 2],
+            default => throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Boolean contains invalid characters."),
+        };
     }
 
     /**
@@ -339,9 +339,9 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Number contains invalid characters.");
         }
 
-        return match (true) {
-            1 === preg_match(self::REGEXP_DECIMAL, $found['number']) => [(float) $found['number'], strlen($found['number'])],
-            1 === preg_match(self::REGEXP_INTEGER, $found['number']) => [(int) $found['number'], strlen($found['number'])],
+        return match (1) {
+            preg_match(self::REGEXP_DECIMAL, $found['number']) => [(float) $found['number'], strlen($found['number'])],
+            preg_match(self::REGEXP_INTEGER, $found['number']) => [(int) $found['number'], strlen($found['number'])],
             default => throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Number contains too much digit."),
         };
     }

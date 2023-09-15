@@ -118,7 +118,7 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     public function it_instantiates_a_stringable_object_from_string(): void
     {
-        $object = new class() implements Stringable {
+        $object = new class () implements Stringable {
             public function __toString(): string
             {
                 return 'forty-two';

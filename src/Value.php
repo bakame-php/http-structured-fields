@@ -7,18 +7,20 @@ namespace Bakame\Http\StructuredFields;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use Exception;
 use Stringable;
 use Throwable;
+
 use function abs;
 use function date_default_timezone_get;
 use function floor;
-use function is_bool;
 use function is_float;
 use function is_int;
 use function json_encode;
 use function preg_match;
 use function preg_replace;
 use function round;
+
 use const JSON_PRESERVE_ZERO_FRACTION;
 use const PHP_ROUND_HALF_EVEN;
 
@@ -37,7 +39,8 @@ final class Value
             $value instanceof ValueAccess => $value->value(),
             $value instanceof Token,
             $value instanceof ByteSequence,
-            is_bool($value) => $value,
+            false === $value,
+            $value => $value,
             $value instanceof DateTimeInterface => self::filterDate($value),
             is_int($value) => self::filterIntegerRange($value, 'Integer'),
             is_float($value) => self::filterDecimal($value),
@@ -53,11 +56,10 @@ final class Value
      */
     private static function filterIntegerRange(int $value, string $type): int
     {
-        if (abs($value) > 999_999_999_999_999) {
-            throw new SyntaxError($type.' are limited to 15 digits.');
-        }
-
-        return $value;
+        return match (true) {
+            999_999_999_999_999 < abs($value) => throw new SyntaxError($type.' are limited to 15 digits.'),
+            default => $value,
+        };
     }
 
     /**
@@ -67,11 +69,10 @@ final class Value
      */
     private static function filterDecimal(float $value): float
     {
-        if (abs(floor($value)) > 999_999_999_999) {
-            throw new SyntaxError('Integer portion of decimals is limited to 12 digits.');
-        }
-
-        return $value;
+        return match (true) {
+            999_999_999_999 < abs(floor($value)) => throw new SyntaxError('Integer portion of decimals is limited to 12 digits.'),
+            default => $value,
+        };
     }
 
     /**
@@ -81,11 +82,11 @@ final class Value
      */
     private static function filterString(string $value): string
     {
-        if (1 === preg_match('/[^\x20-\x7E]/i', $value)) {
-            throw new SyntaxError('The string contains invalid characters.');
-        }
-
-        return $value;
+        return match (true) {
+            1 === preg_match('/[^\x20-\x7E]/i', $value) => throw new SyntaxError('The string contains invalid characters.'),
+            default => $value,
+        };
+        ;
     }
 
     /**
@@ -139,12 +140,16 @@ final class Value
      */
     public static function fromDateFormat(string $format, string $datetime): self
     {
-        $value = DateTimeImmutable::createFromFormat($format, $datetime);
-        if (false === $value) {
-            throw new SyntaxError('The date notation `'.$datetime.'` is incompatible with the date format `'.$format.'`.');
+        try {
+            $value = DateTimeImmutable::createFromFormat($format, $datetime);
+        } catch (Exception $exception) {
+            throw new SyntaxError('The date notation `'.$datetime.'` is incompatible with the date format `'.$format.'`.', 0, $exception);
         }
 
-        return new self($value);
+        return match (false) {
+            $value => throw new SyntaxError('The date notation `'.$datetime.'` is incompatible with the date format `'.$format.'`.'),
+            default => new self($value),
+        };
     }
 
     /**
@@ -220,7 +225,8 @@ final class Value
             $this->value instanceof ByteSequence => ':'.$this->value->encoded().':',
             is_int($this->value) => (string) $this->value,
             is_float($this->value) => (string) json_encode(round($this->value, 3, PHP_ROUND_HALF_EVEN), JSON_PRESERVE_ZERO_FRACTION),
-            is_bool($this->value) => '?'.($this->value ? '1' : '0'),
+            $this->value,
+            false === $this->value => '?'.($this->value ? '1' : '0'),
             default => '"'.preg_replace('/(["\\\])/', '\\\$1', $this->value).'"',
         };
     }

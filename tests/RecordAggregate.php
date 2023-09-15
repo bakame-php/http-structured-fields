@@ -8,6 +8,7 @@ use Iterator;
 use IteratorAggregate;
 use JsonException;
 use RuntimeException;
+
 use function basename;
 use function file_get_contents;
 use function json_decode;

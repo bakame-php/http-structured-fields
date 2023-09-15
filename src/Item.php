@@ -8,6 +8,8 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use Stringable;
+
+use function array_is_list;
 use function count;
 
 /**

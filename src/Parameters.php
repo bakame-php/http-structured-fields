@@ -8,6 +8,7 @@ use ArrayAccess;
 use DateTimeInterface;
 use Iterator;
 use Stringable;
+
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -347,17 +348,17 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param array{0:string, 1:SfItemInput} $member
+     * @param array{0:string, 1:SfItemInput} $pair
      */
-    public function replace(int $index, array $member): static
+    public function replace(int $index, array $pair): static
     {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
-        $member[1] = self::filterMember($member[1]);
+        $pair[1] = self::filterMember($pair[1]);
         $pairs = iterator_to_array($this->toPairs());
 
         return match (true) {
-            $pairs[$offset] == $member => $this,
-            default => self::fromPairs(array_replace($pairs, [$offset => $member])),
+            $pairs[$offset] == $pair => $this,
+            default => self::fromPairs(array_replace($pairs, [$offset => $pair])),
         };
     }
 

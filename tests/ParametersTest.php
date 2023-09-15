@@ -134,7 +134,7 @@ final class ParametersTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Parameters::fromAssociative(['bébé'=> Item::false()]);
+        Parameters::fromAssociative(['bébé' => Item::false()]);
     }
 
     #[Test]

@@ -119,7 +119,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Dictionary::fromAssociative(['bébé'=> Item::false()]);
+        Dictionary::fromAssociative(['bébé' => Item::false()]);
     }
 
     #[Test]
