@@ -54,7 +54,8 @@ composer require bakame/http-structured-fields
 
 ### Foreword
 
-> [!CAUTION] While this package parses and serializes the header value, it does not validate its content.
+> [!CAUTION]
+> While this package parses and serializes the header value, it does not validate its content.
 It is still required to validate the parsed data against the constraints of the corresponding
 header. Content validation is out of scope for this library.
 
@@ -160,7 +161,8 @@ $parser->parseItem('@1234567890;file=24');
 //  ]
 ```
 
-> [!NOTE] While the provided default `Parser` class implements all these methods you are free to only implement
+> [!NOTE]
+> While the provided default `Parser` class implements all these methods you are free to only implement
 the methods you need.
 
 ### Accessing Structured Fields Values
@@ -245,7 +247,8 @@ $token->type(); // returns Type::Token enum
 $byte->type();  // returns Type::ByteSequence
 ```
 
-> [!WARNING] Both classes DO NOT expose the `Stringable` interface to distinguish them
+> [!WARNING]
+> Both classes DO NOT expose the `Stringable` interface to distinguish them
 from a string or a string like object
 
 #### Item
@@ -275,7 +278,8 @@ $container->hasMembers(): bool;
 $container->hasNoMembers(): bool;
 ```
 
-> [!NOTE] The `get` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
+> [!NOTE]
+> The `get` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
 
 To avoid invalid states, `ArrayAccess` modifying methods throw a `ForbiddenOperation`
 if you try to use them on any container object:
@@ -299,7 +303,8 @@ $container->pair(int $offset): array{0:string, 1:StructuredField};
 $container->toPairs(): iterable<array{0:string, 1:StructuredField}>;
 ```
 
-> [!NOTE] The `pair` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
+> [!NOTE]
+> The `pair` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
 
 #### Accessing the parameters values
 
@@ -475,7 +480,8 @@ echo $value->toHttpValue(); //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
 
-> [!CAUTION} on duplicate `keys` pair values are merged as per RFC logic.
+> [!CAUTION]
+> on duplicate `keys` pair values are merged as per RFC logic.
 
 The `remove` always accepted string or integer as input. Since version `1.1` the method is fixed to
 remove the corresponding pair if its index is given to the method.
@@ -657,7 +663,8 @@ The `$pair` parameter is a tuple (ie: an array as list with exactly two members)
 - the first array member is the parameter `$key`
 - the second array member is the parameter `$value`
 
-> [!WARNING] The return value will be the parent class an NOT a `Parameters` instance
+> [!WARNING]
+> The return value will be the parent class an NOT a `Parameters` instance
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
