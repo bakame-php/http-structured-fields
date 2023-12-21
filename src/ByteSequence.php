@@ -6,6 +6,7 @@ namespace Bakame\Http\StructuredFields;
 
 use Stringable;
 
+use Throwable;
 use function base64_decode;
 use function base64_encode;
 use function preg_match;
@@ -36,6 +37,15 @@ final class ByteSequence
         }
 
         return new self($decoded);
+    }
+
+    public static function tryFromEncoded(Stringable|string $encodedValue): ?self
+    {
+        try {
+            return self::fromEncoded($encodedValue);
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     /**

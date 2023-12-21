@@ -6,11 +6,12 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
-- None
+- Support for the `DisplayString` type
 
 ### Fixed
 
 - Tests file moved under the `/tests` directory
+- Fix `Type::tryFromValue` to correctly detect string type derivative.
 
 ### Deprecated
 
