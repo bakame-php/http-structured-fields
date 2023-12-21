@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use DateTimeInterface;
-use Throwable;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
@@ -49,10 +48,10 @@ enum Type
             is_float($value) => Type::Decimal,
             is_bool($value) => Type::Boolean,
             is_string($value) => match (true) {
-               1 === preg_match('/[^\x20-\x7f]/', $value) => Type::DisplayString,
-               1 === preg_match("/^([a-z*][a-z\d:\/!#\$%&'*+\-.^_`|~]*)$/i", $value) => Type::Token,
-               null !== ByteSequence::tryFromEncoded($value) => Type::ByteSequence,
-               default => Type::String,
+                1 === preg_match('/[^\x20-\x7f]/', $value) => Type::DisplayString,
+                1 === preg_match("/^([a-z*][a-z\d:\/!#\$%&'*+\-.^_`|~]*)$/i", $value) => Type::Token,
+                null !== ByteSequence::tryFromEncoded($value) => Type::ByteSequence,
+                default => Type::String,
             },
             default => null,
         };

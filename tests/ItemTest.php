@@ -274,7 +274,7 @@ final class ItemTest extends StructuredFieldTestCase
             ],
             'string' => [
                 'item' => Item::new('42'),
-                'expectedType' => Type::String,
+                'expectedType' => Type::ByteSequence,
             ],
             'token' => [
                 'item' => Item::new(Token::fromString('forty-two')),

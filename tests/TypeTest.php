@@ -57,8 +57,12 @@ final class TypeTest extends TestCase
                 'value' => 42.0,
                 'expectedType' => Type::Decimal,
             ],
-            'string' => [
+            'string as a Bytesequence' => [
                 'value' => '42',
+                'expectedType' => Type::ByteSequence,
+            ],
+            'string as a String' => [
+                'value' => 'Hello Boy!',
                 'expectedType' => Type::String,
             ],
             'token' => [

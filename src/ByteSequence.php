@@ -7,6 +7,7 @@ namespace Bakame\Http\StructuredFields;
 use Stringable;
 
 use Throwable;
+
 use function base64_decode;
 use function base64_encode;
 use function preg_match;
