@@ -7,7 +7,7 @@ namespace Bakame\Http\StructuredFields;
 use Stringable;
 
 /**
- * @phpstan-type SfType ByteSequence|Token|\DateTimeImmutable|string|int|float|bool
+ * @phpstan-type SfType ByteSequence|Token|DisplayString|\DateTimeImmutable|string|int|float|bool
  * @phpstan-type SfTypeInput StructuredField|SfType|\DateTimeInterface
  * @phpstan-type SfItem ValueAccess&ParameterAccess
  * @phpstan-type SfItemInput SfItem|SfTypeInput

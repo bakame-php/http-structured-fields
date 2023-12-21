@@ -16,6 +16,7 @@ enum Type
     case String;
     case Token;
     case ByteSequence;
+    case DisplayString;
     case Boolean;
     case Date;
 
@@ -40,6 +41,7 @@ enum Type
         return match (true) {
             $value instanceof ValueAccess,
             $value instanceof Token,
+            $value instanceof DisplayString,
             $value instanceof ByteSequence => $value->type(),
             $value instanceof DateTimeInterface => Type::Date,
             is_int($value) => Type::Integer,

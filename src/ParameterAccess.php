@@ -33,7 +33,7 @@ interface ParameterAccess
     /**
      * Returns the member value or null if no members value exists.
      */
-    public function parameter(string $key): Token|ByteSequence|DateTimeImmutable|int|float|string|bool|null;
+    public function parameter(string $key): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null;
 
     /**
      * Adds a member if its key is not present at the of the associated parameter instance or update the instance at the given key.

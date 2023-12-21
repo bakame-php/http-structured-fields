@@ -30,15 +30,16 @@ use const PHP_ROUND_HALF_EVEN;
  */
 final class Value
 {
-    public readonly Token|ByteSequence|DateTimeImmutable|int|float|string|bool $value;
+    public readonly Token|ByteSequence|DisplayString|DateTimeImmutable|int|float|string|bool $value;
     public readonly Type $type;
 
-    public function __construct(ValueAccess|Token|ByteSequence|DateTimeInterface|int|float|string|bool $value)
+    public function __construct(ValueAccess|Token|ByteSequence|DisplayString|DateTimeInterface|int|float|string|bool $value)
     {
         $this->value = match (true) {
             $value instanceof ValueAccess => $value->value(),
             $value instanceof Token,
             $value instanceof ByteSequence,
+            $value instanceof DisplayString,
             false === $value,
             $value => $value,
             $value instanceof DateTimeInterface => self::filterDate($value),
@@ -86,7 +87,6 @@ final class Value
             1 === preg_match('/[^\x20-\x7E]/i', $value) => throw new SyntaxError('The string contains invalid characters.'),
             default => $value,
         };
-        ;
     }
 
     /**
@@ -115,6 +115,16 @@ final class Value
     public static function fromDecodedByteSequence(Stringable|string $value): self
     {
         return new self(ByteSequence::fromDecoded($value));
+    }
+
+    public static function fromEncodedDisplayString(Stringable|string $value): self
+    {
+        return new self(DisplayString::fromEncoded($value));
+    }
+
+    public static function fromDecodedDisplayString(Stringable|string $value): self
+    {
+        return new self(DisplayString::fromDecoded($value));
     }
 
     /**
@@ -223,6 +233,7 @@ final class Value
             $this->value instanceof DateTimeImmutable => '@'.$this->value->getTimestamp(),
             $this->value instanceof Token => $this->value->toString(),
             $this->value instanceof ByteSequence => ':'.$this->value->encoded().':',
+            $this->value instanceof DisplayString => '%"'.$this->value->encoded().'"',
             is_int($this->value) => (string) $this->value,
             is_float($this->value) => (string) json_encode(round($this->value, 3, PHP_ROUND_HALF_EVEN), JSON_PRESERVE_ZERO_FRACTION),
             $this->value,
@@ -238,7 +249,7 @@ final class Value
         }
 
         return match (true) {
-            ($this->value instanceof ByteSequence || $this->value instanceof Token) && $this->value->equals($value),
+            ($this->value instanceof ByteSequence || $this->value instanceof Token || $this->value instanceof DisplayString) && $this->value->equals($value),
             $this->value instanceof DateTimeInterface && $value instanceof DateTimeInterface && $value == $this->value,
             $value === $this->value => true,
             default => false,

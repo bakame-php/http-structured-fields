@@ -12,7 +12,7 @@ interface ValueAccess extends StructuredField
     /**
      * Returns the underlying value.
      */
-    public function value(): ByteSequence|Token|DateTimeImmutable|string|int|float|bool;
+    public function value(): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool;
 
     /**
      * Returns the value type.

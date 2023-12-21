@@ -37,7 +37,7 @@ final class OuterList implements MemberList
     /**
      * @param SfMember|SfMemberInput ...$members
      */
-    private function __construct(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members)
+    private function __construct(iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members)
     {
         $this->members = array_map($this->filterMember(...), array_values([...$members]));
     }
@@ -78,7 +78,7 @@ final class OuterList implements MemberList
     /**
      * @param SfMember|SfMemberInput ...$members
      */
-    public static function new(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): self
+    public static function new(iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members): self
     {
         return new self(...$members);
     }
@@ -163,7 +163,7 @@ final class OuterList implements MemberList
      *
      * @param SfMember|SfMemberInput ...$members
      */
-    public function unshift(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
+    public function unshift(iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members): static
     {
         return match (true) {
             [] === $members => $this,
@@ -176,7 +176,7 @@ final class OuterList implements MemberList
      *
      * @param SfMember|SfMemberInput ...$members
      */
-    public function push(iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
+    public function push(iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members): static
     {
         return match (true) {
             [] === $members => $this,
@@ -191,7 +191,7 @@ final class OuterList implements MemberList
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $key, iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
+    public function insert(int $key, iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members): static
     {
         $offset = $this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key);
 
@@ -210,7 +210,7 @@ final class OuterList implements MemberList
     /**
      * @param SfMember|SfMemberInput $member
      */
-    public function replace(int $key, iterable|StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
+    public function replace(int $key, iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
     {
         $offset = $this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key);
         $member = self::filterMember($member);

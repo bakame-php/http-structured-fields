@@ -105,7 +105,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns a new instance.
      */
-    public static function new(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): self
+    public static function new(StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members): self
     {
         return new self($members, Parameters::new());
     }
@@ -138,7 +138,7 @@ final class InnerList implements MemberList, ParameterAccess
         return $this->parameters;
     }
 
-    public function parameter(string $key): Token|ByteSequence|DateTimeImmutable|int|float|string|bool|null
+    public function parameter(string $key): Token|ByteSequence|DisplayString|DateTimeImmutable|int|float|string|bool|null
     {
         try {
             return $this->parameters->get($key)->value();
@@ -148,7 +148,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @return array{0:string, 1:Token|ByteSequence|DateTimeImmutable|int|float|string|bool}|array{}
+     * @return array{0:string, 1:Token|ByteSequence|DisplayString|DateTimeImmutable|int|float|string|bool}|array{}
      */
     public function parameterByIndex(int $index): array
     {
@@ -224,7 +224,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Inserts members at the beginning of the list.
      */
-    public function unshift(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
+    public function unshift(StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members): static
     {
         return match (true) {
             [] === $members => $this,
@@ -235,7 +235,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Inserts members at the end of the list.
      */
-    public function push(StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
+    public function push(StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members): static
     {
         return match (true) {
             [] === $members => $this,
@@ -248,7 +248,7 @@ final class InnerList implements MemberList, ParameterAccess
      *
      * @throws InvalidOffset If the index does not exist
      */
-    public function insert(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool ...$members): static
+    public function insert(int $key, StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members): static
     {
         $offset = $this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key);
 
@@ -264,7 +264,7 @@ final class InnerList implements MemberList, ParameterAccess
         };
     }
 
-    public function replace(int $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
+    public function replace(int $key, StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
     {
         $offset = $this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key);
         $member = self::filterMember($member);
@@ -330,17 +330,17 @@ final class InnerList implements MemberList, ParameterAccess
         return ($this->parameters->toHttpValue() === $parameters->toHttpValue()) ? $this : new self($this->members, $parameters);
     }
 
-    public function addParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
+    public function addParameter(string $key, StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->add($key, $member));
     }
 
-    public function prependParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
+    public function prependParameter(string $key, StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->prepend($key, $member));
     }
 
-    public function appendParameter(string $key, StructuredField|Token|ByteSequence|DateTimeInterface|string|int|float|bool $member): static
+    public function appendParameter(string $key, StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
     {
         return $this->withParameters($this->parameters()->append($key, $member));
     }

@@ -45,7 +45,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     private const FIRST_CHARACTER_RANGE_NUMBER = '-1234567890';
     private const FIRST_CHARACTER_RANGE_TOKEN = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*';
 
-    public function parseValue(Stringable|string $httpValue): ByteSequence|Token|DateTimeImmutable|string|int|float|bool
+    public function parseValue(Stringable|string $httpValue): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool
     {
         $remainder = trim((string) $httpValue, ' ');
         if ('' === $remainder || 1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $remainder)) {
@@ -278,6 +278,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
             ':' === $httpValue[0] => self::extractByteSequence($httpValue),
             '?' === $httpValue[0] => self::extractBoolean($httpValue),
             '@' === $httpValue[0] => self::extractDate($httpValue),
+            str_starts_with($httpValue, '%"') => self::extractDisplayString($httpValue),
             str_contains(self::FIRST_CHARACTER_RANGE_NUMBER, $httpValue[0]) => self::extractNumber($httpValue),
             str_contains(self::FIRST_CHARACTER_RANGE_TOKEN, $httpValue[0]) => self::extractToken($httpValue),
             default => throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item value is unknown or unsupported."),
@@ -375,16 +376,16 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
         $remainder = substr($httpValue, $offset);
         $output = '';
 
+        if (1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $remainder)) {
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a String contains an invalid end string.");
+        }
+
         while ('' !== $remainder) {
             $char = $remainder[0];
             $offset += 1;
 
             if ('"' === $char) {
                 return [$output, $offset];
-            }
-
-            if (1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $char)) {
-                throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a String contains an invalid end string.");
             }
 
             $remainder = substr($remainder, 1);
@@ -406,6 +407,56 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
         }
 
         throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a String contains an invalid end string.");
+    }
+
+    /**
+     * Returns a string from an HTTP textual representation and the consumed offset in a tuple.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.5
+     *
+     * @return array{0:DisplayString, 1:int}
+     */
+    private static function extractDisplayString(string $httpValue): array
+    {
+        $offset = 2;
+        $remainder = substr($httpValue, $offset);
+        $output = '';
+
+        if (1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $remainder)) {
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a DisplayString contains an invalid character string.");
+        }
+
+        while ('' !== $remainder) {
+            $char = $remainder[0];
+            $offset += 1;
+
+            if ('"' === $char) {
+                return [DisplayString::fromEncoded($output), $offset];
+            }
+
+            $remainder = substr($remainder, 1);
+            if ('%' !== $char) {
+                $output .= $char;
+                continue;
+            }
+
+            $octet = substr($remainder, 0, 2);
+            $offset += 2;
+            $remainder = substr($remainder, 2);
+
+            if (2 !== strlen($octet) || $octet !== strtolower($octet)) {
+                throw new SyntaxError("The HTTP textual representation '$httpValue' for a DisplayString contains uppercased percent encoding sequence.");
+            }
+
+            $intOctet = hexdec($octet);
+            if ($intOctet < 31 && $intOctet > 127) {
+                throw new SyntaxError("The HTTP textual representation '$httpValue' for a DisplayString contains invalid encoded sequence. $octet - $intOctet");
+            }
+
+            $output .= $char.$octet;
+        }
+
+        throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a DisplayString contains an invalid end string.");
     }
 
     /**

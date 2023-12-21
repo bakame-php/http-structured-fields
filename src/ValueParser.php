@@ -18,8 +18,9 @@ interface ValueParser
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.7
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.8
      * @see https://www.ietf.org/archive/id/draft-ietf-httpbis-sfbis-02.html#section-4.2.9
+     * @see https://www.ietf.org/archive/id/draft-ietf-httpbis-sfbis-02.html#section-4.2.10
      *
      * @throws SyntaxError
      */
-    public function parseValue(Stringable|string $httpValue): ByteSequence|Token|DateTimeImmutable|string|int|float|bool;
+    public function parseValue(Stringable|string $httpValue): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool;
 }
