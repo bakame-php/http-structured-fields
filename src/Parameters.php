@@ -283,16 +283,20 @@ final class Parameters implements MemberOrderedMap
         return $this->remove(...$keys);
     }
 
-    public function append(string $key, StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
-    {
+    public function append(
+        string $key,
+        StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+    ): static {
         $members = $this->members;
         unset($members[$key]);
 
         return $this->newInstance([...$members, MapKey::from($key)->value => self::filterMember($member)]);
     }
 
-    public function prepend(string $key, StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
-    {
+    public function prepend(
+        string $key,
+        StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+    ): static {
         $members = $this->members;
         unset($members[$key]);
 

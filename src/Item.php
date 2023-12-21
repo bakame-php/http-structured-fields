@@ -267,8 +267,9 @@ final class Item implements ParameterAccess, ValueAccess
         return [$this->value->value, $this->parameters];
     }
 
-    public function withValue(DateTimeInterface|ByteSequence|Token|DisplayString|string|int|float|bool $value): static
-    {
+    public function withValue(
+        DateTimeInterface|ByteSequence|Token|DisplayString|string|int|float|bool $value
+    ): static {
         $value = new Value($value);
         if ($value->equals($this->value)) {
             return $this;
@@ -282,18 +283,24 @@ final class Item implements ParameterAccess, ValueAccess
         return $this->parameters->toHttpValue() === $parameters->toHttpValue() ? $this : new self($this->value, $parameters);
     }
 
-    public function addParameter(string $key, StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
-    {
+    public function addParameter(
+        string $key,
+        StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+    ): static {
         return $this->withParameters($this->parameters()->add($key, $member));
     }
 
-    public function prependParameter(string $key, StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
-    {
+    public function prependParameter(
+        string $key,
+        StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+    ): static {
         return $this->withParameters($this->parameters()->prepend($key, $member));
     }
 
-    public function appendParameter(string $key, StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
-    {
+    public function appendParameter(
+        string $key,
+        StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+    ): static {
         return $this->withParameters($this->parameters()->append($key, $member));
     }
 
