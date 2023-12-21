@@ -30,6 +30,13 @@ final class DisplayStringTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_will_return_null_on_invalid_encoded_string(): void
+    {
+        self::assertNull(DisplayString::tryFromEncoded('a %a'));
+        self::assertNull(DisplayString::tryFromEncoded('%c3%28"'));
+    }
+
+    #[Test]
     public function it_can_decode_base64_field(): void
     {
         $encoded = 'foo %22bar%22 \ baz';

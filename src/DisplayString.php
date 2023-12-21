@@ -6,6 +6,8 @@ namespace Bakame\Http\StructuredFields;
 
 use Stringable;
 
+use Throwable;
+
 use function preg_match;
 use function preg_replace_callback;
 use function rawurldecode;
@@ -19,6 +21,15 @@ final class DisplayString
     private function __construct(
         private readonly string $value
     ) {
+    }
+
+    public static function tryFromEncoded(Stringable|string $encodedValue): ?self
+    {
+        try {
+            return self::fromEncoded($encodedValue);
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     /**

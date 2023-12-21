@@ -7,6 +7,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Added
 
 - Support for the `DisplayString` type
+- `ByteSequence::tryFromEncoded`
+- `Token::tryFromString`
 
 ### Fixed
 

@@ -24,6 +24,13 @@ final class TokenTest extends StructuredFieldTestCase
         Token::fromString($httpValue);
     }
 
+    #[Test]
+    #[DataProvider('invalidTokenString')]
+    public function it_will_return_null_on_invalid_encoded_string(string $httpValue): void
+    {
+        self::assertNull(Token::tryFromString($httpValue));
+    }
+
     /**
      * @return array<array{0:string}>
      */

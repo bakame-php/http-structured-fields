@@ -22,6 +22,13 @@ final class ByteSequenceTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_will_return_null_on_invalid_encoded_string(): void
+    {
+        self::assertNull(ByteSequence::tryFromEncoded('a a'));
+        self::assertNull(ByteSequence::tryFromEncoded('aaaaa'));
+    }
+
+    #[Test]
     public function it_will_fail_on_invalid_decoded_string(): void
     {
         $this->expectException(SyntaxError::class);

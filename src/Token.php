@@ -6,6 +6,8 @@ namespace Bakame\Http\StructuredFields;
 
 use Stringable;
 
+use Throwable;
+
 use function preg_match;
 
 /**
@@ -23,6 +25,15 @@ final class Token
     public function toString(): string
     {
         return $this->value;
+    }
+
+    public static function tryFromString(Stringable|string $value): ?self
+    {
+        try {
+            return self::fromString($value);
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     public static function fromString(Stringable|string $value): self
