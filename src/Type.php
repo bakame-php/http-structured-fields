@@ -47,8 +47,7 @@ enum Type
             is_int($value) => Type::Integer,
             is_float($value) => Type::Decimal,
             is_bool($value) => Type::Boolean,
-            is_string($value) && 1 === preg_match('/[^\x20-\x7f]/', $value) => Type::DisplayString,
-            is_string($value) => Type::String,
+            is_string($value) => 1 === preg_match('/[^\x20-\x7f]/', $value) ? Type::DisplayString : Type::String,
             default => null,
         };
     }
