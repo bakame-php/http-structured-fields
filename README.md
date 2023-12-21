@@ -176,15 +176,16 @@ Per the RFC, items can have different types that are translated to PHP using:
 
 The table below summarizes the item value type.
 
-| RFC Type      | PHP Type                  | Package Enum Type    |
-|---------------|---------------------------|----------------------|
-| Integer       | `int`                     | `Type::Integer`      |
-| Decimal       | `float`                   | `Type::Decimal`      |
-| String        | `string`                  | `Type::String`       |
-| Boolean       | `bool`                    | `Type::Boolean`      |
-| Token         | class `Token`             | `Type::Token`        |
-| Byte Sequence | class `ByteSequence`      | `Type::ByteSequence` |
-| Date          | class `DateTimeImmutable` | `Type::Date`         |
+| RFC Type      | PHP Type                  | Package Enum Type     |
+|---------------|---------------------------|-----------------------|
+| Integer       | `int`                     | `Type::Integer`       |
+| Decimal       | `float`                   | `Type::Decimal`       |
+| String        | `string`                  | `Type::String`        |
+| Boolean       | `bool`                    | `Type::Boolean`       |
+| Token         | class `Token`             | `Type::Token`         |
+| Byte Sequence | class `ByteSequence`      | `Type::ByteSequence`  |
+| Date          | class `DateTimeImmutable` | `Type::Date`          |
+| DisplayString | class `DisplayString`     | `Type::DisplayString` |
 
 The Enum `Type` which list all available types can be use to determine the RFC type
 corresponding to a PHP structure using the `Type::fromValue` static method.
@@ -213,9 +214,9 @@ Type::String->equals($field);        // returns true;
 Type::Boolean->equals(Type::String); // returns false
 ```
 
-The RFC defines two (2) specific data types that can not be represented by
-PHP default type system, for them, we have defined two classes `Token` 
-and `ByteSequence` to help with their representation.
+The RFC defines three (3) specific data types that can not be represented by
+PHP default type system, for them, we have defined three classes `Token`,
+`ByteSequence` and `DisplayString` to help with their representation.
 
 ```php
 use Bakame\Http\StructuredFields\Token;
@@ -224,31 +225,40 @@ use Bakame\Http\StructuredFields\ByteSequence;
 Token::fromString(string|Stringable $value): Token
 ByteSequence::fromDecoded(string|Stringable $value): ByteSequence;
 ByteSequence::fromEncoded(string|Stringable $value): ByteSequence;
+DisplayString::fromDecoded(string|Stringable $value): DisplayString;
+DisplayString::fromEncoded(string|Stringable $value): DisplayString;
 ```
 
-Both classes are final and immutable; their value can not be modified once
+All classes are final and immutable; their value can not be modified once
 instantiated. To access their value, they expose the following API:
 
 ```php
 use Bakame\Http\StructuredFields\Token;
 use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\DisplayString;
 
 $token = Token::fromString('application/text+xml');
 echo $token->toString(); // returns 'application/text+xml'
 
-$byte = ByteSequence::fromDecoded('Hello world!');
+$byte = DisplayString::fromDecoded('füü');
+$byte->decoded(); // returns 'füü'
+$byte->encoded(); // returns 'f%c3%bc%c3%bc'
+
+$displayString = ByteSequence::fromDecoded('Hello world!');
 $byte->decoded(); // returns 'Hello world!'
 $byte->encoded(); // returns 'SGVsbG8gd29ybGQh'
 
 $token->equals($byte); // will return false;
+$displayString->equals($byte); // will return false;
 $byte->equals(ByteSequence::fromEncoded('SGVsbG8gd29ybGQh')); // will return true
 
 $token->type(); // returns Type::Token enum
 $byte->type();  // returns Type::ByteSequence
+$displayString->type(); // returns Type::DisplayString
 ```
 
 > [!WARNING]
-> Both classes DO NOT expose the `Stringable` interface to distinguish them
+> The classes DO NOT expose the `Stringable` interface to distinguish them
 from a string or a string like object
 
 #### Item
@@ -316,11 +326,11 @@ use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Parameters;
 
-$field->parameter(string $key): ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|bool|null;
+$field->parameter(string $key): ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool|null;
 $field->parameters(): Parameters;
-$field->parameterByIndex(int $index): array{0:string, 1:ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|boo}|array{}
+$field->parameterByIndex(int $index): array{0:string, 1:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|boo}|array{}
 InnerList::toPair(): array{0:list<Item>, 1:Parameters}>};
-Item::toPair(): array{0:ByteSequence|Token|DateTimeImmutable|Stringable|string|int|float|bool, 1:Parameters}>};
+Item::toPair(): array{0:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool, 1:Parameters}>};
 ```
 
 > [!NOTE]
@@ -343,8 +353,10 @@ use Bakame\Http\StructuredFields\ByteSequence;
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 
-Item:new(DateTimeInterface|ByteSequence|Token|string|int|float|bool $value): self
+Item:new(DateTimeInterface|ByteSequence|Token|DisplayString|string|int|float|bool $value): self
 Item::fromDecodedByteSequence(Stringable|string $value): self;
+Item::fromEncodedDisplayString(Stringable|string $value): self;
+Item::fromDecodedDisplayString(Stringable|string $value): self;
 Item::fromEncodedByteSequence(Stringable|string $value): self;
 Item::fromToken(Stringable|string $value): self;
 Item::fromString(Stringable|string $value): self;
@@ -363,7 +375,7 @@ To update the `Item` instance value, use the `withValue` method:
 ```php
 use Bakame\Http\StructuredFields\Item;
 
-Item::withValue(DateTimeInterface|ByteSequence|Token|string|int|float|bool $value): static
+Item::withValue(DateTimeInterface|ByteSequence|Token|DisplayString|string|int|float|bool $value): static
 ```
 
 #### Ordered Maps
