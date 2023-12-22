@@ -26,6 +26,8 @@ use const ARRAY_FILTER_USE_KEY;
  *
  * @phpstan-import-type SfMember from StructuredField
  * @phpstan-import-type SfMemberInput from StructuredField
+ * @phpstan-import-type SfInnerListPair from InnerList
+ * @phpstan-import-type SfItemPair from Item
  *
  * @implements MemberList<int, SfMember>
  */
@@ -74,6 +76,19 @@ final class OuterList implements MemberList
         };
 
         return new self(...array_map($converter, $parser->parseList($httpValue)));
+    }
+
+    /**
+     * @param iterable<SfInnerListPair|SfItemPair> $pairs
+     */
+    public static function fromPairs(iterable $pairs): self
+    {
+        $members = [];
+        foreach ($pairs as [$member, $parameters]) {
+            $members[] = is_iterable($member) ? InnerList::fromPair([$member, $parameters]) : Item::fromPair([$member, $parameters]);
+        }
+
+        return self::new(...$members);
     }
 
     /**

@@ -27,6 +27,7 @@ use const ARRAY_FILTER_USE_KEY;
  *
  * @phpstan-import-type SfItem from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
+ * @phpstan-type SfInnerListPair array{0:iterable<SfItemInput>,b1:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>}
  *
  * @implements MemberList<int, SfItem>
  */

@@ -17,6 +17,7 @@ use function count;
  *
  * @phpstan-import-type SfItem from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
+ * @phpstan-type SfItemPair array{0:ByteSequence|Token|DisplayString|DisplayString|DateTimeInterface|string|int|float|bool, 1:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>}
  */
 final class Item implements ParameterAccess, ValueAccess
 {
