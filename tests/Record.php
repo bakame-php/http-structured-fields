@@ -6,9 +6,9 @@ namespace Bakame\Http\StructuredFields;
 
 /**
  * @phpstan-type RecordData array{
- *     name:string,
- *     header_type:string,
- *     raw:array<string>,
+ *     name: string,
+ *     header_type: 'dictionary'|'list'|'item',
+ *     raw: array<string>,
  *     canonical?: array<string>,
  *     must_fail?: bool,
  *     can_fail?: bool
@@ -18,6 +18,7 @@ final class Record
 {
     private function __construct(
         public readonly string $name,
+        /** @var 'dictionary'|'list'|'item' */
         public readonly string $type,
         /** @var array<string> */
         public readonly array $raw,

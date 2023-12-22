@@ -9,6 +9,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - Support for the `DisplayString` type
 - `ByteSequence::tryFromEncoded`
 - `Token::tryFromString`
+- Adding functional API via `Bakame\Http\StructuredFields\parse` and `Bakame\Http\StructuredFields\build`
 
 ### Fixed
 

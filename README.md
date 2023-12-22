@@ -13,18 +13,20 @@ build and update HTTP Structured Fields in PHP according to the [RFC8941](https:
 Once installed you will be able to do the following:
 
 ```php
-use Bakame\Http\StructuredFields\{InnerList, Item, OuterList, Token};
+use Bakame\Http\StructuredFields\InnerList;
+use Bakame\Http\StructuredFields\OuterList;
+use Bakame\Http\StructuredFields\Token;
 
 //1 - parsing an Accept Header
 $headerValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
-$field = OuterList::fromHttpValue($headerValue);
+$field = parse($headerValue, 'list');
 $field[2]->value()->toString(); // returns 'application/xml'
 $field[2]->parameter('q');      // returns (float) 0.9
 $field[0]->value()->toString(); // returns 'text/html'
 $field[0]->parameter('q');      // returns null
 
 //2 - building a Retrofit Cookie Header
-echo OuterList::new(
+echo build(OuterList::new(
         InnerList::fromAssociative(['foo', 'bar'], [
             'expire' => $expire,
             'path' => '/',
@@ -33,8 +35,7 @@ echo OuterList::new(
             'httponly' => true,
             'samesite' => Token::fromString('lax'),
         ])
-    )
-    ->toHttpValue();
+    ));
 // returns ("foo" "bar");expire=@1681504328;path="/";max-age=2500;secure;httponly=?0;samesite=lax
 ```
 
@@ -72,13 +73,11 @@ declare(strict_types=1);
 
 require 'vendor/autoload.php';
 
-use Bakame\Http\StructuredFields\Item;
-
 // the raw HTTP field value is given by your application
 // via any given framework, package or super global.
 
 $headerLine = 'bar;baz=42'; //the raw header line is a structured field item
-$field = Item::fromHttpValue($headerLine);
+$field = parse($headerLine, 'item');
 $field->value();          // returns Token::fromString('bar); the found token value 
 $field->parameter('baz'); // returns 42; the value of the parameter or null if the parameter is not defined.
 ```
@@ -89,9 +88,10 @@ compliant HTTP field string value. To ease integration, the `__toString` method 
 implemented as an alias to the `toHttpValue` method.
 
 ````php
-use Bakame\Http\StructuredFields\Item;
+use function Bakame\Http\StructuredFields\parse;
+use function Bakame\Http\StructuredFields\build;
 
-$field = Item::fromHttpValue('bar;    baz=42;     secure=?1');
+$field = parse('bar;    baz=42;     secure=?1', 'item');
 echo $field->toHttpValue(); // return 'bar;baz=42;secure'
 // on serialization the field has been normalized
 
@@ -101,6 +101,8 @@ echo $field->toHttpValue(); // return 'bar;baz=42;secure'
 header('foo: '. $field->toHttpValue());
 //or
 header('foo: '. $field);
+//or
+header('foo: '. build($field));
 ````
 
 All five (5) structured data type as defined in the RFC are provided inside the

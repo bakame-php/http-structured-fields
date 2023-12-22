@@ -39,6 +39,9 @@
         "symfony/var-dumper": "^6.4.0"
     },
     "autoload": {
+        "files": [
+            "src/functions.php"
+        ],
         "psr-4": {
             "Bakame\\Http\\StructuredFields\\": "src/"
         }
