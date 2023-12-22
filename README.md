@@ -19,23 +19,26 @@ use Bakame\Http\StructuredFields\Token;
 
 //1 - parsing an Accept Header
 $headerValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
-$field = parse($headerValue, 'list');
+$field = http_parse_structured_field('list', $headerValue);
 $field[2]->value()->toString(); // returns 'application/xml'
 $field[2]->parameter('q');      // returns (float) 0.9
 $field[0]->value()->toString(); // returns 'text/html'
 $field[0]->parameter('q');      // returns null
 
 //2 - building a Retrofit Cookie Header
-echo build(OuterList::new(
-        InnerList::fromAssociative(['foo', 'bar'], [
+echo http_build_structured_field('list', [
+    [
+        ['foo', 'bar'],
+        [
             'expire' => $expire,
             'path' => '/',
             'max-age' => 2500,
             'secure' => true,
             'httponly' => true,
             'samesite' => Token::fromString('lax'),
-        ])
-    ));
+        ]
+    ]
+]);
 // returns ("foo" "bar");expire=@1681504328;path="/";max-age=2500;secure;httponly=?0;samesite=lax
 ```
 
@@ -88,10 +91,10 @@ compliant HTTP field string value. To ease integration, the `__toString` method 
 implemented as an alias to the `toHttpValue` method.
 
 ````php
-use function Bakame\Http\StructuredFields\parse;
-use function Bakame\Http\StructuredFields\build;
+use function Bakame\Http\StructuredFields\http_sf_parse;
+use function Bakame\Http\StructuredFields\http_sf_build;
 
-$field = parse('bar;    baz=42;     secure=?1', 'item');
+$field = http_sf_parse('bar;    baz=42;     secure=?1', 'item');
 echo $field->toHttpValue(); // return 'bar;baz=42;secure'
 // on serialization the field has been normalized
 
@@ -102,7 +105,7 @@ header('foo: '. $field->toHttpValue());
 //or
 header('foo: '. $field);
 //or
-header('foo: '. build($field));
+header('foo: '. http_sf_build($field));
 ````
 
 All five (5) structured data type as defined in the RFC are provided inside the

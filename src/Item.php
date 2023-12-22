@@ -121,6 +121,26 @@ final class Item implements ParameterAccess, ValueAccess
     }
 
     /**
+     * Returns a new instance from an encoded byte sequence and an iterable of key-value parameters.
+     *
+     * @throws SyntaxError if the sequence is invalid
+     */
+    public static function fromEncodedDisplayString(Stringable|string $value): self
+    {
+        return self::fromValue(Value::fromEncodedDisplayString($value));
+    }
+
+    /**
+     * Returns a new instance from a decoded byte sequence and an iterable of key-value parameters.
+     *
+     * @throws SyntaxError if the sequence is invalid
+     */
+    public static function fromDecodedDisplayString(Stringable|string $value): self
+    {
+        return self::fromValue(Value::fromDecodedDisplayString($value));
+    }
+
+    /**
      * Returns a new instance from a Token and an iterable of key-value parameters.
      *
      * @throws SyntaxError if the token is invalid

@@ -30,6 +30,14 @@ final class DisplayStringTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_will_fail_on_invalid_encoded_string_with_utf8_char(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        DisplayString::fromEncoded('%c3é"');
+    }
+
+    #[Test]
     public function it_will_return_null_on_invalid_encoded_string(): void
     {
         self::assertNull(DisplayString::tryFromEncoded('a %a'));
@@ -37,7 +45,7 @@ final class DisplayStringTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function it_can_decode_base64_field(): void
+    public function it_can_decode_an_encoded_field(): void
     {
         $encoded = 'foo %22bar%22 \ baz';
         $value = DisplayString::fromEncoded($encoded);

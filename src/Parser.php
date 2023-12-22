@@ -412,7 +412,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     /**
      * Returns a string from an HTTP textual representation and the consumed offset in a tuple.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.5
+     * @see https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-sfbis#section-4.2.10
      *
      * @return array{0:DisplayString, 1:int}
      */
@@ -446,11 +446,6 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
 
             if (2 !== strlen($octet) || $octet !== strtolower($octet)) {
                 throw new SyntaxError("The HTTP textual representation '$httpValue' for a DisplayString contains uppercased percent encoding sequence.");
-            }
-
-            $intOctet = hexdec($octet);
-            if ($intOctet < 31 && $intOctet > 127) {
-                throw new SyntaxError("The HTTP textual representation '$httpValue' for a DisplayString contains invalid encoded sequence. $octet - $intOctet");
             }
 
             $output .= $char.$octet;

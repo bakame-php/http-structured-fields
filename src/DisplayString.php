@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Stringable;
-
 use Throwable;
 
 use function preg_match;
@@ -14,7 +13,7 @@ use function rawurldecode;
 use function rawurlencode;
 
 /**
- * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.5
+ * @see https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-sfbis#section-4.2.10
  */
 final class DisplayString
 {

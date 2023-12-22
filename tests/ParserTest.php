@@ -94,6 +94,22 @@ final class ParserTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_will_fail_with_wrong_string_encoded_char(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        $this->parser->parseDictionary('a=%"foobar'.rawurlencode(chr(10)).'"');
+    }
+
+    #[Test]
+    public function it_will_fail_with_wrong_detail_string_utf8(): void
+    {
+        $this->expectException(SyntaxError::class);
+
+        $this->parser->parseDictionary('a=%"foébar"');
+    }
+
+    #[Test]
     public function it_fails_to_parse_invalid_string_1(): void
     {
         $this->expectException(SyntaxError::class);

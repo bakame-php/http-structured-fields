@@ -75,14 +75,14 @@ final class ItemTest extends StructuredFieldTestCase
 
     #[Test]
     #[DataProvider('provideFrom1stArgument')]
-    public function it_instantiate_many_types(ByteSequence|Token|DateTimeInterface|string|int|float|bool $value, string $expected): void
+    public function it_instantiate_many_types(ByteSequence|Token|DisplayString|DateTimeInterface|string|int|float|bool $value, string $expected): void
     {
         self::assertSame($expected, Item::new($value)->toHttpValue());
     }
 
     #[Test]
     #[DataProvider('provideFrom1stArgument')]
-    public function it_updates_item(ByteSequence|Token|DateTimeInterface|string|int|float|bool $value, string $expected): void
+    public function it_updates_item(ByteSequence|Token|DisplayString|DateTimeInterface|string|int|float|bool $value, string $expected): void
     {
         $parameters = Parameters::fromAssociative(['foo' => 'bar']);
 
@@ -100,6 +100,7 @@ final class ItemTest extends StructuredFieldTestCase
         return [
             'decimal' => ['value' => 42.0, 'expected' => '42.0'],
             'string' => ['value' => 'forty-two', 'expected' => '"forty-two"'],
+            'detail string' => ['value' => DisplayString::fromDecoded('😊'), 'expected' => '%"%f0%9f%98%8a"'],
             'integer' => ['value' => 42,   'expected' => '42'],
             'boolean true' => ['value' => true, 'expected' => '?1'],
             'boolean false' => ['value' => false, 'expected' => '?0'],
@@ -242,6 +243,16 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_instantiates_a_display_string(): void
+    {
+        $displayString = DisplayString::fromDecoded('😊');
+
+        self::assertEquals($displayString, Item::new(DisplayString::fromDecoded('😊'))->value());
+        self::assertEquals($displayString, Item::fromDecodedDisplayString('😊')->value());
+        self::assertEquals($displayString, Item::fromEncodedDisplayString('%f0%9f%98%8a')->value());
+    }
+
+    #[Test]
     public function it_instantiates_a_string(): void
     {
         self::assertSame('"foobar"', Item::fromString('foobar')->toHttpValue());
@@ -276,6 +287,10 @@ final class ItemTest extends StructuredFieldTestCase
                 'item' => Item::new('42'),
                 'expectedType' => Type::ByteSequence,
             ],
+            'display string' => [
+                'item' => Item::new(DisplayString::fromDecoded('😊')),
+                'expectedType' => Type::DisplayString,
+            ],
             'token' => [
                 'item' => Item::new(Token::fromString('forty-two')),
                 'expectedType' => Type::Token,
@@ -300,6 +315,7 @@ final class ItemTest extends StructuredFieldTestCase
     {
         $parameters = [
             'string' => '42',
+            'displaystring' => DisplayString::fromDecoded('😊'),
             'integer' => 42,
             'float' => 4.2,
             'boolean' => true,
