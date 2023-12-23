@@ -47,14 +47,12 @@ if (!function_exists('http_build_structured_field')) {
      */
     function http_build_structured_field(string $type, iterable $data): string /* @phptan-ignore-line */
     {
-        $data = [...$data];
-
         return match ($type) {
             'dictionary' => Dictionary::fromPairs($data)->toHttpValue(),
             'parameters' => Parameters::fromPairs($data)->toHttpValue(),
             'list' => OuterList::fromPairs($data)->toHttpValue(),
-            'innerlist' => InnerList::fromPair($data)->toHttpValue(), /* @phpstan-ignore-line */
-            'item' => Item::fromPair($data)->toHttpValue(), /* @phpstan-ignore-line */
+            'innerlist' => InnerList::fromPair([...$data])->toHttpValue(), /* @phpstan-ignore-line */
+            'item' => Item::fromPair([...$data])->toHttpValue(), /* @phpstan-ignore-line */
             default => throw new OutOfBoundsException('The submitted type "'.$type.'" is unknown or not supported,'),  /* @phpstan-ignore-line */
         };
     }

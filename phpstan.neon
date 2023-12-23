@@ -11,4 +11,6 @@ parameters:
     ignoreErrors:
         - message: '#it_fails_to_create_an_item_from_an_array_of_pairs\(\)#'
           path: tests/ItemTest.php
+        - message: '#Function http_build_structured_field\(\) has parameter \$data with no value type specified in iterable type iterable.#'
+          path: src/functions.php
     reportUnmatchedIgnoredErrors: true
