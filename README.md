@@ -13,32 +13,31 @@ build and update HTTP Structured Fields in PHP according to the [RFC8941](https:
 Once installed you will be able to do the following:
 
 ```php
-use Bakame\Http\StructuredFields\InnerList;
-use Bakame\Http\StructuredFields\OuterList;
+use Bakame\Http\StructuredFields\DataType;
 use Bakame\Http\StructuredFields\Token;
 
 //1 - parsing an Accept Header
 $headerValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
-$field = http_parse_structured_field('list', $headerValue);
+$field = DataType::List->parse($headerValue);
 $field[2]->value()->toString(); // returns 'application/xml'
 $field[2]->parameter('q');      // returns (float) 0.9
 $field[0]->value()->toString(); // returns 'text/html'
 $field[0]->parameter('q');      // returns null
 
 //2 - building a Retrofit Cookie Header
-echo http_build_structured_field('list', [
+echo DataType::List->build[
     [
         ['foo', 'bar'],
         [
-            'expire' => $expire,
-            'path' => '/',
-            'max-age' => 2500,
-            'secure' => true,
-            'httponly' => true,
-            'samesite' => Token::fromString('lax'),
+            ['expire', $expire],
+            ['path', '/'],
+            [ 'max-age', 2500],
+            ['secure', true],
+            ['httponly', true],
+            ['samesite', Token::fromString('lax')],
         ]
-    ]
-]);
+    ],
+]),
 // returns ("foo" "bar");expire=@1681504328;path="/";max-age=2500;secure;httponly=?0;samesite=lax
 ```
 
@@ -65,14 +64,58 @@ header. Content validation is out of scope for this library.
 
 ### Parsing and Serializing Structured Fields
 
-#### Basic usage
+#### Basic Usage
 
-Parsing the header value is done via the `fromHttpValue` named constructor.
-The method is attached to each library's structured fields representation
-as shown below:
+> [!NOTE]
+> New in version 1.2.0
+
+The `DataType` enum serves as a factory class to quickly parse and build a structured field.
+The enum list all available data type according to the RFC. To parse a header you need to
+give the `parse` method a string or a stringable object. On success, it will return a
+`Bakame\Http\StruncturedFields\StruncturedField` implementing object otherwise an
+exception will be thrown.
+
+```php
+$headerLine = 'bar;baz=42'; //the raw header line is a structured field item
+$field = DataType::Item->parse($headerLine);
+$field->value();          // returns Token::fromString('bar); the found token value 
+$field->parameter('baz'); // returns 42; the value of the parameter or null if the parameter is not defined.
+```
+
+On the other hand, `build` method expects an iterable structure composed
+of pair values that matches each data type and returns the structured field text representation
+of the header.
+
+```php
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\DataType;
+
+echo DataType::List->build([
+    [
+        'dumela lefatshe',
+        [['a', false]]
+    ],
+    [
+        ['a', 'b', Item::fromDateString('+30 minutes')],
+        [['a', true]]
+    ],
+]);
+// display "dumela lefatshe";a=?0, ("a" "b" @1703319068);a
+```
+
+The data type can be given as a string or using the `DataType` enum.
+
+#### Using specific named constructor
+
+The package provides specific classes for each data type. if you do not wish to
+use the `DataType` factoring, parsing the header value is done via the
+`fromHttpValue` named constructor. The method is attached to each library's
+structured fields representation as shown below:
 
 ```php
 declare(strict_types=1);
+
+use Bakame\Http\StructuredFields\DataType;
 
 require 'vendor/autoload.php';
 
@@ -80,7 +123,7 @@ require 'vendor/autoload.php';
 // via any given framework, package or super global.
 
 $headerLine = 'bar;baz=42'; //the raw header line is a structured field item
-$field = parse($headerLine, 'item');
+$field = Item::fromHttpValue($headerLine);
 $field->value();          // returns Token::fromString('bar); the found token value 
 $field->parameter('baz'); // returns 42; the value of the parameter or null if the parameter is not defined.
 ```
@@ -91,10 +134,7 @@ compliant HTTP field string value. To ease integration, the `__toString` method 
 implemented as an alias to the `toHttpValue` method.
 
 ````php
-use function Bakame\Http\StructuredFields\http_sf_parse;
-use function Bakame\Http\StructuredFields\http_sf_build;
-
-$field = http_sf_parse('bar;    baz=42;     secure=?1', 'item');
+$field = Item::fromHttpValue('bar;    baz=42;     secure=?1');
 echo $field->toHttpValue(); // return 'bar;baz=42;secure'
 // on serialization the field has been normalized
 
@@ -104,8 +144,6 @@ echo $field->toHttpValue(); // return 'bar;baz=42;secure'
 header('foo: '. $field->toHttpValue());
 //or
 header('foo: '. $field);
-//or
-header('foo: '. http_sf_build($field));
 ````
 
 All five (5) structured data type as defined in the RFC are provided inside the
@@ -211,9 +249,10 @@ To ease validation a `Type::equals` method is exposed to check if the `Item` has
 the expected type. It can also be used to compare types.
 
 ```php
+use Bakame\Http\StructuredFields\DataType;
 use Bakame\Http\StructuredFields\Type;
 
-$field = Item::fromHttpValue('"foo"');
+$field = DataType::Item->parse('"foo"');
 Type::Date->equals($field);          // returns false
 Type::String->equals($field);        // returns true;
 Type::Boolean->equals(Type::String); // returns false
@@ -302,7 +341,7 @@ if you try to use them on any container object:
 ```php
 use Bakame\Http\StructuredFields\Parameters;
 
-$value = Parameters::fromHttpValue(';a=foobar']);
+$value = Parameters::fromHttpValue(';a=foobar');
 $value->has('b');     // return false
 $value['a']->value(); // return 'foobar'
 $value['b'];          // triggers a InvalidOffset exception, the index does not exist
@@ -612,6 +651,37 @@ $list = InnerList::new()
 echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 ```
+
+> [!NOTE]
+> New in version 1.2.0
+
+It is also possible to create an `OuterList` based on an iterable structure
+of pairs.
+
+```php
+use Bakame\Http\StructuredFields\OuterList;
+
+$list = OuterList::fromPairs([
+        [
+            ['foo', 'bar'],
+            [
+                ['expire', $expire],
+                ['path', '/'],
+                [ 'max-age', 2500],
+                ['secure', true],
+                ['httponly', true],
+                ['samesite', Token::fromString('lax')],
+            ]
+        ],
+        [
+            'coucoulesamis', 
+            [['a', false]],
+        ]
+    ]);
+```
+
+The pairs definitions are the same as for creating either a `InnerList` or an `Item` using
+their respective `fromPair` method.
 
 #### Adding and updating parameters
 

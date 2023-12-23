@@ -7,13 +7,13 @@ namespace Bakame\Http\StructuredFields;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-final class FunctionsTest extends TestCase
+final class DataTypeTest extends TestCase
 {
     #[Test]
     public function ti_will_generate_the_structured_field_text_represenation_for_an_innerlist(): void
     {
         self::assertSame(
-            http_build_structured_field('innerlist', [['a', 'b', 'c'], [['a', true]]]),
+            DataType::InnerList->build([['a', 'b', 'c'], [['a', true]]]),
             InnerList::fromPair([['a', 'b', 'c'], [['a', true]]])->toHttpValue()
         );
     }
@@ -22,7 +22,7 @@ final class FunctionsTest extends TestCase
     public function ti_will_generate_the_structured_field_text_represenation_for_an_item(): void
     {
         self::assertSame(
-            http_build_structured_field('item', ['coucoulesamis', [['a', false]]]),
+            DataType::Item->build(['coucoulesamis', [['a', false]]]),
             Item::fromPair(['coucoulesamis', [['a', false]]])->toHttpValue()
         );
     }
@@ -33,7 +33,7 @@ final class FunctionsTest extends TestCase
         $data = [['a', false], ['b', true]];
 
         self::assertSame(
-            http_build_structured_field('parameters', $data),
+            DataType::Parameters->build($data),
             Parameters::fromPairs($data)->toHttpValue()
         );
     }
@@ -44,7 +44,7 @@ final class FunctionsTest extends TestCase
         $data = [['a', false], ['b', Item::fromDateString('+30 minutes')]];
 
         self::assertSame(
-            http_build_structured_field('dictionary', $data),
+            DataType::Dictionary->build($data),
             Dictionary::fromPairs($data)->toHttpValue()
         );
     }
@@ -58,7 +58,7 @@ final class FunctionsTest extends TestCase
         ];
 
         self::assertSame(
-            http_build_structured_field('list', $data),
+            DataType::List->build($data),
             OuterList::fromPairs($data)->toHttpValue() /* @phpstan-ignore-line */
         );
     }

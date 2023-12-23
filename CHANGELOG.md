@@ -10,7 +10,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `ByteSequence::tryFromEncoded`
 - `Token::tryFromString`
 - `OuterList::fromPairs`
-- Adding functional API via `http_parse_sf` and `http_build_sf`
+- `DataType` is now part of the public API
 
 ### Fixed
 

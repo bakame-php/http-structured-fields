@@ -27,7 +27,7 @@ abstract class StructuredFieldTestCase extends TestCase
             $this->expectException(SyntaxError::class);
         }
 
-        $structuredField = http_parse_structured_field($test->type, implode(',', $test->raw));
+        $structuredField = DataType::from($test->type)->parse(implode(',', $test->raw));
 
         if (!$test->mustFail) {
             self::assertSame(implode(',', $test->canonical), $structuredField->toHttpValue());

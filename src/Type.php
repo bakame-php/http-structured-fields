@@ -9,16 +9,16 @@ use DateTimeInterface;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
  */
-enum Type
+enum Type: string
 {
-    case Integer;
-    case Decimal;
-    case String;
-    case Token;
-    case ByteSequence;
-    case DisplayString;
-    case Boolean;
-    case Date;
+    case Integer = 'integer';
+    case Decimal = 'decimal';
+    case String = 'string';
+    case Token = 'token';
+    case ByteSequence = 'bytesequence';
+    case DisplayString = 'displaystring';
+    case Boolean = 'boolean';
+    case Date = 'date';
 
     public function equals(mixed $other): bool
     {
@@ -48,9 +48,9 @@ enum Type
             is_float($value) => Type::Decimal,
             is_bool($value) => Type::Boolean,
             is_string($value) => match (true) {
-                1 === preg_match('/[^\x20-\x7f]/', $value) => Type::DisplayString,
-                1 === preg_match("/^([a-z*][a-z\d:\/!#\$%&'*+\-.^_`|~]*)$/i", $value) => Type::Token,
+                null !== Token::tryFromString($value) => Type::Token,
                 null !== ByteSequence::tryFromEncoded($value) => Type::ByteSequence,
+                1 === preg_match('/[^\x20-\x7f]/', $value) => Type::DisplayString,
                 default => Type::String,
             },
             default => null,
