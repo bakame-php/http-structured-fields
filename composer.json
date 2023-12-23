@@ -77,7 +77,7 @@
                 "source": {
                     "url": "https://github.com/httpwg/structured-field-tests.git",
                     "type": "git",
-                    "reference": "mnot/display-string"
+                    "reference": "main"
                 }
             }
         }

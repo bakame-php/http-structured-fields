@@ -80,19 +80,20 @@ final class DisplayString
     public function encoded(): string
     {
         $value = $this->value;
+
         $encodeMatches = static fn (array $matches): string => match (1) {
-            preg_match('/[^A-Za-z\d_\-.~]/', rawurldecode($matches[0])) => rawurlencode($matches[0]),
+            preg_match('/[^A-Za-z\d_\-.~]/', rawurldecode($matches[0])) => strtolower(rawurlencode($matches[0])),
             default => $matches[0],
         };
 
-        return strtolower(match (true) {
+        return match (true) {
             '' === $value => $value,
             default => (string) preg_replace_callback(
                 '/[^A-Za-z\d_\-.~\!\$&\'\(\)\*\+,;\=%\\\\:@\/? ]+|%(?![A-Fa-f\d]{2})/',
                 $encodeMatches(...),
                 $value
             ),
-        });
+        };
     }
 
     public function equals(mixed $other): bool
