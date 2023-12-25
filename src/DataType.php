@@ -33,12 +33,12 @@ enum DataType: string
      */
     public function build(iterable $data): string
     {
-        return match ($this) {
-            self::Dictionary => Dictionary::fromPairs($data)->toHttpValue(),
-            self::Parameters => Parameters::fromPairs($data)->toHttpValue(),
-            self::List => OuterList::fromPairs($data)->toHttpValue(),
-            self::InnerList => InnerList::fromPair([...$data])->toHttpValue(), /* @phpstan-ignore-line */
-            self::Item => Item::fromPair([...$data])->toHttpValue(), /* @phpstan-ignore-line */
-        };
+        return (match ($this) {
+            self::Dictionary => Dictionary::fromPairs($data),
+            self::Parameters => Parameters::fromPairs($data),
+            self::List => OuterList::fromPairs($data),
+            self::InnerList => InnerList::fromPair([...$data]), /* @phpstan-ignore-line */
+            self::Item => Item::fromPair([...$data]), /* @phpstan-ignore-line */
+        })->toHttpValue();
     }
 }
