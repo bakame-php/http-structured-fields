@@ -11,6 +11,9 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Token::tryFromString`
 - `OuterList::fromPairs`
 - `DataType` is now part of the public API
+- `Type::fromVariable`
+- `Type::tryFromVariable`
+- the `Type` enum is now a baked string Enum.
 
 ### Fixed
 
@@ -19,7 +22,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Deprecated
 
-- None
+- `Type::fromValue` use `Type::fromVariable` instead
+- `Type::tryFromValue` use `Type::tryFromVariable` instead
 
 ### Removed
 

@@ -31,29 +31,51 @@ enum Type: string
     /**
      * @throws InvalidArgument if the value can not be resolved into a supported HTTP structured field data type
      */
-    public static function fromValue(mixed $value): self
+    public static function fromVariable(mixed $value): self
     {
-        return self::tryFromValue($value) ?? throw new InvalidArgument((is_object($value) ? 'An instance of "'.$value::class.'"' : 'A value of type "'.gettype($value).'"').' can not be used as an HTTP structured field data type.');
+        return self::tryFromVariable($value) ?? throw new InvalidArgument((is_object($value) ? 'An instance of "'.$value::class.'"' : 'A value of type "'.gettype($value).'"').' can not be used as an HTTP structured field data type.');
     }
 
-    public static function tryFromValue(mixed $value): self|null
+    public static function tryFromVariable(mixed $variable): self|null
     {
         return match (true) {
-            $value instanceof ValueAccess,
-            $value instanceof Token,
-            $value instanceof DisplayString,
-            $value instanceof ByteSequence => $value->type(),
-            $value instanceof DateTimeInterface => Type::Date,
-            is_int($value) => Type::Integer,
-            is_float($value) => Type::Decimal,
-            is_bool($value) => Type::Boolean,
-            is_string($value) => match (true) {
-                null !== Token::tryFromString($value) => Type::Token,
-                null !== ByteSequence::tryFromEncoded($value) => Type::ByteSequence,
-                1 === preg_match('/[^\x20-\x7f]/', $value) => Type::DisplayString,
+            $variable instanceof ValueAccess,
+            $variable instanceof Token,
+            $variable instanceof DisplayString,
+            $variable instanceof ByteSequence => $variable->type(),
+            $variable instanceof DateTimeInterface => Type::Date,
+            is_int($variable) => Type::Integer,
+            is_float($variable) => Type::Decimal,
+            is_bool($variable) => Type::Boolean,
+            is_string($variable) => match (true) {
+                null !== Token::tryFromString($variable) => Type::Token,
+                null !== ByteSequence::tryFromEncoded($variable) => Type::ByteSequence,
+                1 === preg_match('/[^\x20-\x7f]/', $variable) => Type::DisplayString,
                 default => Type::String,
             },
             default => null,
         };
+    }
+
+    /**
+     * @deprecated since version 1.2.0 will be removed in the next major release.
+     * @see Type::fromVariable()
+     * @codeCoverageIgnore
+     *
+     * @throws InvalidArgument if the value can not be resolved into a supported HTTP structured field data type
+     */
+    public static function fromValue(mixed $value): self
+    {
+        return self::fromVariable($value);
+    }
+
+    /**
+     * @deprecated since version 1.2.0 will be removed in the next major release.
+     * @see Type::tryFromVariable()
+     * @codeCoverageIgnore
+     */
+    public static function tryFromValue(mixed $value): self|null
+    {
+        return self::tryFromVariable($value);
     }
 }

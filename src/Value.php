@@ -47,7 +47,7 @@ final class Value
             is_float($value) => self::filterDecimal($value),
             default => self::filterString($value),
         };
-        $this->type = Type::fromValue($value);
+        $this->type = Type::fromVariable($value);
     }
 
     /**

@@ -17,8 +17,8 @@ use Bakame\Http\StructuredFields\DataType;
 use Bakame\Http\StructuredFields\Token;
 
 //1 - parsing an Accept Header
-$headerValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
-$field = DataType::List->parse($headerValue);
+$fieldValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
+$field = DataType::List->parse($fieldValue);
 $field[2]->value()->toString(); // returns 'application/xml'
 $field[2]->parameter('q');      // returns (float) 0.9
 $field[0]->value()->toString(); // returns 'text/html'
@@ -69,11 +69,11 @@ header. Content validation is out of scope for this library.
 > [!NOTE]
 > New in version 1.2.0
 
-The `DataType` enum serves as a factory class to quickly parse and build a structured field.
-The enum list all available data type according to the RFC. To parse a header you need to
-give the `parse` method a string or a stringable object. On success, it will return a
-`Bakame\Http\StruncturedFields\StruncturedField` implementing object otherwise an
-exception will be thrown.
+The `DataType` enum list all available data type according to the RFC. It is also a 
+Factory to enable parsing and building such data types. To parse a header you need
+to give the `parse` method a string or a stringable object. On success, it will
+return a `Bakame\Http\StruncturedFields\StruncturedField` implementing object
+otherwise an exception will be thrown.
 
 ```php
 $headerLine = 'bar;baz=42'; //the raw header line is a structured field item
@@ -103,14 +103,12 @@ echo DataType::List->build([
 // display "dumela lefatshe";a=?0, ("a" "b" @1703319068);a
 ```
 
-The data type can be given as a string or using the `DataType` enum.
-
 #### Using specific named constructor
 
-The package provides specific classes for each data type. if you do not wish to
-use the `DataType` factoring, parsing the header value is done via the
-`fromHttpValue` named constructor. The method is attached to each library's
-structured fields representation as shown below:
+To complement the factory and to allow for more fine-grained manipulations, the package
+provides specific classes for each data type. if you do not wish to use the `DataType`
+factoring, parsing the header value is done via the `fromHttpValue` named constructor.
+The method is attached to each library's structured fields representation as shown below:
 
 ```php
 declare(strict_types=1);
@@ -230,8 +228,8 @@ The table below summarizes the item value type.
 | Date          | class `DateTimeImmutable` | `Type::Date`          |
 | DisplayString | class `DisplayString`     | `Type::DisplayString` |
 
-The Enum `Type` which list all available types can be use to determine the RFC type
-corresponding to a PHP structure using the `Type::fromValue` static method.
+The Enum `Type` which list all available types can be used to determine the RFC type
+corresponding to a PHP structure using the `Type::fromVariable` static method.
 The method will throw if the structure is not recognized Alternatively it is possible
 to use the `Type::tryFromValue` which will instead return `null` on unindentified type.
 On success both methods returns the corresponding enum `Type`.
@@ -239,9 +237,9 @@ On success both methods returns the corresponding enum `Type`.
 ```php
 use Bakame\Http\StructuredFields\Type;
 
-echo Type::fromValue(42);         // returns Type::Integer
-echo Type::fromValue(42.0)->name; // returns 'Decimal'
-echo Type::fromValue(new SplTempFileObject());    // throws InvalidArgument
+echo Type::fromVariable(42)->value;  // returns 'integer'
+echo Type::fromVariable(42.0)->name; // returns 'Decimal'
+echo Type::fromVariable(new SplTempFileObject());    // throws InvalidArgument
 echo Type::tryFromValue(new SplTempFileObject()); // returns null
 ```
 
