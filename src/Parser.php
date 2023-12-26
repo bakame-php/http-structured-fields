@@ -45,6 +45,11 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     private const FIRST_CHARACTER_RANGE_NUMBER = '-1234567890';
     private const FIRST_CHARACTER_RANGE_TOKEN = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*';
 
+    public static function new(): self
+    {
+        return new self();
+    }
+
     public function parseValue(Stringable|string $httpValue): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool
     {
         $remainder = trim((string) $httpValue, ' ');

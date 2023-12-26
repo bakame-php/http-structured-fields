@@ -14,6 +14,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Type::fromVariable`
 - `Type::tryFromVariable`
 - the `Type` enum is now a baked string Enum.
+- `Parser::new` to simplify parser usage.
 
 ### Fixed
 
