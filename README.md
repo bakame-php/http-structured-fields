@@ -69,11 +69,11 @@ header. Content validation is out of scope for this library.
 > [!NOTE]
 > New in version 1.2.0
 
-The `DataType` enum list all available data type according to the RFC. It is also a 
-Factory to enable parsing and building such data types. To parse a header you need
-to give the `parse` method a string or a stringable object. On success, it will
-return a `Bakame\Http\StruncturedFields\StruncturedField` implementing object
-otherwise an exception will be thrown.
+The `DataType` enum list all five (5) available data type according to the RFC. It is also a 
+Factory to enable parsing and building such data types. To parse a field you need to give
+the `parse` method a string or a stringable object representing the field text
+representation. On success, it will return a `StruncturedField` implementing 
+object otherwise an exception will be thrown.
 
 ```php
 $headerLine = 'bar;baz=42'; //the raw header line is a structured field item
@@ -82,9 +82,8 @@ $field->value();          // returns Token::fromString('bar); the found token va
 $field->parameter('baz'); // returns 42; the value of the parameter or null if the parameter is not defined.
 ```
 
-On the other hand, `build` method expects an iterable structure composed
-of pair values that matches each data type and returns the structured field text representation
-of the header.
+On the other hand, `build` method expects an iterable structure composed of pair values
+that matches any structured field data type and returns its text representation.
 
 ```php
 use Bakame\Http\StructuredFields\Item;
@@ -106,9 +105,9 @@ echo DataType::List->build([
 #### Using specific named constructor
 
 To complement the factory and to allow for more fine-grained manipulations, the package
-provides specific classes for each data type. if you do not wish to use the `DataType`
-factoring, parsing the header value is done via the `fromHttpValue` named constructor.
-The method is attached to each library's structured fields representation as shown below:
+also provides specific classes for each data type. Parsing the header value is done
+via the `fromHttpValue` named constructor. The method is attached to each
+library's structured fields representation as shown below:
 
 ```php
 declare(strict_types=1);
@@ -154,7 +153,7 @@ All five (5) structured data type as defined in the RFC are provided inside the
 - `OuterList` (named `List` in the RFC but renamed in the package because `list` is a reserved word in PHP.)
 - `InnerList`
 
-#### Advance usage
+#### Advance parsing usage
 
 Starting with version `1.1` the internal parser has been made public in order to allow:
 
@@ -217,16 +216,24 @@ Per the RFC, items can have different types that are translated to PHP using:
 
 The table below summarizes the item value type.
 
-| RFC Type      | PHP Type                  | Package Enum Type     |
-|---------------|---------------------------|-----------------------|
-| Integer       | `int`                     | `Type::Integer`       |
-| Decimal       | `float`                   | `Type::Decimal`       |
-| String        | `string`                  | `Type::String`        |
-| Boolean       | `bool`                    | `Type::Boolean`       |
-| Token         | class `Token`             | `Type::Token`         |
-| Byte Sequence | class `ByteSequence`      | `Type::ByteSequence`  |
-| Date          | class `DateTimeImmutable` | `Type::Date`          |
-| DisplayString | class `DisplayString`     | `Type::DisplayString` |
+| RFC Type          | PHP Type                  | Package Enum Type     |
+|-------------------|---------------------------|-----------------------|
+| Integer           | `int`                     | `Type::Integer`       |
+| Decimal           | `float`                   | `Type::Decimal`       |
+| String            | `string`                  | `Type::String`        |
+| Boolean           | `bool`                    | `Type::Boolean`       |
+| Token             | class `Token`             | `Type::Token`         |
+| Byte Sequence     | class `ByteSequence`      | `Type::ByteSequence`  |
+| Date (*)          | class `DateTimeImmutable` | `Type::Date`          |
+| DisplayString (*) | class `DisplayString`     | `Type::DisplayString` |
+
+> [!NOTE]
+> The `Date` and `DisplayString` type are not yet part of any accepted
+> RFC. But they are already added as new types in the superseeding 
+> RFC proposal.
+>
+> See https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-sfbis
+> for more information,
 
 The Enum `Type` which list all available types can be used to determine the RFC type
 corresponding to a PHP structure using the `Type::fromVariable` static method.
