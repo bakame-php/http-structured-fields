@@ -92,11 +92,33 @@ final class Dictionary implements MemberOrderedMap
      */
     public static function fromPairs(iterable $pairs): self
     {
+        $converter = function (mixed $pair): InnerList|Item {
+            if ($pair instanceof ParameterAccess) {
+                return $pair; /* @phpstan-ignore-line */
+            }
+
+            if (!is_array($pair)) {
+                return Item::new($pair); /* @phpstan-ignore-line */
+            }
+
+            if (!array_is_list($pair)) {
+                throw new SyntaxError('The pair must be represented by an array as a list.');
+            }
+
+            if (2 !== count($pair)) {
+                throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.');
+            }
+
+            [$member, $parameters] = $pair;
+
+            return is_iterable($member) ? InnerList::fromPair([$member, $parameters]) : Item::fromPair([$member, $parameters]);
+        };
+
         return match (true) {
             $pairs instanceof MemberOrderedMap => new self($pairs),
-            default => new self((function (iterable $pairs) {
+            default => new self((function (iterable $pairs) use ($converter) {
                 foreach ($pairs as [$key, $member]) {
-                    yield $key => $member;
+                    yield $key => $converter($member);
                 }
             })($pairs)),
         };

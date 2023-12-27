@@ -667,22 +667,22 @@ of pairs.
 use Bakame\Http\StructuredFields\OuterList;
 
 $list = OuterList::fromPairs([
+    [
+        ['foo', 'bar'],
         [
-            ['foo', 'bar'],
-            [
-                ['expire', $expire],
-                ['path', '/'],
-                [ 'max-age', 2500],
-                ['secure', true],
-                ['httponly', true],
-                ['samesite', Token::fromString('lax')],
-            ]
-        ],
-        [
-            'coucoulesamis', 
-            [['a', false]],
+            ['expire', $expire],
+            ['path', '/'],
+            [ 'max-age', 2500],
+            ['secure', true],
+            ['httponly', true],
+            ['samesite', Token::fromString('lax')],
         ]
-    ]);
+    ],
+    [
+        'coucoulesamis', 
+        [['a', false]],
+    ]
+]);
 ```
 
 The pairs definitions are the same as for creating either a `InnerList` or an `Item` using

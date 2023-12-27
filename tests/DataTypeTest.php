@@ -50,7 +50,7 @@ final class DataTypeTest extends TestCase
     }
 
     #[Test]
-    public function ti_will_generate_the_structured_field_text_represenation_for_list(): void
+    public function it_will_generate_the_structured_field_text_represenation_for_list(): void
     {
         $data = [
             ['coucoulesamis', [['a', false]]],

@@ -10,6 +10,7 @@ use Iterator;
 use Stringable;
 
 use function array_filter;
+use function array_is_list;
 use function array_map;
 use function array_replace;
 use function array_splice;
@@ -18,12 +19,14 @@ use function count;
 use function implode;
 use function is_array;
 use function is_int;
+use function is_iterable;
 
 use const ARRAY_FILTER_USE_KEY;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#name-lists
  *
+ * @phpstan-import-type SfItem from StructuredField
  * @phpstan-import-type SfMember from StructuredField
  * @phpstan-import-type SfMemberInput from StructuredField
  * @phpstan-import-type SfInnerListPair from InnerList
@@ -79,16 +82,40 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param iterable<SfInnerListPair|SfItemPair> $pairs
+     * @param iterable<SfInnerListPair|SfItemPair>|MemberList<int, SfItem> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
-        $members = [];
-        foreach ($pairs as [$member, $parameters]) {
-            $members[] = is_iterable($member) ? InnerList::fromPair([$member, $parameters]) : Item::fromPair([$member, $parameters]);
-        }
+        $converter = function (mixed $pair): InnerList|Item {
+            if ($pair instanceof ParameterAccess) {
+                return $pair; /* @phpstan-ignore-line */
+            }
 
-        return self::new(...$members);
+            if (!is_array($pair)) {
+                return Item::new($pair); /* @phpstan-ignore-line */
+            }
+
+            if (!array_is_list($pair)) {
+                throw new SyntaxError('The pair must be represented by an array as a list.');
+            }
+
+            if (2 !== count($pair)) {
+                throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.');
+            }
+
+            [$member, $parameters] = $pair;
+
+            return is_iterable($member) ? InnerList::fromPair([$member, $parameters]) : Item::fromPair([$member, $parameters]);
+        };
+
+        return match (true) {
+            $pairs instanceof MemberList => new self($pairs),
+            default => new self(...(function (iterable $pairs) use ($converter) {
+                foreach ($pairs as $member) {
+                    yield $converter($member);
+                }
+            })($pairs)),
+        };
     }
 
     /**
