@@ -25,7 +25,7 @@ $field[0]->value()->toString(); // returns 'text/html'
 $field[0]->parameter('q');      // returns null
 
 //2 - building a Retrofit Cookie Header
-echo DataType::List->build[
+echo DataType::List->build([
     [
         ['foo', 'bar'],
         [
@@ -69,11 +69,10 @@ header. Content validation is out of scope for this library.
 > [!NOTE]
 > New in version 1.2.0
 
-The `DataType` enum list all five (5) available data type according to the RFC. It is also a 
-Factory to enable parsing and building such data types. To parse a field you need to give
-the `parse` method a string or a stringable object representing the field text
-representation. On success, it will return a `StruncturedField` implementing 
-object otherwise an exception will be thrown.
+To quickly parse or build one of the five (5) available data type according to the RFC, you can use the `DataType` enum.
+Apart from listing the data types (`List`, `InnerList`, `Parameters`, `Dictionary` and `Item`) you can give to
+its `parse` method a string or a stringable object representing a field text representation. On success, 
+it will return an object representing the structured field otherwise an exception will be thrown.
 
 ```php
 $headerLine = 'bar;baz=42'; //the raw header line is a structured field item
@@ -102,12 +101,15 @@ echo DataType::List->build([
 // display "dumela lefatshe";a=?0, ("a" "b" @1703319068);a
 ```
 
+> [!TIP]
+> While the format can be overwhelming at first, you will come to understand it while reading
+> the rest of the documentation. Under the hood, the `DataType` enum uses the mechanism discussed hereafter.
+
 #### Using specific named constructor
 
-To complement the factory and to allow for more fine-grained manipulations, the package
-also provides specific classes for each data type. Parsing the header value is done
-via the `fromHttpValue` named constructor. The method is attached to each
-library's structured fields representation as shown below:
+The package provides specific classes for each data type. Parsing the structured field value is done
+via the `fromHttpValue` named constructor. The method is attached to each library's structured 
+field representation as shown below:
 
 ```php
 declare(strict_types=1);
@@ -157,7 +159,7 @@ All five (5) structured data type as defined in the RFC are provided inside the
 
 Starting with version `1.1` the internal parser has been made public in order to allow:
 
-- clearer decoupling betwen parsing and objet building
+- clearer decoupling between parsing and objet building
 - different parsers implementations
 - improve the package usage in testing.
 
@@ -216,16 +218,16 @@ Per the RFC, items can have different types that are translated to PHP using:
 
 The table below summarizes the item value type.
 
-| RFC Type          | PHP Type                  | Package Enum Type     |
-|-------------------|---------------------------|-----------------------|
-| Integer           | `int`                     | `Type::Integer`       |
-| Decimal           | `float`                   | `Type::Decimal`       |
-| String            | `string`                  | `Type::String`        |
-| Boolean           | `bool`                    | `Type::Boolean`       |
-| Token             | class `Token`             | `Type::Token`         |
-| Byte Sequence     | class `ByteSequence`      | `Type::ByteSequence`  |
-| Date (*)          | class `DateTimeImmutable` | `Type::Date`          |
-| DisplayString (*) | class `DisplayString`     | `Type::DisplayString` |
+| RFC Type          | PHP Type                  | Package Enum Name     | Package Enum Value |
+|-------------------|---------------------------|-----------------------|--------------------|
+| Integer           | `int`                     | `Type::Integer`       | `ìnteger`          |
+| Decimal           | `float`                   | `Type::Decimal`       | `decimal`          |
+| String            | `string`                  | `Type::String`        | `string`           |
+| Boolean           | `bool`                    | `Type::Boolean`       | `boolean`          |
+| Token             | class `Token`             | `Type::Token`         | `token`            |
+| Byte Sequence     | class `ByteSequence`      | `Type::ByteSequence`  | `bytesequence`     |
+| Date (*)          | class `DateTimeImmutable` | `Type::Date`          | `date`             |
+| DisplayString (*) | class `DisplayString`     | `Type::DisplayString` | `displaystring`    |
 
 > [!NOTE]
 > The `Date` and `DisplayString` type are not yet part of any accepted
@@ -233,20 +235,21 @@ The table below summarizes the item value type.
 > RFC proposal.
 >
 > See https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-sfbis
-> for more information,
+> for more information.
 
 The Enum `Type` which list all available types can be used to determine the RFC type
 corresponding to a PHP structure using the `Type::fromVariable` static method.
-The method will throw if the structure is not recognized Alternatively it is possible
-to use the `Type::tryFromValue` which will instead return `null` on unindentified type.
-On success both methods returns the corresponding enum `Type`.
+The method will throw if the structure is not recognized. Alternatively 
+it is possible to use the `Type::tryFromVariable` which will instead 
+return `null` on unidentified type. On success both methods 
+return the corresponding enum `Type`.
 
 ```php
 use Bakame\Http\StructuredFields\Type;
 
 echo Type::fromVariable(42)->value;  // returns 'integer'
 echo Type::fromVariable(42.0)->name; // returns 'Decimal'
-echo Type::fromVariable(new SplTempFileObject());    // throws InvalidArgument
+echo Type::fromVariable(new SplTempFileObject()); // throws InvalidArgument
 echo Type::tryFromValue(new SplTempFileObject()); // returns null
 ```
 
@@ -268,8 +271,9 @@ PHP default type system, for them, we have defined three classes `Token`,
 `ByteSequence` and `DisplayString` to help with their representation.
 
 ```php
-use Bakame\Http\StructuredFields\Token;
 use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\DisplayString;
+use Bakame\Http\StructuredFields\Token;
 
 Token::fromString(string|Stringable $value): Token
 ByteSequence::fromDecoded(string|Stringable $value): ByteSequence;
@@ -308,7 +312,7 @@ $displayString->type(); // returns Type::DisplayString
 
 > [!WARNING]
 > The classes DO NOT expose the `Stringable` interface to distinguish them
-from a string or a string like object
+> from a regular string or a string like object
 
 #### Item
 
@@ -337,7 +341,7 @@ $container->hasMembers(): bool;
 $container->hasNoMembers(): bool;
 ```
 
-> [!NOTE]
+> [!IMPORTANT]
 > The `get` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
 
 To avoid invalid states, `ArrayAccess` modifying methods throw a `ForbiddenOperation`
@@ -362,7 +366,7 @@ $container->pair(int $offset): array{0:string, 1:StructuredField};
 $container->toPairs(): iterable<array{0:string, 1:StructuredField}>;
 ```
 
-> [!NOTE]
+> [!IMPORTANT]
 > The `pair` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
 
 #### Accessing the parameters values
@@ -377,7 +381,7 @@ use Bakame\Http\StructuredFields\Parameters;
 
 $field->parameter(string $key): ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool|null;
 $field->parameters(): Parameters;
-$field->parameterByIndex(int $index): array{0:string, 1:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|boo}|array{}
+$field->parameterByIndex(int $index): array{0:string, 1:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|boo}
 InnerList::toPair(): array{0:list<Item>, 1:Parameters}>};
 Item::toPair(): array{0:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool, 1:Parameters}>};
 ```
