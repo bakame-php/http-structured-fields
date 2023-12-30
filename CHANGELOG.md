@@ -2,7 +2,7 @@
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file.
 
-## [Next] - TBD
+## [1.2.0](https://github.com/bakame-php/http-structured-fields/compare/1.1.0...1.2.0) - 2023-12-30
 
 ### Added
 
@@ -10,16 +10,16 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `ByteSequence::tryFromEncoded`
 - `Token::tryFromString`
 - `OuterList::fromPairs`
-- `DataType` is now part of the public API
+- `DataType` enum
 - `Type::fromVariable`
 - `Type::tryFromVariable`
-- the `Type` enum is now a baked string Enum.
 - `Parser::new` to simplify parser usage.
 
 ### Fixed
 
 - Tests file moved under the `/tests` directory
-- Fix `Type::tryFromValue` to correctly detect string type derivative.
+- Fix `Type::tryFromVariable` to correctly detect string type derivative.
+- the `Type` enum is now a baked string Enum.
 
 ### Deprecated
 

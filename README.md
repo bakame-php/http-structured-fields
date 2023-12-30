@@ -250,7 +250,7 @@ use Bakame\Http\StructuredFields\Type;
 echo Type::fromVariable(42)->value;  // returns 'integer'
 echo Type::fromVariable(42.0)->name; // returns 'Decimal'
 echo Type::fromVariable(new SplTempFileObject()); // throws InvalidArgument
-echo Type::tryFromValue(new SplTempFileObject()); // returns null
+echo Type::tryFromVariable(new SplTempFileObject()); // returns null
 ```
 
 To ease validation a `Type::equals` method is exposed to check if the `Item` has
