@@ -225,7 +225,7 @@ The table below summarizes the item value type.
 | String            | `string`                  | `Type::String`        | `string`           |
 | Boolean           | `bool`                    | `Type::Boolean`       | `boolean`          |
 | Token             | class `Token`             | `Type::Token`         | `token`            |
-| Byte Sequence     | class `ByteSequence`      | `Type::ByteSequence`  | `bytesequence`     |
+| Byte Sequence     | class `ByteSequence`      | `Type::ByteSequence`  | `binary`           |
 | Date (*)          | class `DateTimeImmutable` | `Type::Date`          | `date`             |
 | DisplayString (*) | class `DisplayString`     | `Type::DisplayString` | `displaystring`    |
 

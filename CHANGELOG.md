@@ -2,6 +2,24 @@
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file.
 
+## [1.2.2](https://github.com/bakame-php/http-structured-fields/compare/1.2.1...1.2.2) - 2024-01-01
+
+### Added
+
+- None
+
+### Fixed
+
+- `Type::ByteSequence` value is renamed from `bytesequence` to `binary` to comply with the RFC.
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
+
 ## [1.2.1](https://github.com/bakame-php/http-structured-fields/compare/1.2.0...1.2.1) - 2024-01-01
 
 ### Added

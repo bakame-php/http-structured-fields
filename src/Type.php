@@ -15,7 +15,7 @@ enum Type: string
     case Decimal = 'decimal';
     case String = 'string';
     case Token = 'token';
-    case ByteSequence = 'bytesequence';
+    case ByteSequence = 'binary';
     case DisplayString = 'displaystring';
     case Boolean = 'boolean';
     case Date = 'date';
