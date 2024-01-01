@@ -10,6 +10,7 @@ use DateTimeZone;
 use Exception;
 use Stringable;
 use Throwable;
+use ValueError;
 
 use function abs;
 use function date_default_timezone_get;
@@ -33,7 +34,10 @@ final class Value
     public readonly Token|ByteSequence|DisplayString|DateTimeImmutable|int|float|string|bool $value;
     public readonly Type $type;
 
-    public function __construct(ValueAccess|Token|ByteSequence|DisplayString|DateTimeInterface|int|float|string|bool $value)
+    /**
+     * @throws ValueError
+     */
+    public function __construct(mixed $value)
     {
         $this->value = match (true) {
             $value instanceof ValueAccess => $value->value(),
@@ -45,9 +49,10 @@ final class Value
             $value instanceof DateTimeInterface => self::filterDate($value),
             is_int($value) => self::filterIntegerRange($value, 'Integer'),
             is_float($value) => self::filterDecimal($value),
-            default => self::filterString($value),
+            is_string($value) => self::filterString($value),
+            default => throw new ValueError('Unknown or unsupported type.')
         };
-        $this->type = Type::fromVariable($value);
+        $this->type = Type::fromVariable($this->value);
     }
 
     /**

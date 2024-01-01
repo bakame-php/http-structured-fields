@@ -62,4 +62,37 @@ final class DataTypeTest extends TestCase
             OuterList::fromPairs($data)->toHttpValue() /* @phpstan-ignore-line */
         );
     }
+
+    #[Test]
+    public function it_will_build_the_structured_fields_from_pairs(): void
+    {
+        $field = DataType::Dictionary->build([
+            ['a',
+                [
+                    [
+                        [1, []],
+                        [2, []],
+                    ],
+                    [],
+                ],
+            ],
+        ]);
+
+        self::assertSame('a=(1 2)', $field);
+    }
+
+    #[Test]
+    public function it_will_build_the_structured_fields_from_simplified_item(): void
+    {
+        $field = DataType::Dictionary->build([
+            ['a',
+                [
+                    [1, 2],
+                    [],
+                ],
+            ],
+        ]);
+
+        self::assertSame('a=(1 2)', $field);
+    }
 }

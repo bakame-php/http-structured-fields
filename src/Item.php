@@ -16,7 +16,9 @@ use function count;
  * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
  *
  * @phpstan-import-type SfItem from StructuredField
+ * @phpstan-import-type SfType from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
+ * @phpstan-import-type SfTypeInput from StructuredField
  * @phpstan-type SfItemPair array{0:ByteSequence|Token|DisplayString|DisplayString|DateTimeInterface|string|int|float|bool, 1:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>}
  */
 final class Item implements ParameterAccess, ValueAccess
@@ -58,8 +60,8 @@ final class Item implements ParameterAccess, ValueAccess
 
     /**
      * @param array{
-     *     0:ByteSequence|Token|DisplayString|DisplayString|DateTimeInterface|string|int|float|bool,
-     *     1:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>
+     *     0: SfType,
+     *     1: MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>
      * } $pair
      *
      * @throws SyntaxError If the pair or its content is not valid.
@@ -76,10 +78,16 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * Returns a new bare instance from value.
      *
+     * @param SfTypeInput|array{0:SfType, 1:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>} $value
+     *
      * @throws SyntaxError If the value is not valid.
      */
-    public static function new(ByteSequence|Token|DisplayString|DateTimeInterface|string|int|float|bool $value): self
+    public static function new(mixed $value): self
     {
+        if (is_array($value)) {
+            return self::fromPair($value);
+        }
+
         return self::fromValue(new Value($value));
     }
 
