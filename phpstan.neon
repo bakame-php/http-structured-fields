@@ -13,4 +13,6 @@ parameters:
           path: tests/ItemTest.php
         - message: '#Method Bakame\\Http\\StructuredFields\\DataType::build\(\) has parameter \$data with no value type specified in iterable type iterable.#'
           path: src/DataType.php
+    excludePaths:
+        - tests/Record.php
     reportUnmatchedIgnoredErrors: true

@@ -30,7 +30,10 @@ abstract class StructuredFieldTestCase extends TestCase
         $structuredField = DataType::from($test->type)->parse(implode(',', $test->raw));
 
         if (!$test->mustFail) {
-            self::assertSame(implode(',', $test->canonical), $structuredField->toHttpValue());
+            self::assertSame(
+                $test->expected?->toHttpValue() ?? implode(',', $test->canonical),
+                $structuredField->toHttpValue()
+            );
         }
     }
 

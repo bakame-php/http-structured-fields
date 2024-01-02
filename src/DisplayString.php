@@ -50,7 +50,12 @@ final class DisplayString
             throw new SyntaxError('The string '.$value.' contains invalid utf-8 encoded sequence.');
         }
 
-        $value = (string) preg_replace_callback(',%[A-Fa-f0-9]{2},', fn (array $matches) =>  rawurldecode($matches[0]), $value);
+        $value = (string) preg_replace_callback(
+            ',%[A-Fa-f0-9]{2},',
+            fn (array $matches): string => rawurldecode($matches[0]),
+            $value
+        );
+
         if (1 !== preg_match('//u', $value)) {
             throw new SyntaxError('The string contains invalid characters.'.$value);
         }
@@ -79,21 +84,11 @@ final class DisplayString
      */
     public function encoded(): string
     {
-        $value = $this->value;
-
-        $encodeMatches = static fn (array $matches): string => match (1) {
-            preg_match('/[^A-Za-z\d_\-.~]/', rawurldecode($matches[0])) => strtolower(rawurlencode($matches[0])),
-            default => $matches[0],
-        };
-
-        return match (true) {
-            '' === $value => $value,
-            default => (string) preg_replace_callback(
-                '/[^A-Za-z\d_\-.~\!\$&\'\(\)\*\+,;\=%\\\\:@\/? ]+|%(?![A-Fa-f\d]{2})/',
-                $encodeMatches(...),
-                $value
-            ),
-        };
+        return (string) preg_replace_callback(
+            '/[%"\x00-\x1F\x7F-\xFF]/',
+            static fn (array $matches): string => strtolower(rawurlencode($matches[0])),
+            $this->value
+        );
     }
 
     public function equals(mixed $other): bool

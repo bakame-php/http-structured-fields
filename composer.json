@@ -36,7 +36,8 @@
         "phpstan/phpstan-deprecation-rules": "^1.1.4",
         "phpunit/phpunit": "^10.5.5",
         "phpbench/phpbench": "^1.2.15",
-        "symfony/var-dumper": "^6.4.0"
+        "symfony/var-dumper": "^6.4.0",
+        "bakame/aide-base32": "dev-main"
     },
     "autoload": {
         "psr-4": {
