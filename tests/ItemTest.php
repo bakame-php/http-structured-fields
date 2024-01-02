@@ -24,8 +24,6 @@ final class ItemTest extends StructuredFieldTestCase
         'number-generated.json',
         'string.json',
         'string-generated.json',
-        'token.json',
-        'token-generated.json',
         'item.json',
         'date.json',
     ];

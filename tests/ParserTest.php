@@ -143,7 +143,7 @@ final class ParserTest extends StructuredFieldTestCase
 
     #[Test]
     #[DataProvider('provideHttpValueForDataType')]
-    public function it_parses_basic_data_type(string $httpValue, ByteSequence|Token|DateTimeImmutable|string|int|float|bool $expected): void
+    public function it_parses_basic_data_type(string $httpValue, ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool $expected): void
     {
         $field = $this->parser->parseValue($httpValue);
         if (is_scalar($expected)) {
@@ -197,6 +197,11 @@ final class ParserTest extends StructuredFieldTestCase
             'httpValue' => '?0',
             'expected' => false,
         ];
+
+        yield 'it parses a display string' => [
+            'httpValue' => '%"b%c3%a9b%c3%a9"',
+            'expected' => DisplayString::fromDecoded('bébé'),
+        ];
     }
 
     #[Test]
@@ -219,6 +224,9 @@ final class ParserTest extends StructuredFieldTestCase
             ['@1_000_000_000_000.0'],
             ['-1_000_000_000_000.0'],
             ['      '],
+            ['%"b%c3%a9b%c3%a9'],
+            ['%b%c3%a9b%c3%a9"'],
+            ['%"b%C3%A9b%C3%A9"'],
         ];
     }
 }

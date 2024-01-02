@@ -46,12 +46,12 @@ final class DisplayString
             return new self($value);
         }
 
-        if (1 === preg_match('/%(?![0-9a-fA-F]{2})/', $value)) {
+        if (1 === preg_match('/%(?![0-9a-f]{2})/', $value)) {
             throw new SyntaxError('The string '.$value.' contains invalid utf-8 encoded sequence.');
         }
 
         $value = (string) preg_replace_callback(
-            ',%[A-Fa-f0-9]{2},',
+            ',%[a-f0-9]{2},',
             fn (array $matches): string => rawurldecode($matches[0]),
             $value
         );

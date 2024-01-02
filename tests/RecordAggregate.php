@@ -15,7 +15,14 @@ use function json_decode;
 
 /**
  * @implements IteratorAggregate<string, Record>
- * @phpstan-import-type RecordData from Record
+ * @phpstan-type RecordData array{
+ *      name: string,
+ *      header_type: 'dictionary'|'list'|'item',
+ *      raw: array<string>,
+ *      canonical?: array<string>,
+ *      must_fail?: bool,
+ *      can_fail?: bool
+ *  }
  */
 final class RecordAggregate implements IteratorAggregate
 {

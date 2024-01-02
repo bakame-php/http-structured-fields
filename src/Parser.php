@@ -447,12 +447,11 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
 
             $octet = substr($remainder, 0, 2);
             $offset += 2;
-            $remainder = substr($remainder, 2);
-
-            if (2 !== strlen($octet) || $octet !== strtolower($octet)) {
+            if (1 === preg_match('/^[0-9a-f]]{2}$/', $octet)) {
                 throw new SyntaxError("The HTTP textual representation '$httpValue' for a DisplayString contains uppercased percent encoding sequence.");
             }
 
+            $remainder = substr($remainder, 2);
             $output .= $char.$octet;
         }
 
