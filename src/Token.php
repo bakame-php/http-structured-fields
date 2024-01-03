@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Stringable;
-
 use Throwable;
 
 use function preg_match;
@@ -18,7 +17,7 @@ final class Token
     private function __construct(private readonly string $value)
     {
         if (1 !== preg_match("/^([a-z*][a-z\d:\/!#\$%&'*+\-.^_`|~]*)$/i", $this->value)) {
-            throw new SyntaxError('Invalid characters in token.');
+            throw new SyntaxError('The token '.$this->value.' contains invalid characters.');
         }
     }
 

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Stringable;
-
 use Throwable;
 
 use function base64_decode;
@@ -25,25 +24,25 @@ final class ByteSequence
     /**
      * Returns a new instance from a Base64 encoded string.
      */
-    public static function fromEncoded(Stringable|string $encodedValue): self
+    public static function fromEncoded(Stringable|string $encoded): self
     {
-        $encodedValue = (string) $encodedValue;
-        if (1 !== preg_match('/^[a-z\d+\/=]*$/i', $encodedValue)) {
-            throw new SyntaxError('Invalid character in byte sequence.');
+        $encoded = (string) $encoded;
+        if (1 !== preg_match('/^[a-z\d+\/=]*$/i', $encoded)) {
+            throw new SyntaxError('The byte sequence '.$encoded.' contains invalid characters.');
         }
 
-        $decoded = base64_decode($encodedValue, true);
+        $decoded = base64_decode($encoded, true);
         if (false === $decoded) {
-            throw new SyntaxError('Unable to base64 decode the byte sequence.');
+            throw new SyntaxError('Unable to base64 decode the byte sequence '.$encoded);
         }
 
         return new self($decoded);
     }
 
-    public static function tryFromEncoded(Stringable|string $encodedValue): ?self
+    public static function tryFromEncoded(Stringable|string $encoded): ?self
     {
         try {
-            return self::fromEncoded($encodedValue);
+            return self::fromEncoded($encoded);
         } catch (Throwable) {
             return null;
         }
@@ -52,9 +51,9 @@ final class ByteSequence
     /**
      * Returns a new instance from a raw decoded string.
      */
-    public static function fromDecoded(Stringable|string $value): self
+    public static function fromDecoded(Stringable|string $decoded): self
     {
-        return new self((string) $value);
+        return new self((string) $decoded);
     }
 
     /**
