@@ -69,7 +69,7 @@ final class Item implements ParameterAccess, ValueAccess
     public static function fromPair(array $pair): self
     {
         return match (true) {
-            !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'), // @phpstan-ignore-line
+            [] === $pair, !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an non-empty array as a list.'), // @phpstan-ignore-line
             2 !== count($pair) => throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.'), // @phpstan-ignore-line
             default => new self(new Value($pair[0]), $pair[1] instanceof Parameters ? $pair[1] : Parameters::fromPairs($pair[1])),
         };

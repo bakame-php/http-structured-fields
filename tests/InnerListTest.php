@@ -233,7 +233,6 @@ final class InnerListTest extends TestCase
      */
     public static function invalidPairProvider(): iterable
     {
-        yield 'empty pair' => ['pair' => []];
         yield 'empty extra filled pair' => ['pair' => [1, [2], 3]];
         yield 'associative array' => ['pair' => ['value' => 'bar', 'parameters' => ['foo' => 'bar']]];
     }

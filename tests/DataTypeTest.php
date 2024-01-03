@@ -13,7 +13,7 @@ final class DataTypeTest extends TestCase
     public function ti_will_generate_the_structured_field_text_represenation_for_an_innerlist(): void
     {
         self::assertSame(
-            DataType::InnerList->build([['a', 'b', 'c'], [['a', true]]]),
+            DataType::InnerList->serialize([['a', 'b', 'c'], [['a', true]]]),
             InnerList::fromPair([['a', 'b', 'c'], [['a', true]]])->toHttpValue()
         );
     }
@@ -22,7 +22,7 @@ final class DataTypeTest extends TestCase
     public function ti_will_generate_the_structured_field_text_represenation_for_an_item(): void
     {
         self::assertSame(
-            DataType::Item->build(['coucoulesamis', [['a', false]]]),
+            DataType::Item->serialize(['coucoulesamis', [['a', false]]]),
             Item::fromPair(['coucoulesamis', [['a', false]]])->toHttpValue()
         );
     }
@@ -33,7 +33,7 @@ final class DataTypeTest extends TestCase
         $data = [['a', false], ['b', true]];
 
         self::assertSame(
-            DataType::Parameters->build($data),
+            DataType::Parameters->serialize($data),
             Parameters::fromPairs($data)->toHttpValue()
         );
     }
@@ -44,7 +44,7 @@ final class DataTypeTest extends TestCase
         $data = [['a', false], ['b', Item::fromDateString('+30 minutes')]];
 
         self::assertSame(
-            DataType::Dictionary->build($data),
+            DataType::Dictionary->serialize($data),
             Dictionary::fromPairs($data)->toHttpValue()
         );
     }
@@ -58,7 +58,7 @@ final class DataTypeTest extends TestCase
         ];
 
         self::assertSame(
-            DataType::List->build($data),
+            DataType::List->serialize($data),
             OuterList::fromPairs($data)->toHttpValue() /* @phpstan-ignore-line */
         );
     }
@@ -66,7 +66,7 @@ final class DataTypeTest extends TestCase
     #[Test]
     public function it_will_build_the_structured_fields_from_pairs(): void
     {
-        $field = DataType::Dictionary->build([
+        $field = DataType::Dictionary->serialize([
             ['a',
                 [
                     [
@@ -84,7 +84,7 @@ final class DataTypeTest extends TestCase
     #[Test]
     public function it_will_build_the_structured_fields_from_simplified_item(): void
     {
-        $field = DataType::Dictionary->build([
+        $field = DataType::Dictionary->serialize([
             ['a',
                 [
                     [1, 2],

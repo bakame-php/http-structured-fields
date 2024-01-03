@@ -8,7 +8,7 @@
 [![Sponsor development of this project](https://img.shields.io/badge/sponsor%20this%20package-%E2%9D%A4-ff69b4.svg?style=flat-square)](https://github.com/sponsors/nyamsprod)
 
 `bakame/http-structured-fields` is a framework-agnostic PHP library that allows you to parse, serialize 
-build and update HTTP Structured Fields in PHP according to the [RFC8941](https://www.rfc-editor.org/rfc/rfc8941.html).
+create and update HTTP Structured Fields in PHP according to the [RFC8941](https://www.rfc-editor.org/rfc/rfc8941.html).
 
 Once installed you will be able to do the following:
 
@@ -24,12 +24,12 @@ $field[2]->parameter('q');      // returns (float) 0.9
 $field[0]->value()->toString(); // returns 'text/html'
 $field[0]->parameter('q');      // returns null
 
-//2 - building a Retrofit Cookie Header
-echo DataType::List->build([
+//2 - building a retrofit Cookie Header
+echo DataType::List->serialize([
     [
         ['foo', 'bar'],
         [
-            ['expire', $expire],
+            ['expire', new DateTimeImmutable('2023-04-14 20:32:08')],
             ['path', '/'],
             [ 'max-age', 2500],
             ['secure', true],
@@ -37,7 +37,7 @@ echo DataType::List->build([
             ['samesite', Token::fromString('lax')],
         ]
     ],
-]),
+]);
 // returns ("foo" "bar");expire=@1681504328;path="/";max-age=2500;secure;httponly=?0;samesite=lax
 ```
 
@@ -58,9 +58,11 @@ composer require bakame/http-structured-fields
 ### Foreword
 
 > [!CAUTION]
-> While this package parses and serializes the header value, it does not validate its content.
-It is still required to validate the parsed data against the constraints of the corresponding
-header. Content validation is out of scope for this library.
+> While this package parses and serializes the HTTP value, it does not validate its content
+> against any conformance rule. You are still required to perform a compliance check
+> against the constraints of the corresponding field. Content validation is
+> out of scope for this library even though you can leverage some of its feature to
+> ease the required validation.
 
 ### Parsing and Serializing Structured Fields
 
@@ -69,7 +71,7 @@ header. Content validation is out of scope for this library.
 > [!NOTE]
 > New in version 1.2.0
 
-To quickly parse or build one of the five (5) available data type according to the RFC, you can use the `DataType` enum.
+To quickly parse or serialize one of the five (5) available data type according to the RFC, you can use the `DataType` enum.
 Apart from listing the data types (`List`, `InnerList`, `Parameters`, `Dictionary` and `Item`) you can give to
 its `parse` method a string or a stringable object representing a field text representation. On success, 
 it will return an object representing the structured field otherwise an exception will be thrown.
@@ -81,14 +83,15 @@ $field->value();          // returns Token::fromString('bar); the found token va
 $field->parameter('baz'); // returns 42; the value of the parameter or null if the parameter is not defined.
 ```
 
-On the other hand, `build` method expects an iterable structure composed of pair values
-that matches any structured field data type and returns its text representation.
+To complement the behaviour, you can use its `serialize` method to turn an iterable structure
+composed of pair values that matches any structured field data type and returns its
+text representation.
 
 ```php
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\DataType;
 
-echo DataType::List->build([
+echo DataType::List->serialize([
     [
         'dumela lefatshe',
         [['a', false]]
@@ -101,15 +104,38 @@ echo DataType::List->build([
 // display "dumela lefatshe";a=?0, ("a" "b" @1703319068);a
 ```
 
+The `serialize` method is a shortcut to converting the iterable structure into a `StructuredField` via
+the `create` method and calling on the newly created object its `toHttpValue` method. With that
+in mind, it is possible to rewrite The last example:
+
+```php
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\DataType;
+
+$list = DataType::List->create([
+    [
+        'dumela lefatshe',
+        [['a', false]]
+    ],
+    [
+        ['a', 'b', Item::fromDateString('+30 minutes')],
+        [['a', true]]
+    ],
+]);
+
+echo $list->toHttpValue();
+// display "dumela lefatshe";a=?0, ("a" "b" @1703319068);a
+```
+
 > [!TIP]
 > While the format can be overwhelming at first, you will come to understand it while reading
 > the rest of the documentation. Under the hood, the `DataType` enum uses the mechanism discussed hereafter.
 
-#### Using specific named constructor
+#### Using specific data type classes
 
-The package provides specific classes for each data type. Parsing the structured field value is done
-via the `fromHttpValue` named constructor. The method is attached to each library's structured 
-field representation as shown below:
+The package provides specific classes for each data type. Parsing is done their respective
+`fromHttpValue` named constructor. A example of how the method works can be seen below
+using the `Item` class:
 
 ```php
 declare(strict_types=1);
@@ -127,9 +153,13 @@ $field->value();          // returns Token::fromString('bar); the found token va
 $field->parameter('baz'); // returns 42; the value of the parameter or null if the parameter is not defined.
 ```
 
+> [!TIP]
+> The `DataType::parse` method uses the `fromHttpValue` named constructor for 
+> each specific class to generate the structured field PHP representation.
+
 The `fromHttpValue` method returns an instance which implements the `StructuredField` interface.
 The interface provides the `toHttpValue` method that serializes it into a normalized RFC
-compliant HTTP field string value. To ease integration, the `__toString` method is
+compliant HTTP field string value. To ease integration, the `__toString` method is 
 implemented as an alias to the `toHttpValue` method.
 
 ````php
@@ -145,6 +175,10 @@ header('foo: '. $field->toHttpValue());
 header('foo: '. $field);
 ````
 
+> [!TIP]
+> This is the mechanism used by the `DataType::serialize` method. Once the Structured
+> field has been created, the method calls its `toHttpValue` method.
+
 All five (5) structured data type as defined in the RFC are provided inside the
 `Bakame\Http\StructuredFields` namespace. They all implement the
 `StructuredField` interface and expose a `fromHttpValue` named constructor:
@@ -155,65 +189,13 @@ All five (5) structured data type as defined in the RFC are provided inside the
 - `OuterList` (named `List` in the RFC but renamed in the package because `list` is a reserved word in PHP.)
 - `InnerList`
 
-#### Advance parsing usage
-
-Starting with version `1.1` the internal parser has been made public in order to allow:
-
-- clearer decoupling between parsing and objet building
-- different parsers implementations
-- improve the package usage in testing.
-
-Each `fromHttpValue` method signature has been updated to take a second optional argument
-that represents the parser interface to use in order to allow parsing of the HTTP string
-representation value.
-
-By default, if no parser is provided, the package will default to use the package `Parser` class,
-
-```php
-Item::fromHttpValue(Stringable|string $httpValue, ItemParser $parser = new Parser()): Item;
-InnerList::fromHttpValue(Stringable|string $httpValue, InnerListParser $parser = new Parser()): InnerList;
-Dictionary::fromHttpValue(Stringable|string $httpValue, DictionaryParser $parser = new Parser()): Dictionary;
-OuterList::fromHttpValue(Stringable|string $httpValue, ListParser $parser = new Parser()): OuterList;
-Parameters::fromHttpValue(Stringable|string $httpValue, ParametersParser $parser = new Parser()): Parameters;
-```
-
-The `Parser` class exposes the following method each belonging to a different contract or interface.
-
-```php
-Parser::parseValue(Stringable|string $httpValue): ByteSequence|Token|DateTimeImmutable|string|int|float|bool;
-Parser::parseItem(Stringable|string $httpValue): array;
-Parser::parseParameters(Stringable|string $httpValue): array;
-Parser::parseInnerList(Stringable|string $httpValue): array;
-Parser::parseList(Stringable|string $httpValue): array;
-Parser::parseDictionary(Stringable|string $httpValue): array;
-```
-
-Once instantiated, calling one of the above listed method is straightforward:
-
-```php
-use Bakame\Http\StructuredFields\Parser;
-
-$parser = new Parser();
-$parser->parseValue('text/csv'); //returns Token::fromString('text/csv')
-$parser->parseItem('@1234567890;file=24'); 
-//returns an array
-//  [
-//    new DateTimeImmutable('@1234567890'),
-//    ['file' => 24],
-//  ]
-```
-
-> [!NOTE]
-> While the provided default `Parser` class implements all these methods you are free to only implement
-the methods you need.
-
 ### Accessing Structured Fields Values
 
 #### RFC Value type
 
-Per the RFC, items can have different types that are translated to PHP using:
+Per the RFC, items value can have different types that are translated to PHP using:
 
-- native type where possible
+- native type or classes where possible;
 - specific classes defined in the package namespace to represent non-native type
 
 The table below summarizes the item value type.
@@ -231,13 +213,13 @@ The table below summarizes the item value type.
 
 > [!NOTE]
 > The `Date` and `DisplayString` type are not yet part of any accepted
-> RFC. But they are already added as new types in the superseeding 
+> RFC. But they are already added as new types in the super-seeding 
 > RFC proposal.
 >
 > See https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-sfbis
 > for more information.
 
-The Enum `Type` which list all available types can be used to determine the RFC type
+The Enum `Type` list all available types and can be used to determine the RFC type
 corresponding to a PHP structure using the `Type::fromVariable` static method.
 The method will throw if the structure is not recognized. Alternatively 
 it is possible to use the `Type::tryFromVariable` which will instead 
@@ -311,8 +293,8 @@ $displayString->type(); // returns Type::DisplayString
 ```
 
 > [!WARNING]
-> The classes DO NOT expose the `Stringable` interface to distinguish them
-> from a regular string or a string like object
+> The classes DO NOT expose the `Stringable` interface to help distinguish
+> them from a string or a stringable object
 
 #### Item
 
@@ -406,7 +388,7 @@ use Bakame\Http\StructuredFields\ByteSequence;
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 
-Item:new(DateTimeInterface|ByteSequence|Token|DisplayString|string|int|float|bool $value): self
+Item:new(DateTimeInterface|ByteSequence|Token|DisplayString|string|int|array|float|bool $value): self
 Item::fromDecodedByteSequence(Stringable|string $value): self;
 Item::fromEncodedDisplayString(Stringable|string $value): self;
 Item::fromDecodedDisplayString(Stringable|string $value): self;
@@ -674,7 +656,7 @@ $list = OuterList::fromPairs([
     [
         ['foo', 'bar'],
         [
-            ['expire', $expire],
+            ['expire', new DateTime('2024-01-01 12:33:45')],
             ['path', '/'],
             [ 'max-age', 2500],
             ['secure', true],
@@ -783,6 +765,58 @@ echo InnerList::new('foo', 'bar')
 // both flow return the InnerList HTTP value 
 // ("foo" "bar");expire=@1681538756;path="/";max-age=2500
 ```
+
+### Advance parsing usage
+
+Starting with version `1.1` the internal parser has been made public in order to allow:
+
+- clearer decoupling between parsing and objet building
+- different parsers implementations
+- improve the package usage in testing.
+
+Each `fromHttpValue` method signature has been updated to take a second optional argument
+that represents the parser interface to use in order to allow parsing of the HTTP string
+representation value.
+
+By default, if no parser is provided, the package will default to use the package `Parser` class,
+
+```php
+Item::fromHttpValue(Stringable|string $httpValue, ItemParser $parser = new Parser()): Item;
+InnerList::fromHttpValue(Stringable|string $httpValue, InnerListParser $parser = new Parser()): InnerList;
+Dictionary::fromHttpValue(Stringable|string $httpValue, DictionaryParser $parser = new Parser()): Dictionary;
+OuterList::fromHttpValue(Stringable|string $httpValue, ListParser $parser = new Parser()): OuterList;
+Parameters::fromHttpValue(Stringable|string $httpValue, ParametersParser $parser = new Parser()): Parameters;
+```
+
+The `Parser` class exposes the following method each belonging to a different contract or interface.
+
+```php
+Parser::parseValue(Stringable|string $httpValue): ByteSequence|Token|DateTimeImmutable|string|int|float|bool;
+Parser::parseItem(Stringable|string $httpValue): array;
+Parser::parseParameters(Stringable|string $httpValue): array;
+Parser::parseInnerList(Stringable|string $httpValue): array;
+Parser::parseList(Stringable|string $httpValue): array;
+Parser::parseDictionary(Stringable|string $httpValue): array;
+```
+
+Once instantiated, calling one of the above listed method is straightforward:
+
+```php
+use Bakame\Http\StructuredFields\Parser;
+
+$parser = new Parser();
+$parser->parseValue('text/csv'); //returns Token::fromString('text/csv')
+$parser->parseItem('@1234567890;file=24'); 
+//returns an array
+//  [
+//    new DateTimeImmutable('@1234567890'),
+//    ['file' => 24],
+//  ]
+```
+
+> [!NOTE]
+> While the provided default `Parser` class implements all these methods you are free to only implement
+the methods you need.
 
 ## Contributing
 

@@ -2,6 +2,25 @@
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file.
 
+## [Next](https://github.com/bakame-php/http-structured-fields/compare/1.2.2...master) - TBD
+
+### Added
+
+- `DataType::create` returns an `StructuredField` instance from an `iterable` construct.
+- `DataType::serialize` returns the HTTP string representation of a structured field.
+
+### Fixed
+
+- `InnerList::fromPair` should not throw if the pair is empty becuse an inner list can be emoty.
+
+### Deprecated
+
+- `DataType::build` use `DataType::serialize` instead.
+
+### Removed
+
+- None
+
 ## [1.2.2](https://github.com/bakame-php/http-structured-fields/compare/1.2.1...1.2.2) - 2024-01-01
 
 ### Added

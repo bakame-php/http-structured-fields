@@ -97,6 +97,7 @@ final class InnerList implements MemberList, ParameterAccess
     public static function fromPair(array $pair): self
     {
         return match (true) {
+            [] === $pair => self::new(), // @phpstan-ignore-line
             !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'), // @phpstan-ignore-line
             2 !== count($pair) => throw new SyntaxError('The pair first member must be the member list and the second member the inner list parameters.'), // @phpstan-ignore-line
             default => new self($pair[0], !$pair[1] instanceof Parameters ? Parameters::fromPairs($pair[1]) : $pair[1]),
