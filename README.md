@@ -275,11 +275,11 @@ use Bakame\Http\StructuredFields\DisplayString;
 $token = Token::fromString('application/text+xml');
 echo $token->toString(); // returns 'application/text+xml'
 
-$byte = DisplayString::fromDecoded('füü');
-$byte->decoded(); // returns 'füü'
-$byte->encoded(); // returns 'f%c3%bc%c3%bc'
+$displayString = DisplayString::fromDecoded('füü');
+$displayString->decoded(); // returns 'füü'
+$displayString->encoded(); // returns 'f%c3%bc%c3%bc'
 
-$displayString = ByteSequence::fromDecoded('Hello world!');
+$byte = ByteSequence::fromDecoded('Hello world!');
 $byte->decoded(); // returns 'Hello world!'
 $byte->encoded(); // returns 'SGVsbG8gd29ybGQh'
 
