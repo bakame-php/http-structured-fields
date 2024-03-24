@@ -10,7 +10,7 @@ use PHPUnit\Framework\TestCase;
 final class DataTypeTest extends TestCase
 {
     #[Test]
-    public function ti_will_generate_the_structured_field_text_represenation_for_an_innerlist(): void
+    public function it_will_generate_the_structured_field_text_represenation_for_an_innerlist(): void
     {
         self::assertSame(
             DataType::InnerList->serialize([['a', 'b', 'c'], [['a', true]]]),
@@ -19,7 +19,7 @@ final class DataTypeTest extends TestCase
     }
 
     #[Test]
-    public function ti_will_generate_the_structured_field_text_represenation_for_an_item(): void
+    public function it_will_generate_the_structured_field_text_represenation_for_an_item(): void
     {
         self::assertSame(
             DataType::Item->serialize(['coucoulesamis', [['a', false]]]),
@@ -28,7 +28,7 @@ final class DataTypeTest extends TestCase
     }
 
     #[Test]
-    public function ti_will_generate_the_structured_field_text_represenation_for_parameters(): void
+    public function it_will_generate_the_structured_field_text_represenation_for_parameters(): void
     {
         $data = [['a', false], ['b', true]];
 
@@ -39,7 +39,7 @@ final class DataTypeTest extends TestCase
     }
 
     #[Test]
-    public function ti_will_generate_the_structured_field_text_represenation_for_dictionary(): void
+    public function it_will_generate_the_structured_field_text_represenation_for_dictionary(): void
     {
         $data = [['a', false], ['b', Item::fromDateString('+30 minutes')]];
 
