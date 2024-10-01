@@ -31,7 +31,7 @@ echo DataType::List->serialize([
         [
             ['expire', new DateTimeImmutable('2023-04-14 20:32:08')],
             ['path', '/'],
-            [ 'max-age', 2500],
+            ['max-age', 2500],
             ['secure', true],
             ['httponly', true],
             ['samesite', Token::fromString('lax')],
