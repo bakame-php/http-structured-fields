@@ -21,7 +21,7 @@ use function substr;
  *
  * @link https://github.com/gapple/structured-fields/blob/v1.0.0/src/Parser.php
  *
- * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2
+ * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2
  *
  * @see Dictionary::fromHttpValue()
  * @see Parameters::fromHttpValue()
@@ -87,7 +87,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     /**
      * Returns an instance from an HTTP textual representation.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.2
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.2
      *
      * @throws SyntaxError If the string is not a valid
      *
@@ -107,7 +107,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     /**
      * Returns an ordered list represented as a PHP list array from an HTTP textual representation.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.1
      *
      * @return array<array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}>
      */
@@ -126,7 +126,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     /**
      * Returns an ordered map represented as a PHP associative array from an HTTP textual representation.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.2
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.2
      *
      * @return array<string, array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}>
      */
@@ -151,7 +151,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     /**
      * Returns an inner list represented as a PHP list array from an HTTP textual representation.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.1.2
      *
      * @return array{0:array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}
      */
@@ -208,7 +208,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     /**
      * Returns an item or an inner list as a PHP list array from an HTTP textual representation.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.1
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.1.1
      *
      * @return array{0:array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}, 1:int}
      */
@@ -226,7 +226,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     /**
      * Returns an inner list represented as a PHP list array from an HTTP textual representation and the consumed offset in a tuple.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.1.2
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.1.2
      *
      * @return array{0:array{0:array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}, 1:int}
      */
@@ -272,7 +272,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     /**
      * Returns an item value from an HTTP textual representation and the consumed offset in a tuple.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.1
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.3.1
      *
      * @return array{0:SfType, 1:int}
      */
@@ -293,7 +293,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     /**
      * Returns a parameters container represented as a PHP associative array from an HTTP textual representation and the consumed offset in a tuple.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.3.2
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.3.2
      *
      * @return array{0:array<string, SfType>, 1:int}
      */
@@ -320,7 +320,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     /**
      * Returns a boolean from an HTTP textual representation and the consumed offset in a tuple.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.8
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.8
      *
      * @return array{0:bool, 1:int}
      */
@@ -335,7 +335,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     /**
      * Returns an int or a float from an HTTP textual representation and the consumed offset in a tuple.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.4
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.4
      *
      * @return array{0:int|float, 1:int}
      */
@@ -371,7 +371,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     /**
      * Returns a string from an HTTP textual representation and the consumed offset in a tuple.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.5
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.5
      *
      * @return array{0:string, 1:int}
      */
@@ -461,7 +461,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     /**
      * Returns a Token from an HTTP textual representation and the consumed offset in a tuple.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.6
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.6
      *
      * @return array{0:Token, 1:int}
      */
@@ -469,13 +469,15 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     {
         preg_match(self::REGEXP_TOKEN, $httpValue, $found);
 
-        return [Token::fromString($found['token']), strlen($found['token'])];
+        $token = $found['token'] ?? '';
+
+        return [Token::fromString($token), strlen($token)];
     }
 
     /**
      * Returns a Byte Sequence from an HTTP textual representation and the consumed offset in a tuple.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.2.7
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.7
      *
      * @return array{0:ByteSequence, 1:int}
      */

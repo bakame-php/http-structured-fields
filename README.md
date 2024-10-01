@@ -8,7 +8,7 @@
 [![Sponsor development of this project](https://img.shields.io/badge/sponsor%20this%20package-%E2%9D%A4-ff69b4.svg?style=flat-square)](https://github.com/sponsors/nyamsprod)
 
 `bakame/http-structured-fields` is a framework-agnostic PHP library that allows you to parse, serialize 
-create and update HTTP Structured Fields in PHP according to the [RFC8941](https://www.rfc-editor.org/rfc/rfc8941.html).
+create and update HTTP Structured Fields in PHP according to the [RFC9651](https://www.rfc-editor.org/rfc/rfc9651.html).
 
 Once installed you will be able to do the following:
 
@@ -200,24 +200,17 @@ Per the RFC, items value can have different types that are translated to PHP usi
 
 The table below summarizes the item value type.
 
-| RFC Type          | PHP Type                  | Package Enum Name     | Package Enum Value |
-|-------------------|---------------------------|-----------------------|--------------------|
-| Integer           | `int`                     | `Type::Integer`       | `ìnteger`          |
-| Decimal           | `float`                   | `Type::Decimal`       | `decimal`          |
-| String            | `string`                  | `Type::String`        | `string`           |
-| Boolean           | `bool`                    | `Type::Boolean`       | `boolean`          |
-| Token             | class `Token`             | `Type::Token`         | `token`            |
-| Byte Sequence     | class `ByteSequence`      | `Type::ByteSequence`  | `binary`           |
-| Date (*)          | class `DateTimeImmutable` | `Type::Date`          | `date`             |
-| DisplayString (*) | class `DisplayString`     | `Type::DisplayString` | `displaystring`    |
+| RFC Type      | PHP Type                  | Package Enum Name     | Package Enum Value |
+|---------------|---------------------------|-----------------------|--------------------|
+| Integer       | `int`                     | `Type::Integer`       | `ìnteger`          |
+| Decimal       | `float`                   | `Type::Decimal`       | `decimal`          |
+| String        | `string`                  | `Type::String`        | `string`           |
+| Boolean       | `bool`                    | `Type::Boolean`       | `boolean`          |
+| Token         | class `Token`             | `Type::Token`         | `token`            |
+| Byte Sequence | class `ByteSequence`      | `Type::ByteSequence`  | `binary`           |
+| Date          | class `DateTimeImmutable` | `Type::Date`          | `date`             |
+| DisplayString | class `DisplayString`     | `Type::DisplayString` | `displaystring`    |
 
-> [!NOTE]
-> The `Date` and `DisplayString` type are not yet part of any accepted
-> RFC. But they are already added as new types in the super-seeding 
-> RFC proposal.
->
-> See https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-sfbis
-> for more information.
 
 The Enum `Type` list all available types and can be used to determine the RFC type
 corresponding to a PHP structure using the `Type::fromVariable` static method.

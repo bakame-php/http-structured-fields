@@ -18,7 +18,7 @@ use function is_int;
 use function is_string;
 
 /**
- * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.2
+ * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.2
  *
  * @phpstan-import-type SfItem from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
@@ -102,7 +102,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * Returns an instance from an HTTP textual representation.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.2
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.2
      *
      * @throws SyntaxError If the string is not a valid
      */

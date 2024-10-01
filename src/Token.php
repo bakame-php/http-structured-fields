@@ -10,7 +10,7 @@ use Throwable;
 use function preg_match;
 
 /**
- * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.4
+ * @see https://www.rfc-editor.org/rfc/rfc9651.html#name-tokens
  */
 final class Token
 {

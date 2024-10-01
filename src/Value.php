@@ -26,7 +26,7 @@ use const JSON_PRESERVE_ZERO_FRACTION;
 use const PHP_ROUND_HALF_EVEN;
 
 /**
- * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
+ * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3
  * @internal
  */
 final class Value
@@ -58,7 +58,7 @@ final class Value
     /**
      * Filter a decimal according to RFC8941.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.1
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3.1
      */
     private static function filterIntegerRange(int $value, string $type): int
     {
@@ -71,7 +71,7 @@ final class Value
     /**
      * Filter a decimal according to RFC8941.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.2
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3.2
      */
     private static function filterDecimal(float $value): float
     {
@@ -84,7 +84,7 @@ final class Value
     /**
      * Filter a decimal according to RFC8941.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.3
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3.3
      */
     private static function filterString(string $value): string
     {
@@ -230,7 +230,7 @@ final class Value
     /**
      * Serialize the Item value according to RFC8941.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.1
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.1
      */
     public function serialize(): string
     {

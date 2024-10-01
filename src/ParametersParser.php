@@ -14,7 +14,7 @@ interface ParametersParser
     /**
      * Returns an array representation from an HTTP textual representation.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.2
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.2
      *
      * @throws SyntaxError If the string is not a valid
      *

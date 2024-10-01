@@ -7,7 +7,7 @@ namespace Bakame\Http\StructuredFields;
 use DateTimeInterface;
 
 /**
- * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
+ * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3
  */
 enum Type: string
 {

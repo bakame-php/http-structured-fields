@@ -14,7 +14,7 @@ interface ItemParser
     /**
      * Returns an Item represented as a PHP list array from an HTTP textual representation.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#name-parsing-an-item
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#name-parsing-an-item
      *
      * @return array{0:SfType, 1:array<string, SfType>}
      */

@@ -20,7 +20,7 @@ use function is_iterable;
 use function is_string;
 
 /**
- * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
+ * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.2
  *
  * @phpstan-import-type SfMember from StructuredField
  * @phpstan-import-type SfMemberInput from StructuredField
@@ -127,7 +127,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * Returns an instance from an HTTP textual representation.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.2
      *
      * @throws SyntaxError If the string is not a valid
      */

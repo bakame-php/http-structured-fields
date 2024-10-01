@@ -13,7 +13,7 @@ use function array_is_list;
 use function count;
 
 /**
- * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
+ * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3
  *
  * @phpstan-import-type SfItem from StructuredField
  * @phpstan-import-type SfType from StructuredField
@@ -33,7 +33,7 @@ final class Item implements ParameterAccess, ValueAccess
      * Returns a new instance from an HTTP Header or Trailer value string
      * in compliance with RFC8941.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3
      *
      * @throws SyntaxError If the HTTP value can not be parsed
      */
@@ -276,7 +276,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * Serialize the Item value according to RFC8941.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-4.1
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.1
      */
     public function toHttpValue(): string
     {

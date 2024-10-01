@@ -12,7 +12,7 @@ use function base64_encode;
 use function preg_match;
 
 /**
- * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.3.5
+ * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3.5
  */
 final class ByteSequence
 {

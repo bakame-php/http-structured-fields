@@ -23,7 +23,7 @@ use function is_int;
 use const ARRAY_FILTER_USE_KEY;
 
 /**
- * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1.1
+ * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.1
  *
  * @phpstan-import-type SfItem from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
@@ -61,7 +61,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * Returns an instance from an HTTP textual representation.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.1
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1
      */
     public static function fromHttpValue(Stringable|string $httpValue, InnerListParser $parser = new Parser()): self
     {
