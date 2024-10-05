@@ -57,10 +57,7 @@ final class DataTypeTest extends TestCase
             [['a', 'b', Item::fromDateString('+30 minutes')], [['a', true]]],
         ];
 
-        self::assertSame(
-            DataType::List->serialize($data),
-            OuterList::fromPairs($data)->toHttpValue() /* @phpstan-ignore-line */
-        );
+        self::assertSame(DataType::List->serialize($data), OuterList::fromPairs($data)->toHttpValue());
     }
 
     #[Test]

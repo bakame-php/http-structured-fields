@@ -29,8 +29,8 @@ use const ARRAY_FILTER_USE_KEY;
  * @phpstan-import-type SfItem from StructuredField
  * @phpstan-import-type SfMember from StructuredField
  * @phpstan-import-type SfMemberInput from StructuredField
- * @phpstan-import-type SfInnerListPair from InnerList
- * @phpstan-import-type SfItemPair from Item
+ * @phpstan-import-type SfInnerListPair from StructuredField
+ * @phpstan-import-type SfItemPair from StructuredField
  *
  * @implements MemberList<int, SfMember>
  */
@@ -86,9 +86,12 @@ final class OuterList implements MemberList
      */
     public static function fromPairs(iterable $pairs): self
     {
-        $converter = function (mixed $pair): InnerList|Item {
-            if ($pair instanceof ParameterAccess) {
-                return $pair; /* @phpstan-ignore-line */
+        /**
+         * @return ParameterAccess&(MemberList|ValueAccess)
+         */
+        $converter = function (mixed $pair): StructuredField {
+            if ($pair instanceof ParameterAccess && ($pair instanceof MemberList || $pair instanceof ValueAccess)) {
+                return $pair;
             }
 
             if (!is_array($pair)) {

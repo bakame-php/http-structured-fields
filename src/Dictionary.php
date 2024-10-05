@@ -92,9 +92,12 @@ final class Dictionary implements MemberOrderedMap
      */
     public static function fromPairs(iterable $pairs): self
     {
-        $converter = function (mixed $pair): InnerList|Item {
-            if ($pair instanceof ParameterAccess) {
-                return $pair; /* @phpstan-ignore-line */
+        /**
+         * @return ParameterAccess&(MemberList|ValueAccess)
+         */
+        $converter = function (mixed $pair): StructuredField {
+            if ($pair instanceof ParameterAccess && ($pair instanceof MemberList || $pair instanceof ValueAccess)) {
+                return $pair;
             }
 
             if (!is_array($pair)) {
