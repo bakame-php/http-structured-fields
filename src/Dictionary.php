@@ -147,13 +147,13 @@ final class Dictionary implements MemberOrderedMap
         return new self(array_map($converter, $parser->parseDictionary($httpValue)));
     }
 
-    public function toHttpValue(): string
+    public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string
     {
         $members = [];
         foreach ($this->members as $key => $member) {
             $members[] = match (true) {
-                $member instanceof ValueAccess && true === $member->value() => $key.$member->parameters()->toHttpValue(),
-                default => $key.'='.$member->toHttpValue(),
+                $member instanceof ValueAccess && true === $member->value() => $key.$member->parameters()->toHttpValue($rfc),
+                default => $key.'='.$member->toHttpValue($rfc),
             };
         }
 

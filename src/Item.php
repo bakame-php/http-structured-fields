@@ -278,9 +278,9 @@ final class Item implements ParameterAccess, ValueAccess
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.1
      */
-    public function toHttpValue(): string
+    public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string
     {
-        return $this->value->serialize().$this->parameters->toHttpValue();
+        return $this->value->serialize($rfc).$this->parameters->toHttpValue($rfc);
     }
 
     public function __toString(): string

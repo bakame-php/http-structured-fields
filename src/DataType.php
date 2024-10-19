@@ -17,29 +17,31 @@ enum DataType: string
     /**
      * @throws StructuredFieldError
      */
-    public function parse(Stringable|string $httpValue): StructuredField
+    public function parse(Stringable|string $httpValue, Ietf $rfc = Ietf::Rfc9651): StructuredField
     {
+        $parser = new Parser($rfc);
+
         return match ($this) {
-            self::List => OuterList::fromHttpValue($httpValue),
-            self::InnerList => InnerList::fromHttpValue($httpValue),
-            self::Parameters => Parameters::fromHttpValue($httpValue),
-            self::Dictionary => Dictionary::fromHttpValue($httpValue),
-            self::Item => Item::fromHttpValue($httpValue),
+            self::List => OuterList::fromHttpValue($httpValue, $parser),
+            self::InnerList => InnerList::fromHttpValue($httpValue, $parser),
+            self::Parameters => Parameters::fromHttpValue($httpValue, $parser),
+            self::Dictionary => Dictionary::fromHttpValue($httpValue, $parser),
+            self::Item => Item::fromHttpValue($httpValue, $parser),
         };
     }
 
     /**
      * @throws StructuredFieldError
      */
-    public function serialize(iterable $data): string
+    public function serialize(iterable $data, Ietf $rfc = Ietf::Rfc9651): string
     {
-        return $this->create($data)->toHttpValue();
+        return $this->create($data)->toHttpValue($rfc);
     }
 
     /**
      * @throws StructuredFieldError
      */
-    public function create(iterable $data): StructuredField
+    public function create(iterable $data, Ietf $rfc = Ietf::Rfc9651): StructuredField
     {
         return match ($this) {
             self::List => OuterList::fromPairs($data),
@@ -58,8 +60,8 @@ enum DataType: string
      *
      * @see DataType::serialize()
      */
-    public function build(iterable $data): string
+    public function build(iterable $data, Ietf $rfc = Ietf::Rfc9651): string
     {
-        return $this->serialize($data);
+        return $this->serialize($data, $rfc);
     }
 }

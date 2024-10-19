@@ -111,11 +111,11 @@ final class Parameters implements MemberOrderedMap
         return new self($parser->parseParameters($httpValue));
     }
 
-    public function toHttpValue(): string
+    public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string
     {
         $formatter = static fn (ValueAccess $member, string $offset): string => match (true) {
             true === $member->value() => ';'.$offset,
-            default => ';'.$offset.'='.$member->toHttpValue(),
+            default => ';'.$offset.'='.$member->toHttpValue($rfc),
         };
 
         return implode('', array_map($formatter, $this->members, array_keys($this->members)));

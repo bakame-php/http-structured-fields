@@ -129,9 +129,9 @@ final class OuterList implements MemberList
         return new self(...$members);
     }
 
-    public function toHttpValue(): string
+    public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string
     {
-        return implode(', ', array_map(fn (StructuredField $member): string => $member->toHttpValue(), $this->members));
+        return implode(', ', array_map(fn (StructuredField $member): string => $member->toHttpValue($rfc), $this->members));
     }
 
     public function __toString(): string

@@ -113,9 +113,9 @@ final class InnerList implements MemberList, ParameterAccess
         return new self($members, Parameters::new());
     }
 
-    public function toHttpValue(): string
+    public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string
     {
-        return '('.implode(' ', array_map(fn (StructuredField $value): string => $value->toHttpValue(), $this->members)).')'.$this->parameters->toHttpValue();
+        return '('.implode(' ', array_map(fn (StructuredField $value): string => $value->toHttpValue($rfc), $this->members)).')'.$this->parameters->toHttpValue($rfc);
     }
 
     public function __toString(): string

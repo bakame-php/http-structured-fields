@@ -232,8 +232,10 @@ final class Value
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.1
      */
-    public function serialize(): string
+    public function serialize(Ietf $rfc = Ietf::Rfc9651): string
     {
+        $rfc->supports($this->type) || throw new SyntaxError('The '.$this->type->value.' type is not serializable by '.$rfc->value);
+
         return match (true) {
             $this->value instanceof DateTimeImmutable => '@'.$this->value->getTimestamp(),
             $this->value instanceof Token => $this->value->toString(),
