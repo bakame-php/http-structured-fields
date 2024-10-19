@@ -147,8 +147,19 @@ final class Dictionary implements MemberOrderedMap
         return new self(array_map($converter, $parser->parseDictionary($httpValue)));
     }
 
-    public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string
+    public static function fromRfc9651(Stringable|string $httpValue): self
     {
+        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
+    }
+
+    public static function fromRfc8941(Stringable|string $httpValue): self
+    {
+        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
+    }
+
+    public function toHttpValue(?Ietf $rfc = null): string
+    {
+        $rfc ??= Ietf::Rfc9651;
         $members = [];
         foreach ($this->members as $key => $member) {
             $members[] = match (true) {
@@ -158,6 +169,16 @@ final class Dictionary implements MemberOrderedMap
         }
 
         return implode(', ', $members);
+    }
+
+    public function toRfc9651(): string
+    {
+        return $this->toHttpValue(Ietf::Rfc9651);
+    }
+
+    public function toRfc8941(): string
+    {
+        return $this->toHttpValue(Ietf::Rfc8941);
     }
 
     public function __toString(): string

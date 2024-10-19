@@ -22,5 +22,5 @@ interface StructuredField extends Stringable
     /**
      * Returns the serialize-representation of the Structured Field as a textual HTTP field value.
      */
-    public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string;
+    public function toHttpValue(?Ietf $rfc = null): string;
 }

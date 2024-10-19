@@ -34,7 +34,7 @@ enum Ietf: string
         };
     }
 
-    public function published(): string
+    public function publishedAt(): string
     {
         return match ($this) {
             self::Rfc9651 => '2024-09',

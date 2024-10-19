@@ -17,7 +17,39 @@ enum DataType: string
     /**
      * @throws StructuredFieldError
      */
-    public function parse(Stringable|string $httpValue, Ietf $rfc = Ietf::Rfc9651): StructuredField
+    public function fromRfc9651(Stringable|string $httpValue): StructuredField
+    {
+        return $this->parse($httpValue, Ietf::Rfc9651);
+    }
+
+    /**
+     * @throws StructuredFieldError
+     */
+    public function fromRfc8941(Stringable|string $httpValue): StructuredField
+    {
+        return $this->parse($httpValue, Ietf::Rfc8941);
+    }
+
+    /**
+     * @throws StructuredFieldError
+     */
+    public function toRfc9651(iterable $data): string
+    {
+        return $this->serialize($data, Ietf::Rfc9651);
+    }
+
+    /**
+     * @throws StructuredFieldError
+     */
+    public function toRfc8941(iterable $data): string
+    {
+        return $this->serialize($data, Ietf::Rfc8941);
+    }
+
+    /**
+     * @throws StructuredFieldError
+     */
+    public function parse(Stringable|string $httpValue, ?Ietf $rfc = null): StructuredField
     {
         $parser = new Parser($rfc);
 
@@ -33,7 +65,7 @@ enum DataType: string
     /**
      * @throws StructuredFieldError
      */
-    public function serialize(iterable $data, Ietf $rfc = Ietf::Rfc9651): string
+    public function serialize(iterable $data, ?Ietf $rfc = null): string
     {
         return $this->create($data)->toHttpValue($rfc);
     }
@@ -41,7 +73,7 @@ enum DataType: string
     /**
      * @throws StructuredFieldError
      */
-    public function create(iterable $data, Ietf $rfc = Ietf::Rfc9651): StructuredField
+    public function create(iterable $data): StructuredField
     {
         return match ($this) {
             self::List => OuterList::fromPairs($data),
@@ -60,7 +92,7 @@ enum DataType: string
      *
      * @see DataType::serialize()
      */
-    public function build(iterable $data, Ietf $rfc = Ietf::Rfc9651): string
+    public function build(iterable $data, ?Ietf $rfc = null): string
     {
         return $this->serialize($data, $rfc);
     }

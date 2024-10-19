@@ -47,7 +47,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
 
     private Ietf $rfc;
 
-    public static function new(Ietf $rfc = Ietf::Rfc9651): self
+    public static function new(?Ietf $rfc = null): self
     {
         return new self($rfc);
     }
