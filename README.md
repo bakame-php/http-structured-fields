@@ -18,14 +18,14 @@ use Bakame\Http\StructuredFields\Token;
 
 //1 - parsing an Accept Header
 $fieldValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
-$field = DataType::List->parse($fieldValue);
+$field = DataType::List->fromRfc9651($fieldValue);
 $field[2]->value()->toString(); // returns 'application/xml'
 $field[2]->parameter('q');      // returns (float) 0.9
 $field[0]->value()->toString(); // returns 'text/html'
 $field[0]->parameter('q');      // returns null
 
 //2 - building a retrofit Cookie Header
-echo DataType::List->serialize([
+echo DataType::List->toRfc9651([
     [
         ['foo', 'bar'],
         [
@@ -67,6 +67,33 @@ composer require bakame/http-structured-fields
 ### Parsing and Serializing Structured Fields
 
 #### Basic Usage
+
+> [!NOTE]
+> New in version 1.4.0
+
+With the official release of `RFC9651`, there are two RFC linked to structured fields. The obsolete `RFC8941` and
+the superseding RFC. To help migrating to the newer RFC, the package introduces an Enum and some syntactic
+sugar methods to quickly parse and build an HTTP structured field.
+
+```php
+$headerLine = 'bar;baz=42'; //the raw header line is a structured field item
+$field = DataType::Item->fromRFC8941($headerLine); // parse the field using RFC8941
+$field->toRFC9651(); // serialize the field using RFC9651
+```
+If you still want to ise the current API, you will need to provide the correct RFC to the `toHttpValue` and `fromHttpValue`
+method as shown below:
+
+```php
+$headerLine = 'bar;baz=42'; //the raw header line is a structured field item
+$field = DataType::Item->fromHttpValue($headerLine, Ietf::Rfc8941); // parse the field using RFC8941
+$field->toHttpValue(Ietf::Rfc9651); // serialize the field using RFC9651
+```
+In absence of providing the `Ietf` enum, the methods will fall back at using the latest stable protocol (ie: RFC9651)
+
+> [!WARNING]
+> If parsing or serializing is not possible, a `SyntaxError` exception is thrown with the infornation about why
+the conversion could not be achieved.
+
 
 > [!NOTE]
 > New in version 1.2.0

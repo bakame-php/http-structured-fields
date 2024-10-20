@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use Throwable;
+
 enum Ietf: string
 {
     case Rfc8941 = 'RFC8941';
@@ -25,13 +27,23 @@ enum Ietf: string
         };
     }
 
-    public function supports(Type $type): bool
+    public function supports(Type|StructuredField $type): bool
     {
-        return match ($type) {
-            Type::DisplayString,
-            Type::Date => self::Rfc8941 !== $this,
-            default => true,
-        };
+        if ($type instanceof Type) {
+            return match ($type) {
+                Type::DisplayString,
+                Type::Date => self::Rfc8941 !== $this,
+                default => true,
+            };
+        }
+
+        try {
+            $type->toHttpValue($this);
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     public function publishedAt(): string

@@ -2,6 +2,25 @@
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file.
 
+## [Next](https://github.com/bakame-php/http-structured-fields/compare/1.2.2...1.3.0) - TBD
+
+### Added
+
+- `Ietf` enum.
+- methods `fromRFC9651`, `fromRfc8941`, `toRFC9651`, `toRfc8941`, to ease Type and StructuredFields convertion between RFC.
+
+### Fixed
+
+- None
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
+
 ## [1.3.0](https://github.com/bakame-php/http-structured-fields/compare/1.2.2...1.3.0) - 2024-01-05
 
 ### Added
