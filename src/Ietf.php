@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Throwable;
 
 enum Ietf: string
@@ -19,6 +21,14 @@ enum Ietf: string
         };
     }
 
+    public function publishedAt(): DateTimeImmutable
+    {
+        return match ($this) {
+            self::Rfc9651 => new DateTimeImmutable('2024-09-01', new DateTimeZone('UTC')),
+            self::Rfc8941 => new DateTimeImmutable('2021-02-01', new DateTimeZone('UTC')),
+        };
+    }
+
     public function isObsolete(): bool
     {
         return match ($this) {
@@ -27,30 +37,27 @@ enum Ietf: string
         };
     }
 
-    public function supports(Type|StructuredField $type): bool
+    public function supports(mixed $type): bool
     {
-        if ($type instanceof Type) {
-            return match ($type) {
-                Type::DisplayString,
-                Type::Date => self::Rfc8941 !== $this,
-                default => true,
-            };
+        if ($type instanceof StructuredField) {
+            try {
+                $type->toHttpValue($this);
+
+                return true;
+            } catch (Throwable) {
+                return false;
+            }
         }
 
-        try {
-            $type->toHttpValue($this);
-
-            return true;
-        } catch (Throwable) {
-            return false;
+        if (!$type instanceof Type) {
+            $type = Type::tryFromVariable($type);
         }
-    }
 
-    public function publishedAt(): string
-    {
-        return match ($this) {
-            self::Rfc9651 => '2024-09',
-            self::Rfc8941 => '2021-02',
+        return match ($type) {
+            null => false,
+            Type::DisplayString,
+            Type::Date => self::Rfc8941 !== $this,
+            default => true,
         };
     }
 }

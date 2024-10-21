@@ -72,28 +72,42 @@ composer require bakame/http-structured-fields
 > New in version 1.4.0
 
 With the official release of `RFC9651`, there are two RFC linked to structured fields. The obsolete `RFC8941` and
-the superseding RFC. To help migrating to the newer RFC, the package introduces an Enum and some syntactic
-sugar methods to quickly parse and build an HTTP structured field.
-
-```php
-$headerLine = 'bar;baz=42'; //the raw header line is a structured field item
-$field = DataType::Item->fromRFC8941($headerLine); // parse the field using RFC8941
-$field->toRFC9651(); // serialize the field using RFC9651
-```
-If you still want to ise the current API, you will need to provide the correct RFC to the `toHttpValue` and `fromHttpValue`
-method as shown below:
+the superseding `RFC9651`. To help migrating to the newer RFC, the package introduces an Enum and some syntactic
+sugar methods to quickly parse and build the appropriate HTTP structured field against the correctly selected RFC.
+By default, if no version is given, the package will use the latest stable RFC which is at the moment of writing `RFC9651`.
 
 ```php
 $headerLine = 'bar;baz=42'; //the raw header line is a structured field item
 $field = DataType::Item->fromHttpValue($headerLine, Ietf::Rfc8941); // parse the field using RFC8941
+
 $field->toHttpValue(Ietf::Rfc9651); // serialize the field using RFC9651
+$field->toHttpValue(); // serialize the field using RFC9651 as it is the latest stable specification
+echo $field;           // serialize the field using RFC9651 as it is the latest stable specification
 ```
-In absence of providing the `Ietf` enum, the methods will fall back at using the latest stable protocol (ie: RFC9651)
+
+*In absence of providing the `Ietf` enum, the methods will fall back at using the latest stable protocol (ie: RFC9651).*
+
+To simplify code, if you do not want to use the `Ietf` enum your can use this alternative syntax:
+
+```php
+$headerLine = 'bar;baz=42'; //the raw header line is a structured field item
+$field = DataType::Item->fromRFC8941($headerLine); // parse the field using RFC8941
+$field->toRfc9651(); // serialize the field using RFC9651
+$field->toRfc8941(); // serialize the field using RFC8941
+```
 
 > [!WARNING]
-> If parsing or serializing is not possible, a `SyntaxError` exception is thrown with the infornation about why
+> If parsing or serializing is not possible, a `SyntaxError` exception is thrown with the information about why
 the conversion could not be achieved.
 
+At any given moment when building your structured field you can use the `Ietf::supports` method to know whether or not
+your current work is valid against any of the RFC.
+
+```php
+$item = Item::fromTimestamp(1234567879);
+Ietf::Rfc8941->supports($item); //returns false - the date type does not exist in RFC8941
+Ietf::Rfc9651->supports($item); //returns true
+```
 
 > [!NOTE]
 > New in version 1.2.0
@@ -227,16 +241,16 @@ Per the RFC, items value can have different types that are translated to PHP usi
 
 The table below summarizes the item value type.
 
-| RFC Type      | PHP Type                  | Package Enum Name     | Package Enum Value |
-|---------------|---------------------------|-----------------------|--------------------|
-| Integer       | `int`                     | `Type::Integer`       | `ìnteger`          |
-| Decimal       | `float`                   | `Type::Decimal`       | `decimal`          |
-| String        | `string`                  | `Type::String`        | `string`           |
-| Boolean       | `bool`                    | `Type::Boolean`       | `boolean`          |
-| Token         | class `Token`             | `Type::Token`         | `token`            |
-| Byte Sequence | class `ByteSequence`      | `Type::ByteSequence`  | `binary`           |
-| Date          | class `DateTimeImmutable` | `Type::Date`          | `date`             |
-| DisplayString | class `DisplayString`     | `Type::DisplayString` | `displaystring`    |
+| RFC Type      | PHP Type                  | Package Enum Name     | Package Enum Value | RFC support |
+|---------------|---------------------------|-----------------------|--------------------|-------------|
+| Integer       | `int`                     | `Type::Integer`       | `ìnteger`          | RFC8941     |
+| Decimal       | `float`                   | `Type::Decimal`       | `decimal`          | RFC8941     |
+| String        | `string`                  | `Type::String`        | `string`           | RFC8941     |
+| Boolean       | `bool`                    | `Type::Boolean`       | `boolean`          | RFC8941     |
+| Token         | class `Token`             | `Type::Token`         | `token`            | RFC8941     |
+| Byte Sequence | class `ByteSequence`      | `Type::ByteSequence`  | `binary`           | RFC8941     |
+| Date          | class `DateTimeImmutable` | `Type::Date`          | `date`             | RFC9651     |
+| DisplayString | class `DisplayString`     | `Type::DisplayString` | `displaystring`    | RFC9651     |
 
 
 The Enum `Type` list all available types and can be used to determine the RFC type
@@ -817,6 +831,19 @@ Parser::parseParameters(Stringable|string $httpValue): array;
 Parser::parseInnerList(Stringable|string $httpValue): array;
 Parser::parseList(Stringable|string $httpValue): array;
 Parser::parseDictionary(Stringable|string $httpValue): array;
+```
+
+Starting with version `1.4` the package parse accepts an option `Ietf` enum as its sole parameter.
+By default, if no parameter is given, the parser will use the latest stable RFC which is at
+the moment of writing `RFC9651`. Otherwise, it will use the rules from the RFC specified via the `Ietf` enum.
+
+```php
+use Bakame\Http\StructuredFields\Parser;
+use Bakame\Http\StructuredFields\Ietf;
+
+$parser = new Parser();              // parse using RFC9651 rules
+$parser = new Parser(Ietf::Rfc9651); // parse using RFC9651 rules
+$parser = new Parser(Ietf::Rfc8941); // parse using RFC8941 rules
 ```
 
 Once instantiated, calling one of the above listed method is straightforward:
