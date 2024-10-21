@@ -50,6 +50,10 @@ final class Parameters implements MemberOrderedMap
      */
     private static function filterMember(mixed $member): object
     {
+        if ($member instanceof StructuredFieldAccess) {
+            $member = $member->toStructuredField();
+        }
+
         return match (true) {
             $member instanceof ParameterAccess && $member instanceof ValueAccess => $member->parameters()->hasNoMembers() ? $member : throw new InvalidArgument('The "'.$member::class.'" instance is not a Bare Item.'),
             $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
@@ -246,7 +250,7 @@ final class Parameters implements MemberOrderedMap
         return [...$this->toPairs()][$offset];
     }
 
-    public function add(string $key, StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
+    public function add(string $key, StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
@@ -306,7 +310,7 @@ final class Parameters implements MemberOrderedMap
 
     public function append(
         string $key,
-        StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         $members = $this->members;
         unset($members[$key]);
@@ -316,7 +320,7 @@ final class Parameters implements MemberOrderedMap
 
     public function prepend(
         string $key,
-        StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         $members = $this->members;
         unset($members[$key]);
