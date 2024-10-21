@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
+use Closure;
 use DateTimeInterface;
 use Iterator;
 use Stringable;
@@ -21,6 +22,7 @@ use function is_array;
 use function is_int;
 use function is_iterable;
 
+use const ARRAY_FILTER_USE_BOTH;
 use const ARRAY_FILTER_USE_KEY;
 
 /**
@@ -374,5 +376,52 @@ final class OuterList implements MemberList
     public function offsetSet(mixed $offset, mixed $value): void
     {
         throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
+    }
+
+    /**
+     * @param Closure(SfItem, string): TMap $callback
+     *
+     * @template TMap
+     *
+     * @return Iterator<TMap>
+     */
+    public function map(Closure $callback): Iterator
+    {
+        /**
+         * @var string $offset
+         * @var SfItem $member
+         */
+        foreach ($this as $offset => $member) {
+            yield ($callback)($member, $offset);
+        }
+    }
+
+    /**
+     * @param Closure(TInitial|null, SfItem, string=): TInitial $callback
+     * @param TInitial|null $initial
+     *
+     * @template TInitial
+     *
+     * @return TInitial|null
+     */
+    public function reduce(Closure $callback, mixed $initial = null): mixed
+    {
+        /**
+         * @var string $offset
+         * @var SfItem $record
+         */
+        foreach ($this as $offset => $record) {
+            $initial = $callback($initial, $record, $offset);
+        }
+
+        return $initial;
+    }
+
+    /**
+     * @param Closure(SfMember, int): bool $callback
+     */
+    public function filter(Closure $callback): self
+    {
+        return new self(...array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
     }
 }
