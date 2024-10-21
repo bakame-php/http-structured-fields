@@ -385,7 +385,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_create_a_new_instance_using_parameters_position_modifying_methods(): void
     {
-        $instance = new class () implements StructuredFieldAccess {
+        $instance = new class () implements StructuredFieldProvider {
             public function toStructuredField(): StructuredField
             {
                 return Item::false();

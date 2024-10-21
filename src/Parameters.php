@@ -51,7 +51,7 @@ final class Parameters implements MemberOrderedMap
      */
     private static function filterMember(mixed $member): object
     {
-        if ($member instanceof StructuredFieldAccess) {
+        if ($member instanceof StructuredFieldProvider) {
             $member = $member->toStructuredField();
         }
 
@@ -251,7 +251,7 @@ final class Parameters implements MemberOrderedMap
         return [...$this->toPairs()][$offset];
     }
 
-    public function add(string $key, StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
+    public function add(string $key, StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
@@ -311,7 +311,7 @@ final class Parameters implements MemberOrderedMap
 
     public function append(
         string $key,
-        StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         $members = $this->members;
         unset($members[$key]);
@@ -321,7 +321,7 @@ final class Parameters implements MemberOrderedMap
 
     public function prepend(
         string $key,
-        StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         $members = $this->members;
         unset($members[$key]);

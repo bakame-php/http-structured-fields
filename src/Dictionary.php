@@ -55,7 +55,7 @@ final class Dictionary implements MemberOrderedMap
      */
     private static function filterMember(mixed $member): object
     {
-        if ($member instanceof StructuredFieldAccess) {
+        if ($member instanceof StructuredFieldProvider) {
             $member = $member->toStructuredField();
         }
 
@@ -103,7 +103,7 @@ final class Dictionary implements MemberOrderedMap
          * @return ParameterAccess&(MemberList|ValueAccess)
          */
         $converter = function (mixed $pair): StructuredField {
-            if ($pair instanceof StructuredFieldAccess) {
+            if ($pair instanceof StructuredFieldProvider) {
                 $pair = $pair->toStructuredField();
             }
 
@@ -300,7 +300,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @param SfMember|SfMemberInput $member
      */
-    public function add(string $key, iterable|StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
+    public function add(string $key, iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
@@ -363,7 +363,7 @@ final class Dictionary implements MemberOrderedMap
      */
     public function append(
         string $key,
-        iterable|StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         $members = $this->members;
         unset($members[$key]);
@@ -376,7 +376,7 @@ final class Dictionary implements MemberOrderedMap
      */
     public function prepend(
         string $key,
-        iterable|StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         $members = $this->members;
         unset($members[$key]);
