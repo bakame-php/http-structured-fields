@@ -29,6 +29,16 @@ final class Item implements ParameterAccess, ValueAccess
     ) {
     }
 
+    public static function fromRfc9651(Stringable|string $httpValue): self
+    {
+        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
+    }
+
+    public static function fromRfc8941(Stringable|string $httpValue): self
+    {
+        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
+    }
+
     /**
      * Returns a new instance from an HTTP Header or Trailer value string
      * in compliance with RFC8941.
@@ -278,9 +288,22 @@ final class Item implements ParameterAccess, ValueAccess
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.1
      */
-    public function toHttpValue(): string
+    public function toHttpValue(?Ietf $rfc = null): string
     {
-        return $this->value->serialize().$this->parameters->toHttpValue();
+        $rfc ??= Ietf::Rfc9651;
+
+
+        return $this->value->serialize($rfc).$this->parameters->toHttpValue($rfc);
+    }
+
+    public function toRfc9651(): string
+    {
+        return $this->toHttpValue(Ietf::Rfc9651);
+    }
+
+    public function toRfc8941(): string
+    {
+        return $this->toHttpValue(Ietf::Rfc8941);
     }
 
     public function __toString(): string

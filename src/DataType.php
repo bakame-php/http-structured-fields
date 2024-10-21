@@ -17,23 +17,57 @@ enum DataType: string
     /**
      * @throws StructuredFieldError
      */
-    public function parse(Stringable|string $httpValue): StructuredField
+    public function fromRfc9651(Stringable|string $httpValue): StructuredField
     {
+        return $this->parse($httpValue, Ietf::Rfc9651);
+    }
+
+    /**
+     * @throws StructuredFieldError
+     */
+    public function fromRfc8941(Stringable|string $httpValue): StructuredField
+    {
+        return $this->parse($httpValue, Ietf::Rfc8941);
+    }
+
+    /**
+     * @throws StructuredFieldError
+     */
+    public function toRfc9651(iterable $data): string
+    {
+        return $this->serialize($data, Ietf::Rfc9651);
+    }
+
+    /**
+     * @throws StructuredFieldError
+     */
+    public function toRfc8941(iterable $data): string
+    {
+        return $this->serialize($data, Ietf::Rfc8941);
+    }
+
+    /**
+     * @throws StructuredFieldError
+     */
+    public function parse(Stringable|string $httpValue, ?Ietf $rfc = null): StructuredField
+    {
+        $parser = new Parser($rfc);
+
         return match ($this) {
-            self::List => OuterList::fromHttpValue($httpValue),
-            self::InnerList => InnerList::fromHttpValue($httpValue),
-            self::Parameters => Parameters::fromHttpValue($httpValue),
-            self::Dictionary => Dictionary::fromHttpValue($httpValue),
-            self::Item => Item::fromHttpValue($httpValue),
+            self::List => OuterList::fromHttpValue($httpValue, $parser),
+            self::InnerList => InnerList::fromHttpValue($httpValue, $parser),
+            self::Parameters => Parameters::fromHttpValue($httpValue, $parser),
+            self::Dictionary => Dictionary::fromHttpValue($httpValue, $parser),
+            self::Item => Item::fromHttpValue($httpValue, $parser),
         };
     }
 
     /**
      * @throws StructuredFieldError
      */
-    public function serialize(iterable $data): string
+    public function serialize(iterable $data, ?Ietf $rfc = null): string
     {
-        return $this->create($data)->toHttpValue();
+        return $this->create($data)->toHttpValue($rfc);
     }
 
     /**
@@ -58,8 +92,8 @@ enum DataType: string
      *
      * @see DataType::serialize()
      */
-    public function build(iterable $data): string
+    public function build(iterable $data, ?Ietf $rfc = null): string
     {
-        return $this->serialize($data);
+        return $this->serialize($data, $rfc);
     }
 }

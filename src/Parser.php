@@ -45,9 +45,16 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     private const FIRST_CHARACTER_RANGE_NUMBER = '-1234567890';
     private const FIRST_CHARACTER_RANGE_TOKEN = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*';
 
-    public static function new(): self
+    private Ietf $rfc;
+
+    public static function new(?Ietf $rfc = null): self
     {
-        return new self();
+        return new self($rfc);
+    }
+
+    public function __construct(?Ietf $rfc = null)
+    {
+        $this->rfc = $rfc ?? Ietf::Rfc9651;
     }
 
     public function parseValue(Stringable|string $httpValue): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool
@@ -57,7 +64,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item value contains invalid characters.");
         }
 
-        [$value, $offset] = self::extractValue($remainder);
+        [$value, $offset] = $this->extractValue($remainder);
         if ('' !== substr($remainder, $offset)) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item value contains invalid characters.");
         }
@@ -75,7 +82,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item contains invalid characters.");
         }
 
-        [$value, $offset] = self::extractValue($remainder);
+        [$value, $offset] = $this->extractValue($remainder);
         $remainder = substr($remainder, $offset);
         if ('' !== $remainder && !str_contains($remainder, ';')) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item contains invalid characters.");
@@ -96,7 +103,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     public function parseParameters(Stringable|string $httpValue): array
     {
         $remainder = trim((string) $httpValue);
-        [$parameters, $offset] = self::extractParametersValues($remainder);
+        [$parameters, $offset] = $this->extractParametersValues($remainder);
         if (strlen($remainder) !== $offset) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for Parameters contains invalid characters.");
         }
@@ -116,7 +123,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
         $list = [];
         $remainder = ltrim((string) $httpValue, ' ');
         while ('' !== $remainder) {
-            [$list[], $offset] = self::extractItemOrInnerList($remainder);
+            [$list[], $offset] = $this->extractItemOrInnerList($remainder);
             $remainder = self::removeCommaSeparatedWhiteSpaces($remainder, $offset);
         }
 
@@ -141,7 +148,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
                 $remainder = '=?1'.$remainder;
             }
 
-            [$map[$key], $offset] = self::extractItemOrInnerList(substr($remainder, 1));
+            [$map[$key], $offset] = $this->extractItemOrInnerList(substr($remainder, 1));
             $remainder = self::removeCommaSeparatedWhiteSpaces($remainder, ++$offset);
         }
 
@@ -158,15 +165,11 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     public function parseInnerList(Stringable|string $httpValue): array
     {
         $remainder = ltrim((string) $httpValue, ' ');
-        if ('(' !== $remainder[0]) {
-            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list is missing a parenthesis.");
-        }
+        '(' === $remainder[0] || throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list is missing a parenthesis.");
 
-        [$list, $offset] = self::extractInnerList($remainder);
+        [$list, $offset] = $this->extractInnerList($remainder);
         $remainder = self::removeOptionalWhiteSpaces(substr($remainder, $offset));
-        if ('' !== $remainder) {
-            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list contains invalid data.");
-        }
+        '' === $remainder || throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list contains invalid data.");
 
         return $list;
     }
@@ -183,14 +186,11 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
             return '';
         }
 
-        if (1 !== preg_match(self::REGEXP_VALID_SPACE, $remainder, $found)) {
-            throw new SyntaxError('The HTTP textual representation is missing an excepted comma.');
-        }
+        1 === preg_match(self::REGEXP_VALID_SPACE, $remainder, $found) || throw new SyntaxError('The HTTP textual representation is missing an excepted comma.');
 
         $remainder = substr($remainder, strlen($found['space']));
-        if ('' === $remainder) {
-            throw new SyntaxError('The HTTP textual representation has an unexpected end of line.');
-        }
+
+        '' !== $remainder || throw new SyntaxError('The HTTP textual representation has an unexpected end of line.');
 
         return $remainder;
     }
@@ -212,13 +212,13 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
      *
      * @return array{0:array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}, 1:int}
      */
-    private static function extractItemOrInnerList(string $httpValue): array
+    private function extractItemOrInnerList(string $httpValue): array
     {
         if ('(' === $httpValue[0]) {
-            return self::extractInnerList($httpValue);
+            return $this->extractInnerList($httpValue);
         }
 
-        [$item, $remainder] = self::extractItem($httpValue);
+        [$item, $remainder] = $this->extractItem($httpValue);
 
         return [$item, strlen($httpValue) - strlen($remainder)];
     }
@@ -230,7 +230,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
      *
      * @return array{0:array{0:array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}, 1:int}
      */
-    private static function extractInnerList(string $httpValue): array
+    private function extractInnerList(string $httpValue): array
     {
         $list = [];
         $remainder = substr($httpValue, 1);
@@ -239,13 +239,13 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
 
             if (')' === $remainder[0]) {
                 $remainder = substr($remainder, 1);
-                [$parameters, $offset] = self::extractParametersValues($remainder);
+                [$parameters, $offset] = $this->extractParametersValues($remainder);
                 $remainder = substr($remainder, $offset);
 
                 return [[$list, $parameters], strlen($httpValue) - strlen($remainder)];
             }
 
-            [$list[], $remainder] = self::extractItem($remainder);
+            [$list[], $remainder] = $this->extractItem($remainder);
 
             if ('' !== $remainder && !in_array($remainder[0], [' ', ')'], true)) {
                 throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list is using invalid characters.");
@@ -260,11 +260,11 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
      *
      * @return array{0:array{0:SfType, 1:array<string, SfType>}, 1:string}
      */
-    private static function extractItem(string $remainder): array
+    private function extractItem(string $remainder): array
     {
-        [$value, $offset] = self::extractValue($remainder);
+        [$value, $offset] = $this->extractValue($remainder);
         $remainder = substr($remainder, $offset);
-        [$parameters, $offset] = self::extractParametersValues($remainder);
+        [$parameters, $offset] = $this->extractParametersValues($remainder);
 
         return [[$value, $parameters], substr($remainder, $offset)];
     }
@@ -276,14 +276,14 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
      *
      * @return array{0:SfType, 1:int}
      */
-    private static function extractValue(string $httpValue): array
+    private function extractValue(string $httpValue): array
     {
         return match (true) {
             '"' === $httpValue[0] => self::extractString($httpValue),
             ':' === $httpValue[0] => self::extractByteSequence($httpValue),
             '?' === $httpValue[0] => self::extractBoolean($httpValue),
-            '@' === $httpValue[0] => self::extractDate($httpValue),
-            str_starts_with($httpValue, '%"') => self::extractDisplayString($httpValue),
+            '@' === $httpValue[0] => self::extractDate($httpValue, $this->rfc),
+            str_starts_with($httpValue, '%"') => self::extractDisplayString($httpValue, $this->rfc),
             str_contains(self::FIRST_CHARACTER_RANGE_NUMBER, $httpValue[0]) => self::extractNumber($httpValue),
             str_contains(self::FIRST_CHARACTER_RANGE_TOKEN, $httpValue[0]) => self::extractToken($httpValue),
             default => throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item value is unknown or unsupported."),
@@ -297,7 +297,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
      *
      * @return array{0:array<string, SfType>, 1:int}
      */
-    private static function extractParametersValues(Stringable|string $httpValue): array
+    private function extractParametersValues(Stringable|string $httpValue): array
     {
         $map = [];
         $httpValue = (string) $httpValue;
@@ -309,7 +309,7 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
             $remainder = substr($remainder, strlen($key));
             if ('' !== $remainder && '=' === $remainder[0]) {
                 $remainder = substr($remainder, 1);
-                [$map[$key], $offset] = self::extractValue($remainder);
+                [$map[$key], $offset] = $this->extractValue($remainder);
                 $remainder = substr($remainder, $offset);
             }
         }
@@ -359,8 +359,10 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
      *
      * @return array{0:DateTimeImmutable, 1:int}
      */
-    private static function extractDate(string $httpValue): array
+    private static function extractDate(string $httpValue, Ietf $rfc): array
     {
+        $rfc->supports(Type::Date) || throw new SyntaxError('The '.Type::Date->value.' type is not parsable by '.$rfc->value);
+
         if (1 !== preg_match(self::REGEXP_DATE, $httpValue, $found)) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Date contains invalid characters.");
         }
@@ -421,8 +423,10 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
      *
      * @return array{0:DisplayString, 1:int}
      */
-    private static function extractDisplayString(string $httpValue): array
+    private static function extractDisplayString(string $httpValue, Ietf $rfc): array
     {
+        $rfc->supports(Type::DisplayString) || throw new SyntaxError('The '.Type::DisplayString->value.' type is not parsable by '.$rfc->value);
+
         $offset = 2;
         $remainder = substr($httpValue, $offset);
         $output = '';

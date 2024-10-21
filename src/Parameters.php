@@ -111,14 +111,35 @@ final class Parameters implements MemberOrderedMap
         return new self($parser->parseParameters($httpValue));
     }
 
-    public function toHttpValue(): string
+    public static function fromRfc9651(Stringable|string $httpValue): self
     {
+        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
+    }
+
+    public static function fromRfc8941(Stringable|string $httpValue): self
+    {
+        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
+    }
+
+    public function toHttpValue(?Ietf $rfc = null): string
+    {
+        $rfc ??= Ietf::Rfc9651;
         $formatter = static fn (ValueAccess $member, string $offset): string => match (true) {
             true === $member->value() => ';'.$offset,
-            default => ';'.$offset.'='.$member->toHttpValue(),
+            default => ';'.$offset.'='.$member->toHttpValue($rfc),
         };
 
         return implode('', array_map($formatter, $this->members, array_keys($this->members)));
+    }
+
+    public function toRfc9651(): string
+    {
+        return $this->toHttpValue(Ietf::Rfc9651);
+    }
+
+    public function toRfc8941(): string
+    {
+        return $this->toHttpValue(Ietf::Rfc8941);
     }
 
     public function __toString(): string
