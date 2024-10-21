@@ -52,6 +52,10 @@ final class Dictionary implements MemberOrderedMap
      */
     private static function filterMember(mixed $member): object
     {
+        if ($member instanceof StructuredFieldAccess) {
+            $member = $member->toStructuredField();
+        }
+
         return match (true) {
             $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
             $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
@@ -96,6 +100,10 @@ final class Dictionary implements MemberOrderedMap
          * @return ParameterAccess&(MemberList|ValueAccess)
          */
         $converter = function (mixed $pair): StructuredField {
+            if ($pair instanceof StructuredFieldAccess) {
+                $pair = $pair->toStructuredField();
+            }
+
             if ($pair instanceof ParameterAccess && ($pair instanceof MemberList || $pair instanceof ValueAccess)) {
                 return $pair;
             }
@@ -289,7 +297,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @param SfMember|SfMemberInput $member
      */
-    public function add(string $key, iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
+    public function add(string $key, iterable|StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
@@ -352,7 +360,7 @@ final class Dictionary implements MemberOrderedMap
      */
     public function append(
         string $key,
-        iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        iterable|StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         $members = $this->members;
         unset($members[$key]);
@@ -365,7 +373,7 @@ final class Dictionary implements MemberOrderedMap
      */
     public function prepend(
         string $key,
-        iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        iterable|StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         $members = $this->members;
         unset($members[$key]);

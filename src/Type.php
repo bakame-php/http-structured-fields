@@ -28,6 +28,17 @@ enum Type: string
         };
     }
 
+    public function isOneOf(mixed ...$other): bool
+    {
+        foreach ($other as $item) {
+            if ($this->equals($item)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * @throws InvalidArgument if the value can not be resolved into a supported HTTP structured field data type
      */

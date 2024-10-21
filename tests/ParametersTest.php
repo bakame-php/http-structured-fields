@@ -99,7 +99,14 @@ final class ParametersTest extends StructuredFieldTestCase
         self::assertFalse($deletedInstance->has('boolean'));
         self::assertFalse($deletedInstance->hasPair(1));
 
-        $addedInstance = $deletedInstance->append('foobar', Item::fromString('BarBaz'));
+        $instance = new class () implements StructuredFieldAccess {
+            public function toStructuredField(): StructuredField
+            {
+                return Item::fromString('BarBaz');
+            }
+        };
+
+        $addedInstance = $deletedInstance->append('foobar', $instance);
         self::assertSame($addedInstance, $addedInstance->append('foobar', Item::new('BarBaz')));
         self::assertTrue($addedInstance->hasPair(1));
         self::assertFalse($addedInstance->hasPair(3, 23));

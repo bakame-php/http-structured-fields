@@ -337,21 +337,21 @@ final class Item implements ParameterAccess, ValueAccess
 
     public function addParameter(
         string $key,
-        StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         return $this->withParameters($this->parameters()->add($key, $member));
     }
 
     public function prependParameter(
         string $key,
-        StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         return $this->withParameters($this->parameters()->prepend($key, $member));
     }
 
     public function appendParameter(
         string $key,
-        StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldAccess|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         return $this->withParameters($this->parameters()->append($key, $member));
     }

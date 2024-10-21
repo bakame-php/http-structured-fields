@@ -204,7 +204,14 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_create_via_with_parameters_method_a_new_object(): void
     {
-        $list = [Token::fromString('babayaga'), 'a', true];
+        $instance = new class () implements StructuredFieldAccess {
+            public function toStructuredField(): StructuredField
+            {
+                return Item::new(Token::fromString('babayaga'));
+            }
+        };
+
+        $list = [$instance, 'a', true];
         $instance1 = InnerList::fromAssociative($list, ['a' => true]);
         $instance1bis = InnerList::fromPair([$list, [['a', true]]]);
         $instance2 = $instance1->withParameters(Parameters::fromAssociative(['a' => true]));
