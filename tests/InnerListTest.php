@@ -302,8 +302,7 @@ final class InnerListTest extends TestCase
     {
         $structuredField = InnerList::new('foobar', 'foobar', 'zero', 0);
 
-        self::assertInstanceOf(Item::class, $structuredField->get(0));
-        self::assertInstanceOf(Item::class, $structuredField[0]);
+        self::assertSame($structuredField->get(0), $structuredField[0]);
 
         self::assertFalse(isset($structuredField[42]));
     }

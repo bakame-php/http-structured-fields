@@ -29,9 +29,12 @@ use function substr;
  * @see InnerList::fromHttpValue()
  * @see Item::fromHttpValue()
  *
+ * @internal Do not use directly this class as it's behaviour and return type
+ *           MAY change significantly even during a major release cycle.
+ *
  * @phpstan-import-type SfType from StructuredField
  */
-final class Parser implements DictionaryParser, InnerListParser, ItemParser, ListParser, ParametersParser, ValueParser
+final class Parser
 {
     private const REGEXP_BYTE_SEQUENCE = '/^(?<sequence>:(?<byte>[a-z\d+\/=]*):)/i';
     private const REGEXP_BOOLEAN = '/^\?[01]/';
@@ -45,18 +48,26 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
     private const FIRST_CHARACTER_RANGE_NUMBER = '-1234567890';
     private const FIRST_CHARACTER_RANGE_TOKEN = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*';
 
-    private Ietf $rfc;
-
     public static function new(?Ietf $rfc = null): self
     {
-        return new self($rfc);
+        return new self($rfc ?? Ietf::Rfc9651);
     }
 
-    public function __construct(?Ietf $rfc = null)
+    public function __construct(private readonly Ietf $rfc)
     {
-        $this->rfc = $rfc ?? Ietf::Rfc9651;
     }
 
+    /**
+     * Returns the data type value represented as a PHP type from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.4
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.5
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.6
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.7
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.8
+     *
+     * @throws SyntaxError
+     */
     public function parseValue(Stringable|string $httpValue): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool
     {
         $remainder = trim((string) $httpValue, ' ');

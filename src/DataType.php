@@ -33,6 +33,20 @@ enum DataType: string
     /**
      * @throws StructuredFieldError
      */
+    public function parse(Stringable|string $httpValue, ?Ietf $rfc = null): StructuredField
+    {
+        return match ($this) {
+            self::List => OuterList::fromHttpValue($httpValue, $rfc),
+            self::InnerList => InnerList::fromHttpValue($httpValue, $rfc),
+            self::Parameters => Parameters::fromHttpValue($httpValue, $rfc),
+            self::Dictionary => Dictionary::fromHttpValue($httpValue, $rfc),
+            self::Item => Item::fromHttpValue($httpValue, $rfc),
+        };
+    }
+
+    /**
+     * @throws StructuredFieldError
+     */
     public function toRfc9651(iterable $data): string
     {
         return $this->serialize($data, Ietf::Rfc9651);
@@ -44,22 +58,6 @@ enum DataType: string
     public function toRfc8941(iterable $data): string
     {
         return $this->serialize($data, Ietf::Rfc8941);
-    }
-
-    /**
-     * @throws StructuredFieldError
-     */
-    public function parse(Stringable|string $httpValue, ?Ietf $rfc = null): StructuredField
-    {
-        $parser = new Parser($rfc);
-
-        return match ($this) {
-            self::List => OuterList::fromHttpValue($httpValue, $parser),
-            self::InnerList => InnerList::fromHttpValue($httpValue, $parser),
-            self::Parameters => Parameters::fromHttpValue($httpValue, $parser),
-            self::Dictionary => Dictionary::fromHttpValue($httpValue, $parser),
-            self::Item => Item::fromHttpValue($httpValue, $parser),
-        };
     }
 
     /**
@@ -82,18 +80,5 @@ enum DataType: string
             self::Dictionary => Dictionary::fromPairs($data),
             self::Item => Item::fromPair([...$data]), /* @phpstan-ignore-line */
         };
-    }
-
-    /**
-     * DEPRECATION WARNING! This method will be removed in the next major point release.
-     *
-     * @deprecated Since version 1.3.0
-     * @codeCoverageIgnore
-     *
-     * @see DataType::serialize()
-     */
-    public function build(iterable $data, ?Ietf $rfc = null): string
-    {
-        return $this->serialize($data, $rfc);
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use Closure;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
@@ -15,13 +16,11 @@ use function count;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3
  *
- * @phpstan-import-type SfItem from StructuredField
- * @phpstan-import-type SfType from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
- * @phpstan-import-type SfTypeInput from StructuredField
  * @phpstan-import-type SfItemPair from StructuredField
+ * @phpstan-import-type SfTypeInput from StructuredField
  */
-final class Item implements ParameterAccess, ValueAccess
+final class Item implements ParameterAccess, StructuredField
 {
     private function __construct(
         private readonly Value $value,
@@ -31,12 +30,12 @@ final class Item implements ParameterAccess, ValueAccess
 
     public static function fromRfc9651(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
+        return self::fromHttpValue($httpValue, Ietf::Rfc9651);
     }
 
     public static function fromRfc8941(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
+        return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
     /**
@@ -47,9 +46,9 @@ final class Item implements ParameterAccess, ValueAccess
      *
      * @throws SyntaxError If the HTTP value can not be parsed
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ItemParser $parser = new Parser()): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
-        return self::fromAssociative(...$parser->parseItem($httpValue));
+        return self::fromAssociative(...Parser::new($rfc)->parseItem($httpValue));
     }
 
     /**
@@ -69,10 +68,7 @@ final class Item implements ParameterAccess, ValueAccess
     }
 
     /**
-     * @param array{
-     *     0: SfType,
-     *     1: MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>
-     * } $pair
+     * @param array{0: SfTypeInput, 1: Parameters|iterable<array{0:string, 1:SfItemInput}>} $pair
      *
      * @throws SyntaxError If the pair or its content is not valid.
      */
@@ -88,7 +84,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * Returns a new bare instance from value.
      *
-     * @param SfTypeInput|array{0:SfType, 1:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>} $value
+     * @param SfTypeInput|array{0:SfTypeInput, 1:Parameters|iterable<array{0:string, 1:SfItemInput}>} $value
      *
      * @throws SyntaxError If the value is not valid.
      */
@@ -245,6 +241,9 @@ final class Item implements ParameterAccess, ValueAccess
         return self::fromValue(Value::false());
     }
 
+    /**
+     * Returns the underlying value.
+     */
     public function value(): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool
     {
         return $this->value->value;
@@ -312,13 +311,21 @@ final class Item implements ParameterAccess, ValueAccess
     }
 
     /**
-     * @return array{0:SfItemInput, 1:MemberOrderedMap<string, SfItem>}
+     * @return array{0:SfItemInput, 1:Parameters}
      */
     public function toPair(): array
     {
         return [$this->value->value, $this->parameters];
     }
 
+    /**
+     * Returns a new instance with the newly associated value.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified value change.
+     *
+     * @throws SyntaxError If the value is invalid or not supported
+     */
     public function withValue(
         DateTimeInterface|ByteSequence|Token|DisplayString|string|int|float|bool $value
     ): static {
@@ -328,6 +335,11 @@ final class Item implements ParameterAccess, ValueAccess
         }
 
         return new self($value, $this->parameters);
+    }
+
+    public function sortParameters(Closure $callback): static
+    {
+        return $this->withParameters($this->parameters()->sort($callback));
     }
 
     public function withParameters(Parameters $parameters): static
@@ -359,7 +371,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function pushParameters(array ...$pairs): self
+    public function pushParameters(array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->push(...$pairs));
     }
@@ -367,7 +379,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function unshiftParameters(array ...$pairs): self
+    public function unshiftParameters(array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->unshift(...$pairs));
     }
@@ -375,7 +387,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function insertParameters(int $index, array ...$pairs): self
+    public function insertParameters(int $index, array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->insert($index, ...$pairs));
     }
@@ -383,19 +395,9 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * @param array{0:string, 1:SfItemInput} $pair
      */
-    public function replaceParameter(int $index, array $pair): self
+    public function replaceParameter(int $index, array $pair): static
     {
         return $this->withParameters($this->parameters()->replace($index, $pair));
-    }
-
-    /**
-     * @deprecated since version 1.1
-     * @see ParameterAccess::withoutParameterByKeys()
-     * @codeCoverageIgnore
-     */
-    public function withoutParameter(string ...$keys): static
-    {
-        return $this->withoutParameterByKeys(...$keys);
     }
 
     public function withoutParameterByKeys(string ...$keys): static
@@ -411,5 +413,10 @@ final class Item implements ParameterAccess, ValueAccess
     public function withoutAnyParameter(): static
     {
         return $this->withParameters(Parameters::new());
+    }
+
+    public function filterParameters(Closure $callback): static
+    {
+        return $this->withParameters($this->parameters()->filter($callback));
     }
 }

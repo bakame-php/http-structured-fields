@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
+use CallbackFilterIterator;
 use Closure;
+use Countable;
 use DateTimeInterface;
 use Iterator;
+use IteratorAggregate;
 use Stringable;
 
 use function array_key_exists;
@@ -20,23 +23,21 @@ use function is_int;
 use function is_iterable;
 use function is_string;
 
-use const ARRAY_FILTER_USE_BOTH;
-
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.2
  *
- * @phpstan-import-type SfMember from StructuredField
  * @phpstan-import-type SfMemberInput from StructuredField
  *
- * @implements MemberOrderedMap<string, SfMember>
+ * @implements ArrayAccess<string, InnerList|Item>
+ * @implements IteratorAggregate<string, InnerList|Item>
  */
-final class Dictionary implements MemberOrderedMap
+final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, StructuredField
 {
-    /** @var array<string, SfMember> */
+    /** @var array<string, InnerList|Item> */
     private readonly array $members;
 
     /**
-     * @param iterable<string, SfMember|SfMemberInput> $members
+     * @param iterable<string, InnerList|Item|SfMemberInput> $members
      */
     private function __construct(iterable $members = [])
     {
@@ -49,18 +50,16 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param SfMember|SfMemberInput $member
-     *
-     * @return SfMember
+     * @param InnerList|Item|SfMemberInput $member
      */
-    private static function filterMember(mixed $member): object
+    private static function filterMember(mixed $member): InnerList|Item
     {
         if ($member instanceof StructuredFieldProvider) {
             $member = $member->toStructuredField();
         }
 
         return match (true) {
-            $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
+            $member instanceof InnerList || $member instanceof Item => $member,
             $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             is_iterable($member) => InnerList::new(...$member),
             default => Item::new($member),
@@ -81,7 +80,7 @@ final class Dictionary implements MemberOrderedMap
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<string, SfMember|SfMemberInput> $members
+     * @param iterable<string, InnerList|Item|SfMemberInput> $members
      */
     public static function fromAssociative(iterable $members): self
     {
@@ -95,19 +94,16 @@ final class Dictionary implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, SfMember>|iterable<array{0:string, 1:SfMember|SfMemberInput}> $pairs
+     * @param Dictionary|Parameters|iterable<array{0:string, 1:InnerList|Item|SfMemberInput}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
-        /**
-         * @return ParameterAccess&(MemberList|ValueAccess)
-         */
-        $converter = function (mixed $pair): StructuredField {
+        $converter = function (mixed $pair): InnerList|Item {
             if ($pair instanceof StructuredFieldProvider) {
                 $pair = $pair->toStructuredField();
             }
 
-            if ($pair instanceof ParameterAccess && ($pair instanceof MemberList || $pair instanceof ValueAccess)) {
+            if ($pair instanceof InnerList || $pair instanceof Item) {
                 return $pair;
             }
 
@@ -129,7 +125,8 @@ final class Dictionary implements MemberOrderedMap
         };
 
         return match (true) {
-            $pairs instanceof MemberOrderedMap => new self($pairs),
+            $pairs instanceof Dictionary,
+            $pairs instanceof Parameters => new self($pairs),
             default => new self((function (iterable $pairs) use ($converter) {
                 foreach ($pairs as [$key, $member]) {
                     yield $key => $converter($member);
@@ -139,13 +136,37 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
+     * Returns an instance from an HTTP textual representationcompliant with RFC9651.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.2
+     *
+     * @throws SyntaxError If the string is not a valid
+     */
+    public static function fromRfc9651(Stringable|string $httpValue): self
+    {
+        return self::fromHttpValue($httpValue, Ietf::Rfc9651);
+    }
+
+    /**
+     * Returns an instance from an HTTP textual representation compliant with RFC8941.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
+     *
+     * @throws SyntaxError If the string is not a valid
+     */
+    public static function fromRfc8941(Stringable|string $httpValue): self
+    {
+        return self::fromHttpValue($httpValue, Ietf::Rfc8941);
+    }
+
+    /**
      * Returns an instance from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.2
      *
      * @throws SyntaxError If the string is not a valid
      */
-    public static function fromHttpValue(Stringable|string $httpValue, DictionaryParser $parser = new Parser()): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
         $converter = fn (array $member): InnerList|Item => match (true) {
             is_array($member[0]) => InnerList::fromAssociative(
@@ -155,31 +176,7 @@ final class Dictionary implements MemberOrderedMap
             default => Item::fromAssociative(...$member),
         };
 
-        return new self(array_map($converter, $parser->parseDictionary($httpValue)));
-    }
-
-    public static function fromRfc9651(Stringable|string $httpValue): self
-    {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
-    }
-
-    public static function fromRfc8941(Stringable|string $httpValue): self
-    {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
-    }
-
-    public function toHttpValue(?Ietf $rfc = null): string
-    {
-        $rfc ??= Ietf::Rfc9651;
-        $members = [];
-        foreach ($this->members as $key => $member) {
-            $members[] = match (true) {
-                $member instanceof ValueAccess && true === $member->value() => $key.$member->parameters()->toHttpValue($rfc),
-                default => $key.'='.$member->toHttpValue($rfc),
-            };
-        }
-
-        return implode(', ', $members);
+        return new self(array_map($converter, Parser::new($rfc)->parseDictionary($httpValue)));
     }
 
     public function toRfc9651(): string
@@ -192,6 +189,20 @@ final class Dictionary implements MemberOrderedMap
         return $this->toHttpValue(Ietf::Rfc8941);
     }
 
+    public function toHttpValue(?Ietf $rfc = null): string
+    {
+        $rfc ??= Ietf::Rfc9651;
+        $members = [];
+        foreach ($this->members as $key => $member) {
+            $members[] = match (true) {
+                $member instanceof Item && true === $member->value() => $key.$member->parameters()->toHttpValue($rfc),
+                default => $key.'='.$member->toHttpValue($rfc),
+            };
+        }
+
+        return implode(', ', $members);
+    }
+
     public function __toString(): string
     {
         return $this->toHttpValue();
@@ -202,23 +213,34 @@ final class Dictionary implements MemberOrderedMap
         return count($this->members);
     }
 
+    /**
+     * Tells whether the instance contains no members.
+     */
     public function hasNoMembers(): bool
     {
         return !$this->hasMembers();
     }
 
+    /**
+     * Tells whether the instance contains any members.
+     */
     public function hasMembers(): bool
     {
         return [] !== $this->members;
     }
 
+    /**
+     * @return Iterator<string, InnerList|Item>
+     */
     public function getIterator(): Iterator
     {
         yield from $this->members;
     }
 
     /**
-     * @return Iterator<int, array{0:string, 1:SfMember}>
+     * Returns an iterable construct of dictionary pairs.
+     *
+     * @return Iterator<int, array{0:string, 1:InnerList|Item}>
      */
     public function toPairs(): Iterator
     {
@@ -228,6 +250,8 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
+     * Returns an ordered list of the instance keys.
+     *
      * @return array<string>
      */
     public function keys(): array
@@ -235,6 +259,9 @@ final class Dictionary implements MemberOrderedMap
         return array_keys($this->members);
     }
 
+    /**
+     * Tells whether the instance contain a members at the specified offsets.
+     */
     public function has(string|int ...$keys): bool
     {
         foreach ($keys as $key) {
@@ -249,14 +276,15 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @throws SyntaxError If the key is invalid
      * @throws InvalidOffset If the key is not found
-     *
-     * @return SfMember
      */
-    public function get(string|int $key): StructuredField
+    public function get(string|int $key): InnerList|Item
     {
         return $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
     }
 
+    /**
+     * Tells whether a pair is attached to the given index position.
+     */
     public function hasPair(int ...$indexes): bool
     {
         $max = count($this->members);
@@ -286,19 +314,64 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
+     * Returns the item or the inner-list and its key as attached to the given
+     * collection according to their index position otherwise throw.
+     *
      * @throws InvalidOffset If the key is not found
      *
-     * @return array{0:string, 1:SfMember}
+     * @return array{0:string, 1:InnerList|Item}
      */
     public function pair(int $index): array
     {
-        $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
+        $foundOffset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
+        foreach ($this->toPairs() as $offset => $pair) {
+            if ($offset === $foundOffset) {
+                return $pair;
+            }
+        }
 
-        return [...$this->toPairs()][$offset];
+        throw InvalidOffset::dueToIndexNotFound($index);
     }
 
     /**
-     * @param SfMember|SfMemberInput $member
+     * Returns the first member whether it is an item or an inner-list and its key as attached to the given
+     * collection according to their index position otherwise returns an empty array.
+     *
+     * @return array{0:string, 1:InnerList|Item}|array{}
+     */
+    public function first(): array
+    {
+        try {
+            return $this->pair(0);
+        } catch (InvalidOffset) {
+            return [];
+        }
+    }
+
+    /**
+     * Returns the first member whether it is an item or an inner-list and its key as attached to the given
+     * collection according to their index position otherwise returns an empty array.
+     *
+     * @return array{0:string, 1:InnerList|Item}|array{}
+     */
+    public function last(): array
+    {
+        try {
+            return $this->pair(-1);
+        } catch (InvalidOffset) {
+            return [];
+        }
+    }
+
+    /**
+     * Adds a member at the end of the instance otherwise updates the value associated with the key if already present.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param InnerList|Item|SfMemberInput $member
+     *
+     * @throws SyntaxError If the string key is not a valid
      */
     public function add(string $key, iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
     {
@@ -309,7 +382,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param array<string, SfMember> $members
+     * @param array<string, InnerList|Item> $members
      */
     private function newInstance(array $members): self
     {
@@ -319,6 +392,12 @@ final class Dictionary implements MemberOrderedMap
         };
     }
 
+    /**
+     * Deletes members associated with the list of submitted keys.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     */
     public function remove(string|int ...$keys): static
     {
         if ([] === $this->members || [] === $keys) {
@@ -348,18 +427,36 @@ final class Dictionary implements MemberOrderedMap
         };
     }
 
+    /**
+     * Deletes members associated with the list using the member pair offset.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     */
     public function removeByIndices(int ...$indices): static
     {
         return $this->remove(...$indices);
     }
 
+    /**
+     * Deletes members associated with the list using the member key.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     */
     public function removeByKeys(string ...$keys): static
     {
         return $this->remove(...$keys);
     }
 
     /**
-     * @param SfMember|SfMemberInput $member
+     * Adds a member at the end of the instance and deletes any previous reference to the key if present.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param InnerList|Item|SfMemberInput $member
+     * @throws SyntaxError If the string key is not a valid
      */
     public function append(
         string $key,
@@ -372,7 +469,14 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param SfMember|SfMemberInput $member
+     * Adds a member at the beginning of the instance and deletes any previous reference to the key if present.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param InnerList|Item|SfMemberInput $member
+     *
+     * @throws SyntaxError If the string key is not a valid
      */
     public function prepend(
         string $key,
@@ -385,9 +489,14 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param array{0:string, 1:SfMember|SfMemberInput} ...$pairs
+     * Inserts pairs at the end of the container.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param array{0:string, 1:InnerList|Item|SfMemberInput} ...$pairs
      */
-    public function push(array ...$pairs): self
+    public function push(array ...$pairs): static
     {
         return match (true) {
             [] === $pairs => $this,
@@ -399,9 +508,14 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param array{0:string, 1:SfMember|SfMemberInput} ...$pairs
+     * Inserts pairs at the beginning of the container.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param array{0:string, 1:InnerList|Item|SfMemberInput} ...$pairs
      */
-    public function unshift(array ...$pairs): self
+    public function unshift(array ...$pairs): static
     {
         return match (true) {
             [] === $pairs => $this,
@@ -413,7 +527,12 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param array{0:string, 1:SfMember|SfMemberInput} ...$members
+     * Insert a member pair using its offset.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param array{0:string, 1:InnerList|Item|SfMemberInput} ...$members
      */
     public function insert(int $index, array ...$members): static
     {
@@ -433,7 +552,12 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param array{0:string, 1:SfMember|SfMemberInput} $pair
+     * Replace a member pair using its offset.
+     *
+     *  This method MUST retain the state of the current instance, and return
+     *  an instance that contains the specified changes.
+     *
+     * @param array{0:string, 1:InnerList|Item|SfMemberInput} $pair
      */
     public function replace(int $index, array $pair): static
     {
@@ -448,7 +572,12 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param iterable<string, SfMember|SfMemberInput> ...$others
+     * Merges multiple instances using iterable associative structures.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param iterable<string, InnerList|Item|SfMemberInput> ...$others
      */
     public function mergeAssociative(iterable ...$others): static
     {
@@ -461,9 +590,14 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param MemberOrderedMap<string, SfMember>|iterable<array{0:string, 1:SfMember|SfMemberInput}> ...$others
+     * Merges multiple instances using iterable pairs.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param Dictionary|Parameters|iterable<array{0:string, 1:InnerList|Item|SfMemberInput}> ...$others
      */
-    public function mergePairs(MemberOrderedMap|iterable ...$others): static
+    public function mergePairs(Dictionary|Parameters|iterable ...$others): static
     {
         $members = $this->members;
         foreach ($others as $other) {
@@ -500,49 +634,60 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @param Closure(SfMember, string): TMap $callback
+     * Run a map over each container members.
      *
      * @template TMap
+     *
+     * @param Closure(InnerList|Item, string): TMap $callback
      *
      * @return Iterator<TMap>
      */
     public function map(Closure $callback): Iterator
     {
-        /**
-         * @var string $offset
-         * @var SfMember $member
-         */
-        foreach ($this as $offset => $member) {
+        foreach ($this->members as $offset => $member) {
             yield ($callback)($member, $offset);
         }
     }
 
     /**
-     * @param Closure(TInitial|null, SfMember, string=): TInitial $callback
-     * @param TInitial|null $initial
+     * Iteratively reduce the container to a single value using a callback.
      *
      * @template TInitial
+     *
+     * @param Closure(TInitial|null, InnerList|Item, string=): TInitial $callback
+     * @param TInitial|null $initial
      *
      * @return TInitial|null
      */
     public function reduce(Closure $callback, mixed $initial = null): mixed
     {
-        /**
-         * @var string $offset
-         * @var SfMember $record
-         */
-        foreach ($this as $offset => $record) {
-            $initial = $callback($initial, $record, $offset);
+        foreach ($this->members as $offset => $member) {
+            $initial = $callback($initial, $member, $offset);
         }
 
         return $initial;
     }
 
     /**
-     * @param Closure(SfMember, string): bool $callback
+     * Run a filter over each container members.
+     *
+     * @param Closure(array{0:string, 1:InnerList|Item}, int): bool $callback
      */
-    public function filter(Closure $callback): self
+    public function filter(Closure $callback): static
     {
-        return new self(array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
+        return self::fromPairs(new CallbackFilterIterator($this->toPairs(), $callback));
+    }
+
+    /**
+     * Sort a container by value using a callback.
+     *
+     * @param Closure(array{0:string, 1:InnerList|Item}, array{0:string, 1:InnerList|Item}): int $callback
+     */
+    public function sort(Closure $callback): static
+    {
+        $members = iterator_to_array($this->toPairs());
+        usort($members, $callback);
+
+        return self::fromPairs($members);
     }
 }

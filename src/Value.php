@@ -40,7 +40,7 @@ final class Value
     public function __construct(mixed $value)
     {
         $this->value = match (true) {
-            $value instanceof ValueAccess => $value->value(),
+            $value instanceof Item => $value->value(),
             $value instanceof Token,
             $value instanceof ByteSequence,
             $value instanceof DisplayString,

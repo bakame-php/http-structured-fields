@@ -6,8 +6,10 @@ namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
 use Closure;
+use Countable;
 use DateTimeInterface;
 use Iterator;
+use IteratorAggregate;
 use Stringable;
 
 use function array_filter;
@@ -28,21 +30,20 @@ use const ARRAY_FILTER_USE_KEY;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#name-lists
  *
- * @phpstan-import-type SfItem from StructuredField
- * @phpstan-import-type SfMember from StructuredField
  * @phpstan-import-type SfMemberInput from StructuredField
  * @phpstan-import-type SfInnerListPair from StructuredField
  * @phpstan-import-type SfItemPair from StructuredField
  *
- * @implements MemberList<int, SfMember>
+ * @implements ArrayAccess<int, InnerList|Item>
+ * @implements IteratorAggregate<int, InnerList|Item>
  */
-final class OuterList implements MemberList
+final class OuterList implements ArrayAccess, Countable, IteratorAggregate, StructuredField
 {
-    /** @var list<SfMember> */
+    /** @var list<InnerList|Item> */
     private readonly array $members;
 
     /**
-     * @param SfMember|SfMemberInput ...$members
+     * @param InnerList|Item|SfMemberInput ...$members
      */
     private function __construct(
         iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
@@ -51,18 +52,16 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param SfMember|SfMemberInput $member
-     *
-     * @return SfMember
+     * @param InnerList|Item|SfMemberInput $member
      */
-    private function filterMember(mixed $member): object
+    private function filterMember(mixed $member): InnerList|Item
     {
         if ($member instanceof StructuredFieldProvider) {
             $member = $member->toStructuredField();
         }
 
         return match (true) {
-            $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
+            $member instanceof InnerList || $member instanceof Item => $member,
             $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             default => Item::new($member), /* @phpstan-ignore-line */
         };
@@ -73,7 +72,7 @@ final class OuterList implements MemberList
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ListParser $parser = new Parser()): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
         $converter = fn (array $member): InnerList|Item => match (true) {
             is_array($member[0]) => InnerList::fromAssociative(
@@ -83,23 +82,20 @@ final class OuterList implements MemberList
             default => Item::fromAssociative(...$member),
         };
 
-        return new self(...array_map($converter, $parser->parseList($httpValue)));
+        return new self(...array_map($converter, Parser::new($rfc)->parseList($httpValue)));
     }
 
     /**
-     * @param iterable<SfInnerListPair|SfItemPair>|MemberList<int, SfItem> $pairs
+     * @param iterable<SfInnerListPair|SfItemPair>|InnerList $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
-        /**
-         * @return ParameterAccess&(MemberList|ValueAccess)
-         */
-        $converter = function (mixed $pair): StructuredField {
+        $converter = function (mixed $pair): InnerList|Item {
             if ($pair instanceof StructuredFieldProvider) {
                 $pair = $pair->toStructuredField();
             }
 
-            if ($pair instanceof ParameterAccess && ($pair instanceof MemberList || $pair instanceof ValueAccess)) {
+            if ($pair instanceof InnerList || $pair instanceof Item) {
                 return $pair;
             }
 
@@ -121,7 +117,8 @@ final class OuterList implements MemberList
         };
 
         return match (true) {
-            $pairs instanceof MemberList => new self($pairs),
+            $pairs instanceof OuterList,
+            $pairs instanceof InnerList => new self($pairs),
             default => new self(...(function (iterable $pairs) use ($converter) {
                 foreach ($pairs as $member) {
                     yield $converter($member);
@@ -131,7 +128,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param SfMember|SfMemberInput ...$members
+     * @param InnerList|Item|SfMemberInput ...$members
      */
     public static function new(iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members): self
     {
@@ -140,12 +137,12 @@ final class OuterList implements MemberList
 
     public static function fromRfc9651(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
+        return self::fromHttpValue($httpValue, Ietf::Rfc9651);
     }
 
     public static function fromRfc8941(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
+        return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
     public function toHttpValue(?Ietf $rfc = null): string
@@ -227,18 +224,25 @@ final class OuterList implements MemberList
         };
     }
 
-    /**
-     * @return SfMember
-     */
-    public function get(string|int $key): StructuredField
+    public function get(string|int $key): InnerList|Item
     {
         return $this->members[$this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key)];
+    }
+
+    public function first(): InnerList|Item|null
+    {
+        return $this->members[0] ?? null;
+    }
+
+    public function last(): InnerList|Item|null
+    {
+        return $this->members[$this->filterIndex(-1)] ?? null;
     }
 
     /**
      * Inserts members at the beginning of the list.
      *
-     * @param SfMember|SfMemberInput ...$members
+     * @param InnerList|Item|SfMemberInput ...$members
      */
     public function unshift(
         iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
@@ -264,7 +268,7 @@ final class OuterList implements MemberList
     /**
      * Inserts members at the end of the list.
      *
-     * @param SfMember|SfMemberInput ...$members
+     * @param InnerList|Item|SfMemberInput ...$members
      */
     public function push(
         iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
@@ -290,7 +294,7 @@ final class OuterList implements MemberList
     /**
      * Inserts members starting at the given index.
      *
-     * @param SfMember|SfMemberInput ...$members
+     * @param InnerList|Item|SfMemberInput ...$members
      *
      * @throws InvalidOffset If the index does not exist
      */
@@ -313,7 +317,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param SfMember|SfMemberInput $member
+     * @param InnerList|Item|SfMemberInput $member
      */
     public function replace(
         int $key,
@@ -361,7 +365,7 @@ final class OuterList implements MemberList
     /**
      * @param int $offset
      *
-     * @return SfMember
+     * @return InnerList|Item
      */
     public function offsetGet(mixed $offset): mixed
     {
@@ -379,7 +383,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param Closure(SfItem, string): TMap $callback
+     * @param Closure(InnerList|Item, int): TMap $callback
      *
      * @template TMap
      *
@@ -387,17 +391,13 @@ final class OuterList implements MemberList
      */
     public function map(Closure $callback): Iterator
     {
-        /**
-         * @var string $offset
-         * @var SfItem $member
-         */
-        foreach ($this as $offset => $member) {
+        foreach ($this->members as $offset => $member) {
             yield ($callback)($member, $offset);
         }
     }
 
     /**
-     * @param Closure(TInitial|null, SfItem, string=): TInitial $callback
+     * @param Closure(TInitial|null, InnerList|Item, int=): TInitial $callback
      * @param TInitial|null $initial
      *
      * @template TInitial
@@ -406,22 +406,29 @@ final class OuterList implements MemberList
      */
     public function reduce(Closure $callback, mixed $initial = null): mixed
     {
-        /**
-         * @var string $offset
-         * @var SfItem $record
-         */
-        foreach ($this as $offset => $record) {
-            $initial = $callback($initial, $record, $offset);
+        foreach ($this->members as $offset => $member) {
+            $initial = $callback($initial, $member, $offset);
         }
 
         return $initial;
     }
 
     /**
-     * @param Closure(SfMember, int): bool $callback
+     * @param Closure(InnerList|Item, int): bool $callback
      */
-    public function filter(Closure $callback): self
+    public function filter(Closure $callback): static
     {
         return new self(...array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
+    }
+
+    /**
+     * @param Closure(InnerList|Item, InnerList|Item): int $callback
+     */
+    public function sort(Closure $callback): static
+    {
+        $members = $this->members;
+        usort($members, $callback);
+
+        return new self(...$members);
     }
 }

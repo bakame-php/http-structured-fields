@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
+use CallbackFilterIterator;
 use Closure;
+use Countable;
 use DateTimeInterface;
 use Iterator;
+use IteratorAggregate;
 use Stringable;
 
 use function array_key_exists;
@@ -21,14 +24,14 @@ use function is_string;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.2
  *
- * @phpstan-import-type SfItem from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
  *
- * @implements MemberOrderedMap<string, SfItem>
+ * @implements ArrayAccess<string, InnerList|Item>
+ * @implements IteratorAggregate<string, InnerList|Item>
  */
-final class Parameters implements MemberOrderedMap
+final class Parameters implements ArrayAccess, Countable, IteratorAggregate, StructuredField
 {
-    /** @var array<string, SfItem> */
+    /** @var array<string, Item> */
     private readonly array $members;
 
     /**
@@ -46,17 +49,15 @@ final class Parameters implements MemberOrderedMap
 
     /**
      * @param SfItemInput $member
-     *
-     * @return SfItem
      */
-    private static function filterMember(mixed $member): object
+    private static function filterMember(mixed $member): Item
     {
         if ($member instanceof StructuredFieldProvider) {
             $member = $member->toStructuredField();
         }
 
         return match (true) {
-            $member instanceof ParameterAccess && $member instanceof ValueAccess => $member->parameters()->hasNoMembers() ? $member : throw new InvalidArgument('The "'.$member::class.'" instance is not a Bare Item.'),
+            $member instanceof Item => $member->parameters()->hasNoMembers() ? $member : throw new InvalidArgument('The "'.$member::class.'" instance is not a Bare Item.'),
             $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             default => Item::new($member),
         };
@@ -90,12 +91,13 @@ final class Parameters implements MemberOrderedMap
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}> $pairs
+     * @param Parameters|Dictionary|iterable<array{0:string, 1:SfItemInput}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
         return match (true) {
-            $pairs instanceof MemberOrderedMap => new self($pairs),
+            $pairs instanceof Parameters,
+            $pairs instanceof Dictionary => new self($pairs),
             default => new self((function (iterable $pairs) {
                 foreach ($pairs as [$key, $member]) {
                     yield $key => $member;
@@ -111,25 +113,25 @@ final class Parameters implements MemberOrderedMap
      *
      * @throws SyntaxError If the string is not a valid
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ParametersParser $parser = new Parser()): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
-        return new self($parser->parseParameters($httpValue));
+        return new self(Parser::new($rfc)->parseParameters($httpValue));
     }
 
     public static function fromRfc9651(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
+        return self::fromHttpValue($httpValue, Ietf::Rfc9651);
     }
 
     public static function fromRfc8941(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
+        return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
     public function toHttpValue(?Ietf $rfc = null): string
     {
         $rfc ??= Ietf::Rfc9651;
-        $formatter = static fn (ValueAccess $member, string $offset): string => match (true) {
+        $formatter = static fn (Item $member, string $offset): string => match (true) {
             true === $member->value() => ';'.$offset,
             default => ';'.$offset.'='.$member->toHttpValue($rfc),
         };
@@ -173,7 +175,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @return Iterator<int, array{0:string, 1:SfItem}>
+     * @return Iterator<int, array{0:string, 1:Item}>
      */
     public function toPairs(): Iterator
     {
@@ -203,10 +205,8 @@ final class Parameters implements MemberOrderedMap
 
     /**
      * @throws InvalidOffset If the key is not found
-     *
-     * @return SfItem
      */
-    public function get(string|int $key): StructuredField
+    public function get(string|int $key): Item
     {
         return $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
     }
@@ -242,13 +242,42 @@ final class Parameters implements MemberOrderedMap
     /**
      * @throws InvalidOffset If the key is not found
      *
-     * @return array{0:string, 1:SfItem}
+     * @return array{0:string, 1:Item}
      */
     public function pair(int $index): array
     {
-        $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
+        $foundOffset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
+        foreach ($this->toPairs() as $offset => $pair) {
+            if ($offset === $foundOffset) {
+                return $pair;
+            }
+        }
 
-        return [...$this->toPairs()][$offset];
+        throw InvalidOffset::dueToIndexNotFound($index);
+    }
+
+    /**
+     * @return array{0:string, 1:Item}|array{}
+     */
+    public function first(): ?array
+    {
+        try {
+            return $this->pair(0);
+        } catch (InvalidOffset) {
+            return [];
+        }
+    }
+
+    /**
+     * @return array{0:string, 1:Item}|array{}
+     */
+    public function last(): ?array
+    {
+        try {
+            return $this->pair(-1);
+        } catch (InvalidOffset) {
+            return [];
+        }
     }
 
     public function add(string $key, StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
@@ -260,7 +289,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param array<string, SfItem> $members
+     * @param array<string, Item> $members
      */
     private function newInstance(array $members): self
     {
@@ -332,7 +361,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function push(array ...$pairs): self
+    public function push(array ...$pairs): static
     {
         return match (true) {
             [] === $pairs => $this,
@@ -346,7 +375,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function unshift(array ...$pairs): self
+    public function unshift(array ...$pairs): static
     {
         return match (true) {
             [] === $pairs => $this,
@@ -406,9 +435,9 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}> ...$others
+     * @param Parameters|Dictionary|iterable<array{0:string, 1:SfItemInput}> ...$others
      */
-    public function mergePairs(MemberOrderedMap|iterable ...$others): static
+    public function mergePairs(Dictionary|Parameters|iterable ...$others): static
     {
         $members = $this->members;
         foreach ($others as $other) {
@@ -445,7 +474,7 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param Closure(SfItem, string): TMap $callback
+     * @param Closure(Item, string): TMap $callback
      *
      * @template TMap
      *
@@ -453,17 +482,13 @@ final class Parameters implements MemberOrderedMap
      */
     public function map(Closure $callback): Iterator
     {
-        /**
-         * @var string $offset
-         * @var SfItem $member
-         */
-        foreach ($this as $offset => $member) {
+        foreach ($this->members as $offset => $member) {
             yield ($callback)($member, $offset);
         }
     }
 
     /**
-     * @param Closure(TInitial|null, SfItem, string=): TInitial $callback
+     * @param Closure(TInitial|null, Item, string=): TInitial $callback
      * @param TInitial|null $initial
      *
      * @template TInitial
@@ -472,11 +497,7 @@ final class Parameters implements MemberOrderedMap
      */
     public function reduce(Closure $callback, mixed $initial = null): mixed
     {
-        /**
-         * @var string $offset
-         * @var SfItem $record
-         */
-        foreach ($this as $offset => $record) {
+        foreach ($this->members as $offset => $record) {
             $initial = $callback($initial, $record, $offset);
         }
 
@@ -484,10 +505,21 @@ final class Parameters implements MemberOrderedMap
     }
 
     /**
-     * @param Closure(SfItem, string): bool $callback
+     * @param Closure(array{0:string, 1:Item}, int): bool $callback
      */
-    public function filter(Closure $callback): self
+    public function filter(Closure $callback): static
     {
-        return new self(array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
+        return self::fromPairs(new CallbackFilterIterator($this->toPairs(), $callback));
+    }
+
+    /**
+     * @param Closure(array{0:string, 1:Item}, array{0:string, 1:Item}): int $callback
+     */
+    public function sort(Closure $callback): static
+    {
+        $members = iterator_to_array($this->toPairs());
+        uasort($members, $callback);
+
+        return self::fromPairs($members);
     }
 }

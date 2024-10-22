@@ -33,7 +33,7 @@ enum Ietf: string
     {
         return match ($this) {
             self::Rfc9651 => false,
-            self::Rfc8941 => true,
+            default => true,
         };
     }
 

@@ -8,10 +8,13 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - `Ietf` enum.
 - methods `fromRFC9651`, `fromRfc8941`, `toRFC9651`, `toRfc8941`, to ease Type and StructuredFields convertion between RFC.
+- methods `map`, `reduce`, `filter`, `sort` to `all containers classes.
+- `StructuredFieldProvider` interface
 
 ### Fixed
 
-- None
+- Removed the `Parser` from the public API.
+- Fixed `Tyoe` inference when instantiating the `Value` class.
 
 ### Deprecated
 
@@ -19,7 +22,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
-- None
+- `MemberContainer`, `MemberList`, `MemberOrderedMap`, and all the Parser related methods.
 
 ## [1.3.0](https://github.com/bakame-php/http-structured-fields/compare/1.2.2...1.3.0) - 2024-01-05
 

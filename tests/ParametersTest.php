@@ -389,8 +389,7 @@ final class ParametersTest extends StructuredFieldTestCase
             ['token', $token],
         ]);
 
-        self::assertInstanceOf(Item::class, $structuredField->get('false'));
-        self::assertInstanceOf(Item::class, $structuredField['false']);
+        self::assertSame($structuredField->get('false'), $structuredField['false']);
 
         self::assertFalse($structuredField->get('false')->value());
         self::assertFalse($structuredField['false']->value());

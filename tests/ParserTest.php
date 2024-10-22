@@ -25,7 +25,7 @@ final class ParserTest extends StructuredFieldTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->parser = new Parser();
+        $this->parser = Parser::new();
     }
 
     #[Test]

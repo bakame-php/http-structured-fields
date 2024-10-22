@@ -6,9 +6,11 @@ namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
 use Closure;
+use Countable;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Iterator;
+use IteratorAggregate;
 use Stringable;
 
 use function array_filter;
@@ -27,15 +29,15 @@ use const ARRAY_FILTER_USE_KEY;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.1
  *
- * @phpstan-import-type SfItem from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
  * @phpstan-import-type SfInnerListPair from StructuredField
  *
- * @implements MemberList<int, SfItem>
+ * @implements  ArrayAccess<int, Item>
+ * @implements  IteratorAggregate<int, Item>
  */
-final class InnerList implements MemberList, ParameterAccess
+final class InnerList implements ArrayAccess, Countable, IteratorAggregate, ParameterAccess, StructuredField
 {
-    /** @var list<SfItem> */
+    /** @var list<Item> */
     private readonly array $members;
 
     /**
@@ -48,17 +50,15 @@ final class InnerList implements MemberList, ParameterAccess
 
     /**
      * @param SfItemInput $member
-     *
-     * @return SfItem
      */
-    private function filterMember(mixed $member): object
+    private function filterMember(mixed $member): Item
     {
         if ($member instanceof StructuredFieldProvider) {
             $member = $member->toStructuredField();
         }
 
         return match (true) {
-            $member instanceof ValueAccess && $member instanceof ParameterAccess => $member,
+            $member instanceof Item => $member,
             $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             default => Item::new($member),
         };
@@ -69,9 +69,9 @@ final class InnerList implements MemberList, ParameterAccess
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1
      */
-    public static function fromHttpValue(Stringable|string $httpValue, InnerListParser $parser = new Parser()): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): static
     {
-        [$members, $parameters] = $parser->parseInnerList($httpValue);
+        [$members, $parameters] = Parser::new($rfc)->parseInnerList($httpValue);
 
         return new self(
             array_map(fn (array $member): Item => Item::fromAssociative(...$member), $members),
@@ -83,9 +83,9 @@ final class InnerList implements MemberList, ParameterAccess
      * Returns a new instance with an iter.
      *
      * @param iterable<SfItemInput> $value
-     * @param MemberOrderedMap<string, SfItem>|iterable<string, SfItemInput> $parameters
+     * @param Parameters|iterable<string, SfItemInput> $parameters
      */
-    public static function fromAssociative(iterable $value, iterable $parameters): self
+    public static function fromAssociative(iterable $value, iterable $parameters): static
     {
         if (!$parameters instanceof Parameters) {
             $parameters = Parameters::fromAssociative($parameters);
@@ -97,10 +97,10 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param array{
      *     0:iterable<SfItemInput>,
-     *     1:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>
+     *     1:Parameters|iterable<array{0:string, 1:SfItemInput}>
      * } $pair
      */
-    public static function fromPair(array $pair): self
+    public static function fromPair(array $pair): static
     {
         return match (true) {
             [] === $pair => self::new(), // @phpstan-ignore-line
@@ -115,18 +115,18 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function new(
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
-    ): self {
+    ): static {
         return new self($members, Parameters::new());
     }
 
-    public static function fromRfc9651(Stringable|string $httpValue): self
+    public static function fromRfc9651(Stringable|string $httpValue): static
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
+        return self::fromHttpValue($httpValue, Ietf::Rfc9651);
     }
 
-    public static function fromRfc8941(Stringable|string $httpValue): self
+    public static function fromRfc8941(Stringable|string $httpValue): static
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
+        return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
     public function toHttpValue(?Ietf $rfc = null): string
@@ -152,7 +152,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @return array{0:list<SfItem>, 1:MemberOrderedMap<string, SfItem>}
+     * @return array{0:list<Item>, 1:Parameters}
      */
     public function toPair(): array
     {
@@ -244,12 +244,27 @@ final class InnerList implements MemberList, ParameterAccess
         };
     }
 
-    /**
-     * @return SfItem
-     */
-    public function get(string|int $key): StructuredField
+    public function get(string|int $key): Item
     {
         return $this->members[$this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key)];
+    }
+
+    public function first(): ?Item
+    {
+        return $this->members[0] ?? null;
+    }
+
+    /**
+     * @return ?Item
+     */
+    public function last(): ?StructuredField
+    {
+        return $this->members[$this->filterIndex(-1)] ?? null;
+    }
+
+    public function sortParameters(Closure $callback): static
+    {
+        return $this->withParameters($this->parameters()->sort($callback));
     }
 
     /**
@@ -368,10 +383,8 @@ final class InnerList implements MemberList, ParameterAccess
 
     /**
      * @param int $offset
-     *
-     * @return SfItem
      */
-    public function offsetGet(mixed $offset): mixed
+    public function offsetGet(mixed $offset): Item
     {
         return $this->get($offset);
     }
@@ -387,7 +400,7 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param Closure(SfItem, int): TMap $callback
+     * @param Closure(Item, int): TMap $callback
      *
      * @template TMap
      *
@@ -395,17 +408,13 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public function map(Closure $callback): Iterator
     {
-        /**
-         * @var int $offset
-         * @var SfItem $member
-         */
-        foreach ($this as $offset => $member) {
+        foreach ($this->members as $offset => $member) {
             yield ($callback)($member, $offset);
         }
     }
 
     /**
-     * @param Closure(TInitial|null, SfItem, int=): TInitial $callback
+     * @param Closure(TInitial|null, Item, int=): TInitial $callback
      * @param TInitial|null $initial
      *
      * @template TInitial
@@ -414,11 +423,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public function reduce(Closure $callback, mixed $initial = null): mixed
     {
-        /**
-         * @var int $offset
-         * @var SfItem $member
-         */
-        foreach ($this as $offset => $member) {
+        foreach ($this->members as $offset => $member) {
             $initial = $callback($initial, $member, $offset);
         }
 
@@ -426,12 +431,22 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
-     * @param Closure(SfItem, int): bool $callback
-     *
+     * @param Closure(Item, int): bool $callback
      */
-    public function filter(Closure $callback): self
+    public function filter(Closure $callback): static
     {
         return new self(array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH), $this->parameters);
+    }
+
+    /**
+     * @param Closure(Item, Item): int $callback
+     */
+    public function sort(Closure $callback): static
+    {
+        $members = $this->members;
+        usort($members, $callback);
+
+        return new self($members, $this->parameters);
     }
 
     public function withParameters(Parameters $parameters): static
@@ -461,7 +476,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function pushParameters(array ...$pairs): self
+    public function pushParameters(array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->push(...$pairs));
     }
@@ -469,7 +484,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function unshiftParameters(array ...$pairs): self
+    public function unshiftParameters(array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->unshift(...$pairs));
     }
@@ -477,7 +492,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function insertParameters(int $index, array ...$pairs): self
+    public function insertParameters(int $index, array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->insert($index, ...$pairs));
     }
@@ -485,19 +500,9 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param array{0:string, 1:SfItemInput} $pair
      */
-    public function replaceParameter(int $index, array $pair): self
+    public function replaceParameter(int $index, array $pair): static
     {
         return $this->withParameters($this->parameters()->replace($index, $pair));
-    }
-
-    /**
-     * @deprecated since version 1.1
-     * @see ParameterAccess::withoutParameterByKeys()
-     * @codeCoverageIgnore
-     */
-    public function withoutParameter(string ...$keys): static
-    {
-        return $this->withoutParameterByKeys(...$keys);
     }
 
     public function withoutParameterByKeys(string ...$keys): static
@@ -513,5 +518,10 @@ final class InnerList implements MemberList, ParameterAccess
     public function withoutAnyParameter(): static
     {
         return $this->withParameters(Parameters::new());
+    }
+
+    public function filterParameters(Closure $callback): static
+    {
+        return $this->withParameters($this->parameters()->filter($callback));
     }
 }

@@ -23,7 +23,7 @@ enum Type: string
     public function equals(mixed $other): bool
     {
         return match (true) {
-            $other instanceof ValueAccess => $other->type() === $this,
+            $other instanceof Item => $other->type() === $this,
             default => $other instanceof self && $other === $this,
         };
     }
@@ -50,7 +50,7 @@ enum Type: string
     public static function tryFromVariable(mixed $variable): self|null
     {
         return match (true) {
-            $variable instanceof ValueAccess,
+            $variable instanceof Item,
             $variable instanceof Token,
             $variable instanceof DisplayString,
             $variable instanceof ByteSequence => $variable->type(),
