@@ -6,6 +6,7 @@ namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
 use Countable;
+use Iterator;
 use IteratorAggregate;
 
 /**
@@ -13,6 +14,10 @@ use IteratorAggregate;
  * @template TValue of StructuredField
  * @template-extends ArrayAccess<TKey, TValue>
  * @template-extends IteratorAggregate<TKey, TValue>
+ *
+ * @method Iterator map(callable $callback) Run a map over each of the members.
+ * @method static filter(callable $callback) Run a fillter over each of the members.
+ * @method mixed reduce(callable $callback) Reduce the collection to a single value.
  */
 interface MemberContainer extends ArrayAccess, Countable, IteratorAggregate, StructuredField
 {

@@ -37,11 +37,15 @@ enum Ietf: string
         };
     }
 
-    public function supports(mixed $type): bool
+    public function supports(mixed $value): bool
     {
-        if ($type instanceof StructuredField) {
+        if ($value instanceof StructuredFieldProvider) {
+            $value = $value->toStructuredField();
+        }
+
+        if ($value instanceof StructuredField) {
             try {
-                $type->toHttpValue($this);
+                $value->toHttpValue($this);
 
                 return true;
             } catch (Throwable) {
@@ -49,11 +53,11 @@ enum Ietf: string
             }
         }
 
-        if (!$type instanceof Type) {
-            $type = Type::tryFromVariable($type);
+        if (!$value instanceof Type) {
+            $value = Type::tryFromVariable($value);
         }
 
-        return match ($type) {
+        return match ($value) {
             null => false,
             Type::DisplayString,
             Type::Date => self::Rfc8941 !== $this,

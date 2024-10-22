@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
+use Closure;
 use DateTimeInterface;
 use Iterator;
 use Stringable;
@@ -18,6 +19,8 @@ use function is_array;
 use function is_int;
 use function is_iterable;
 use function is_string;
+
+use const ARRAY_FILTER_USE_BOTH;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.2
@@ -52,6 +55,10 @@ final class Dictionary implements MemberOrderedMap
      */
     private static function filterMember(mixed $member): object
     {
+        if ($member instanceof StructuredFieldProvider) {
+            $member = $member->toStructuredField();
+        }
+
         return match (true) {
             $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
             $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
@@ -96,6 +103,10 @@ final class Dictionary implements MemberOrderedMap
          * @return ParameterAccess&(MemberList|ValueAccess)
          */
         $converter = function (mixed $pair): StructuredField {
+            if ($pair instanceof StructuredFieldProvider) {
+                $pair = $pair->toStructuredField();
+            }
+
             if ($pair instanceof ParameterAccess && ($pair instanceof MemberList || $pair instanceof ValueAccess)) {
                 return $pair;
             }
@@ -289,7 +300,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @param SfMember|SfMemberInput $member
      */
-    public function add(string $key, iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
+    public function add(string $key, iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
@@ -352,7 +363,7 @@ final class Dictionary implements MemberOrderedMap
      */
     public function append(
         string $key,
-        iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         $members = $this->members;
         unset($members[$key]);
@@ -365,7 +376,7 @@ final class Dictionary implements MemberOrderedMap
      */
     public function prepend(
         string $key,
-        iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         $members = $this->members;
         unset($members[$key]);
@@ -486,5 +497,52 @@ final class Dictionary implements MemberOrderedMap
     public function offsetSet(mixed $offset, mixed $value): void
     {
         throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
+    }
+
+    /**
+     * @param Closure(SfMember, string): TMap $callback
+     *
+     * @template TMap
+     *
+     * @return Iterator<TMap>
+     */
+    public function map(Closure $callback): Iterator
+    {
+        /**
+         * @var string $offset
+         * @var SfMember $member
+         */
+        foreach ($this as $offset => $member) {
+            yield ($callback)($member, $offset);
+        }
+    }
+
+    /**
+     * @param Closure(TInitial|null, SfMember, string=): TInitial $callback
+     * @param TInitial|null $initial
+     *
+     * @template TInitial
+     *
+     * @return TInitial|null
+     */
+    public function reduce(Closure $callback, mixed $initial = null): mixed
+    {
+        /**
+         * @var string $offset
+         * @var SfMember $record
+         */
+        foreach ($this as $offset => $record) {
+            $initial = $callback($initial, $record, $offset);
+        }
+
+        return $initial;
+    }
+
+    /**
+     * @param Closure(SfMember, string): bool $callback
+     */
+    public function filter(Closure $callback): self
+    {
+        return new self(array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
     }
 }

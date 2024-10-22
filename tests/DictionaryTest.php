@@ -385,10 +385,17 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_create_a_new_instance_using_parameters_position_modifying_methods(): void
     {
+        $instance = new class () implements StructuredFieldProvider {
+            public function toStructuredField(): StructuredField
+            {
+                return Item::false();
+            }
+        };
+
         $instance1 = Dictionary::new();
         $instance2 = $instance1
             ->push(['a', true], ['v', ByteSequence::fromDecoded('I will be removed')], ['c', 'true'])
-            ->unshift(['b', Item::false()])
+            ->unshift(['b', $instance])
             ->replace(1, ['a', 'false'])
             ->remove(-2, 'toto')
             ->insert(1, ['d', Token::fromString('*/*')]);

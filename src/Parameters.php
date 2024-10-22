@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
+use Closure;
 use DateTimeInterface;
 use Iterator;
 use Stringable;
@@ -50,6 +51,10 @@ final class Parameters implements MemberOrderedMap
      */
     private static function filterMember(mixed $member): object
     {
+        if ($member instanceof StructuredFieldProvider) {
+            $member = $member->toStructuredField();
+        }
+
         return match (true) {
             $member instanceof ParameterAccess && $member instanceof ValueAccess => $member->parameters()->hasNoMembers() ? $member : throw new InvalidArgument('The "'.$member::class.'" instance is not a Bare Item.'),
             $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
@@ -246,7 +251,7 @@ final class Parameters implements MemberOrderedMap
         return [...$this->toPairs()][$offset];
     }
 
-    public function add(string $key, StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
+    public function add(string $key, StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
@@ -306,7 +311,7 @@ final class Parameters implements MemberOrderedMap
 
     public function append(
         string $key,
-        StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         $members = $this->members;
         unset($members[$key]);
@@ -316,7 +321,7 @@ final class Parameters implements MemberOrderedMap
 
     public function prepend(
         string $key,
-        StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         $members = $this->members;
         unset($members[$key]);
@@ -437,5 +442,52 @@ final class Parameters implements MemberOrderedMap
     public function offsetSet(mixed $offset, mixed $value): void
     {
         throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
+    }
+
+    /**
+     * @param Closure(SfItem, string): TMap $callback
+     *
+     * @template TMap
+     *
+     * @return Iterator<TMap>
+     */
+    public function map(Closure $callback): Iterator
+    {
+        /**
+         * @var string $offset
+         * @var SfItem $member
+         */
+        foreach ($this as $offset => $member) {
+            yield ($callback)($member, $offset);
+        }
+    }
+
+    /**
+     * @param Closure(TInitial|null, SfItem, string=): TInitial $callback
+     * @param TInitial|null $initial
+     *
+     * @template TInitial
+     *
+     * @return TInitial|null
+     */
+    public function reduce(Closure $callback, mixed $initial = null): mixed
+    {
+        /**
+         * @var string $offset
+         * @var SfItem $record
+         */
+        foreach ($this as $offset => $record) {
+            $initial = $callback($initial, $record, $offset);
+        }
+
+        return $initial;
+    }
+
+    /**
+     * @param Closure(SfItem, string): bool $callback
+     */
+    public function filter(Closure $callback): self
+    {
+        return new self(array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
     }
 }
