@@ -453,11 +453,7 @@ final class Parameters implements MemberOrderedMap
      */
     public function map(Closure $callback): Iterator
     {
-        /**
-         * @var string $offset
-         * @var SfItem $member
-         */
-        foreach ($this as $offset => $member) {
+        foreach ($this->members as $offset => $member) {
             yield ($callback)($member, $offset);
         }
     }
@@ -472,11 +468,7 @@ final class Parameters implements MemberOrderedMap
      */
     public function reduce(Closure $callback, mixed $initial = null): mixed
     {
-        /**
-         * @var string $offset
-         * @var SfItem $record
-         */
-        foreach ($this as $offset => $record) {
+        foreach ($this->members as $offset => $record) {
             $initial = $callback($initial, $record, $offset);
         }
 

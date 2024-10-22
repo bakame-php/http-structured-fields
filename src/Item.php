@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use Closure;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
@@ -388,16 +389,6 @@ final class Item implements ParameterAccess, ValueAccess
         return $this->withParameters($this->parameters()->replace($index, $pair));
     }
 
-    /**
-     * @deprecated since version 1.1
-     * @see ParameterAccess::withoutParameterByKeys()
-     * @codeCoverageIgnore
-     */
-    public function withoutParameter(string ...$keys): static
-    {
-        return $this->withoutParameterByKeys(...$keys);
-    }
-
     public function withoutParameterByKeys(string ...$keys): static
     {
         return $this->withParameters($this->parameters()->removeByKeys(...$keys));
@@ -411,5 +402,15 @@ final class Item implements ParameterAccess, ValueAccess
     public function withoutAnyParameter(): static
     {
         return $this->withParameters(Parameters::new());
+    }
+
+    /**
+     * @deprecated since version 1.1
+     * @see ParameterAccess::withoutParameterByKeys()
+     * @codeCoverageIgnore
+     */
+    public function withoutParameter(string ...$keys): static
+    {
+        return $this->withoutParameterByKeys(...$keys);
     }
 }

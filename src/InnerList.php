@@ -395,11 +395,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public function map(Closure $callback): Iterator
     {
-        /**
-         * @var int $offset
-         * @var SfItem $member
-         */
-        foreach ($this as $offset => $member) {
+        foreach ($this->members as $offset => $member) {
             yield ($callback)($member, $offset);
         }
     }
@@ -414,11 +410,7 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public function reduce(Closure $callback, mixed $initial = null): mixed
     {
-        /**
-         * @var int $offset
-         * @var SfItem $member
-         */
-        foreach ($this as $offset => $member) {
+        foreach ($this->members as $offset => $member) {
             $initial = $callback($initial, $member, $offset);
         }
 
@@ -427,7 +419,6 @@ final class InnerList implements MemberList, ParameterAccess
 
     /**
      * @param Closure(SfItem, int): bool $callback
-     *
      */
     public function filter(Closure $callback): self
     {
@@ -490,16 +481,6 @@ final class InnerList implements MemberList, ParameterAccess
         return $this->withParameters($this->parameters()->replace($index, $pair));
     }
 
-    /**
-     * @deprecated since version 1.1
-     * @see ParameterAccess::withoutParameterByKeys()
-     * @codeCoverageIgnore
-     */
-    public function withoutParameter(string ...$keys): static
-    {
-        return $this->withoutParameterByKeys(...$keys);
-    }
-
     public function withoutParameterByKeys(string ...$keys): static
     {
         return $this->withParameters($this->parameters()->removeByKeys(...$keys));
@@ -513,5 +494,15 @@ final class InnerList implements MemberList, ParameterAccess
     public function withoutAnyParameter(): static
     {
         return $this->withParameters(Parameters::new());
+    }
+
+    /**
+     * @deprecated since version 1.1
+     * @see ParameterAccess::withoutParameterByKeys()
+     * @codeCoverageIgnore
+     */
+    public function withoutParameter(string ...$keys): static
+    {
+        return $this->withoutParameterByKeys(...$keys);
     }
 }

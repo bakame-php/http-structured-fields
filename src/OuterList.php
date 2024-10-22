@@ -379,7 +379,7 @@ final class OuterList implements MemberList
     }
 
     /**
-     * @param Closure(SfItem, string): TMap $callback
+     * @param Closure(SfMember, int): TMap $callback
      *
      * @template TMap
      *
@@ -387,17 +387,13 @@ final class OuterList implements MemberList
      */
     public function map(Closure $callback): Iterator
     {
-        /**
-         * @var string $offset
-         * @var SfItem $member
-         */
-        foreach ($this as $offset => $member) {
+        foreach ($this->members as $offset => $member) {
             yield ($callback)($member, $offset);
         }
     }
 
     /**
-     * @param Closure(TInitial|null, SfItem, string=): TInitial $callback
+     * @param Closure(TInitial|null, SfMember, int=): TInitial $callback
      * @param TInitial|null $initial
      *
      * @template TInitial
@@ -406,12 +402,8 @@ final class OuterList implements MemberList
      */
     public function reduce(Closure $callback, mixed $initial = null): mixed
     {
-        /**
-         * @var string $offset
-         * @var SfItem $record
-         */
-        foreach ($this as $offset => $record) {
-            $initial = $callback($initial, $record, $offset);
+        foreach ($this->members as $offset => $member) {
+            $initial = $callback($initial, $member, $offset);
         }
 
         return $initial;

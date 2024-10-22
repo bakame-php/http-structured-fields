@@ -508,11 +508,7 @@ final class Dictionary implements MemberOrderedMap
      */
     public function map(Closure $callback): Iterator
     {
-        /**
-         * @var string $offset
-         * @var SfMember $member
-         */
-        foreach ($this as $offset => $member) {
+        foreach ($this->members as $offset => $member) {
             yield ($callback)($member, $offset);
         }
     }
@@ -527,12 +523,8 @@ final class Dictionary implements MemberOrderedMap
      */
     public function reduce(Closure $callback, mixed $initial = null): mixed
     {
-        /**
-         * @var string $offset
-         * @var SfMember $record
-         */
-        foreach ($this as $offset => $record) {
-            $initial = $callback($initial, $record, $offset);
+        foreach ($this->members as $offset => $member) {
+            $initial = $callback($initial, $member, $offset);
         }
 
         return $initial;
