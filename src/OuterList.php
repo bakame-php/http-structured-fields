@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
+use Closure;
 use DateTimeInterface;
 use Iterator;
 use Stringable;
@@ -21,6 +22,7 @@ use function is_array;
 use function is_int;
 use function is_iterable;
 
+use const ARRAY_FILTER_USE_BOTH;
 use const ARRAY_FILTER_USE_KEY;
 
 /**
@@ -43,7 +45,7 @@ final class OuterList implements MemberList
      * @param SfMember|SfMemberInput ...$members
      */
     private function __construct(
-        iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ) {
         $this->members = array_map($this->filterMember(...), array_values([...$members]));
     }
@@ -55,11 +57,14 @@ final class OuterList implements MemberList
      */
     private function filterMember(mixed $member): object
     {
+        if ($member instanceof StructuredFieldProvider) {
+            $member = $member->toStructuredField();
+        }
+
         return match (true) {
             $member instanceof ParameterAccess && ($member instanceof MemberList || $member instanceof ValueAccess) => $member,
             $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
-            is_iterable($member) => InnerList::new(...$member),
-            default => Item::new($member),
+            default => Item::new($member), /* @phpstan-ignore-line */
         };
     }
 
@@ -90,6 +95,10 @@ final class OuterList implements MemberList
          * @return ParameterAccess&(MemberList|ValueAccess)
          */
         $converter = function (mixed $pair): StructuredField {
+            if ($pair instanceof StructuredFieldProvider) {
+                $pair = $pair->toStructuredField();
+            }
+
             if ($pair instanceof ParameterAccess && ($pair instanceof MemberList || $pair instanceof ValueAccess)) {
                 return $pair;
             }
@@ -124,7 +133,7 @@ final class OuterList implements MemberList
     /**
      * @param SfMember|SfMemberInput ...$members
      */
-    public static function new(iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members): self
+    public static function new(iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members): self
     {
         return new self(...$members);
     }
@@ -232,11 +241,23 @@ final class OuterList implements MemberList
      * @param SfMember|SfMemberInput ...$members
      */
     public function unshift(
-        iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ): static {
+        $membersToAdd = array_reduce(
+            $members,
+            function (array $carry, $member) {
+                if ($member instanceof StructuredFieldProvider) {
+                    $member = $member->toStructuredField();
+                }
+
+                return [...$carry, ...$member instanceof InnerList ? [...$member] : [$member]];
+            },
+            []
+        );
+
         return match (true) {
-            [] === $members => $this,
-            default => new self(...array_values($members), ...$this->members),
+            [] === $membersToAdd => $this,
+            default => new self(...array_values($membersToAdd), ...$this->members),
         };
     }
 
@@ -246,11 +267,23 @@ final class OuterList implements MemberList
      * @param SfMember|SfMemberInput ...$members
      */
     public function push(
-        iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ): static {
+        $membersToAdd = array_reduce(
+            $members,
+            function (array $carry, $member) {
+                if ($member instanceof StructuredFieldProvider) {
+                    $member = $member->toStructuredField();
+                }
+
+                return [...$carry, ...$member instanceof InnerList ? [...$member] : [$member]];
+            },
+            []
+        );
+
         return match (true) {
-            [] === $members => $this,
-            default => new self(...$this->members, ...array_values($members)),
+            [] === $membersToAdd => $this,
+            default => new self(...$this->members, ...array_values($membersToAdd)),
         };
     }
 
@@ -263,7 +296,7 @@ final class OuterList implements MemberList
      */
     public function insert(
         int $key,
-        iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ): static {
         $offset = $this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key);
 
@@ -284,7 +317,7 @@ final class OuterList implements MemberList
      */
     public function replace(
         int $key,
-        iterable|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         $offset = $this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key);
         $member = self::filterMember($member);
@@ -343,5 +376,52 @@ final class OuterList implements MemberList
     public function offsetSet(mixed $offset, mixed $value): void
     {
         throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
+    }
+
+    /**
+     * @param Closure(SfItem, string): TMap $callback
+     *
+     * @template TMap
+     *
+     * @return Iterator<TMap>
+     */
+    public function map(Closure $callback): Iterator
+    {
+        /**
+         * @var string $offset
+         * @var SfItem $member
+         */
+        foreach ($this as $offset => $member) {
+            yield ($callback)($member, $offset);
+        }
+    }
+
+    /**
+     * @param Closure(TInitial|null, SfItem, string=): TInitial $callback
+     * @param TInitial|null $initial
+     *
+     * @template TInitial
+     *
+     * @return TInitial|null
+     */
+    public function reduce(Closure $callback, mixed $initial = null): mixed
+    {
+        /**
+         * @var string $offset
+         * @var SfItem $record
+         */
+        foreach ($this as $offset => $record) {
+            $initial = $callback($initial, $record, $offset);
+        }
+
+        return $initial;
+    }
+
+    /**
+     * @param Closure(SfMember, int): bool $callback
+     */
+    public function filter(Closure $callback): self
+    {
+        return new self(...array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
     }
 }

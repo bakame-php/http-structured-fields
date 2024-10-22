@@ -9,9 +9,9 @@ use Stringable;
 
 /**
  * @phpstan-type SfType ByteSequence|Token|DisplayString|\DateTimeImmutable|string|int|float|bool
- * @phpstan-type SfTypeInput StructuredField|SfType|\DateTimeInterface
+ * @phpstan-type SfTypeInput SfType|\DateTimeInterface
  * @phpstan-type SfItem ValueAccess&ParameterAccess
- * @phpstan-type SfItemInput SfItem|SfTypeInput
+ * @phpstan-type SfItemInput SfItem|SfTypeInput|StructuredFieldProvider|StructuredField
  * @phpstan-type SfMember (MemberList<int, SfItem>|ValueAccess)&ParameterAccess
  * @phpstan-type SfMemberInput iterable<SfItemInput>|SfItemInput
  * @phpstan-type SfInnerListPair array{0:iterable<SfItemInput>, 1:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>}

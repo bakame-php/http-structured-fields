@@ -80,6 +80,17 @@ final class IetfTest extends TestCase
             'expectedRfc9651' => true,
         ];
 
+        yield 'structuredFieldProvider supported' => [
+            'value' => new class () implements StructuredFieldProvider {
+                public function toStructuredField(): StructuredField
+                {
+                    return Item::fromInteger(123456789);
+                }
+            },
+            'expectedRfc8941' => true,
+            'expectedRfc9651' => true,
+        ];
+
         yield  'unknown type' => [
             'value' => new SplObjectStorage(),
             'expectedRfc8941' => false,
