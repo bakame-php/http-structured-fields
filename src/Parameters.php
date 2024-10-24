@@ -111,19 +111,19 @@ final class Parameters implements MemberOrderedMap
      *
      * @throws SyntaxError If the string is not a valid
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ParametersParser $parser = new Parser()): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
-        return new self($parser->parseParameters($httpValue));
+        return new self((new Parser($rfc))->parseParameters($httpValue));
     }
 
     public static function fromRfc9651(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
+        return self::fromHttpValue($httpValue, Ietf::Rfc9651);
     }
 
     public static function fromRfc8941(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
+        return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
     public function toHttpValue(?Ietf $rfc = null): string
@@ -356,7 +356,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function push(array ...$pairs): self
+    public function push(array ...$pairs): static
     {
         return match (true) {
             [] === $pairs => $this,
@@ -370,7 +370,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function unshift(array ...$pairs): self
+    public function unshift(array ...$pairs): static
     {
         return match (true) {
             [] === $pairs => $this,
@@ -502,7 +502,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param Closure(SfItem, string): bool $callback
      */
-    public function filter(Closure $callback): self
+    public function filter(Closure $callback): static
     {
         return new self(array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
     }
@@ -510,7 +510,7 @@ final class Parameters implements MemberOrderedMap
     /**
      * @param Closure(array{0:string, 1:SfItem}, array{0:string, 1:SfItem}): int $callback
      */
-    public function sort(Closure $callback): self
+    public function sort(Closure $callback): static
     {
         $members = iterator_to_array($this->toPairs());
         uasort($members, $callback);

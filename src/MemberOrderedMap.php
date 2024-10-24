@@ -4,21 +4,13 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use Closure;
 use Iterator;
 
 /**
- * @template TKey
+ * @template TKey of string
  * @template TValue of StructuredField
  * @template-extends MemberContainer<TKey, TValue>
- *
- * @method static push(array ...$pairs) Inserts pair at the end of the member list
- * @method static unshift(array ...$pairs) Inserts pair at the start of the member list
- * @method static insert(int $index, array ...$pairs) Inserts pairs at the index
- * @method static replace(int $index, array $pair) Replaces the pair at the given index
- * @method static removeByIndices(int ... $indices) Remove members by index
- * @method static removeByKeys(string ...$keys) Remove members by keys
- * @method array first() Returns the first pair of the list if it exists, the empty array otherwise
- * @method array last() Returns the last pair of the list if it exists, null otherwise
  */
 interface MemberOrderedMap extends MemberContainer
 {
@@ -93,4 +85,81 @@ interface MemberOrderedMap extends MemberContainer
      * @param iterable<array{0:TKey, 1:TValue}> ...$others
      */
     public function mergePairs(iterable ...$others): static;
+
+    /**
+     * Returns the last member of the list if it exists, null otherwise.
+     *
+     * @return ?array{0:TKey, 1:TValue}
+     */
+    public function last(): ?array;
+
+    /**
+     * Returns the first member of the list if it exists, null otherwise.
+     *
+     * @return ?array{0:TKey, 1:TValue}
+     */
+    public function first(): ?array;
+
+    /**
+     * Inserts pairs at the end of the container.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param array{0:TKey, 1:TValue} ...$pairs
+     */
+    public function push(array ...$pairs): static;
+
+    /**
+     * Inserts pairs at the beginning of the container.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param array{0:TKey, 1:TValue} ...$pairs
+     */
+    public function unshift(array ...$pairs): static;
+
+    /**
+     * Deletes members associated with the list using the member pair offset.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     */
+    public function removeByIndices(int ...$indices): static;
+
+    /**
+     * Deletes members associated with the list using the member key.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     */
+    public function removeByKeys(string ...$keys): static;
+
+    /**
+     * Insert a member pair using its offset.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param array{0:TKey, 1:TValue} ...$members
+     */
+    public function insert(int $index, array ...$members): static;
+
+    /**
+     * Replace a member pair using its offset.
+     *
+     *  This method MUST retain the state of the current instance, and return
+     *  an instance that contains the specified changes.
+     *
+     * @param array{0:TKey, 1:TValue} $pair
+     */
+    public function replace(int $index, array $pair): static;
+
+    /**
+     * Sort a container by value using a callback.
+     *
+     * @param Closure(array{0:TKey, 1:TValue}, array{0:TKey, 1:TValue}): int $callback
+     */
+    public function sort(Closure $callback): static;
 }

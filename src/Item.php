@@ -31,12 +31,12 @@ final class Item implements ParameterAccess, ValueAccess
 
     public static function fromRfc9651(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
+        return self::fromHttpValue($httpValue, Ietf::Rfc9651);
     }
 
     public static function fromRfc8941(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
+        return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
     /**
@@ -47,9 +47,9 @@ final class Item implements ParameterAccess, ValueAccess
      *
      * @throws SyntaxError If the HTTP value can not be parsed
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ItemParser $parser = new Parser()): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
-        return self::fromAssociative(...$parser->parseItem($httpValue));
+        return self::fromAssociative(...(new Parser($rfc))->parseItem($httpValue));
     }
 
     /**

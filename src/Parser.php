@@ -31,7 +31,7 @@ use function substr;
  *
  * @phpstan-import-type SfType from StructuredField
  */
-final class Parser implements DictionaryParser, InnerListParser, ItemParser, ListParser, ParametersParser, ValueParser
+final class Parser
 {
     private const REGEXP_BYTE_SEQUENCE = '/^(?<sequence>:(?<byte>[a-z\d+\/=]*):)/i';
     private const REGEXP_BOOLEAN = '/^\?[01]/';
@@ -57,6 +57,19 @@ final class Parser implements DictionaryParser, InnerListParser, ItemParser, Lis
         $this->rfc = $rfc ?? Ietf::Rfc9651;
     }
 
+    /**
+     * Returns the data type value represented as a PHP type from an HTTP textual representation.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.4
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.5
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.6
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.7
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.8
+     * @see https://www.ietf.org/archive/id/draft-ietf-httpbis-sfbis-02.html#section-4.2.9
+     * @see https://www.ietf.org/archive/id/draft-ietf-httpbis-sfbis-02.html#section-4.2.10
+     *
+     * @throws SyntaxError
+     */
     public function parseValue(Stringable|string $httpValue): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool
     {
         $remainder = trim((string) $httpValue, ' ');

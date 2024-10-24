@@ -66,19 +66,6 @@ interface ParameterAccess
     public function appendParameter(string $key, ValueAccess $member): static;
 
     /**
-     * DEPRECATION WARNING! This method will be removed in the next major point release.
-     *
-     * @deprecated since version 1.1
-     * @see ParameterAccess::withoutParameterByKeys()
-     *
-     * Deletes members associated with the list of submitted keys in the associated parameter intance.
-     *
-     * This method MUST retain the state of the current instance, and return
-     * an instance that contains the specified parameter change.
-     */
-    public function withoutParameter(string ...$keys): static;
-
-    /**
      * Removes all parameters members associated with the list of submitted keys in the associated parameter intance.
      *
      * This method MUST retain the state of the current instance, and return

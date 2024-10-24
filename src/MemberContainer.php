@@ -7,7 +7,6 @@ namespace Bakame\Http\StructuredFields;
 use ArrayAccess;
 use Closure;
 use Countable;
-use Iterator;
 use IteratorAggregate;
 
 /**
@@ -16,9 +15,6 @@ use IteratorAggregate;
  * @template-extends ArrayAccess<TKey, TValue>
  * @template-extends IteratorAggregate<TKey, TValue>
  *
- * @method Iterator map(Closure $callback) Run a map over each container members.
- * @method static filter(Closure $callback) Run a filter over each container members.
- * @method mixed reduce(Closure $callback) Reduce the container to a single value.
  * @method static sort(Closure $callback) Sort a container by value using a callback
  */
 interface MemberContainer extends ArrayAccess, Countable, IteratorAggregate, StructuredField
@@ -57,4 +53,28 @@ interface MemberContainer extends ArrayAccess, Countable, IteratorAggregate, Str
      * an instance that contains the specified changes.
      */
     public function remove(string|int ...$keys): static;
+
+    /**
+     * Run a filter over each container members.
+     *
+     * @param Closure(TValue, TKey): bool $callback
+     */
+    public function filter(Closure $callback): static;
+
+    /**
+     * Run a map over each container members.
+     *
+     * @param Closure(TValue, TKey): mixed $callback
+     */
+    public function map(Closure $callback): mixed;
+
+    /**
+     * @param Closure(TInitial|null, TValue, TKey=): TInitial $callback
+     * @param TInitial|null $initial
+     *
+     * @template TInitial
+     *
+     * @return TInitial|null
+     */
+    public function reduce(Closure $callback, mixed $initial = null): mixed;
 }

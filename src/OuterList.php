@@ -73,7 +73,7 @@ final class OuterList implements MemberList
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ListParser $parser = new Parser()): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
         $converter = fn (array $member): InnerList|Item => match (true) {
             is_array($member[0]) => InnerList::fromAssociative(
@@ -83,7 +83,7 @@ final class OuterList implements MemberList
             default => Item::fromAssociative(...$member),
         };
 
-        return new self(...array_map($converter, $parser->parseList($httpValue)));
+        return new self(...array_map($converter, (new Parser($rfc))->parseList($httpValue)));
     }
 
     /**
@@ -140,12 +140,12 @@ final class OuterList implements MemberList
 
     public static function fromRfc9651(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
+        return self::fromHttpValue($httpValue, Ietf::Rfc9651);
     }
 
     public static function fromRfc8941(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
+        return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
     public function toHttpValue(?Ietf $rfc = null): string
@@ -428,7 +428,7 @@ final class OuterList implements MemberList
     /**
      * @param Closure(SfMember, int): bool $callback
      */
-    public function filter(Closure $callback): self
+    public function filter(Closure $callback): static
     {
         return new self(...array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
     }
@@ -436,7 +436,7 @@ final class OuterList implements MemberList
     /**
      * @param Closure(SfMember, SfMember): int $callback
      */
-    public function sort(Closure $callback): self
+    public function sort(Closure $callback): static
     {
         $members = $this->members;
         usort($members, $callback);

@@ -145,7 +145,7 @@ final class Dictionary implements MemberOrderedMap
      *
      * @throws SyntaxError If the string is not a valid
      */
-    public static function fromHttpValue(Stringable|string $httpValue, DictionaryParser $parser = new Parser()): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
         $converter = fn (array $member): InnerList|Item => match (true) {
             is_array($member[0]) => InnerList::fromAssociative(
@@ -155,17 +155,17 @@ final class Dictionary implements MemberOrderedMap
             default => Item::fromAssociative(...$member),
         };
 
-        return new self(array_map($converter, $parser->parseDictionary($httpValue)));
+        return new self(array_map($converter, (new Parser($rfc))->parseDictionary($httpValue)));
     }
 
     public static function fromRfc9651(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
+        return self::fromHttpValue($httpValue, Ietf::Rfc9651);
     }
 
     public static function fromRfc8941(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
+        return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
     public function toHttpValue(?Ietf $rfc = null): string
@@ -298,7 +298,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @return array{0:string, 1:SfMember}
+     * @return ?array{0:string, 1:SfMember}
      */
     public function first(): ?array
     {
@@ -310,7 +310,7 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
-     * @return array{0:string, 1:SfMember}
+     * @return ?array{0:string, 1:SfMember}
      */
     public function last(): ?array
     {
@@ -411,7 +411,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @param array{0:string, 1:SfMember|SfMemberInput} ...$pairs
      */
-    public function push(array ...$pairs): self
+    public function push(array ...$pairs): static
     {
         return match (true) {
             [] === $pairs => $this,
@@ -425,7 +425,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @param array{0:string, 1:SfMember|SfMemberInput} ...$pairs
      */
-    public function unshift(array ...$pairs): self
+    public function unshift(array ...$pairs): static
     {
         return match (true) {
             [] === $pairs => $this,
@@ -557,7 +557,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @param Closure(SfMember, string): bool $callback
      */
-    public function filter(Closure $callback): self
+    public function filter(Closure $callback): static
     {
         return new self(array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
     }
@@ -565,7 +565,7 @@ final class Dictionary implements MemberOrderedMap
     /**
      * @param Closure(array{0:string, 1:SfMember}, array{0:string, 1:SfMember}): int $callback
      */
-    public function sort(Closure $callback): self
+    public function sort(Closure $callback): static
     {
         $members = iterator_to_array($this->toPairs());
         usort($members, $callback);
