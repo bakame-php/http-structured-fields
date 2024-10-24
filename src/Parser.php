@@ -29,6 +29,9 @@ use function substr;
  * @see InnerList::fromHttpValue()
  * @see Item::fromHttpValue()
  *
+ * @internal Dd mo use directly this class as it's behaviour and return type
+ *           MAY change significantly even during a major release cycle.
+ *
  * @phpstan-import-type SfType from StructuredField
  */
 final class Parser

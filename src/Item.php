@@ -359,7 +359,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function pushParameters(array ...$pairs): self
+    public function pushParameters(array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->push(...$pairs));
     }
@@ -367,7 +367,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function unshiftParameters(array ...$pairs): self
+    public function unshiftParameters(array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->unshift(...$pairs));
     }
@@ -375,7 +375,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function insertParameters(int $index, array ...$pairs): self
+    public function insertParameters(int $index, array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->insert($index, ...$pairs));
     }
@@ -383,7 +383,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * @param array{0:string, 1:SfItemInput} $pair
      */
-    public function replaceParameter(int $index, array $pair): self
+    public function replaceParameter(int $index, array $pair): static
     {
         return $this->withParameters($this->parameters()->replace($index, $pair));
     }
