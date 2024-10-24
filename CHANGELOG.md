@@ -8,6 +8,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - `Ietf` enum.
 - methods `fromRFC9651`, `fromRfc8941`, `toRFC9651`, `toRfc8941`, to ease Type and StructuredFields convertion between RFC.
+- methods `map`, `reduce`, `filter`, `sort` to `MemberContainer interface.
 
 ### Fixed
 

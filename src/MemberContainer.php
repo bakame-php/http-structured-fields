@@ -16,9 +16,10 @@ use IteratorAggregate;
  * @template-extends ArrayAccess<TKey, TValue>
  * @template-extends IteratorAggregate<TKey, TValue>
  *
- * @method Iterator map(Closure $callback) Run a map over each of the members.
- * @method static filter(Closure $callback) Run a filter over each of the members.
- * @method mixed reduce(Closure $callback) Reduce the collection to a single value.
+ * @method Iterator map(Closure $callback) Run a map over each container members.
+ * @method static filter(Closure $callback) Run a filter over each container members.
+ * @method mixed reduce(Closure $callback) Reduce the container to a single value.
+ * @method static sort(Closure $callback) Sort a container by value using a callback
  */
 interface MemberContainer extends ArrayAccess, Countable, IteratorAggregate, StructuredField
 {

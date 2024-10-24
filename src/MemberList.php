@@ -8,6 +8,9 @@ namespace Bakame\Http\StructuredFields;
  * @template TKey
  * @template TValue of StructuredField
  * @template-extends MemberContainer<TKey, TValue>
+ *
+ * @method ?TValue first() Returns the first member of the list if it exists, null otherwise
+ * @method ?TValue last() Returns the last member of the list if it exists, null otherwise
  */
 interface MemberList extends MemberContainer
 {

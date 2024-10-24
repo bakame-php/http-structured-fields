@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-use Closure;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;

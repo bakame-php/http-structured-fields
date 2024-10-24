@@ -298,6 +298,30 @@ final class Dictionary implements MemberOrderedMap
     }
 
     /**
+     * @return array{0:string, 1:SfMember}
+     */
+    public function first(): ?array
+    {
+        try {
+            return $this->pair(0);
+        } catch (InvalidOffset) {
+            return null;
+        }
+    }
+
+    /**
+     * @return array{0:string, 1:SfMember}
+     */
+    public function last(): ?array
+    {
+        try {
+            return $this->pair(-1);
+        } catch (InvalidOffset) {
+            return null;
+        }
+    }
+
+    /**
      * @param SfMember|SfMemberInput $member
      */
     public function add(string $key, iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
@@ -536,5 +560,16 @@ final class Dictionary implements MemberOrderedMap
     public function filter(Closure $callback): self
     {
         return new self(array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
+    }
+
+    /**
+     * @param Closure(array{0:string, 1:SfMember}, array{0:string, 1:SfMember}): int $callback
+     */
+    public function sort(Closure $callback): self
+    {
+        $members = iterator_to_array($this->toPairs());
+        usort($members, $callback);
+
+        return self::fromPairs($members);
     }
 }

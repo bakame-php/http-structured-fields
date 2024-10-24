@@ -253,6 +253,22 @@ final class InnerList implements MemberList, ParameterAccess
     }
 
     /**
+     * @return ?SfItem
+     */
+    public function first(): ?StructuredField
+    {
+        return $this->members[0] ?? null;
+    }
+
+    /**
+     * @return ?SfItem
+     */
+    public function last(): ?StructuredField
+    {
+        return $this->members[$this->filterIndex(-1)] ?? null;
+    }
+
+    /**
      * Inserts members at the beginning of the list.
      */
     public function unshift(
@@ -423,6 +439,17 @@ final class InnerList implements MemberList, ParameterAccess
     public function filter(Closure $callback): self
     {
         return new self(array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH), $this->parameters);
+    }
+
+    /**
+     * @param Closure(SfItem, SfItem): int $callback
+     */
+    public function sort(Closure $callback): self
+    {
+        $members = $this->members;
+        usort($members, $callback);
+
+        return new self($members, $this->parameters);
     }
 
     public function withParameters(Parameters $parameters): static

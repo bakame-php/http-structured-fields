@@ -236,6 +236,22 @@ final class OuterList implements MemberList
     }
 
     /**
+     * @return ?SfMember
+     */
+    public function first(): ?StructuredField
+    {
+        return $this->members[0] ?? null;
+    }
+
+    /**
+     * @return ?SfMember
+     */
+    public function last(): ?StructuredField
+    {
+        return $this->members[$this->filterIndex(-1)] ?? null;
+    }
+
+    /**
      * Inserts members at the beginning of the list.
      *
      * @param SfMember|SfMemberInput ...$members
@@ -415,5 +431,16 @@ final class OuterList implements MemberList
     public function filter(Closure $callback): self
     {
         return new self(...array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
+    }
+
+    /**
+     * @param Closure(SfMember, SfMember): int $callback
+     */
+    public function sort(Closure $callback): self
+    {
+        $members = $this->members;
+        usort($members, $callback);
+
+        return new self(...$members);
     }
 }

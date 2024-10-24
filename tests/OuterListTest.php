@@ -64,7 +64,7 @@ final class OuterListTest extends StructuredFieldTestCase
     #[Test]
     public function it_can_unshift_insert_and_replace(): void
     {
-        $instance = new class () implements StructuredFieldProvider {
+        $anonymous = new class () implements StructuredFieldProvider {
             public function toStructuredField(): StructuredField
             {
                 return Item::fromInteger(42);
@@ -73,7 +73,7 @@ final class OuterListTest extends StructuredFieldTestCase
 
         $instance = OuterList::new()
             ->unshift(Item::fromString('42'))
-            ->push($instance)
+            ->push($anonymous)
             ->insert(1, Item::fromDecimal(42.0))
             ->replace(0, Item::new(ByteSequence::fromDecoded('Hello World')));
 

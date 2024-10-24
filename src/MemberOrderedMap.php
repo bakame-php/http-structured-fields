@@ -17,6 +17,8 @@ use Iterator;
  * @method static replace(int $index, array $pair) Replaces the pair at the given index
  * @method static removeByIndices(int ... $indices) Remove members by index
  * @method static removeByKeys(string ...$keys) Remove members by keys
+ * @method array first() Returns the first pair of the list if it exists, the empty array otherwise
+ * @method array last() Returns the last pair of the list if it exists, null otherwise
  */
 interface MemberOrderedMap extends MemberContainer
 {

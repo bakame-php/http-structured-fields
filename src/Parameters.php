@@ -251,6 +251,30 @@ final class Parameters implements MemberOrderedMap
         return [...$this->toPairs()][$offset];
     }
 
+    /**
+     * @return array{0:string, 1:SfItem}
+     */
+    public function first(): ?array
+    {
+        try {
+            return $this->pair(0);
+        } catch (InvalidOffset) {
+            return null;
+        }
+    }
+
+    /**
+     * @return array{0:string, 1:SfItem}
+     */
+    public function last(): ?array
+    {
+        try {
+            return $this->pair(-1);
+        } catch (InvalidOffset) {
+            return null;
+        }
+    }
+
     public function add(string $key, StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
     {
         $members = $this->members;
@@ -481,5 +505,16 @@ final class Parameters implements MemberOrderedMap
     public function filter(Closure $callback): self
     {
         return new self(array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
+    }
+
+    /**
+     * @param Closure(array{0:string, 1:SfItem}, array{0:string, 1:SfItem}): int $callback
+     */
+    public function sort(Closure $callback): self
+    {
+        $members = iterator_to_array($this->toPairs());
+        uasort($members, $callback);
+
+        return self::fromPairs($members);
     }
 }
