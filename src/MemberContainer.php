@@ -14,8 +14,6 @@ use IteratorAggregate;
  * @template TValue of StructuredField
  * @template-extends ArrayAccess<TKey, TValue>
  * @template-extends IteratorAggregate<TKey, TValue>
- *
- * @method static sort(Closure $callback) Sort a container by value using a callback
  */
 interface MemberContainer extends ArrayAccess, Countable, IteratorAggregate, StructuredField
 {
