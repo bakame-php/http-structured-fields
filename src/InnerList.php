@@ -69,9 +69,9 @@ final class InnerList implements MemberList, ParameterAccess
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1
      */
-    public static function fromHttpValue(Stringable|string $httpValue, InnerListParser $parser = new Parser()): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): static
     {
-        [$members, $parameters] = $parser->parseInnerList($httpValue);
+        [$members, $parameters] = Parser::new($rfc)->parseInnerList($httpValue);
 
         return new self(
             array_map(fn (array $member): Item => Item::fromAssociative(...$member), $members),
@@ -85,7 +85,7 @@ final class InnerList implements MemberList, ParameterAccess
      * @param iterable<SfItemInput> $value
      * @param MemberOrderedMap<string, SfItem>|iterable<string, SfItemInput> $parameters
      */
-    public static function fromAssociative(iterable $value, iterable $parameters): self
+    public static function fromAssociative(iterable $value, iterable $parameters): static
     {
         if (!$parameters instanceof Parameters) {
             $parameters = Parameters::fromAssociative($parameters);
@@ -100,7 +100,7 @@ final class InnerList implements MemberList, ParameterAccess
      *     1:MemberOrderedMap<string, SfItem>|iterable<array{0:string, 1:SfItemInput}>
      * } $pair
      */
-    public static function fromPair(array $pair): self
+    public static function fromPair(array $pair): static
     {
         return match (true) {
             [] === $pair => self::new(), // @phpstan-ignore-line
@@ -115,18 +115,18 @@ final class InnerList implements MemberList, ParameterAccess
      */
     public static function new(
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
-    ): self {
+    ): static {
         return new self($members, Parameters::new());
     }
 
-    public static function fromRfc9651(Stringable|string $httpValue): self
+    public static function fromRfc9651(Stringable|string $httpValue): static
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
+        return self::fromHttpValue($httpValue, Ietf::Rfc9651);
     }
 
-    public static function fromRfc8941(Stringable|string $httpValue): self
+    public static function fromRfc8941(Stringable|string $httpValue): static
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
+        return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
     public function toHttpValue(?Ietf $rfc = null): string
@@ -436,7 +436,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param Closure(SfItem, int): bool $callback
      */
-    public function filter(Closure $callback): self
+    public function filter(Closure $callback): static
     {
         return new self(array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH), $this->parameters);
     }
@@ -444,7 +444,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param Closure(SfItem, SfItem): int $callback
      */
-    public function sort(Closure $callback): self
+    public function sort(Closure $callback): static
     {
         $members = $this->members;
         usort($members, $callback);
@@ -479,7 +479,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function pushParameters(array ...$pairs): self
+    public function pushParameters(array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->push(...$pairs));
     }
@@ -487,7 +487,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function unshiftParameters(array ...$pairs): self
+    public function unshiftParameters(array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->unshift(...$pairs));
     }
@@ -495,7 +495,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function insertParameters(int $index, array ...$pairs): self
+    public function insertParameters(int $index, array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->insert($index, ...$pairs));
     }
@@ -503,7 +503,7 @@ final class InnerList implements MemberList, ParameterAccess
     /**
      * @param array{0:string, 1:SfItemInput} $pair
      */
-    public function replaceParameter(int $index, array $pair): self
+    public function replaceParameter(int $index, array $pair): static
     {
         return $this->withParameters($this->parameters()->replace($index, $pair));
     }

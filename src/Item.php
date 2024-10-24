@@ -31,12 +31,12 @@ final class Item implements ParameterAccess, ValueAccess
 
     public static function fromRfc9651(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc9651));
+        return self::fromHttpValue($httpValue, Ietf::Rfc9651);
     }
 
     public static function fromRfc8941(Stringable|string $httpValue): self
     {
-        return self::fromHttpValue($httpValue, new Parser(Ietf::Rfc8941));
+        return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
     /**
@@ -47,9 +47,9 @@ final class Item implements ParameterAccess, ValueAccess
      *
      * @throws SyntaxError If the HTTP value can not be parsed
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ItemParser $parser = new Parser()): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
-        return self::fromAssociative(...$parser->parseItem($httpValue));
+        return self::fromAssociative(...Parser::new($rfc)->parseItem($httpValue));
     }
 
     /**
@@ -359,7 +359,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function pushParameters(array ...$pairs): self
+    public function pushParameters(array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->push(...$pairs));
     }
@@ -367,7 +367,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function unshiftParameters(array ...$pairs): self
+    public function unshiftParameters(array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->unshift(...$pairs));
     }
@@ -375,7 +375,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function insertParameters(int $index, array ...$pairs): self
+    public function insertParameters(int $index, array ...$pairs): static
     {
         return $this->withParameters($this->parameters()->insert($index, ...$pairs));
     }
@@ -383,7 +383,7 @@ final class Item implements ParameterAccess, ValueAccess
     /**
      * @param array{0:string, 1:SfItemInput} $pair
      */
-    public function replaceParameter(int $index, array $pair): self
+    public function replaceParameter(int $index, array $pair): static
     {
         return $this->withParameters($this->parameters()->replace($index, $pair));
     }

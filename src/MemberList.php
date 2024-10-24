@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use Closure;
+
 /**
  * @template TKey
  * @template TValue of StructuredField
  * @template-extends MemberContainer<TKey, TValue>
- *
- * @method ?TValue first() Returns the first member of the list if it exists, null otherwise
- * @method ?TValue last() Returns the last member of the list if it exists, null otherwise
  */
 interface MemberList extends MemberContainer
 {
@@ -49,4 +48,25 @@ interface MemberList extends MemberContainer
      * @throws InvalidOffset If the index does not exist
      */
     public function replace(int $key, StructuredField $member): static;
+
+    /**
+     * Returns the last member of the list if it exists, null otherwise.
+     *
+     * @return ?TValue
+     */
+    public function last(): ?StructuredField;
+
+    /**
+     * Returns the first member of the list if it exists, null otherwise.
+     *
+     * @return ?TValue
+     */
+    public function first(): ?StructuredField;
+
+    /**
+     * Sort a container by value using a callback.
+     *
+     * @param Closure(TValue, TValue): int $callback
+     */
+    public function sort(Closure $callback): static;
 }
