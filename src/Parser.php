@@ -45,16 +45,13 @@ final class Parser
     private const FIRST_CHARACTER_RANGE_NUMBER = '-1234567890';
     private const FIRST_CHARACTER_RANGE_TOKEN = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*';
 
-    private Ietf $rfc;
-
     public static function new(?Ietf $rfc = null): self
     {
-        return new self($rfc);
+        return new self($rfc ?? Ietf::Rfc9651);
     }
 
-    public function __construct(?Ietf $rfc = null)
+    public function __construct(private readonly Ietf $rfc)
     {
-        $this->rfc = $rfc ?? Ietf::Rfc9651;
     }
 
     /**

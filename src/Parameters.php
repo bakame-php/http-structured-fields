@@ -113,7 +113,7 @@ final class Parameters implements MemberOrderedMap
      */
     public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
-        return new self((new Parser($rfc))->parseParameters($httpValue));
+        return new self(Parser::new($rfc)->parseParameters($httpValue));
     }
 
     public static function fromRfc9651(Stringable|string $httpValue): self

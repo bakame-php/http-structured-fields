@@ -155,7 +155,7 @@ final class Dictionary implements MemberOrderedMap
             default => Item::fromAssociative(...$member),
         };
 
-        return new self(array_map($converter, (new Parser($rfc))->parseDictionary($httpValue)));
+        return new self(array_map($converter, Parser::new($rfc)->parseDictionary($httpValue)));
     }
 
     public static function fromRfc9651(Stringable|string $httpValue): self

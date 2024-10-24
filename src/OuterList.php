@@ -83,7 +83,7 @@ final class OuterList implements MemberList
             default => Item::fromAssociative(...$member),
         };
 
-        return new self(...array_map($converter, (new Parser($rfc))->parseList($httpValue)));
+        return new self(...array_map($converter, Parser::new($rfc)->parseList($httpValue)));
     }
 
     /**

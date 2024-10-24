@@ -49,7 +49,7 @@ final class Item implements ParameterAccess, ValueAccess
      */
     public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
-        return self::fromAssociative(...(new Parser($rfc))->parseItem($httpValue));
+        return self::fromAssociative(...Parser::new($rfc)->parseItem($httpValue));
     }
 
     /**
