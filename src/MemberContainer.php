@@ -7,6 +7,7 @@ namespace Bakame\Http\StructuredFields;
 use ArrayAccess;
 use Closure;
 use Countable;
+use Iterator;
 use IteratorAggregate;
 
 /**
@@ -62,11 +63,17 @@ interface MemberContainer extends ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Run a map over each container members.
      *
-     * @param Closure(TValue, TKey): mixed $callback
+     * @template TMap
+     *
+     * @param Closure(TValue, TKey): TMap $callback
+     *
+     * @return Iterator<TMap>
      */
-    public function map(Closure $callback): mixed;
+    public function map(Closure $callback): Iterator;
 
     /**
+     * Iteratively reduce the container to a single value using a callback.
+     *
      * @param Closure(TInitial|null, TValue, TKey=): TInitial $callback
      * @param TInitial|null $initial
      *
