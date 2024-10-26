@@ -130,10 +130,10 @@ final class InnerListTest extends TestCase
     {
         $instance = InnerList::fromAssociative([false], ['foo' => 'bar']);
 
-        self::assertSame('bar', $instance->parameters()->get('foo')->value());
-        self::assertSame('bar', $instance->parameter('foo'));
+        self::assertSame('bar', $instance->parameters()->getByKey('foo')->value());
+        self::assertSame('bar', $instance->parameterByKey('foo'));
         self::assertSame(['foo', 'bar'], $instance->parameterByIndex(0));
-        self::assertNull($instance->parameter('non-existing-key'));
+        self::assertNull($instance->parameterByKey('non-existing-key'));
         self::assertSame([], $instance->parameterByIndex(42));
     }
 
@@ -142,7 +142,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        InnerList::new(false)->parameters()->get('bar')->value();
+        InnerList::new(false)->parameters()->getByKey('bar')->value();
     }
 
     #[Test]
@@ -152,11 +152,11 @@ final class InnerListTest extends TestCase
 
         self::assertCount(3, $instance);
         self::assertCount(1, $instance->parameters());
-        self::assertSame('bar(', $instance->parameters()->get('foo')->value());
+        self::assertSame('bar(', $instance->parameters()->getByKey('foo')->value());
         self::assertSame('hello)world', $instance->get(0)->value());
         self::assertSame(42, $instance->get(1)->value());
         self::assertSame(42.0, $instance->get(2)->value());
-        self::assertEquals(Token::fromString('doe'), $instance->get(2)->parameters()->get('john')->value());
+        self::assertEquals(Token::fromString('doe'), $instance->get(2)->parameters()->getByKey('john')->value());
     }
 
     #[Test]
@@ -180,14 +180,6 @@ final class InnerListTest extends TestCase
     public function it_returns_the_same_object_if_no_member_is_removed(): void
     {
         self::assertCount(0, InnerList::new()->remove(0));
-    }
-
-    #[Test]
-    public function it_fails_to_fetch_an_value_using_an_integer(): void
-    {
-        $this->expectException(InvalidOffset::class);
-
-        InnerList::new()->get('zero');
     }
 
     #[Test]
@@ -273,8 +265,8 @@ final class InnerListTest extends TestCase
         self::assertSame($instance1, $instance4);
         self::assertFalse($instance5->parameters()->hasMembers());
         self::assertTrue($instance6->parameters()->hasNoMembers());
-        self::assertTrue($instance1->parameter('a'));
-        self::assertNull($instance5->parameter('a'));
+        self::assertTrue($instance1->parameterByKey('a'));
+        self::assertNull($instance5->parameterByKey('a'));
     }
 
     #[Test]

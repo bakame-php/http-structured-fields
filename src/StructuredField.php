@@ -19,7 +19,24 @@ use Stringable;
 interface StructuredField extends Stringable
 {
     /**
+     * Returns a new instance from an HTTP Header or Trailer value string in compliance to an accepted RFC.
+     *
+     * @throws StructuredFieldError If the HTTP value can not be parsed
+     */
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self;
+
+    /**
      * Returns the serialize-representation of the Structured Field as a textual HTTP field value.
+     *
+     * @throws StructuredFieldError If the object can not be serialized
      */
     public function toHttpValue(?Ietf $rfc = null): string;
+
+    /**
+     * Returns the serialize-representation of the Structured Field as a textual HTTP field value
+     * using the last accepted RFC protocol.
+     *
+     * @throws StructuredFieldError If the object can not be serialized
+     */
+    public function __toString(): string;
 }

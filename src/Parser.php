@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use DateTimeImmutable;
+use Exception;
 use Stringable;
 
 use function in_array;
@@ -66,7 +67,7 @@ final class Parser
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.7
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.8
      *
-     * @throws SyntaxError
+     * @throws Exception|SyntaxError
      */
     public function parseValue(Stringable|string $httpValue): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool
     {
@@ -84,6 +85,9 @@ final class Parser
     }
 
     /**
+     *
+     * @throws Exception|SyntaxError
+     *
      * @return array{0:SfType, 1:array<string, SfType>}
      */
     public function parseItem(Stringable|string $httpValue): array
@@ -107,7 +111,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.2
      *
-     * @throws SyntaxError If the string is not a valid
+     * @throws SyntaxError|Exception
      *
      * @return array<string, SfType>
      */
@@ -127,6 +131,8 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.1
      *
+     * @throws SyntaxError|Exception
+     *
      * @return array<array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}>
      */
     public function parseList(Stringable|string $httpValue): array
@@ -145,6 +151,8 @@ final class Parser
      * Returns an ordered map represented as a PHP associative array from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.2
+     *
+     * @throws SyntaxError|Exception
      *
      * @return array<string, array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}>
      */
@@ -171,16 +179,22 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.1.2
      *
+     * @throws SyntaxError|Exception
+     *
      * @return array{0:array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}
      */
     public function parseInnerList(Stringable|string $httpValue): array
     {
         $remainder = ltrim((string) $httpValue, ' ');
-        '(' === $remainder[0] || throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list is missing a parenthesis.");
+        if ('(' !== $remainder[0]) {
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list is missing a parenthesis.");
+        }
 
         [$list, $offset] = $this->extractInnerList($remainder);
         $remainder = self::removeOptionalWhiteSpaces(substr($remainder, $offset));
-        '' === $remainder || throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list contains invalid data.");
+        if ('' !== $remainder) {
+            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a inner list contains invalid data.");
+        }
 
         return $list;
     }
@@ -197,11 +211,15 @@ final class Parser
             return '';
         }
 
-        1 === preg_match(self::REGEXP_VALID_SPACE, $remainder, $found) || throw new SyntaxError('The HTTP textual representation is missing an excepted comma.');
+        if (1 !== preg_match(self::REGEXP_VALID_SPACE, $remainder, $found)) {
+            throw new SyntaxError('The HTTP textual representation is missing an excepted comma.');
+        }
 
         $remainder = substr($remainder, strlen($found['space']));
 
-        '' !== $remainder || throw new SyntaxError('The HTTP textual representation has an unexpected end of line.');
+        if ('' === $remainder) {
+            throw new SyntaxError('The HTTP textual representation has an unexpected end of line.');
+        }
 
         return $remainder;
     }
@@ -221,6 +239,8 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.1.1
      *
+     * @throws SyntaxError|Exception
+     *
      * @return array{0:array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}, 1:int}
      */
     private function extractItemOrInnerList(string $httpValue): array
@@ -238,6 +258,8 @@ final class Parser
      * Returns an inner list represented as a PHP list array from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.1.2
+     *
+     * @throws SyntaxError|Exception
      *
      * @return array{0:array{0:array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}, 1:int}
      */
@@ -269,6 +291,8 @@ final class Parser
     /**
      * Returns an item represented as a PHP array from an HTTP textual representation and the consumed offset in a tuple.
      *
+     * @throws SyntaxError|Exception
+     *
      * @return array{0:array{0:SfType, 1:array<string, SfType>}, 1:string}
      */
     private function extractItem(string $remainder): array
@@ -284,6 +308,8 @@ final class Parser
      * Returns an item value from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.3.1
+     *
+     * @throws SyntaxError|Exception
      *
      * @return array{0:SfType, 1:int}
      */
@@ -305,6 +331,8 @@ final class Parser
      * Returns a parameters container represented as a PHP associative array from an HTTP textual representation and the consumed offset in a tuple.
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.3.2
+     *
+     * @throws SyntaxError|Exception
      *
      * @return array{0:array<string, SfType>, 1:int}
      */
@@ -368,11 +396,16 @@ final class Parser
      *
      * @see https://httpwg.org/http-extensions/draft-ietf-httpbis-sfbis.html#name-dates
      *
+     * @throws SyntaxError
+     * @throws Exception
+     *
      * @return array{0:DateTimeImmutable, 1:int}
      */
     private static function extractDate(string $httpValue, Ietf $rfc): array
     {
-        $rfc->supports(Type::Date) || throw new SyntaxError('The '.Type::Date->value.' type is not parsable by '.$rfc->value);
+        if (!$rfc->supports(Type::Date)) {
+            throw new SyntaxError('The '.Type::Date->value.' type is not parsable by '.$rfc->value);
+        }
 
         if (1 !== preg_match(self::REGEXP_DATE, $httpValue, $found)) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Date contains invalid characters.");
@@ -436,7 +469,9 @@ final class Parser
      */
     private static function extractDisplayString(string $httpValue, Ietf $rfc): array
     {
-        $rfc->supports(Type::DisplayString) || throw new SyntaxError('The '.Type::DisplayString->value.' type is not parsable by '.$rfc->value);
+        if (!$rfc->supports(Type::DisplayString)) {
+            throw new SyntaxError('The '.Type::DisplayString->value.' type is not parsable by '.$rfc->value);
+        }
 
         $offset = 2;
         $remainder = substr($httpValue, $offset);

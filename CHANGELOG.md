@@ -10,11 +10,21 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - methods `fromRFC9651`, `fromRfc8941`, `toRFC9651`, `toRfc8941`, to ease Type and StructuredFields convertion between RFC.
 - methods `map`, `reduce`, `filter`, `sort` to `all containers classes.
 - `StructuredFieldProvider` interface
+- Added a validation mechanism to facilitate Item validation against a field definition.
+- `Item::parameterByKey` replaces `Item::parameter`
+- `Item::tryNew`
+- `Parameters::getByKey` replaces `Parameters::get`
+- `Parameters::getByIndex` replaces `Parameters::pair`
+- `Parameters::valueByKey`
+- `Parameters::valueByIndex`
+- `Dictionary::getByKey` replaces `Dictionary::get`
+- `Dictionary::getByIndex` replaces `Dictionary::pair`
 
 ### Fixed
 
 - Removed the `Parser` from the public API.
-- Fixed `Tyoe` inference when instantiating the `Value` class.
+- Fixed `Type` inference when instantiating the `Value` class.
+- Fixed `Type::tryFromVariable` and  `Type::fromVariable` methods
 
 ### Deprecated
 
@@ -23,6 +33,13 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Removed
 
 - `MemberContainer`, `MemberList`, `MemberOrderedMap`, and all the Parser related methods.
+- All deprecated methods during the version 1 cycle.
+- `Item::parameter` replaced by `Item::parameterByKey`
+- `Parameters:get` replaced by `Parameters::getByKey`
+- `Parameters:pair` replaced by `Parameters::getByIndex`
+- `Dictionary:get` replaced by `Dictionary::getByKey`
+- `Dictionary:pair` replaced by `Dictionary::getByIndex`
+
 
 ## [1.3.0](https://github.com/bakame-php/http-structured-fields/compare/1.2.2...1.3.0) - 2024-01-05
 

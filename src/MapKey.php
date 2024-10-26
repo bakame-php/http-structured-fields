@@ -32,6 +32,15 @@ final class MapKey
         return $instance;
     }
 
+    public static function tryFrom(string|int $httpValue): ?self
+    {
+        try {
+            return self::from($httpValue);
+        } catch (SyntaxError $e) {
+            return null;
+        }
+    }
+
     /**
      * @throws SyntaxError If the string does not start with a valid HTTP value field key
      */

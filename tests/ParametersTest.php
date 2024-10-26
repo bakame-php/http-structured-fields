@@ -25,9 +25,9 @@ final class ParametersTest extends StructuredFieldTestCase
         $arrayParams = ['string' => $stringItem, 'boolean' => $booleanItem];
         $instance = Parameters::fromAssociative($arrayParams);
 
-        self::assertSame(['string', $stringItem], $instance->pair(0));
+        self::assertSame(['string', $stringItem], $instance->getByIndex(0));
         self::assertTrue($instance->has('string', 'string'));
-        self::assertSame($stringItem, $instance->get('string'));
+        self::assertSame($stringItem, $instance->getByKey('string'));
         self::assertTrue($instance->has('string'));
 
         self::assertEquals($arrayParams, [...$instance]);
@@ -41,8 +41,8 @@ final class ParametersTest extends StructuredFieldTestCase
         $arrayParams = [['string', $stringItem], ['boolean', $booleanItem]];
         $instance = Parameters::fromPairs($arrayParams);
 
-        self::assertSame(['string', $stringItem], $instance->pair(0));
-        self::assertSame($stringItem, $instance->get('string'));
+        self::assertSame(['string', $stringItem], $instance->getByIndex(0));
+        self::assertSame($stringItem, $instance->getByKey('string'));
         self::assertTrue($instance->has('string'));
         self::assertEquals(
             [['string', $stringItem], ['boolean', $booleanItem]],
@@ -94,7 +94,7 @@ final class ParametersTest extends StructuredFieldTestCase
             [...$instance->toPairs()]
         );
 
-        $deletedInstance = $instance->remove('boolean');
+        $deletedInstance = $instance->removeByKeys('boolean');
         self::assertCount(1, $deletedInstance);
         self::assertFalse($deletedInstance->has('boolean'));
         self::assertFalse($deletedInstance->hasPair(1));
@@ -112,13 +112,13 @@ final class ParametersTest extends StructuredFieldTestCase
         self::assertFalse($addedInstance->hasPair(3, 23));
         self::assertFalse($addedInstance->hasPair());
 
-        $foundItem = $addedInstance->pair(1);
+        $foundItem = $addedInstance->getByIndex(1);
 
         self::assertCount(2, $addedInstance);
         self::assertIsString($foundItem[1]->value());
         self::assertStringContainsString('BarBaz', $foundItem[1]->value());
 
-        $altInstance = $addedInstance->remove('foobar', 'string');
+        $altInstance = $addedInstance->removeByKeys('foobar', 'string');
 
         self::assertCount(0, $altInstance);
         self::assertFalse($altInstance->hasMembers());
@@ -133,7 +133,7 @@ final class ParametersTest extends StructuredFieldTestCase
         $arrayParams = ['string' => $stringItem, 'boolean' => $booleanItem];
         $instance = Parameters::fromAssociative($arrayParams);
 
-        self::assertSame($instance, $instance->remove('foo', 'bar', 'baz'));
+        self::assertSame($instance, $instance->removeByKeys('foo', 'bar', 'baz'));
     }
 
     #[Test]
@@ -154,7 +154,7 @@ final class ParametersTest extends StructuredFieldTestCase
         self::assertFalse($instance->has('foobar', 'barbaz'));
         self::assertFalse($instance->has());
 
-        $instance->get('foobar');
+        $instance->getByKey('foobar');
     }
 
     #[Test]
@@ -166,7 +166,7 @@ final class ParametersTest extends StructuredFieldTestCase
 
         $this->expectException(InvalidOffset::class);
 
-        $instance->pair(3);
+        $instance->getByIndex(3);
     }
 
     #[Test]
@@ -262,8 +262,8 @@ final class ParametersTest extends StructuredFieldTestCase
 
         $instance4 = $instance1->mergeAssociative($instance2, $instance3);
 
-        self::assertEquals(Item::fromInteger(42), $instance4->get('a'));
-        self::assertEquals(Item::true(), $instance4->get('b'));
+        self::assertEquals(Item::fromInteger(42), $instance4->getByKey('a'));
+        self::assertEquals(Item::true(), $instance4->getByKey('b'));
     }
 
     #[Test]
@@ -275,8 +275,8 @@ final class ParametersTest extends StructuredFieldTestCase
 
         $instance4 = $instance3->mergeAssociative($instance2, $instance1);
 
-        self::assertEquals(Item::false(), $instance4->get('a'));
-        self::assertEquals(Item::true(), $instance4->get('b'));
+        self::assertEquals(Item::false(), $instance4->getByKey('a'));
+        self::assertEquals(Item::true(), $instance4->getByKey('b'));
     }
 
     #[Test]
@@ -297,8 +297,8 @@ final class ParametersTest extends StructuredFieldTestCase
         $instance4 = $instance3->mergePairs($instance2, $instance1);
 
         self::assertCount(2, $instance4);
-        self::assertEquals(Item::false(), $instance4->get('a'));
-        self::assertEquals(Item::true(), $instance4->get('b'));
+        self::assertEquals(Item::false(), $instance4->getByKey('a'));
+        self::assertEquals(Item::true(), $instance4->getByKey('b'));
     }
 
     #[Test]
@@ -327,7 +327,7 @@ final class ParametersTest extends StructuredFieldTestCase
             'boolean' => Item::true(),
         ]);
 
-        self::assertSame('helloWorld', $instance->get('string')->value());
+        self::assertSame('helloWorld', $instance->getByKey('string')->value());
     }
 
     #[Test]
@@ -353,19 +353,11 @@ final class ParametersTest extends StructuredFieldTestCase
         $instance = Parameters::new()->add('foo', 'bar');
 
         self::assertTrue($instance->hasMembers());
-        self::assertSame($instance->remove(), $instance);
-        self::assertFalse($instance->remove('foo')->hasMembers());
+        self::assertSame($instance->removeByIndices(), $instance);
+        self::assertFalse($instance->removeByKeys('foo')->hasMembers());
 
         $instanceWithoutMembers = Parameters::new();
-        self::assertSame($instanceWithoutMembers->remove(), $instanceWithoutMembers);
-    }
-
-    #[Test]
-    public function it_fails_to_fetch_an_value_using_an_integer(): void
-    {
-        $this->expectException(InvalidOffset::class);
-
-        Parameters::new()->get(0);
+        self::assertSame($instanceWithoutMembers->removeByKeys(), $instanceWithoutMembers);
     }
 
     #[Test]
@@ -375,7 +367,6 @@ final class ParametersTest extends StructuredFieldTestCase
 
         Parameters::fromPairs([['foo', InnerList::new(42)]]);
     }
-
 
     #[Test]
     public function it_implements_the_array_access_interface(): void
@@ -389,9 +380,9 @@ final class ParametersTest extends StructuredFieldTestCase
             ['token', $token],
         ]);
 
-        self::assertSame($structuredField->get('false'), $structuredField['false']);
+        self::assertSame($structuredField->getByKey('false'), $structuredField['false']);
 
-        self::assertFalse($structuredField->get('false')->value());
+        self::assertFalse($structuredField->getByKey('false')->value());
         self::assertFalse($structuredField['false']->value());
         self::assertFalse(isset($structuredField['toto']));
     }

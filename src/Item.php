@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-use Closure;
+use Bakame\Http\StructuredFields\Validation\Violation;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
@@ -16,12 +16,15 @@ use function count;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3
  *
+ * @phpstan-import-type SfType from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
  * @phpstan-import-type SfItemPair from StructuredField
  * @phpstan-import-type SfTypeInput from StructuredField
  */
-final class Item implements ParameterAccess, StructuredField
+final class Item implements StructuredField
 {
+    use ParameterAccess;
+
     private function __construct(
         private readonly Value $value,
         private readonly Parameters $parameters
@@ -68,7 +71,7 @@ final class Item implements ParameterAccess, StructuredField
     }
 
     /**
-     * @param array{0: SfTypeInput, 1: Parameters|iterable<array{0:string, 1:SfItemInput}>} $pair
+     * @param array{0: SfItemInput, 1: Parameters|iterable<array{0:string, 1:SfItemInput}>} $pair
      *
      * @throws SyntaxError If the pair or its content is not valid.
      */
@@ -84,7 +87,7 @@ final class Item implements ParameterAccess, StructuredField
     /**
      * Returns a new bare instance from value.
      *
-     * @param SfTypeInput|array{0:SfTypeInput, 1:Parameters|iterable<array{0:string, 1:SfItemInput}>} $value
+     * @param SfItemInput|array{0:SfItemInput, 1:Parameters|iterable<array{0:string, 1:SfItemInput}>} $value
      *
      * @throws SyntaxError If the value is not valid.
      */
@@ -95,6 +98,20 @@ final class Item implements ParameterAccess, StructuredField
         }
 
         return self::fromValue(new Value($value));
+    }
+
+    /**
+     * Returns a new bare instance from value or null on error.
+     *
+     * @param SfItemInput|array{0:SfItemInput, 1:Parameters|iterable<array{0:string, 1:SfItemInput}>} $value
+     */
+    public static function tryNew(mixed $value): ?self
+    {
+        try {
+            return self::fromValue(new Value($value));
+        } catch (SyntaxError) {
+            return null;
+        }
     }
 
     /**
@@ -243,43 +260,37 @@ final class Item implements ParameterAccess, StructuredField
 
     /**
      * Returns the underlying value.
+     * If a validation rule is provided, an exception will be thrown
+     * if the validation rules does not return true.
+     *
+     * if the validation returns false then a default validation message will be return; otherwise the submitted message string will be returned as is.
+     *
+     * @param ?callable(SfType): (string|bool) $validate
+     *
+     * @throws Violation
      */
-    public function value(): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool
+    public function value(?callable $validate = null): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool
     {
-        return $this->value->value;
+        $value = $this->value->value;
+        if (null === $validate) {
+            return $value;
+        }
+
+        $exceptionMessage = $validate($value);
+        if (true === $exceptionMessage) {
+            return $value;
+        }
+
+        if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
+            $exceptionMessage = "The item value '{value}' failed validation.";
+        }
+
+        throw new Violation(strtr($exceptionMessage, ['{value}' => $this->value->serialize()]));
     }
 
     public function type(): Type
     {
         return $this->value->type;
-    }
-
-    public function parameters(): Parameters
-    {
-        return $this->parameters;
-    }
-
-    public function parameter(string $key): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null
-    {
-        try {
-            return $this->parameters->get($key)->value();
-        } catch (StructuredFieldError) {
-            return null;
-        }
-    }
-
-    /**
-     * @return array{0:string, 1:Token|ByteSequence|DisplayString|DateTimeImmutable|int|float|string|bool}|array{}
-     */
-    public function parameterByIndex(int $index): array
-    {
-        try {
-            $tuple = $this->parameters->pair($index);
-
-            return [$tuple[0], $tuple[1]->value()];
-        } catch (StructuredFieldError) {
-            return [];
-        }
     }
 
     /**
@@ -290,7 +301,6 @@ final class Item implements ParameterAccess, StructuredField
     public function toHttpValue(?Ietf $rfc = null): string
     {
         $rfc ??= Ietf::Rfc9651;
-
 
         return $this->value->serialize($rfc).$this->parameters->toHttpValue($rfc);
     }
@@ -328,7 +338,7 @@ final class Item implements ParameterAccess, StructuredField
      */
     public function withValue(
         DateTimeInterface|ByteSequence|Token|DisplayString|string|int|float|bool $value
-    ): static {
+    ): self {
         $value = new Value($value);
         if ($value->equals($this->value)) {
             return $this;
@@ -337,86 +347,8 @@ final class Item implements ParameterAccess, StructuredField
         return new self($value, $this->parameters);
     }
 
-    public function sortParameters(Closure $callback): static
-    {
-        return $this->withParameters($this->parameters()->sort($callback));
-    }
-
     public function withParameters(Parameters $parameters): static
     {
         return $this->parameters->toHttpValue() === $parameters->toHttpValue() ? $this : new self($this->value, $parameters);
-    }
-
-    public function addParameter(
-        string $key,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
-    ): static {
-        return $this->withParameters($this->parameters()->add($key, $member));
-    }
-
-    public function prependParameter(
-        string $key,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
-    ): static {
-        return $this->withParameters($this->parameters()->prepend($key, $member));
-    }
-
-    public function appendParameter(
-        string $key,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
-    ): static {
-        return $this->withParameters($this->parameters()->append($key, $member));
-    }
-
-    /**
-     * @param array{0:string, 1:SfItemInput} ...$pairs
-     */
-    public function pushParameters(array ...$pairs): static
-    {
-        return $this->withParameters($this->parameters()->push(...$pairs));
-    }
-
-    /**
-     * @param array{0:string, 1:SfItemInput} ...$pairs
-     */
-    public function unshiftParameters(array ...$pairs): static
-    {
-        return $this->withParameters($this->parameters()->unshift(...$pairs));
-    }
-
-    /**
-     * @param array{0:string, 1:SfItemInput} ...$pairs
-     */
-    public function insertParameters(int $index, array ...$pairs): static
-    {
-        return $this->withParameters($this->parameters()->insert($index, ...$pairs));
-    }
-
-    /**
-     * @param array{0:string, 1:SfItemInput} $pair
-     */
-    public function replaceParameter(int $index, array $pair): static
-    {
-        return $this->withParameters($this->parameters()->replace($index, $pair));
-    }
-
-    public function withoutParameterByKeys(string ...$keys): static
-    {
-        return $this->withParameters($this->parameters()->removeByKeys(...$keys));
-    }
-
-    public function withoutParameterByIndices(int ...$indices): static
-    {
-        return $this->withParameters($this->parameters()->removeByIndices(...$indices));
-    }
-
-    public function withoutAnyParameter(): static
-    {
-        return $this->withParameters(Parameters::new());
-    }
-
-    public function filterParameters(Closure $callback): static
-    {
-        return $this->withParameters($this->parameters()->filter($callback));
     }
 }

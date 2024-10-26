@@ -5,13 +5,20 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
+use BackedEnum;
+use Bakame\Http\StructuredFields\Validation\ParsedParameters;
+use Bakame\Http\StructuredFields\Validation\Violation;
+use Bakame\Http\StructuredFields\Validation\ViolationList;
 use CallbackFilterIterator;
-use Closure;
 use Countable;
+use DateTimeImmutable;
 use DateTimeInterface;
 use Iterator;
 use IteratorAggregate;
+use ReflectionEnum;
+use ReflectionEnumBackedCase;
 use Stringable;
+use TypeError;
 
 use function array_key_exists;
 use function array_keys;
@@ -25,6 +32,9 @@ use function is_string;
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.2
  *
  * @phpstan-import-type SfItemInput from StructuredField
+ * @phpstan-import-type SfType from StructuredField
+ * @phpstan-import-type SfParameterKeyRule from ItemValidator
+ * @phpstan-import-type SfParameterIndexRule from ItemValidator
  *
  * @implements ArrayAccess<string, InnerList|Item>
  * @implements IteratorAggregate<string, InnerList|Item>
@@ -57,9 +67,9 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         }
 
         return match (true) {
-            $member instanceof Item => $member->parameters()->hasNoMembers() ? $member : throw new InvalidArgument('The "'.$member::class.'" instance is not a Bare Item.'),
-            $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
-            default => Item::new($member),
+            !$member instanceof Item => Item::new($member),
+            $member->parameters()->hasNoMembers() => $member,
+            default => throw new InvalidArgument('The "'.$member::class.'" instance is not a Bare Item.'),
         };
     }
 
@@ -192,10 +202,13 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         return array_keys($this->members);
     }
 
-    public function has(string|int ...$keys): bool
+    /**
+     * Tells whether the instance contain a members at the specified offsets.
+     */
+    public function has(BackedEnum|string ...$keys): bool
     {
         foreach ($keys as $key) {
-            if (!is_string($key) || !array_key_exists($key, $this->members)) {
+            if (!array_key_exists(($key instanceof BackedEnum ? $key->value : $key), $this->members)) {
                 return false;
             }
         }
@@ -204,11 +217,30 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @throws InvalidOffset If the key is not found
+     * @param ?callable(SfType): (bool|string) $validate
+     *
+     * @throws Violation|InvalidOffset
      */
-    public function get(string|int $key): Item
+    public function getByKey(BackedEnum|string $key, ?callable $validate = null): Item
     {
-        return $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
+        if ($key instanceof BackedEnum) {
+            $key = $key->value;
+        }
+
+        $value = $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
+        if (null === $validate) {
+            return $value;
+        }
+
+        if (true === ($exceptionMessage = $validate($value->value()))) {
+            return $value;
+        }
+
+        if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
+            $exceptionMessage = "The parameter '{key}' whose value is '{value}' failed validation.";
+        }
+
+        throw new Violation(strtr($exceptionMessage, ['{key}' => $key, '{value}' => $value->toHttpValue()]));
     }
 
     public function hasPair(int ...$indexes): bool
@@ -240,16 +272,34 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @throws InvalidOffset If the key is not found
+     * @param ?callable(SfType, string): (bool|string) $validate
+     *
+     * @throws InvalidOffset|Violation
      *
      * @return array{0:string, 1:Item}
      */
-    public function pair(int $index): array
+    public function getByIndex(int $index, ?callable $validate = null): array
     {
         $foundOffset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
+
+        $validator = function (Item $value, string $key, int $index, callable $validate): array {
+            if (true === ($exceptionMessage = $validate($value->value(), $key))) {
+                return [$key, $value];
+            }
+
+            if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
+                $exceptionMessage = "The parameter at position '{index}' whose name is '{key}' with the value '{value}' failed validation.";
+            }
+
+            throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{key}' => $key, '{value}' => $value->toHttpValue()]));
+        };
+
         foreach ($this->toPairs() as $offset => $pair) {
             if ($offset === $foundOffset) {
-                return $pair;
+                return match ($validate) {
+                    null => $pair,
+                    default =>  $validator($pair[1], $pair[0], $index, $validate),
+                };
             }
         }
 
@@ -259,10 +309,10 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @return array{0:string, 1:Item}|array{}
      */
-    public function first(): ?array
+    public function first(): array
     {
         try {
-            return $this->pair(0);
+            return $this->getByIndex(0);
         } catch (InvalidOffset) {
             return [];
         }
@@ -271,17 +321,178 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @return array{0:string, 1:Item}|array{}
      */
-    public function last(): ?array
+    public function last(): array
     {
         try {
-            return $this->pair(-1);
+            return $this->getByIndex(-1);
         } catch (InvalidOffset) {
             return [];
         }
     }
 
-    public function add(string $key, StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
+    /**
+     * Returns true only if the instance only contains the listed keys, false otherwise.
+     *
+     * @param array<string>|class-string<BackedEnum> $keys
+     */
+    public function allowedKeys(array|string $keys): bool
     {
+        if (is_array($keys)) {
+            $keys = array_keys(array_fill_keys($keys, true));
+            foreach ($keys as $item) {
+                if (!is_string($item)) { /* @phpstan-ignore-line */
+                    throw new TypeError('The parameter keys must be strings.');
+                }
+            }
+        }
+
+        if (is_string($keys)) {
+            if (!enum_exists($keys)) {
+                throw new TypeError('When a string, the input should refer to an Backed Enum class.');
+            }
+
+            $reflection = new ReflectionEnum($keys);
+            if (!$reflection->isBacked() || 'string' !== $reflection->getBackingType()->getName()) {
+                throw new TypeError('When a string, the input should refer to an Backed Enum class.');
+            }
+
+            $keys = array_map(
+                fn (ReflectionEnumBackedCase $enum): string => (string) $enum->getBackingValue(),
+                $reflection->getCases()
+            );
+        }
+
+        foreach ($this->members as $key => $member) {
+            if (!in_array($key, $keys, true)) {
+                return false;
+            }
+        }
+
+        return [] !== $keys;
+    }
+
+    /**
+     * Returns the member value or null if no members value exists.
+     *
+     * @param ?callable(SfType): (bool|string) $validate
+     *
+     * @throws Violation if the validation fails
+     *
+     * @return SfType|null
+     */
+    public function valueByKey(
+        BackedEnum|string $key,
+        ?callable $validate = null,
+        bool|string $required = false,
+        ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
+    ): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null {
+        try {
+            return $this->getByKey($key, $validate)->value();
+        } catch (InvalidOffset $exception) {
+            if (false === $required) {
+                return $default;
+            }
+
+            $message = $required;
+            if (!is_string($message) || '' === trim($message)) {
+                $message = "The required parameter '{key}' is missing.";
+            }
+
+            if ($key instanceof BackedEnum) {
+                $key = $key->value;
+            }
+
+            throw new Violation(strtr($message, ['{key}' => $key]), previous: $exception);
+        }
+    }
+
+    /**
+     * Validate the current parameter object using its keys and return the parsed values and the errors.
+     *
+     * @param array<string, SfParameterKeyRule> $rules
+     */
+    public function validateByKeys(array $rules): ParsedParameters
+    {
+        $parameters = [];
+        $violations = new ViolationList();
+        foreach ($rules as $key => $rule) {
+            try {
+                $parameters[$key] = $this->valueByKey($key, $rule['validate'] ?? null, $rule['required'] ?? false, $rule['default'] ?? null);
+            } catch (Violation $exception) {
+                $violations[$key] = $exception;
+            }
+        }
+
+        return new ParsedParameters($parameters, $violations);
+    }
+
+    /**
+     * Returns the member value and name as pair or an empty array if no members value exists.
+     *
+     * @param ?callable(SfType, string): (bool|string) $validate
+     * @param array{0:string, 1:SfType}|array{} $default
+     *
+     * @throws Violation if the validation fails
+     *
+     * @return array{0:string, 1:SfType}|array{}
+     */
+    public function valueByIndex(int $index, ?callable $validate = null, bool|string $required = false, array $default = []): array
+    {
+        $default = match (true) {
+            [] === $default => [],
+            !array_is_list($default) => throw new SyntaxError('The pair must be represented by an array as a list.'), /* @phpstan-ignore-line */
+            2 !== count($default) => throw new SyntaxError('The pair first member is the name; its second member is its value.'), /* @phpstan-ignore-line */
+            null === ($key = MapKey::tryFrom($default[0])?->value) => throw new SyntaxError('The pair first member is invalid.'),
+            null === ($value = Item::tryNew($default[1])?->value()) => throw new SyntaxError('The pair second member is invalid.'),
+            default => [$key, $value],
+        };
+
+        try {
+            $tuple = $this->getByIndex($index, $validate);
+
+            return [$tuple[0], $tuple[1]->value()];
+        } catch (InvalidOffset $exception) {
+            if (false === $required) {
+                return $default;
+            }
+
+            $message = $required;
+            if (!is_string($message) || '' === trim($message)) {
+                $message = "The required parameter at position '{index}' is missing.";
+            }
+
+            throw new Violation(strtr($message, ['{index}' => $index]), previous: $exception);
+        }
+    }
+
+    /**
+     * Validate the current parameter object using its indices and return the parsed values and the errors.
+     *
+     * @param array<int, SfParameterIndexRule> $rules
+     */
+    public function validateByIndices(array $rules): ParsedParameters
+    {
+        $parameters = [];
+        $violations = new ViolationList();
+        foreach ($rules as $index => $rule) {
+            try {
+                $parameters[$index] = $this->valueByIndex($index, $rule['validate'] ?? null, $rule['required'] ?? false, $rule['default'] ?? []);
+            } catch (Violation $exception) {
+                $violations[$index] = $exception;
+            }
+        }
+
+        return new ParsedParameters($parameters, $violations);
+    }
+
+    public function add(
+        BackedEnum|string $key,
+        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+    ): self {
+        if ($key instanceof BackedEnum) {
+            $key = $key->value;
+        }
+
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
 
@@ -299,8 +510,13 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         };
     }
 
-    public function remove(string|int ...$keys): static
+    private function remove(BackedEnum|string|int ...$keys): self
     {
+        $keys = array_map(fn (BackedEnum|string|int $key): string|int => match (true) {
+            $key instanceof BackedEnum => $key->value,
+            default => $key,
+        }, $keys);
+
         if ([] === $this->members || [] === $keys) {
             return $this;
         }
@@ -328,20 +544,24 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         };
     }
 
-    public function removeByIndices(int ...$indices): static
+    public function removeByIndices(int ...$indices): self
     {
         return $this->remove(...$indices);
     }
 
-    public function removeByKeys(string ...$keys): static
+    public function removeByKeys(BackedEnum|string ...$keys): self
     {
         return $this->remove(...$keys);
     }
 
     public function append(
-        string $key,
+        BackedEnum|string $key,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
-    ): static {
+    ): self {
+        if ($key instanceof BackedEnum) {
+            $key = $key->value;
+        }
+
         $members = $this->members;
         unset($members[$key]);
 
@@ -349,9 +569,12 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     public function prepend(
-        string $key,
+        BackedEnum|string $key,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
-    ): static {
+    ): self {
+        if ($key instanceof BackedEnum) {
+            $key = $key->value;
+        }
         $members = $this->members;
         unset($members[$key]);
 
@@ -361,7 +584,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function push(array ...$pairs): static
+    public function push(array ...$pairs): self
     {
         return match (true) {
             [] === $pairs => $this,
@@ -375,7 +598,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @param array{0:string, 1:SfItemInput} ...$pairs
      */
-    public function unshift(array ...$pairs): static
+    public function unshift(array ...$pairs): self
     {
         return match (true) {
             [] === $pairs => $this,
@@ -389,7 +612,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @param array{0:string, 1:SfItemInput} ...$members
      */
-    public function insert(int $index, array ...$members): static
+    public function insert(int $index, array ...$members): self
     {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
@@ -409,7 +632,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @param array{0:string, 1:SfItemInput} $pair
      */
-    public function replace(int $index, array $pair): static
+    public function replace(int $index, array $pair): self
     {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         $pair[1] = self::filterMember($pair[1]);
@@ -424,7 +647,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @param iterable<string, SfItemInput> ...$others
      */
-    public function mergeAssociative(iterable ...$others): static
+    public function mergeAssociative(iterable ...$others): self
     {
         $members = $this->members;
         foreach ($others as $other) {
@@ -437,7 +660,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @param Parameters|Dictionary|iterable<array{0:string, 1:SfItemInput}> ...$others
      */
-    public function mergePairs(Dictionary|Parameters|iterable ...$others): static
+    public function mergePairs(Dictionary|Parameters|iterable ...$others): self
     {
         $members = $this->members;
         foreach ($others as $other) {
@@ -458,9 +681,9 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @param string $offset
      */
-    public function offsetGet(mixed $offset): mixed
+    public function offsetGet(mixed $offset): Item
     {
-        return $this->get($offset);
+        return $this->getByKey($offset);
     }
 
     public function offsetUnset(mixed $offset): void
@@ -474,48 +697,48 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param Closure(Item, string): TMap $callback
+     * @param callable(array{0:string, 1:Item}, int): TMap $callback
      *
      * @template TMap
      *
      * @return Iterator<TMap>
      */
-    public function map(Closure $callback): Iterator
+    public function map(callable $callback): Iterator
     {
-        foreach ($this->members as $offset => $member) {
-            yield ($callback)($member, $offset);
+        foreach ($this->toPairs() as $offset => $pair) {
+            yield ($callback)($pair, $offset);
         }
     }
 
     /**
-     * @param Closure(TInitial|null, Item, string=): TInitial $callback
+     * @param callable(TInitial|null, array{0:string, 1:Item}, int): TInitial $callback
      * @param TInitial|null $initial
      *
      * @template TInitial
      *
      * @return TInitial|null
      */
-    public function reduce(Closure $callback, mixed $initial = null): mixed
+    public function reduce(callable $callback, mixed $initial = null): mixed
     {
-        foreach ($this->members as $offset => $record) {
-            $initial = $callback($initial, $record, $offset);
+        foreach ($this->toPairs() as $offset => $pair) {
+            $initial = $callback($initial, $pair, $offset);
         }
 
         return $initial;
     }
 
     /**
-     * @param Closure(array{0:string, 1:Item}, int): bool $callback
+     * @param callable(array{0:string, 1:Item}, int): bool $callback
      */
-    public function filter(Closure $callback): static
+    public function filter(callable $callback): self
     {
         return self::fromPairs(new CallbackFilterIterator($this->toPairs(), $callback));
     }
 
     /**
-     * @param Closure(array{0:string, 1:Item}, array{0:string, 1:Item}): int $callback
+     * @param callable(array{0:string, 1:Item}, array{0:string, 1:Item}): int $callback
      */
-    public function sort(Closure $callback): static
+    public function sort(callable $callback): self
     {
         $members = iterator_to_array($this->toPairs());
         uasort($members, $callback);

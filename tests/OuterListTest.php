@@ -166,14 +166,6 @@ final class OuterListTest extends StructuredFieldTestCase
     }
 
     #[Test]
-    public function it_fails_to_fetch_an_value_using_an_integer(): void
-    {
-        $this->expectException(InvalidOffset::class);
-
-        OuterList::new()->get('zero');
-    }
-
-    #[Test]
     public function it_can_access_the_item_value(): void
     {
         $token = Token::fromString('token');
@@ -185,8 +177,6 @@ final class OuterListTest extends StructuredFieldTestCase
         self::assertFalse($structuredField->get(2)->value());
 
         self::assertInstanceOf(InnerList::class, $structuredField->get(-1));
-        self::assertFalse($structuredField->has('foobar'));
-
         self::assertEquals(Item::fromString('barbaz'), $structuredField->push('barbaz')->get(-1));
     }
 

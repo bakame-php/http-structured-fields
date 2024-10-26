@@ -58,35 +58,15 @@ enum Type: string
             is_int($variable) => Type::Integer,
             is_float($variable) => Type::Decimal,
             is_bool($variable) => Type::Boolean,
-            is_string($variable) => match (true) {
-                null !== Token::tryFromString($variable) => Type::Token,
-                null !== ByteSequence::tryFromEncoded($variable) => Type::ByteSequence,
-                1 === preg_match('/[^\x20-\x7f]/', $variable) => Type::DisplayString,
-                default => Type::String,
-            },
+            is_string($variable) && 1 !== preg_match('/[^\x20-\x7f]/', $variable) => Type::String,
             default => null,
         };
     }
 
-    /**
-     * @deprecated since version 1.2.0 will be removed in the next major release.
-     * @see Type::fromVariable()
-     * @codeCoverageIgnore
-     *
-     * @throws InvalidArgument if the value can not be resolved into a supported HTTP structured field data type
-     */
-    public static function fromValue(mixed $value): self
+    public function supports(mixed $value): bool
     {
-        return self::fromVariable($value);
-    }
+        $new = self::tryFromVariable($value);
 
-    /**
-     * @deprecated since version 1.2.0 will be removed in the next major release.
-     * @see Type::tryFromVariable()
-     * @codeCoverageIgnore
-     */
-    public static function tryFromValue(mixed $value): self|null
-    {
-        return self::tryFromVariable($value);
+        return null !== $new && $new->equals($this);
     }
 }

@@ -10,7 +10,6 @@ use DateTimeZone;
 use Exception;
 use Stringable;
 use Throwable;
-use ValueError;
 
 use function abs;
 use function date_default_timezone_get;
@@ -35,24 +34,23 @@ final class Value
     public readonly Type $type;
 
     /**
-     * @throws ValueError
+     * @throws InvalidArgument
      */
     public function __construct(mixed $value)
     {
-        $this->value = match (true) {
-            $value instanceof Item => $value->value(),
+        [$this->value, $this->type] = match (true) {
+            $value instanceof Item => [$value->value(), $value->type()],
             $value instanceof Token,
             $value instanceof ByteSequence,
-            $value instanceof DisplayString,
+            $value instanceof DisplayString => [$value, $value->type()],
             false === $value,
-            $value => $value,
-            $value instanceof DateTimeInterface => self::filterDate($value),
-            is_int($value) => self::filterIntegerRange($value, 'Integer'),
-            is_float($value) => self::filterDecimal($value),
-            is_string($value) => self::filterString($value),
-            default => throw new ValueError('Unknown or unsupported type.')
+            $value => [$value, Type::Boolean],
+            $value instanceof DateTimeInterface => [self::filterDate($value), Type::Date],
+            is_int($value) => [self::filterIntegerRange($value, 'Integer'), Type::Integer],
+            is_float($value) => [self::filterDecimal($value), Type::Decimal],
+            is_string($value) => [self::filterString($value), Type::String],
+            default => throw new InvalidArgument('Unknown or unsupported type.')
         };
-        $this->type = Type::fromVariable($this->value);
     }
 
     /**
@@ -232,9 +230,12 @@ final class Value
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.1
      */
-    public function serialize(Ietf $rfc = Ietf::Rfc9651): string
+    public function serialize(?Ietf $rfc = null): string
     {
-        $rfc->supports($this->type) || throw new SyntaxError('The '.$this->type->value.' type is not serializable by '.$rfc->value);
+        $rfc ??= Ietf::Rfc9651;
+        if (!$rfc->supports($this->type)) {
+            throw new SyntaxError('The '.$this->type->value.' type is not serializable by '.$rfc->value);
+        }
 
         return match (true) {
             $this->value instanceof DateTimeImmutable => '@'.$this->value->getTimestamp(),

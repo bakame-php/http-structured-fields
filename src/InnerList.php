@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
-use Closure;
 use Countable;
-use DateTimeImmutable;
 use DateTimeInterface;
 use Iterator;
 use IteratorAggregate;
@@ -21,7 +19,6 @@ use function array_splice;
 use function array_values;
 use function count;
 use function implode;
-use function is_int;
 
 use const ARRAY_FILTER_USE_BOTH;
 use const ARRAY_FILTER_USE_KEY;
@@ -29,14 +26,17 @@ use const ARRAY_FILTER_USE_KEY;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.1
  *
+ * @phpstan-import-type SfType from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
  * @phpstan-import-type SfInnerListPair from StructuredField
  *
  * @implements  ArrayAccess<int, Item>
  * @implements  IteratorAggregate<int, Item>
  */
-final class InnerList implements ArrayAccess, Countable, IteratorAggregate, ParameterAccess, StructuredField
+final class InnerList implements ArrayAccess, Countable, IteratorAggregate, StructuredField
 {
+    use ParameterAccess;
+
     /** @var list<Item> */
     private readonly array $members;
 
@@ -59,7 +59,6 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
 
         return match (true) {
             $member instanceof Item => $member,
-            $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             default => Item::new($member),
         };
     }
@@ -69,7 +68,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): static
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
         [$members, $parameters] = Parser::new($rfc)->parseInnerList($httpValue);
 
@@ -85,7 +84,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
      * @param iterable<SfItemInput> $value
      * @param Parameters|iterable<string, SfItemInput> $parameters
      */
-    public static function fromAssociative(iterable $value, iterable $parameters): static
+    public static function fromAssociative(iterable $value, iterable $parameters): self
     {
         if (!$parameters instanceof Parameters) {
             $parameters = Parameters::fromAssociative($parameters);
@@ -100,7 +99,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
      *     1:Parameters|iterable<array{0:string, 1:SfItemInput}>
      * } $pair
      */
-    public static function fromPair(array $pair): static
+    public static function fromPair(array $pair): self
     {
         return match (true) {
             [] === $pair => self::new(), // @phpstan-ignore-line
@@ -115,16 +114,16 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
      */
     public static function new(
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
-    ): static {
+    ): self {
         return new self($members, Parameters::new());
     }
 
-    public static function fromRfc9651(Stringable|string $httpValue): static
+    public static function fromRfc9651(Stringable|string $httpValue): self
     {
         return self::fromHttpValue($httpValue, Ietf::Rfc9651);
     }
 
-    public static function fromRfc8941(Stringable|string $httpValue): static
+    public static function fromRfc8941(Stringable|string $httpValue): self
     {
         return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
@@ -164,34 +163,6 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
         yield from $this->members;
     }
 
-    public function parameters(): Parameters
-    {
-        return $this->parameters;
-    }
-
-    public function parameter(string $key): Token|ByteSequence|DisplayString|DateTimeImmutable|int|float|string|bool|null
-    {
-        try {
-            return $this->parameters->get($key)->value();
-        } catch (StructuredFieldError) {
-            return null;
-        }
-    }
-
-    /**
-     * @return array{0:string, 1:Token|ByteSequence|DisplayString|DateTimeImmutable|int|float|string|bool}|array{}
-     */
-    public function parameterByIndex(int $index): array
-    {
-        try {
-            $tuple = $this->parameters->pair($index);
-
-            return [$tuple[0], $tuple[1]->value()];
-        } catch (StructuredFieldError) {
-            return [];
-        }
-    }
-
     public function count(): int
     {
         return count($this->members);
@@ -215,24 +186,20 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
         return array_keys($this->members);
     }
 
-    public function has(string|int ...$keys): bool
+    public function has(int ...$indices): bool
     {
         $max = count($this->members);
-        foreach ($keys as $offset) {
+        foreach ($indices as $offset) {
             if (null === $this->filterIndex($offset, $max)) {
                 return false;
             }
         }
 
-        return [] !== $keys;
+        return [] !== $indices;
     }
 
-    private function filterIndex(string|int $index, int|null $max = null): int|null
+    private function filterIndex(int $index, int|null $max = null): int|null
     {
-        if (!is_int($index)) {
-            return null;
-        }
-
         $max ??= count($this->members);
 
         return match (true) {
@@ -244,9 +211,9 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
         };
     }
 
-    public function get(string|int $key): Item
+    public function get(int $index): Item
     {
-        return $this->members[$this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key)];
+        return $this->members[$this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index)];
     }
 
     public function first(): ?Item
@@ -262,9 +229,9 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
         return $this->members[$this->filterIndex(-1)] ?? null;
     }
 
-    public function sortParameters(Closure $callback): static
+    public function withParameters(Parameters $parameters): static
     {
-        return $this->withParameters($this->parameters()->sort($callback));
+        return ($this->parameters->toHttpValue() === $parameters->toHttpValue()) ? $this : new self($this->members, $parameters);
     }
 
     /**
@@ -272,7 +239,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
      */
     public function unshift(
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
-    ): static {
+    ): self {
         $membersToAdd = array_reduce(
             $members,
             function (array $carry, $member) {
@@ -296,7 +263,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
      */
     public function push(
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
-    ): static {
+    ): self {
         $membersToAdd = array_reduce(
             $members,
             function (array $carry, $member) {
@@ -321,10 +288,10 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
      * @throws InvalidOffset If the index does not exist
      */
     public function insert(
-        int $key,
+        int $index,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
-    ): static {
-        $offset = $this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key);
+    ): self {
+        $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
         return match (true) {
             0 === $offset => $this->unshift(...$members),
@@ -339,10 +306,10 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
     }
 
     public function replace(
-        int $key,
+        int $index,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
-    ): static {
-        $offset = $this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key);
+    ): self {
+        $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         $member = self::filterMember($member);
 
         return match (true) {
@@ -351,14 +318,11 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
         };
     }
 
-    public function remove(string|int ...$keys): static
+    public function remove(int ...$indices): self
     {
         $max = count($this->members);
         $indices = array_filter(
-            array_map(
-                fn (int $index): int|null => $this->filterIndex($index, $max),
-                array_filter($keys, static fn (string|int $key): bool => is_int($key))
-            ),
+            array_map(fn (int $index): int|null => $this->filterIndex($index, $max), $indices),
             fn (int|null $index): bool => null !== $index
         );
 
@@ -400,13 +364,13 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
     }
 
     /**
-     * @param Closure(Item, int): TMap $callback
+     * @param callable(Item, int): TMap $callback
      *
      * @template TMap
      *
      * @return Iterator<TMap>
      */
-    public function map(Closure $callback): Iterator
+    public function map(callable $callback): Iterator
     {
         foreach ($this->members as $offset => $member) {
             yield ($callback)($member, $offset);
@@ -414,14 +378,14 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
     }
 
     /**
-     * @param Closure(TInitial|null, Item, int=): TInitial $callback
+     * @param callable(TInitial|null, Item, int=): TInitial $callback
      * @param TInitial|null $initial
      *
      * @template TInitial
      *
      * @return TInitial|null
      */
-    public function reduce(Closure $callback, mixed $initial = null): mixed
+    public function reduce(callable $callback, mixed $initial = null): mixed
     {
         foreach ($this->members as $offset => $member) {
             $initial = $callback($initial, $member, $offset);
@@ -431,97 +395,26 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Para
     }
 
     /**
-     * @param Closure(Item, int): bool $callback
+     * @param callable(Item, int): bool $callback
      */
-    public function filter(Closure $callback): static
+    public function filter(callable $callback): self
     {
-        return new self(array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH), $this->parameters);
+        $members = array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH);
+        if ($members === $this->members) {
+            return $this;
+        }
+
+        return new self($members, $this->parameters);
     }
 
     /**
-     * @param Closure(Item, Item): int $callback
+     * @param callable(Item, Item): int $callback
      */
-    public function sort(Closure $callback): static
+    public function sort(callable $callback): self
     {
         $members = $this->members;
         usort($members, $callback);
 
         return new self($members, $this->parameters);
-    }
-
-    public function withParameters(Parameters $parameters): static
-    {
-        return ($this->parameters->toHttpValue() === $parameters->toHttpValue()) ? $this : new self($this->members, $parameters);
-    }
-
-    public function addParameter(string $key, StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
-    {
-        return $this->withParameters($this->parameters()->add($key, $member));
-    }
-
-    public function prependParameter(
-        string $key,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
-    ): static {
-        return $this->withParameters($this->parameters()->prepend($key, $member));
-    }
-
-    public function appendParameter(
-        string $key,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
-    ): static {
-        return $this->withParameters($this->parameters()->append($key, $member));
-    }
-
-    /**
-     * @param array{0:string, 1:SfItemInput} ...$pairs
-     */
-    public function pushParameters(array ...$pairs): static
-    {
-        return $this->withParameters($this->parameters()->push(...$pairs));
-    }
-
-    /**
-     * @param array{0:string, 1:SfItemInput} ...$pairs
-     */
-    public function unshiftParameters(array ...$pairs): static
-    {
-        return $this->withParameters($this->parameters()->unshift(...$pairs));
-    }
-
-    /**
-     * @param array{0:string, 1:SfItemInput} ...$pairs
-     */
-    public function insertParameters(int $index, array ...$pairs): static
-    {
-        return $this->withParameters($this->parameters()->insert($index, ...$pairs));
-    }
-
-    /**
-     * @param array{0:string, 1:SfItemInput} $pair
-     */
-    public function replaceParameter(int $index, array $pair): static
-    {
-        return $this->withParameters($this->parameters()->replace($index, $pair));
-    }
-
-    public function withoutParameterByKeys(string ...$keys): static
-    {
-        return $this->withParameters($this->parameters()->removeByKeys(...$keys));
-    }
-
-    public function withoutParameterByIndices(int ...$indices): static
-    {
-        return $this->withParameters($this->parameters()->removeByIndices(...$indices));
-    }
-
-    public function withoutAnyParameter(): static
-    {
-        return $this->withParameters(Parameters::new());
-    }
-
-    public function filterParameters(Closure $callback): static
-    {
-        return $this->withParameters($this->parameters()->filter($callback));
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
-use Closure;
 use Countable;
 use DateTimeInterface;
 use Iterator;
@@ -21,7 +20,6 @@ use function array_values;
 use function count;
 use function implode;
 use function is_array;
-use function is_int;
 use function is_iterable;
 
 use const ARRAY_FILTER_USE_BOTH;
@@ -63,7 +61,8 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
         return match (true) {
             $member instanceof InnerList || $member instanceof Item => $member,
             $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
-            default => Item::new($member), /* @phpstan-ignore-line */
+            is_iterable($member) => InnerList::new(...$member),
+            default => Item::new($member),
         };
     }
 
@@ -195,24 +194,20 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
         return array_keys($this->members);
     }
 
-    public function has(string|int ...$keys): bool
+    public function has(int ...$indices): bool
     {
         $max = count($this->members);
-        foreach ($keys as $offset) {
-            if (null === $this->filterIndex($offset, $max)) {
+        foreach ($indices as $index) {
+            if (null === $this->filterIndex($index, $max)) {
                 return false;
             }
         }
 
-        return [] !== $keys;
+        return [] !== $indices;
     }
 
-    private function filterIndex(string|int $index, int|null $max = null): int|null
+    private function filterIndex(int $index, int|null $max = null): int|null
     {
-        if (!is_int($index)) {
-            return null;
-        }
-
         $max ??= count($this->members);
 
         return match (true) {
@@ -224,9 +219,9 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
         };
     }
 
-    public function get(string|int $key): InnerList|Item
+    public function get(int $index): InnerList|Item
     {
-        return $this->members[$this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key)];
+        return $this->members[$this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index)];
     }
 
     public function first(): InnerList|Item|null
@@ -246,7 +241,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
      */
     public function unshift(
         iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
-    ): static {
+    ): self {
         $membersToAdd = array_reduce(
             $members,
             function (array $carry, $member) {
@@ -272,7 +267,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
      */
     public function push(
         iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
-    ): static {
+    ): self {
         $membersToAdd = array_reduce(
             $members,
             function (array $carry, $member) {
@@ -299,10 +294,10 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
      * @throws InvalidOffset If the index does not exist
      */
     public function insert(
-        int $key,
+        int $index,
         iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
-    ): static {
-        $offset = $this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key);
+    ): self {
+        $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
         return match (true) {
             0 === $offset => $this->unshift(...$members),
@@ -320,10 +315,10 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
      * @param InnerList|Item|SfMemberInput $member
      */
     public function replace(
-        int $key,
+        int $index,
         iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
-    ): static {
-        $offset = $this->filterIndex($key) ?? throw InvalidOffset::dueToIndexNotFound($key);
+    ): self {
+        $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         $member = self::filterMember($member);
 
         return match (true) {
@@ -332,14 +327,11 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
         };
     }
 
-    public function remove(string|int ...$keys): static
+    public function remove(int ...$indices): self
     {
         $max = count($this->members);
         $offsets = array_filter(
-            array_map(
-                fn (int $index): int|null => $this->filterIndex($index, $max),
-                array_filter($keys, static fn (string|int $key): bool => is_int($key))
-            ),
+            array_map(fn (int $index): int|null => $this->filterIndex($index, $max), $indices),
             fn (int|null $index): bool => null !== $index
         );
 
@@ -348,7 +340,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
             $max === count($offsets) => new self(),
             default => new self(...array_filter(
                 $this->members,
-                fn (int $key): bool => !in_array($key, $offsets, true),
+                fn (int $index): bool => !in_array($index, $offsets, true),
                 ARRAY_FILTER_USE_KEY
             )),
         };
@@ -364,10 +356,8 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
 
     /**
      * @param int $offset
-     *
-     * @return InnerList|Item
      */
-    public function offsetGet(mixed $offset): mixed
+    public function offsetGet(mixed $offset): InnerList|Item
     {
         return $this->get($offset);
     }
@@ -383,13 +373,13 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
     }
 
     /**
-     * @param Closure(InnerList|Item, int): TMap $callback
+     * @param callable(InnerList|Item, int): TMap $callback
      *
      * @template TMap
      *
      * @return Iterator<TMap>
      */
-    public function map(Closure $callback): Iterator
+    public function map(callable $callback): Iterator
     {
         foreach ($this->members as $offset => $member) {
             yield ($callback)($member, $offset);
@@ -397,14 +387,14 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
     }
 
     /**
-     * @param Closure(TInitial|null, InnerList|Item, int=): TInitial $callback
+     * @param callable(TInitial|null, InnerList|Item, int): TInitial $callback
      * @param TInitial|null $initial
      *
      * @template TInitial
      *
      * @return TInitial|null
      */
-    public function reduce(Closure $callback, mixed $initial = null): mixed
+    public function reduce(callable $callback, mixed $initial = null): mixed
     {
         foreach ($this->members as $offset => $member) {
             $initial = $callback($initial, $member, $offset);
@@ -414,17 +404,22 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
     }
 
     /**
-     * @param Closure(InnerList|Item, int): bool $callback
+     * @param callable(InnerList|Item, int): bool $callback
      */
-    public function filter(Closure $callback): static
+    public function filter(callable $callback): self
     {
-        return new self(...array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH));
+        $members = array_filter($this->members, $callback, ARRAY_FILTER_USE_BOTH);
+        if ($members === $this->members) {
+            return $this;
+        }
+
+        return new self(...$members);
     }
 
     /**
-     * @param Closure(InnerList|Item, InnerList|Item): int $callback
+     * @param callable(InnerList|Item, InnerList|Item): int $callback
      */
-    public function sort(Closure $callback): static
+    public function sort(callable $callback): self
     {
         $members = $this->members;
         usort($members, $callback);

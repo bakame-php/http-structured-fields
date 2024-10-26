@@ -8,37 +8,18 @@
 [![Sponsor development of this project](https://img.shields.io/badge/sponsor%20this%20package-%E2%9D%A4-ff69b4.svg?style=flat-square)](https://github.com/sponsors/nyamsprod)
 
 `bakame/http-structured-fields` is a framework-agnostic PHP library that allows you to parse, serialize 
-create and update HTTP Structured Fields in PHP according to the [RFC9651](https://www.rfc-editor.org/rfc/rfc9651.html).
+create, update and validate HTTP Structured Fields in PHP according to the [RFC9651](https://www.rfc-editor.org/rfc/rfc9651.html).
 
 Once installed you will be able to do the following:
 
 ```php
-use Bakame\Http\StructuredFields\DataType;
-use Bakame\Http\StructuredFields\Token;
+use Bakame\Http\StructuredFields\OuterList;
 
 //1 - parsing an Accept Header
 $fieldValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
-$field = DataType::List->fromRfc9651($fieldValue);
-$field[2]->value()->toString(); // returns 'application/xml'
-$field[2]->parameter('q');      // returns (float) 0.9
-$field[0]->value()->toString(); // returns 'text/html'
-$field[0]->parameter('q');      // returns null
-
-//2 - building a retrofit Cookie Header
-echo DataType::List->toRfc9651([
-    [
-        ['foo', 'bar'],
-        [
-            ['expire', new DateTimeImmutable('2023-04-14 20:32:08')],
-            ['path', '/'],
-            ['max-age', 2500],
-            ['secure', true],
-            ['httponly', true],
-            ['samesite', Token::fromString('lax')],
-        ]
-    ],
-]);
-// returns ("foo" "bar");expire=@1681504328;path="/";max-age=2500;secure;httponly=?0;samesite=lax
+$field = OuterList::fromRfc9651($fieldValue);
+$field[1]->value()->toString(); // returns 'application/xhtml+xml'
+$field[1]->parameterByKey(key: 'q', default: 1.0); // returns 1.0 if the parameter is not defined
 ```
 
 ## System Requirements
@@ -55,362 +36,95 @@ composer require bakame/http-structured-fields
 
 ## Documentation
 
-### Foreword
+> [!WARNING]
+> The documentation for v2 is still not fully finished please refers to [version 1.x](https://github.com/bakame-php/http-structured-fields/tree/1.x)
+> for the most recent and stable documentation.
 
-> [!CAUTION]
-> While this package parses and serializes the HTTP value, it does not validate its content
-> against any conformance rule. You are still required to perform a compliance check
-> against the constraints of the corresponding field. Content validation is
-> out of scope for this library even though you can leverage some of its feature to
-> ease the required validation.
+The package is compliant against [RFC9651](https://www.rfc-editor.org/rfc/rfc9651.html) as such
+it exposes all the data type and all the methods expected to comply with the RFC requirements
 
-### Parsing and Serializing Structured Fields
+### Basic Usage
 
-#### Basic Usage
+#### Parsing the Field
 
-> [!NOTE]
-> New in version 1.4.0
+The first way to use the package is to enable header or trailer parsing. We will refers to them as field
+for the rest of the documentation as it is how they are called hence the name of the RFC HTTP structured fields.
 
-With the official release of `RFC9651`, there are two RFC linked to structured fields. The obsolete `RFC8941` and
-the superseding `RFC9651`. To help migrating to the newer RFC, the package introduces an Enum and some syntactic
-sugar methods to quickly parse and build the appropriate HTTP structured field against the correctly selected RFC.
-By default, if no version is given, the package will use the latest stable RFC which is at the moment of writing `RFC9651`.
+Let's say we want to parse the [Permissions-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permissions-Policy#syntax) header as it is defined. 
+Because the header is defined as a Dictionary field we can easily parse it using the package as follows:
 
 ```php
-$headerLine = 'bar;baz=42'; //the raw header line is a structured field item
-$field = DataType::Item->fromHttpValue($headerLine, Ietf::Rfc8941); // parse the field using RFC8941
-
-$field->toHttpValue(Ietf::Rfc9651); // serialize the field using RFC9651
-$field->toHttpValue(); // serialize the field using RFC9651 as it is the latest stable specification
-echo $field;           // serialize the field using RFC9651 as it is the latest stable specification
+$headerLine = 'picture-in-picture=(), geolocation=(self "https://example.com/"), camera=*'; //the raw header line is a structured field item
+$permissions = Dictionary::fromHttpValue($headerLine); // parse the field
 ```
 
-*In absence of providing the `Ietf` enum, the methods will fall back at using the latest stable protocol (ie: RFC9651).*
-
-To simplify code, if you do not want to use the `Ietf` enum your can use this alternative syntax:
+You will now be able to access each persimission individually as follows:
 
 ```php
-$headerLine = 'bar;baz=42'; //the raw header line is a structured field item
-$field = DataType::Item->fromRFC8941($headerLine); // parse the field using RFC8941
-$field->toRfc9651(); // serialize the field using RFC9651
-$field->toRfc8941(); // serialize the field using RFC8941
+$permissions['picture-in-picture']->hasNoMembers(); //returns true because the list is empty
+$permissions['geolocation'][1]->value(); //returns 'https://example.com/'
+count($permissions['geolocation']); // returns 2
+$permissions['camera']->value(); //returns '*'
 ```
+
+Apart from following the specification some syntactic sugar methods have been added to allow for easy access
+of the values.
 
 > [!WARNING]
 > If parsing or serializing is not possible, a `SyntaxError` exception is thrown with the information about why
 the conversion could not be achieved.
 
-At any given moment when building your structured field you can use the `Ietf::supports` method to know whether or not
-your current work is valid against any of the RFC.
+#### Building the Field
+
+Conversely, if you need to update the permission header, the package allows for a intuitive way to do so:
 
 ```php
-$item = Item::fromTimestamp(1234567879);
-Ietf::Rfc8941->supports($item); //returns false - the date type does not exist in RFC8941
-Ietf::Rfc9651->supports($item); //returns true
+$newPermissions = $permissions
+    ->remove('camera')
+    ->add('gyroscope',  [
+        Token::fromString('self'), 
+        "https://a.example.com", 
+        "https://b.example.com"
+    ]);
+echo $newPermissions; 
+//returns picture-in-picture=(), geolocation=(self "https://example.com/"), gyroscope=(self "https://a.example.com" "https://b.example.com")
 ```
 
-> [!NOTE]
-> New in version 1.2.0
+Again if the value given is not supported by the structured field `Dictionary` specification an exception will be
+raised. All RFC related classes in the package are immutable which allow for easier manipulation. For a more in depth
+presentation of each structure and their method please refer to the 
 
-To quickly parse or serialize one of the five (5) available data type according to the RFC, you can use the `DataType` enum.
-Apart from listing the data types (`List`, `InnerList`, `Parameters`, `Dictionary` and `Item`) you can give to
-its `parse` method a string or a stringable object representing a field text representation. On success, 
-it will return an object representing the structured field otherwise an exception will be thrown.
+### Structured Fields Values
 
-```php
-$headerLine = 'bar;baz=42'; //the raw header line is a structured field item
-$field = DataType::Item->parse($headerLine);
-$field->value();          // returns Token::fromString('bar); the found token value 
-$field->parameter('baz'); // returns 42; the value of the parameter or null if the parameter is not defined.
-```
+The package provides methods to access the field values and convert them to PHP type whenever possible.The table below summarizes the value type.
 
-To complement the behaviour, you can use its `serialize` method to turn an iterable structure
-composed of pair values that matches any structured field data type and returns its
-text representation.
-
-```php
-use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\DataType;
-
-echo DataType::List->serialize([
-    [
-        'dumela lefatshe',
-        [['a', false]]
-    ],
-    [
-        ['a', 'b', Item::fromDateString('+30 minutes')],
-        [['a', true]]
-    ],
-]);
-// display "dumela lefatshe";a=?0, ("a" "b" @1703319068);a
-```
-
-The `serialize` method is a shortcut to converting the iterable structure into a `StructuredField` via
-the `create` method and calling on the newly created object its `toHttpValue` method. With that
-in mind, it is possible to rewrite The last example:
-
-```php
-use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\DataType;
-
-$list = DataType::List->create([
-    [
-        'dumela lefatshe',
-        [['a', false]]
-    ],
-    [
-        ['a', 'b', Item::fromDateString('+30 minutes')],
-        [['a', true]]
-    ],
-]);
-
-echo $list->toHttpValue();
-// display "dumela lefatshe";a=?0, ("a" "b" @1703319068);a
-```
-
-> [!TIP]
-> While the format can be overwhelming at first, you will come to understand it while reading
-> the rest of the documentation. Under the hood, the `DataType` enum uses the mechanism discussed hereafter.
-
-#### Using specific data type classes
-
-The package provides specific classes for each data type. Parsing is done their respective
-`fromHttpValue` named constructor. A example of how the method works can be seen below
-using the `Item` class:
-
-```php
-declare(strict_types=1);
-
-use Bakame\Http\StructuredFields\DataType;
-
-require 'vendor/autoload.php';
-
-// the raw HTTP field value is given by your application
-// via any given framework, package or super global.
-
-$headerLine = 'bar;baz=42'; //the raw header line is a structured field item
-$field = Item::fromHttpValue($headerLine);
-$field->value();          // returns Token::fromString('bar); the found token value 
-$field->parameter('baz'); // returns 42; the value of the parameter or null if the parameter is not defined.
-```
-
-> [!TIP]
-> The `DataType::parse` method uses the `fromHttpValue` named constructor for 
-> each specific class to generate the structured field PHP representation.
-
-The `fromHttpValue` method returns an instance which implements the `StructuredField` interface.
-The interface provides the `toHttpValue` method that serializes it into a normalized RFC
-compliant HTTP field string value. To ease integration, the `__toString` method is 
-implemented as an alias to the `toHttpValue` method.
-
-````php
-$field = Item::fromHttpValue('bar;    baz=42;     secure=?1');
-echo $field->toHttpValue(); // return 'bar;baz=42;secure'
-// on serialization the field has been normalized
-
-// the HTTP response is build by your application
-// via any given framework, package or PHP native function.
-
-header('foo: '. $field->toHttpValue());
-//or
-header('foo: '. $field);
-````
-
-> [!TIP]
-> This is the mechanism used by the `DataType::serialize` method. Once the Structured
-> field has been created, the method calls its `toHttpValue` method.
-
-All five (5) structured data type as defined in the RFC are provided inside the
-`Bakame\Http\StructuredFields` namespace. They all implement the
-`StructuredField` interface and expose a `fromHttpValue` named constructor:
-
-- `Item`
-- `Parameters`
-- `Dictionary`
-- `OuterList` (named `List` in the RFC but renamed in the package because `list` is a reserved word in PHP.)
-- `InnerList`
-
-### Accessing Structured Fields Values
-
-#### RFC Value type
-
-Per the RFC, items value can have different types that are translated to PHP using:
-
-- native type or classes where possible;
-- specific classes defined in the package namespace to represent non-native type
-
-The table below summarizes the item value type.
-
-| RFC Type      | PHP Type                  | Package Enum Name     | Package Enum Value | RFC support |
-|---------------|---------------------------|-----------------------|--------------------|-------------|
-| Integer       | `int`                     | `Type::Integer`       | `ìnteger`          | RFC8941     |
-| Decimal       | `float`                   | `Type::Decimal`       | `decimal`          | RFC8941     |
-| String        | `string`                  | `Type::String`        | `string`           | RFC8941     |
-| Boolean       | `bool`                    | `Type::Boolean`       | `boolean`          | RFC8941     |
-| Token         | class `Token`             | `Type::Token`         | `token`            | RFC8941     |
-| Byte Sequence | class `ByteSequence`      | `Type::ByteSequence`  | `binary`           | RFC8941     |
-| Date          | class `DateTimeImmutable` | `Type::Date`          | `date`             | RFC9651     |
-| DisplayString | class `DisplayString`     | `Type::DisplayString` | `displaystring`    | RFC9651     |
-
-
-The Enum `Type` list all available types and can be used to determine the RFC type
-corresponding to a PHP structure using the `Type::fromVariable` static method.
-The method will throw if the structure is not recognized. Alternatively 
-it is possible to use the `Type::tryFromVariable` which will instead 
-return `null` on unidentified type. On success both methods 
-return the corresponding enum `Type`.
-
-```php
-use Bakame\Http\StructuredFields\Type;
-
-echo Type::fromVariable(42)->value;  // returns 'integer'
-echo Type::fromVariable(42.0)->name; // returns 'Decimal'
-echo Type::fromVariable(new SplTempFileObject()); // throws InvalidArgument
-echo Type::tryFromVariable(new SplTempFileObject()); // returns null
-```
-
-To ease validation a `Type::equals` method is exposed to check if the `Item` has
-the expected type. It can also be used to compare types.
-
-```php
-use Bakame\Http\StructuredFields\DataType;
-use Bakame\Http\StructuredFields\Type;
-
-$field = DataType::Item->parse('"foo"');
-Type::Date->equals($field);          // returns false
-Type::String->equals($field);        // returns true;
-Type::Boolean->equals(Type::String); // returns false
-```
-
-The RFC defines three (3) specific data types that can not be represented by
-PHP default type system, for them, we have defined three classes `Token`,
-`ByteSequence` and `DisplayString` to help with their representation.
-
-```php
-use Bakame\Http\StructuredFields\ByteSequence;
-use Bakame\Http\StructuredFields\DisplayString;
-use Bakame\Http\StructuredFields\Token;
-
-Token::fromString(string|Stringable $value): Token
-ByteSequence::fromDecoded(string|Stringable $value): ByteSequence;
-ByteSequence::fromEncoded(string|Stringable $value): ByteSequence;
-DisplayString::fromDecoded(string|Stringable $value): DisplayString;
-DisplayString::fromEncoded(string|Stringable $value): DisplayString;
-```
-
-All classes are final and immutable; their value can not be modified once
-instantiated. To access their value, they expose the following API:
-
-```php
-use Bakame\Http\StructuredFields\Token;
-use Bakame\Http\StructuredFields\ByteSequence;
-use Bakame\Http\StructuredFields\DisplayString;
-
-$token = Token::fromString('application/text+xml');
-echo $token->toString(); // returns 'application/text+xml'
-
-$displayString = DisplayString::fromDecoded('füü');
-$displayString->decoded(); // returns 'füü'
-$displayString->encoded(); // returns 'f%c3%bc%c3%bc'
-
-$byte = ByteSequence::fromDecoded('Hello world!');
-$byte->decoded(); // returns 'Hello world!'
-$byte->encoded(); // returns 'SGVsbG8gd29ybGQh'
-
-$token->equals($byte); // will return false;
-$displayString->equals($byte); // will return false;
-$byte->equals(ByteSequence::fromEncoded('SGVsbG8gd29ybGQh')); // will return true
-
-$token->type(); // returns Type::Token enum
-$byte->type();  // returns Type::ByteSequence
-$displayString->type(); // returns Type::DisplayString
-```
+| RFC Type      | PHP Type                  | Package Enum Name     | Package Enum Value | RFC min. version |
+|---------------|---------------------------|-----------------------|--------------------|------------------|
+| Integer       | `int`                     | `Type::Integer`       | `ìnteger`          | RFC8941          |
+| Decimal       | `float`                   | `Type::Decimal`       | `decimal`          | RFC8941          |
+| String        | `string`                  | `Type::String`        | `string`           | RFC8941          |
+| Boolean       | `bool`                    | `Type::Boolean`       | `boolean`          | RFC8941          |
+| Token         | class `Token`             | `Type::Token`         | `token`            | RFC8941          |
+| Byte Sequence | class `ByteSequence`      | `Type::ByteSequence`  | `binary`           | RFC8941          |
+| Date          | class `DateTimeImmutable` | `Type::Date`          | `date`             | RFC9651          |
+| DisplayString | class `DisplayString`     | `Type::DisplayString` | `displaystring`    | RFC9651          |
 
 > [!WARNING]
-> The classes DO NOT expose the `Stringable` interface to help distinguish
-> them from a string or a stringable object
-
-#### Item
-
-The defined types are all attached to an `Item` object where their value and
-type are accessible using the following methods:
+> The translation to PHP native type does not mean that all PHP values are usable. For instance, the integer
+> or the date range supported by the RFC is smaller that the range allowed by PHP.
 
 ```php
-use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\Type;
-
-$item = Item::fromHttpValue('@1234567890');
-$item->type();  // return Type::Date;
-$item->value()  // return the equivalent to DateTimeImmutable('@1234567890');
+$headerLine = 'bar;baz=42'; //the raw header line is a structured field item
+$field = Item::fromRFC8941($headerLine); // parses the field
+$field->value(); // returns Token::fromString('bar');
+$field->value()->toString(); //return the 'bar'
+$field->parameterByKey('baz'); // returns (int) 42
+$field->parameterByIdex(0);    //returns ['baz' => 42];
 ```
 
-#### Containers
-
-All containers objects implement PHP `IteratorAggregate`, `Countable` and `ArrayAccess`
-interfaces. Their members can be accessed using the following shared methods
-
-```php
-$container->keys(): array<string|int>;
-$container->has(string|int ...$offsets): bool;
-$container->get(string|int $offset): StrucuredField;
-$container->hasMembers(): bool;
-$container->hasNoMembers(): bool;
-```
-
-> [!IMPORTANT]
-> The `get` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
-
-To avoid invalid states, `ArrayAccess` modifying methods throw a `ForbiddenOperation`
-if you try to use them on any container object:
-
-```php
-use Bakame\Http\StructuredFields\Parameters;
-
-$value = Parameters::fromHttpValue(';a=foobar');
-$value->has('b');     // return false
-$value['a']->value(); // return 'foobar'
-$value['b'];          // triggers a InvalidOffset exception, the index does not exist
-$value['a'] = 23      // triggers a ForbiddenOperation exception
-unset($value['a']);   // triggers a ForbiddenOperation exception
-```
-
-The `Dictionary` and `Parameters` classes also allow accessing its members as pairs:
-
-```php
-$container->hasPair(int ...$offsets): bool;
-$container->pair(int $offset): array{0:string, 1:StructuredField};
-$container->toPairs(): iterable<array{0:string, 1:StructuredField}>;
-```
-
-> [!IMPORTANT]
-> The `pair` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
-
-#### Accessing the parameters values
-
-Accessing the associated `Parameters` instance attached to an `InnerList` or a `Item` instances
-is done using the following methods:
-
-```php
-use Bakame\Http\StructuredFields\InnerList;
-use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\Parameters;
-
-$field->parameter(string $key): ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool|null;
-$field->parameters(): Parameters;
-$field->parameterByIndex(int $index): array{0:string, 1:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|boo}
-InnerList::toPair(): array{0:list<Item>, 1:Parameters}>};
-Item::toPair(): array{0:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool, 1:Parameters}>};
-```
-
-> [!NOTE]
-> - The `parameter` method will return `null` if no value is found for the given key.
-> - The `parameterByIndex` method is added in `version 1.1.0` and returns an empty array if no parameter is found for the given index.
+To comply with the RFC the package allows selecting parameters by key or by index.
 
 ### Building and Updating Structured Fields Values
-
-Every value object can be used as a builder to create an HTTP field value. Because we are
-using immutable value objects any change to the value object will return a new instance
-with the changes applied and leave the original instance unchanged.
 
 #### Items value
 
@@ -518,7 +232,7 @@ echo $value->toHttpValue(); //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
 
-Since version `1.1.0` it is possible to also build `Dictionary` and `Parameters` instances
+It is possible to also build `Dictionary` and `Parameters` instances
 using indexes and pair as per described in the RFC.
 
 The `$pair` parameter is a tuple (ie: an array as list with exactly two members) where:
@@ -527,7 +241,6 @@ The `$pair` parameter is a tuple (ie: an array as list with exactly two members)
 - the second array member is the parameter `$value`
 
 ```php
-// since version 1.1
 $map->unshift(array ...$pairs): static;
 $map->push(array ...$pairs): static;
 $map->insert(int $key, array ...$pairs): static;
@@ -564,17 +277,11 @@ echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 > [!CAUTION]
 > on duplicate `keys` pair values are merged as per RFC logic.
 
-The `remove` always accepted string or integer as input. Since version `1.1` the method is fixed to
-remove the corresponding pair if its index is given to the method.
+The `remove` always accepted string or integer as input.
 
-```diff
-<?php
-
-use Bakame\Http\StructuredFields\Dictionary;
-
+```php
 $field = Dictionary::fromHttpValue('b=?0, a=(bar "42" 42 42.0), c=@1671800423');
-- echo $field->remove('b', 2)->toHttpValue(); // returns a=(bar "42" 42 42.0), c=@1671800423
-+ echo $field->remove('b', 2)->toHttpValue(); // returns a=(bar "42" 42 42.0)
+echo $field->remove('b', 2)->toHttpValue(); // returns a=(bar "42" 42 42.0)
 ```
 
 If a stricter approach is needed, use the following new methods `removeByIndices` and/or `removeByKeys`:
@@ -677,9 +384,6 @@ echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 ```
 
-> [!NOTE]
-> New in version 1.2.0
-
 It is also possible to create an `OuterList` based on an iterable structure
 of pairs.
 
@@ -758,8 +462,8 @@ $field->withoutParameters(string ...$keys): static; // this method is deprecated
 $field->withoutAnyParameter(): static;
 $field->withParameters(Parameters $parameters): static;
 ```
-Since version `1.1` it is also possible to use the index of each member to perform additional
-modifications.
+
+It is also possible to use the index of each member to perform additional modifications.
 
 ```php
 $field->pushParameters(array ...$pairs): static
@@ -800,70 +504,121 @@ echo InnerList::new('foo', 'bar')
 // ("foo" "bar");expire=@1681538756;path="/";max-age=2500
 ```
 
-### Advance parsing usage
+### Validation
 
-Starting with version `1.1` the internal parser has been made public in order to allow:
+The package also can help with validating your field. If we go back to our example about the permission policy.
+We assumed that we indeed parsed a valid field but nothing can prevent us from parsing a completely unrelated
+field also defined as a dictionary field and pretend it to be a permission policy field.
 
-- clearer decoupling between parsing and objet building
-- different parsers implementations
-- improve the package usage in testing.
+A way to prevent that is to add simple validation rules on the field value or structure.
 
-Each `fromHttpValue` method signature has been updated to take a second optional argument
-that represents the parser interface to use in order to allow parsing of the HTTP string
-representation value.
+#### Validating a Bare Item.
 
-By default, if no parser is provided, the package will default to use the package `Parser` class,
-
-```php
-Item::fromHttpValue(Stringable|string $httpValue, ItemParser $parser = new Parser()): Item;
-InnerList::fromHttpValue(Stringable|string $httpValue, InnerListParser $parser = new Parser()): InnerList;
-Dictionary::fromHttpValue(Stringable|string $httpValue, DictionaryParser $parser = new Parser()): Dictionary;
-OuterList::fromHttpValue(Stringable|string $httpValue, ListParser $parser = new Parser()): OuterList;
-Parameters::fromHttpValue(Stringable|string $httpValue, ParametersParser $parser = new Parser()): Parameters;
-```
-
-The `Parser` class exposes the following method each belonging to a different contract or interface.
+To validate the expected value of an `Item` you need to provide a callback to the `Item::value` method.
+Let's say the RFC says that the value can only be a string or a token you can translate that requiremebt as follow
 
 ```php
-Parser::parseValue(Stringable|string $httpValue): ByteSequence|Token|DateTimeImmutable|string|int|float|bool;
-Parser::parseItem(Stringable|string $httpValue): array;
-Parser::parseParameters(Stringable|string $httpValue): array;
-Parser::parseInnerList(Stringable|string $httpValue): array;
-Parser::parseList(Stringable|string $httpValue): array;
-Parser::parseDictionary(Stringable|string $httpValue): array;
+
+use Bakame\Http\StructuredFields\Type;
+
+$value = Item::fromString('42')->value(is_string(...));
 ```
 
-Starting with version `1.4` the package parse accepts an option `Ietf` enum as its sole parameter.
-By default, if no parameter is given, the parser will use the latest stable RFC which is at
-the moment of writing `RFC9651`. Otherwise, it will use the rules from the RFC specified via the `Ietf` enum.
+If the value is valid then it will populate the `$value` variable; otherwise an `Violation` exception will be thrown.
+
+The exception will return a generic message. If you need to customize the message instead of returning `false` on
+error, you can specify the template message to be used by the exception.
 
 ```php
-use Bakame\Http\StructuredFields\Parser;
-use Bakame\Http\StructuredFields\Ietf;
+use Bakame\Http\StructuredFields\Type;
 
-$parser = new Parser();              // parse using RFC9651 rules
-$parser = new Parser(Ietf::Rfc9651); // parse using RFC9651 rules
-$parser = new Parser(Ietf::Rfc8941); // parse using RFC8941 rules
+$value = Item::fromDecimal(42)
+    ->value(
+        fn (mixed $value) => match (true) {
+            Type::fromVariable($value)->isOneOf(Type::Token, Type::String) => true,
+            default => "The value '{value}' failed the RFC validation."
+        }
+    );
+// the following exception will be thrown
+// new Violation("The value '42.0' failed the RFC validation.");
 ```
 
-Once instantiated, calling one of the above listed method is straightforward:
+As you can see not only did the generic message was changed, the exception also contains the serialized version
+of the failed value.
+
+#### Validating a single Parameter.
+
+The same logic can be applied .when validating a parameter value.
 
 ```php
-use Bakame\Http\StructuredFields\Parser;
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Parameters;
 
-$parser = new Parser();
-$parser->parseValue('text/csv'); //returns Token::fromString('text/csv')
-$parser->parseItem('@1234567890;file=24'); 
-//returns an array
-//  [
-//    new DateTimeImmutable('@1234567890'),
-//    ['file' => 24],
-//  ]
+$parameters = Parameters::fromHttpValue(';baz=42;bar=toto');
+$parameters->valueByKey('bar'); 
+// will return Token::fromString('toto');
+$parameters->valueByKey('bar', fn (mixed $value) => $value instanceof ByteSequence));
+// will throw a generic exception message because the value is not a ByteSequence
 ```
 
-> [!NOTE]
-> While the provided default `Parser` class implements all these methods you are free to only implement
-the methods you need.
+Because parameters are optional by default you may also be able to specify a default value 
+or require the parameter presence. So the full validation for a single parameter defined by
+its key can be done using the following code.
+
+```php
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Parameters;
+
+$parameters = Parameters::fromHttpValue(';baz=42;bar=toto');
+$parameters->valueByKey(
+    key: 'bar', 
+    validate: fn (mixed $value) => $value instanceof ByteSequence ? true : "The '{key}' parameter '{value}' is invalid",
+    required: true,
+    default: ByteSequence::fromDecoded('Hello world!'),
+);
+```
+
+If you want to validate a parameter using its index instead, the method signature is the same but some
+argument will have to be updated to accommodate index searching. 
+
+```php
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Parameters;
+
+$parameters = Parameters::fromHttpValue(';baz=42;bar=toto');
+$parameters->valueByIndex(
+    index: 1, 
+    validate: fn (mixed $value, string $key) => $value instanceof ByteSequence ? true : "The  parameter '{key}' @t '{index}' whose value is '{value}' is invalid",
+    required: true,
+    default: ['foo', ByteSequence::fromDecoded('Hello world!')],
+);
+```
+
+#### Validating the Parameters container.
+
+The most common use case of parameters involve more than one parameter to validate. Imagine we have to validate
+the cookie field. It will contain more than one parameter so instead of comparing each parameter separately the
+package allows validating multiple parameters at the same time using the `Parameters::validateByKeys` and its
+couterpart `Parameters::validateByIndices.`
+
+```php
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Parameters;
+
+$parameters = Parameters::fromHttpValue(';baz=42;bar=toto')->validateByKeys([
+    [
+        'bar' => [
+            'validate' => fn (mixed $value) => $value instanceof ByteSequence ? true : "The '{key}' parameter '{value}' is invalid",
+            'required' => true,
+            'default' => ByteSequence::fromDecoded('Hello world!'),
+        ],
+         ...
+]);
+```
+
+The returned value contains the validated parametes as well as a `ViolationList` object which contains all the violations
+found if any.
+
 
 ## Contributing
 

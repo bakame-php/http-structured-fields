@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayObject;
+use Bakame\Http\StructuredFields\Validation\Violation;
 use DateTime;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -283,7 +284,7 @@ final class ItemTest extends StructuredFieldTestCase
             ],
             'string' => [
                 'item' => Item::new('42'),
-                'expectedType' => Type::ByteSequence,
+                'expectedType' => Type::String,
             ],
             'display string' => [
                 'item' => Item::new(DisplayString::fromDecoded('😊')),
@@ -341,8 +342,8 @@ final class ItemTest extends StructuredFieldTestCase
     {
         $instance = Item::fromHttpValue('1; a; b=?0');
 
-        self::assertTrue($instance->parameters()->get('a')->value());
-        self::assertFalse($instance->parameters()->get('b')->value());
+        self::assertTrue($instance->parameters()->getByKey('a')->value());
+        self::assertFalse($instance->parameters()->getByKey('b')->value());
     }
 
     #[Test]
@@ -350,7 +351,7 @@ final class ItemTest extends StructuredFieldTestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        Item::fromHttpValue('1; a; b=?0')->parameters()->get('bar')->value();
+        Item::fromHttpValue('1; a; b=?0')->parameters()->getByKey('bar')->value();
     }
 
     #[Test]
@@ -442,12 +443,12 @@ final class ItemTest extends StructuredFieldTestCase
         self::assertNotSame($instance1, $instance3);
         self::assertEquals($instance1->value(), $instance3->value());
         self::assertSame($instance1, $instance4);
-        self::assertTrue($instance1->parameter('a'));
+        self::assertTrue($instance1->parameterByKey('a'));
         self::assertSame(['a', true], $instance1->parameterByIndex(0));
-        self::assertNull($instance5->parameter('a'));
+        self::assertNull($instance5->parameterByKey('a'));
         self::assertTrue($instance5->parameters()->hasNoMembers());
         self::assertTrue($instance6->parameters()->hasNoMembers());
-        self::assertNull($instance1->parameter('non-existing-key'));
+        self::assertNull($instance1->parameterByKey('non-existing-key'));
         self::assertSame([], $instance1->parameterByIndex(42));
     }
 
@@ -469,5 +470,92 @@ final class ItemTest extends StructuredFieldTestCase
         self::assertSame(['b', false], $instance2->parameterByIndex(0));
         self::assertSame(['c', 'true'], $instance2->parameterByIndex(-1));
         self::assertSame(';b=?0;d=*/*;a="false";c="true"', $instance2->parameters()->toHttpValue());
+    }
+
+    #[Test]
+    public function it_can_validate_the_item_value(): void
+    {
+        $item = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
+        self::assertInstanceOf(Token::class, $item->value());
+        self::assertTrue($item->value()->equals(Token::fromString('babayaga')));
+    }
+
+    #[Test]
+    public function it_can_validate_and_trigger_a_custom_message_on_error(): void
+    {
+        $item = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
+
+        $this->expectExceptionObject(new Violation('The exception has been triggered'));
+
+        $item->value(fn (mixed $value): string => 'The exception has been triggered');
+    }
+
+    #[Test]
+    public function it_can_validate_and_trigger_a_default_message_on_error(): void
+    {
+        $item = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
+
+        $this->expectExceptionObject(new Violation("The item value 'babayaga' failed validation."));
+
+        $item->value(fn (mixed $value): bool => false);
+    }
+
+    #[Test]
+    public function it_can_validate_the_item_parameter_value(): void
+    {
+        $item = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
+        self::assertTrue($item->parameterByKey('a'));
+        self::assertTrue($item->parameterByKey('a', fn (mixed $value) => true));
+        self::assertFalse($item->parameterByKey(key: 'b', default: false));
+    }
+
+    #[Test]
+    public function it_can_validate_and_trigger_a_custom_error_message(): void
+    {
+        $item = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
+
+        $this->expectExceptionObject(new Violation('The exception has been triggered'));
+
+        $item->parameterByKey(key: 'a', validate:fn (mixed $value): string => 'The exception has been triggered');
+    }
+
+    #[Test]
+    public function it_can_validate_and_trigger_an_error_message_for_missing_parameter_name(): void
+    {
+        $item = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
+
+        $this->expectExceptionObject(new Violation("The required parameter 'b' is missing."));
+
+        $item->parameterByKey(key: 'b', required: true);
+    }
+
+    #[Test]
+    public function it_can_validate_and_trigger_a_default_error_message(): void
+    {
+        $item = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
+
+        $this->expectExceptionObject(new Violation("The parameter 'a' whose value is '?1' failed validation."));
+
+        $item->parameterByKey(key: 'a', validate:fn (mixed $value): bool => false);
+    }
+
+    #[Test]
+    public function it_can_validate_and_trigger_a_default_error_message_for_missing_parameters_by_indices(): void
+    {
+        $item = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
+
+        $this->expectExceptionObject(new Violation("The required parameter at position '12' is missing."));
+
+        $item->parameterByIndex(index: 12, validate:fn (mixed $value): bool => false, required: true);
+    }
+
+    #[Test]
+    public function it_can_validate_and_trigger_a_default_error_message_for_parameters_by_indices(): void
+    {
+        $item = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
+
+        $this->expectExceptionObject(new Violation("The parameter at position '0' whose name is 'a' with the value '?1' failed validation."));
+
+        $item->parameterByIndex(index: 0, validate:fn (mixed $value): bool => false, required: true);
     }
 }

@@ -5,13 +5,16 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
+use BackedEnum;
 use CallbackFilterIterator;
-use Closure;
 use Countable;
 use DateTimeInterface;
 use Iterator;
 use IteratorAggregate;
+use ReflectionEnum;
+use ReflectionEnumBackedCase;
 use Stringable;
+use TypeError;
 
 use function array_key_exists;
 use function array_keys;
@@ -136,7 +139,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * Returns an instance from an HTTP textual representationcompliant with RFC9651.
+     * Returns an instance from an HTTP textual representation compliant with RFC9651.
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.2
      *
@@ -262,10 +265,51 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Tells whether the instance contain a members at the specified offsets.
      */
-    public function has(string|int ...$keys): bool
+    public function has(BackedEnum|string ...$keys): bool
     {
         foreach ($keys as $key) {
-            if (!is_string($key) || !array_key_exists($key, $this->members)) {
+            if (!array_key_exists(($key instanceof BackedEnum ? $key->value : $key), $this->members)) {
+                return false;
+            }
+        }
+
+        return [] !== $keys;
+    }
+
+    /**
+     * Returns true only if the instance only contains the listed keys, false otherwise.
+     *
+     * @param array<string>|class-string<BackedEnum> $keys
+     */
+    public function allowedKeys(array|string $keys): bool
+    {
+        if (is_array($keys)) {
+            $keys = array_keys(array_fill_keys($keys, true));
+            foreach ($keys as $item) {
+                if (!is_string($item)) { /* @phpstan-ignore-line */
+                    throw new TypeError('The parameter keys must be strings.');
+                }
+            }
+        }
+
+        if (is_string($keys)) {
+            if (!enum_exists($keys)) {
+                throw new TypeError('When a string, the input should refer to an Backed Enum class.');
+            }
+
+            $reflection = new ReflectionEnum($keys);
+            if (!$reflection->isBacked() || 'string' !== $reflection->getBackingType()->getName()) {
+                throw new TypeError('When a string, the input should refer to an Backed Enum class.');
+            }
+
+            $keys = array_map(
+                fn (ReflectionEnumBackedCase $enum): string => (string) $enum->getBackingValue(),
+                $reflection->getCases()
+            );
+        }
+
+        foreach ($this->members as $key => $member) {
+            if (!in_array($key, $keys, true)) {
                 return false;
             }
         }
@@ -277,8 +321,12 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * @throws SyntaxError If the key is invalid
      * @throws InvalidOffset If the key is not found
      */
-    public function get(string|int $key): InnerList|Item
+    public function getByKey(BackedEnum|string $key): InnerList|Item
     {
+        if ($key instanceof BackedEnum) {
+            $key = $key->value;
+        }
+
         return $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
     }
 
@@ -321,7 +369,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @return array{0:string, 1:InnerList|Item}
      */
-    public function pair(int $index): array
+    public function getByIndex(int $index): array
     {
         $foundOffset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         foreach ($this->toPairs() as $offset => $pair) {
@@ -342,7 +390,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     public function first(): array
     {
         try {
-            return $this->pair(0);
+            return $this->getByIndex(0);
         } catch (InvalidOffset) {
             return [];
         }
@@ -357,7 +405,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     public function last(): array
     {
         try {
-            return $this->pair(-1);
+            return $this->getByIndex(-1);
         } catch (InvalidOffset) {
             return [];
         }
@@ -373,8 +421,14 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @throws SyntaxError If the string key is not a valid
      */
-    public function add(string $key, iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member): static
-    {
+    public function add(
+        BackedEnum|string $key,
+        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+    ): self {
+        if ($key instanceof BackedEnum) {
+            $key = $key->value;
+        }
+
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
 
@@ -398,8 +452,13 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      */
-    public function remove(string|int ...$keys): static
+    private function remove(BackedEnum|string|int ...$keys): self
     {
+        $keys = array_map(fn (BackedEnum|string|int $key): string|int => match (true) {
+            $key instanceof BackedEnum => $key->value,
+            default => $key,
+        }, $keys);
+
         if ([] === $this->members || [] === $keys) {
             return $this;
         }
@@ -433,7 +492,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      */
-    public function removeByIndices(int ...$indices): static
+    public function removeByIndices(int ...$indices): self
     {
         return $this->remove(...$indices);
     }
@@ -444,7 +503,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      */
-    public function removeByKeys(string ...$keys): static
+    public function removeByKeys(BackedEnum|string ...$keys): self
     {
         return $this->remove(...$keys);
     }
@@ -459,9 +518,13 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * @throws SyntaxError If the string key is not a valid
      */
     public function append(
-        string $key,
+        BackedEnum|string $key,
         iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
-    ): static {
+    ): self {
+        if ($key instanceof BackedEnum) {
+            $key = $key->value;
+        }
+
         $members = $this->members;
         unset($members[$key]);
 
@@ -479,9 +542,13 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * @throws SyntaxError If the string key is not a valid
      */
     public function prepend(
-        string $key,
+        BackedEnum|string $key,
         iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
-    ): static {
+    ): self {
+        if ($key instanceof BackedEnum) {
+            $key = $key->value;
+        }
+
         $members = $this->members;
         unset($members[$key]);
 
@@ -496,7 +563,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @param array{0:string, 1:InnerList|Item|SfMemberInput} ...$pairs
      */
-    public function push(array ...$pairs): static
+    public function push(array ...$pairs): self
     {
         return match (true) {
             [] === $pairs => $this,
@@ -515,7 +582,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @param array{0:string, 1:InnerList|Item|SfMemberInput} ...$pairs
      */
-    public function unshift(array ...$pairs): static
+    public function unshift(array ...$pairs): self
     {
         return match (true) {
             [] === $pairs => $this,
@@ -534,7 +601,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @param array{0:string, 1:InnerList|Item|SfMemberInput} ...$members
      */
-    public function insert(int $index, array ...$members): static
+    public function insert(int $index, array ...$members): self
     {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
@@ -559,7 +626,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @param array{0:string, 1:InnerList|Item|SfMemberInput} $pair
      */
-    public function replace(int $index, array $pair): static
+    public function replace(int $index, array $pair): self
     {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         $pair[1] = self::filterMember($pair[1]);
@@ -579,7 +646,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @param iterable<string, InnerList|Item|SfMemberInput> ...$others
      */
-    public function mergeAssociative(iterable ...$others): static
+    public function mergeAssociative(iterable ...$others): self
     {
         $members = $this->members;
         foreach ($others as $other) {
@@ -597,7 +664,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @param Dictionary|Parameters|iterable<array{0:string, 1:InnerList|Item|SfMemberInput}> ...$others
      */
-    public function mergePairs(Dictionary|Parameters|iterable ...$others): static
+    public function mergePairs(Dictionary|Parameters|iterable ...$others): self
     {
         $members = $this->members;
         foreach ($others as $other) {
@@ -618,9 +685,9 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @param string $offset
      */
-    public function offsetGet(mixed $offset): mixed
+    public function offsetGet(mixed $offset): InnerList|Item
     {
-        return $this->get($offset);
+        return $this->getByKey($offset);
     }
 
     public function offsetUnset(mixed $offset): void
@@ -638,31 +705,29 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @template TMap
      *
-     * @param Closure(InnerList|Item, string): TMap $callback
+     * @param callable(array{0:string, 1:Item|InnerList}, int): TMap $callback
      *
      * @return Iterator<TMap>
      */
-    public function map(Closure $callback): Iterator
+    public function map(callable $callback): Iterator
     {
-        foreach ($this->members as $offset => $member) {
+        foreach ($this->toPairs() as $offset => $member) {
             yield ($callback)($member, $offset);
         }
     }
 
     /**
-     * Iteratively reduce the container to a single value using a callback.
+     * @param callable(TInitial|null, array{0:string, 1:Item|InnerList}, int): TInitial $callback
+     * @param TInitial|null $initial
      *
      * @template TInitial
      *
-     * @param Closure(TInitial|null, InnerList|Item, string=): TInitial $callback
-     * @param TInitial|null $initial
-     *
      * @return TInitial|null
      */
-    public function reduce(Closure $callback, mixed $initial = null): mixed
+    public function reduce(callable $callback, mixed $initial = null): mixed
     {
-        foreach ($this->members as $offset => $member) {
-            $initial = $callback($initial, $member, $offset);
+        foreach ($this->toPairs() as $offset => $pair) {
+            $initial = $callback($initial, $pair, $offset);
         }
 
         return $initial;
@@ -671,9 +736,9 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Run a filter over each container members.
      *
-     * @param Closure(array{0:string, 1:InnerList|Item}, int): bool $callback
+     * @param callable(array{0:string, 1:InnerList|Item}, int): bool $callback
      */
-    public function filter(Closure $callback): static
+    public function filter(callable $callback): self
     {
         return self::fromPairs(new CallbackFilterIterator($this->toPairs(), $callback));
     }
@@ -681,9 +746,9 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Sort a container by value using a callback.
      *
-     * @param Closure(array{0:string, 1:InnerList|Item}, array{0:string, 1:InnerList|Item}): int $callback
+     * @param callable(array{0:string, 1:InnerList|Item}, array{0:string, 1:InnerList|Item}): int $callback
      */
-    public function sort(Closure $callback): static
+    public function sort(callable $callback): self
     {
         $members = iterator_to_array($this->toPairs());
         usort($members, $callback);

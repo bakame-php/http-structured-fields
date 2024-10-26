@@ -45,7 +45,7 @@ final class IetfTest extends TestCase
         ];
 
         yield 'token' => [
-            'value' => 'application/xml',
+            'value' => Token::fromString('application/xml'),
             'expectedRfc8941' => true,
             'expectedRfc9651' => true,
         ];
@@ -57,13 +57,13 @@ final class IetfTest extends TestCase
         ];
 
         yield 'bytesequence' => [
-            'value' => 'cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==',
+            'value' => ByteSequence::fromEncoded('cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg=='),
             'expectedRfc8941' => true,
             'expectedRfc9651' => true,
         ];
 
         yield 'displaystring' => [
-            'value' => 'bébé',
+            'value' => DisplayString::fromDecoded('bébé'),
             'expectedRfc8941' => false,
             'expectedRfc9651' => true,
         ];

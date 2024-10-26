@@ -59,7 +59,7 @@ final class TypeTest extends TestCase
             ],
             'string as a Bytesequence' => [
                 'value' => '42',
-                'expectedType' => Type::ByteSequence,
+                'expectedType' => Type::String,
             ],
             'string as a String' => [
                 'value' => 'Hello Boy!',
@@ -84,10 +84,6 @@ final class TypeTest extends TestCase
             'an item object' => [
                 'value' => Item::new(new DateTimeImmutable('2020-07-12 13:37:00')),
                 'expectedType' => Type::Date,
-            ],
-            'a display string from a string' => [
-                'value' => 'füü',
-                'expectedType' => Type::DisplayString,
             ],
             'a display string from an object' => [
                 'value' => DisplayString::fromDecoded('füü'),
