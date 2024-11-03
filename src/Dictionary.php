@@ -31,7 +31,7 @@ use function is_string;
  *
  * @phpstan-import-type SfMemberInput from StructuredField
  *
- * @implements ArrayAccess<string, InnerList|Item>
+ * @implements ArrayAccess<BackedEnum|string, InnerList|Item>
  * @implements IteratorAggregate<string, InnerList|Item>
  */
 final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, StructuredField
@@ -675,7 +675,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param string $offset
+     * @param BackedEnum|string $offset
      */
     public function offsetExists(mixed $offset): bool
     {
@@ -683,7 +683,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param string $offset
+     * @param BackedEnum|string $offset
      */
     public function offsetGet(mixed $offset): InnerList|Item
     {

@@ -36,7 +36,7 @@ use function is_string;
  * @phpstan-import-type SfParameterKeyRule from ItemValidator
  * @phpstan-import-type SfParameterIndexRule from ItemValidator
  *
- * @implements ArrayAccess<string, InnerList|Item>
+ * @implements ArrayAccess<BackedEnum|string, InnerList|Item>
  * @implements IteratorAggregate<string, InnerList|Item>
  */
 final class Parameters implements ArrayAccess, Countable, IteratorAggregate, StructuredField
@@ -671,7 +671,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param string $offset
+     * @param BackedEnum|string $offset
      */
     public function offsetExists(mixed $offset): bool
     {
@@ -679,7 +679,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param string $offset
+     * @param BackedEnum|string $offset
      */
     public function offsetGet(mixed $offset): Item
     {

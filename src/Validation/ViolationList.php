@@ -18,13 +18,12 @@ use function array_map;
 use function count;
 use function implode;
 use function is_int;
-use function is_string;
 
 use const ARRAY_FILTER_USE_BOTH;
 
 /**
  * @implements IteratorAggregate<array-key,Violation>
- * @implements ArrayAccess<array-key,Violation>
+ * @implements ArrayAccess<BackedEnum|array-key,Violation>
  */
 final class ViolationList implements IteratorAggregate, Countable, ArrayAccess, Stringable
 {
@@ -73,7 +72,7 @@ final class ViolationList implements IteratorAggregate, Countable, ArrayAccess, 
     }
 
     /**
-     * @param array-key $offset
+     * @param BackedEnum|string|int $offset
      */
     public function offsetExists(mixed $offset): bool
     {
@@ -81,7 +80,7 @@ final class ViolationList implements IteratorAggregate, Countable, ArrayAccess, 
     }
 
     /**
-     * @param array-key $offset
+     * @param BackedEnum|string|int $offset
      *
      * @return Violation
      */
@@ -91,24 +90,27 @@ final class ViolationList implements IteratorAggregate, Countable, ArrayAccess, 
     }
 
     /**
-     * @param array-key $offset
+     * @param BackedEnum|string|int $offset
      */
     public function offsetUnset(mixed $offset): void
     {
+        if ($offset instanceof BackedEnum) {
+            $offset = $offset->value;
+        }
+
         unset($this->errors[$offset]);
     }
 
+    /**
+     * @param BackedEnum|string|int|null $offset
+     * @param Violation $value
+     */
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        if (!is_int($offset) && !is_string($offset)) {
-            throw new TypeError('The submitted offset must be an integer or a string');
+        if (null === $offset) {
+            throw new TypeError('null can not be used as a valid offset value.');
         }
-
-        if (!$value instanceof Violation) { /* @phpstan-ignore-line */
-            throw new TypeError('only '.Violation::class.' instances can be added to the collection,');
-        }
-
-        $this->errors[$offset] = $value;
+        $this->add($offset, $value);
     }
 
     public function has(BackedEnum|string|int $offset): bool
@@ -117,7 +119,11 @@ final class ViolationList implements IteratorAggregate, Countable, ArrayAccess, 
             $offset = $offset->value;
         }
 
-        return null !== $this->filterIndex($offset);
+        if (is_int($offset)) {
+            return null !== $this->filterIndex($offset);
+        }
+
+        return array_key_exists($offset, $this->errors);
     }
 
     public function get(BackedEnum|string|int $offset): Violation
@@ -135,7 +141,7 @@ final class ViolationList implements IteratorAggregate, Countable, ArrayAccess, 
             $offset = $offset->value;
         }
 
-        $this->offsetSet($offset, $error);
+        $this->errors[$offset] = $error;
     }
 
     /**
