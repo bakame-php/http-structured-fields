@@ -368,7 +368,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
             }
         }
 
-        return [] !== $keys;
+        return [] !== $keys && [] !== $this->members;
     }
 
     /**

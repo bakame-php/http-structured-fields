@@ -12,6 +12,5 @@ enum ErrorCode: string
 {
     case FailedItemParsing = '@failed.item.parsing';
     case InvalidItemValue = '@invalid.item.value';
-    case InvalidParametersAllowedKeys = '@invalid.parameters.allowed_keys';
     case InvalidParametersValues = '@invalid.parameters.values';
 }
