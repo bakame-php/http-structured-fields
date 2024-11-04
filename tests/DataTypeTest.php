@@ -96,7 +96,7 @@ final class DataTypeTest extends TestCase
     #[Test]
     public function it_will_fail_to_generate_rfc8941_structured_field_text_represenation(): void
     {
-        $this->expectExceptionObject(new SyntaxError('The date type is not serializable by RFC8941'));
+        $this->expectExceptionObject(MissingFeature::dueToLackOfSupport(Type::Date, Ietf::Rfc8941));
 
         DataType::Dictionary->toRfc8941([['a', false], ['b', Item::fromDateString('+30 minutes')]]);
     }
@@ -104,7 +104,7 @@ final class DataTypeTest extends TestCase
     #[Test]
     public function it_will_fail_to_parse_rfc9651_structured_field_text_represenation_with_rfc8941_parser(): void
     {
-        $this->expectExceptionObject(new SyntaxError('The date type is not parsable by RFC8941'));
+        $this->expectExceptionObject(MissingFeature::dueToLackOfSupport(Type::Date, Ietf::Rfc8941));
 
         $string = DataType::Dictionary->serialize([['a', false], ['b', Item::fromDateString('+30 minutes')]]);
 

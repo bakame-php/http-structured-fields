@@ -234,7 +234,7 @@ final class Value
     {
         $rfc ??= Ietf::Rfc9651;
         if (!$rfc->supports($this->type)) {
-            throw new SyntaxError('The '.$this->type->value.' type is not serializable by '.$rfc->value);
+            throw MissingFeature::dueToLackOfSupport($this->type, $rfc);
         }
 
         return match (true) {

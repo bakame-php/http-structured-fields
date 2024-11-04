@@ -404,7 +404,7 @@ final class Parser
     private static function extractDate(string $httpValue, Ietf $rfc): array
     {
         if (!$rfc->supports(Type::Date)) {
-            throw new SyntaxError('The '.Type::Date->value.' type is not parsable by '.$rfc->value);
+            throw MissingFeature::dueToLackOfSupport(Type::Date, $rfc);
         }
 
         if (1 !== preg_match(self::REGEXP_DATE, $httpValue, $found)) {
@@ -470,7 +470,7 @@ final class Parser
     private static function extractDisplayString(string $httpValue, Ietf $rfc): array
     {
         if (!$rfc->supports(Type::DisplayString)) {
-            throw new SyntaxError('The '.Type::DisplayString->value.' type is not parsable by '.$rfc->value);
+            throw MissingFeature::dueToLackOfSupport(Type::DisplayString, $rfc);
         }
 
         $offset = 2;

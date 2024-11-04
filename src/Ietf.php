@@ -6,7 +6,6 @@ namespace Bakame\Http\StructuredFields;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use Throwable;
 
 enum Ietf: string
 {
@@ -48,7 +47,7 @@ enum Ietf: string
                 $value->toHttpValue($this);
 
                 return true;
-            } catch (Throwable) {
+            } catch (MissingFeature) {
                 return false;
             }
         }

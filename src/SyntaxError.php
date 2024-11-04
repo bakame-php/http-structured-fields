@@ -6,6 +6,6 @@ namespace Bakame\Http\StructuredFields;
 
 use InvalidArgumentException;
 
-final class SyntaxError extends InvalidArgumentException implements StructuredFieldError
+class SyntaxError extends InvalidArgumentException implements StructuredFieldError
 {
 }
