@@ -101,7 +101,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param Parameters|Dictionary|iterable<array{0:string, 1:SfItemInput}> $pairs
+     * @param Parameters|Dictionary|iterable<array{0:BackedEnum|string, 1:SfItemInput}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
@@ -110,6 +110,13 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
             $pairs instanceof Dictionary => new self($pairs),
             default => new self((function (iterable $pairs) {
                 foreach ($pairs as [$key, $member]) {
+                    if ($key instanceof BackedEnum) {
+                        $key = $key->value;
+                        if (!is_string($key)) {
+                            throw new SyntaxError('The BackedEnum value must be an string.');
+                        }
+                    }
+
                     yield $key => $member;
                 }
             })($pairs)),
@@ -436,8 +443,16 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @return array{0:string, 1:SfType}|array{}
      */
-    public function valueByIndex(int $index, ?callable $validate = null, bool|string $required = false, array $default = []): array
+    public function valueByIndex(BackedEnum|int $index, ?callable $validate = null, bool|string $required = false, array $default = []): array
     {
+        if ($index instanceof BackedEnum) {
+            if (!is_int($index->value)) {
+                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
+            }
+
+            $index = $index->value;
+        }
+
         $default = match (true) {
             [] === $default => [],
             !array_is_list($default) => throw new SyntaxError('The pair must be represented by an array as a list.'), /* @phpstan-ignore-line */
@@ -544,7 +559,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         };
     }
 
-    public function removeByIndices(int ...$indices): self
+    public function removeByIndices(BackedEnum|int ...$indices): self
     {
         return $this->remove(...$indices);
     }
@@ -612,8 +627,16 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @param array{0:string, 1:SfItemInput} ...$members
      */
-    public function insert(int $index, array ...$members): self
+    public function insert(BackedEnum|int $index, array ...$members): self
     {
+        if ($index instanceof BackedEnum) {
+            if (!is_int($index->value)) {
+                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
+            }
+
+            $index = $index->value;
+        }
+
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
         return match (true) {
@@ -632,8 +655,16 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @param array{0:string, 1:SfItemInput} $pair
      */
-    public function replace(int $index, array $pair): self
+    public function replace(BackedEnum|int $index, array $pair): self
     {
+        if ($index instanceof BackedEnum) {
+            if (!is_int($index->value)) {
+                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
+            }
+
+            $index = $index->value;
+        }
+
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         $pair[1] = self::filterMember($pair[1]);
         $pairs = iterator_to_array($this->toPairs());

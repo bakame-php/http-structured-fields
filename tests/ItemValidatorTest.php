@@ -38,7 +38,7 @@ final class ItemValidatorTest extends TestCase
 
         self::assertTrue($result->errors->hasNoError());
         self::assertEquals(Token::fromString('foo'), $result->value);
-        self::assertSame([], $result->parameters);
+        self::assertSame([], $result->parameters());
     }
 
     #[Test]
@@ -52,7 +52,7 @@ final class ItemValidatorTest extends TestCase
 
         self::assertTrue($result->errors->hasErrors());
         self::assertSame('foo', $result->value);
-        self::assertSame([], $result->parameters);
+        self::assertSame([], $result->parameters());
         self::assertTrue($result->errors->has(ErrorCode::InvalidParametersValues));
     }
 
@@ -67,7 +67,7 @@ final class ItemValidatorTest extends TestCase
 
         self::assertTrue($result->errors->hasErrors());
         self::assertSame('foo', $result->value);
-        self::assertSame([], $result->parameters);
+        self::assertSame([], $result->parameters());
         self::assertTrue($result->errors->has(ErrorCode::InvalidParametersValues));
     }
 
@@ -82,7 +82,12 @@ final class ItemValidatorTest extends TestCase
 
         self::assertFalse($result->errors->hasErrors());
         self::assertSame('foo', $result->value);
-        self::assertSame(['foo' => 1, 'bar' => 2], $result->parameters);
+        self::assertSame(['foo' => 1, 'bar' => 2], $result->parameters());
+        self::assertSame(1, $result['foo']);
+        self::assertSame(2, $result['bar']);
+
+        $this->expectExceptionObject(InvalidOffset::dueToMemberNotFound(2));
+        $notFound = $result[2];
     }
 
     #[Test]
@@ -96,7 +101,12 @@ final class ItemValidatorTest extends TestCase
 
         self::assertFalse($result->errors->hasErrors());
         self::assertSame('foo', $result->value);
-        self::assertSame([['foo', 1], ['bar', 2]], $result->parameters);
+        self::assertSame([['foo', 1], ['bar', 2]], $result->parameters());
+        self::assertSame(['foo', 1], $result[0]);
+        self::assertSame(['bar', 2], $result[1]);
+
+        $this->expectExceptionObject(InvalidOffset::dueToMemberNotFound('foo'));
+        $notFound = $result['foo'];
     }
 
     #[Test]
@@ -114,7 +124,7 @@ final class ItemValidatorTest extends TestCase
 
         self::assertTrue($result->errors->hasErrors());
         self::assertSame('foo', $result->value);
-        self::assertSame(['bar' => 2], $result->parameters);
+        self::assertSame(['bar' => 2], $result->parameters());
         self::assertTrue($result->errors->has('foo'));
     }
 
@@ -132,6 +142,6 @@ final class ItemValidatorTest extends TestCase
 
         self::assertTrue($result->errors->hasNoError());
         self::assertSame('foo', $result->value);
-        self::assertSame([1 => ['bar', 2]], $result->parameters);
+        self::assertSame([1 => ['bar', 2]], $result->parameters());
     }
 }

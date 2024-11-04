@@ -80,10 +80,10 @@ Conversely, if you need to update the permission header, the package allows for 
 
 ```php
 $newPermissions = $permissions
-    ->remove('camera')
+    ->removeByKeys('camera')
     ->add('gyroscope',  [
         Token::fromString('self'), 
-        "https://a.example.com", 
+        "https://a.example.com",
         "https://b.example.com"
     ]);
 echo $newPermissions; 
@@ -114,15 +114,9 @@ The package provides methods to access the field values and convert them to PHP 
 > or the date range supported by the RFC is smaller that the range allowed by PHP.
 
 ```php
-$headerLine = 'bar;baz=42'; //the raw header line is a structured field item
-$field = Item::fromRFC8941($headerLine); // parses the field
-$field->value(); // returns Token::fromString('bar');
-$field->value()->toString(); //return the 'bar'
-$field->parameterByKey('baz'); // returns (int) 42
-$field->parameterByIdex(0);    //returns ['baz' => 42];
+$newPermissions = $permissions->add('gyroscope',  ["https://a.bébé.com"]);
+ // will trigger a SyntaxError because a structured field string can not contain UTF-8 characters
 ```
-
-To comply with the RFC the package allows selecting parameters by key or by index.
 
 ### Building and Updating Structured Fields Values
 

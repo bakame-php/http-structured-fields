@@ -97,7 +97,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param Dictionary|Parameters|iterable<array{0:string, 1:InnerList|Item|SfMemberInput}> $pairs
+     * @param Dictionary|Parameters|iterable<array{0:BackedEnum|string, 1:InnerList|Item|SfMemberInput}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
@@ -132,6 +132,13 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
             $pairs instanceof Parameters => new self($pairs),
             default => new self((function (iterable $pairs) use ($converter) {
                 foreach ($pairs as [$key, $member]) {
+                    if ($key instanceof BackedEnum) {
+                        $key = $key->value;
+                        if (!is_string($key)) {
+                            throw new SyntaxError('The BackedEnum value must be an string.');
+                        }
+                    }
+
                     yield $key => $converter($member);
                 }
             })($pairs)),
@@ -369,8 +376,16 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @return array{0:string, 1:InnerList|Item}
      */
-    public function getByIndex(int $index): array
+    public function getByIndex(BackedEnum|int $index): array
     {
+        if ($index instanceof BackedEnum) {
+            if (!is_int($index->value)) {
+                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
+            }
+
+            $index = $index->value;
+        }
+
         $foundOffset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         foreach ($this->toPairs() as $offset => $pair) {
             if ($offset === $foundOffset) {
@@ -492,7 +507,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      */
-    public function removeByIndices(int ...$indices): self
+    public function removeByIndices(BackedEnum|int ...$indices): self
     {
         return $this->remove(...$indices);
     }
@@ -601,8 +616,16 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @param array{0:string, 1:InnerList|Item|SfMemberInput} ...$members
      */
-    public function insert(int $index, array ...$members): self
+    public function insert(BackedEnum|int $index, array ...$members): self
     {
+        if ($index instanceof BackedEnum) {
+            if (!is_int($index->value)) {
+                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
+            }
+
+            $index = $index->value;
+        }
+
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
         return match (true) {
@@ -626,8 +649,16 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @param array{0:string, 1:InnerList|Item|SfMemberInput} $pair
      */
-    public function replace(int $index, array $pair): self
+    public function replace(BackedEnum|int $index, array $pair): self
     {
+        if ($index instanceof BackedEnum) {
+            if (!is_int($index->value)) {
+                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
+            }
+
+            $index = $index->value;
+        }
+
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         $pair[1] = self::filterMember($pair[1]);
         $pairs = iterator_to_array($this->toPairs());

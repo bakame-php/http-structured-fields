@@ -166,7 +166,7 @@ final class ItemValidator
             $violations->add(ErrorCode::InvalidParametersValues, new Violation($errorMessage));
         }
 
-        $parsedParameters = $parsedParameters?->parameters ?? [];
+        $parsedParameters = $parsedParameters?->values() ?? [];
         if ([] === $this->parametersMembersConstraints && true === $errorMessage) {
             $parsedParameters = match ($this->parametersType) {
                 self::USE_KEYS => array_map(fn (Item $item) => $item->value(), [...$item->parameters()]), /* @phpstan-ignore-line */

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use BackedEnum;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
@@ -38,6 +39,10 @@ final class Value
      */
     public function __construct(mixed $value)
     {
+        if ($value instanceof BackedEnum) {
+            $value = $value->value;
+        }
+
         [$this->value, $this->type] = match (true) {
             $value instanceof Item => [$value->value(), $value->type()],
             $value instanceof Token,

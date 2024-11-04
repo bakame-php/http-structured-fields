@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
+use BackedEnum;
 use Countable;
 use DateTimeInterface;
 use Iterator;
 use IteratorAggregate;
 use Stringable;
+use TypeError;
 
 use function array_filter;
 use function array_is_list;
@@ -186,10 +188,18 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
         return array_keys($this->members);
     }
 
-    public function has(int ...$indices): bool
+    public function has(BackedEnum|int ...$indices): bool
     {
         $max = count($this->members);
         foreach ($indices as $offset) {
+            if ($offset instanceof BackedEnum) {
+                if (!is_int($offset->value)) {
+                    throw new TypeError($offset::class.' must be a BackedEnum with integer as backed type.');
+                }
+
+                $offset = $offset->value;
+            }
+
             if (null === $this->filterIndex($offset, $max)) {
                 return false;
             }
@@ -211,8 +221,16 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
         };
     }
 
-    public function get(int $index): Item
+    public function get(BackedEnum|int $index): Item
     {
+        if ($index instanceof BackedEnum) {
+            if (!is_int($index->value)) {
+                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
+            }
+
+            $index = $index->value;
+        }
+
         return $this->members[$this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index)];
     }
 
@@ -288,9 +306,17 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
      * @throws InvalidOffset If the index does not exist
      */
     public function insert(
-        int $index,
+        BackedEnum|int $index,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ): self {
+        if ($index instanceof BackedEnum) {
+            if (!is_int($index->value)) {
+                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
+            }
+
+            $index = $index->value;
+        }
+
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
         return match (true) {
@@ -306,9 +332,17 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
     }
 
     public function replace(
-        int $index,
+        BackedEnum|int $index,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
+        if ($index instanceof BackedEnum) {
+            if (!is_int($index->value)) {
+                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
+            }
+
+            $index = $index->value;
+        }
+
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         $member = self::filterMember($member);
 
@@ -318,8 +352,15 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
         };
     }
 
-    public function remove(int ...$indices): self
+    public function remove(BackedEnum|int ...$indices): self
     {
+        /** @var array<int> $indices */
+        $indices = array_map(fn (BackedEnum|string|int $key): string|int => match (true) {
+            !$key instanceof BackedEnum => $key,
+            is_int($key->value) => $key->value,
+            default => throw new TypeError($key::class.' must be a BackedEnum with integer as backed type.'),
+        }, $indices);
+
         $max = count($this->members);
         $indices = array_filter(
             array_map(fn (int $index): int|null => $this->filterIndex($index, $max), $indices),
@@ -338,7 +379,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
     }
 
     /**
-     * @param int $offset
+     * @param BackedEnum|int $offset
      */
     public function offsetExists(mixed $offset): bool
     {
@@ -346,7 +387,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
     }
 
     /**
-     * @param int $offset
+     * @param BackedEnum|int $offset
      */
     public function offsetGet(mixed $offset): Item
     {
