@@ -6,6 +6,7 @@ namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
 use Bakame\Http\StructuredFields\Validation\ParsedParameters;
+use Bakame\Http\StructuredFields\Validation\Result;
 use Bakame\Http\StructuredFields\Validation\Violation;
 use Bakame\Http\StructuredFields\Validation\ViolationList;
 use CallbackFilterIterator;
@@ -381,8 +382,10 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      * Validate the current parameter object using its keys and return the parsed values and the errors.
      *
      * @param array<string, SfParameterKeyRule> $rules
+     *
+     * @return Result<ParsedParameters>|Result<null>
      */
-    public function validateByKeys(array $rules): ParsedParameters
+    public function validateByKeys(array $rules): Result
     {
         $parameters = [];
         $violations = new ViolationList();
@@ -394,7 +397,10 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
             }
         }
 
-        return new ParsedParameters($parameters, $violations);
+        return match ($violations->hasErrors()) {
+            true => Result::failed($violations),
+            default => Result::success(new ParsedParameters($parameters)),
+        };
     }
 
     /**
@@ -440,8 +446,10 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      * Validate the current parameter object using its indices and return the parsed values and the errors.
      *
      * @param array<int, SfParameterIndexRule> $rules
+     *
+     * @return Result<ParsedParameters>|Result<null>
      */
-    public function validateByIndices(array $rules): ParsedParameters
+    public function validateByIndices(array $rules): Result
     {
         $parameters = [];
         $violations = new ViolationList();
@@ -453,7 +461,10 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
             }
         }
 
-        return new ParsedParameters($parameters, $violations);
+        return match ($violations->hasErrors()) {
+            true => Result::failed($violations),
+            default => Result::success(new ParsedParameters($parameters)),
+        };
     }
 
     public function add(

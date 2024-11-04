@@ -6,6 +6,7 @@ namespace Bakame\Http\StructuredFields;
 
 use Bakame\Http\StructuredFields\Validation\ErrorCode;
 use Bakame\Http\StructuredFields\Validation\ParsedItem;
+use Bakame\Http\StructuredFields\Validation\ParsedParameters;
 use Bakame\Http\StructuredFields\Validation\Result;
 use Bakame\Http\StructuredFields\Validation\Violation;
 use Bakame\Http\StructuredFields\Validation\ViolationList;
@@ -128,8 +129,10 @@ final class ItemValidator
 
     /**
      * Validates the structured field Item.
+     *
+     * @return Result<ParsedItem>|Result<null>
      */
-    public function validate(Item|Stringable|string $item): ParsedItem
+    public function validate(Item|Stringable|string $item): Result
     {
         $violations = new ViolationList();
         $itemValue = null;
@@ -139,7 +142,7 @@ final class ItemValidator
             } catch (SyntaxError $exception) {
                 $violations->add(ErrorCode::FailedItemParsing->value, new Violation('The item string could not be parsed.', previous: $exception));
 
-                return new ParsedItem($itemValue, [], $violations);
+                return Result::failed($violations);
             }
         }
 
@@ -153,14 +156,18 @@ final class ItemValidator
             $violations->add(ErrorCode::MissingParameterConstraints->value, new Violation('The item parameters constraints are missing.'));
         }
 
-        $parsedParameters = null;
+        $parsedParameters = new ParsedParameters();
         if ([] !== $this->parametersMembersConstraints) {
             $parsedParameters = match ($this->parametersType) {
                 self::USE_INDICES => $item->parameters()->validateByIndices($this->parametersMembersConstraints), /* @phpstan-ignore-line */
                 default => $item->parameters()->validateByKeys($this->parametersMembersConstraints), /* @phpstan-ignore-line */
             };
 
-            $violations->addAll($parsedParameters->errors);
+            if ($parsedParameters->isFailed()) {
+                $violations->addAll($parsedParameters->errors);
+            } else {
+                $parsedParameters = $parsedParameters->data;
+            }
         }
 
         $errorMessage = $this->applyParametersConstraint($item->parameters());
@@ -168,15 +175,19 @@ final class ItemValidator
             $violations->add(ErrorCode::InvalidParametersValues->value, new Violation($errorMessage));
         }
 
-        $parsedParameters = $parsedParameters?->parameters ?? [];
+        /** @var ParsedParameters $parsedParameters */
+        $parsedParameters = $parsedParameters ?? new ParsedParameters();
         if ([] === $this->parametersMembersConstraints && true === $errorMessage) {
-            $parsedParameters = match ($this->parametersType) {
+            $parsedParameters = new ParsedParameters(match ($this->parametersType) {
                 self::USE_KEYS => array_map(fn (Item $item) => $item->value(), [...$item->parameters()]), /* @phpstan-ignore-line */
                 default => array_map(fn (array $pair) => [$pair[0], $pair[1]->value()], [...$item->parameters()->toPairs()]),
-            };
+            });
         }
 
-        return new ParsedItem($itemValue, $parsedParameters, $violations);
+        return match ($violations->hasErrors()) {
+            true => Result::failed($violations),
+            default => Result::success(new ParsedItem($itemValue, $parsedParameters)),
+        };
     }
 
     private function applyParametersConstraint(Parameters $parameters): bool|string

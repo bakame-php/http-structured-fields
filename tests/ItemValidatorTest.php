@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Bakame\Http\StructuredFields\Validation\ErrorCode;
+use Bakame\Http\StructuredFields\Validation\ParsedItem;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -22,90 +23,91 @@ final class ItemValidatorTest extends TestCase
     #[Test]
     public function it_will_fail_item_value_validation_by_default(): void
     {
-        $result = $this->validator->validate('foo');
+        $validation = $this->validator->validate('foo');
 
-        self::assertTrue($result->errors->hasErrors());
-        self::assertCount(2, $result->errors);
-        self::assertSame("The item value 'foo' failed validation.", $result->errors[ErrorCode::InvalidItemValue->value]->getMessage());
-        self::assertSame('The item parameters constraints are missing.', $result->errors[ErrorCode::MissingParameterConstraints->value]->getMessage());
+        self::assertTrue($validation->isFailed());
+        self::assertCount(2, $validation->errors);
+        self::assertSame("The item value 'foo' failed validation.", $validation->errors[ErrorCode::InvalidItemValue->value]->getMessage());
+        self::assertSame('The item parameters constraints are missing.', $validation->errors[ErrorCode::MissingParameterConstraints->value]->getMessage());
     }
 
     #[Test]
     public function it_will_succeed_and_return_the_item_value(): void
     {
-        $result = $this->validator
+        $validation = $this->validator
             ->value(fn (mixed $value): bool => true)
             ->parameters(fn (mixed $value): bool => true)
             ->validate('foo');
 
-        self::assertTrue($result->errors->hasNoError());
-        self::assertEquals(Token::fromString('foo'), $result->value);
-        self::assertSame([], $result->parameters);
+        self::assertTrue($validation->isSuccess());
+        self::assertInstanceOf(ParsedItem::class, $validation->data);
+        self::assertEquals(Token::fromString('foo'), $validation->data->value);
+        self::assertSame([], iterator_to_array($validation->data->parameters, true));
     }
 
     #[Test]
     public function it_will_fail_validating_missing_parameters_when_the_item_has_some_parameters(): void
     {
         $item = Item::fromString('foo')->addParameter('foo', 'bar');
-        $result = $this->validator
+        $validation = $this->validator
             ->value(fn (mixed $value): bool => true)
             ->parameters(fn (Parameters $parameters) => $parameters->allowedKeys(ErrorCode::list()))
             ->validate($item);
 
-        self::assertTrue($result->errors->hasErrors());
-        self::assertSame('foo', $result->value);
-        self::assertSame([], $result->parameters);
-        self::assertTrue($result->errors->has(ErrorCode::InvalidParametersValues->value));
+        self::assertTrue($validation->isFailed());
+        self::assertNull($validation->data);
+        self::assertTrue($validation->errors->has(ErrorCode::InvalidParametersValues->value));
     }
 
     #[Test]
     public function it_will_fail_validating_missing_parameters_when_the_item_has_no_parameters(): void
     {
         $item = Item::fromString('foo');
-        $result = $this->validator
+        $validation = $this->validator
             ->value(fn (mixed $value): bool => true)
             ->parameters(fn (Parameters $parameters) => $parameters->allowedKeys(ErrorCode::list()))
             ->validate($item);
 
-        self::assertTrue($result->errors->hasErrors());
-        self::assertSame('foo', $result->value);
-        self::assertSame([], $result->parameters);
-        self::assertTrue($result->errors->has(ErrorCode::InvalidParametersValues->value));
+        self::assertTrue($validation->isFailed());
+        self::assertNull($validation->data);
+        self::assertTrue($validation->errors->has(ErrorCode::InvalidParametersValues->value));
     }
 
     #[Test]
     public function it_will_succeed_validating_allowed_parameters_and_returns_all_parameters_by_keys(): void
     {
         $item = Item::fromPair(['foo', [['foo', 1], ['bar', 2]]]);
-        $result = $this->validator
+        $validation = $this->validator
             ->value(fn (mixed $value): bool => true)
             ->parameters(fn (Parameters $parameters) => $parameters->allowedKeys(['foo', 'bar']))
             ->validate($item);
 
-        self::assertFalse($result->errors->hasErrors());
-        self::assertSame('foo', $result->value);
-        self::assertSame(['foo' => 1, 'bar' => 2], $result->parameters);
+        self::assertFalse($validation->isFailed());
+        self::assertInstanceOf(ParsedItem::class, $validation->data);
+        self::assertSame('foo', $validation->data->value);
+        self::assertSame(['foo' => 1, 'bar' => 2], iterator_to_array($validation->data->parameters, true));
     }
 
     #[Test]
     public function it_will_succeed_validating_allowed_parameters_and_returns_all_parameters_by_indices(): void
     {
         $item = Item::fromPair(['foo', [['foo', 1], ['bar', 2]]]);
-        $result = $this->validator
+        $validation = $this->validator
             ->value(fn (mixed $value): bool => true)
             ->parameters(fn (Parameters $parameters) => $parameters->allowedKeys(['foo', 'bar']), ItemValidator::USE_INDICES)
             ->validate($item);
 
-        self::assertFalse($result->errors->hasErrors());
-        self::assertSame('foo', $result->value);
-        self::assertSame([['foo', 1], ['bar', 2]], $result->parameters);
+        self::assertTrue($validation->isSuccess());
+        self::assertInstanceOf(ParsedItem::class, $validation->data);
+        self::assertSame('foo', $validation->data->value);
+        self::assertSame([['foo', 1], ['bar', 2]], iterator_to_array($validation->data->parameters, true));
     }
 
     #[Test]
     public function it_will_fail_validating_parameters_by_keys(): void
     {
         $item = Item::fromPair(['foo', [['foo', 1], ['bar', 2]]]);
-        $result = $this->validator
+        $validation = $this->validator
             ->value(fn (mixed $value): bool => true)
             ->parameters(fn (Parameters $parameters) => $parameters->allowedKeys(['foo', 'bar']), ItemValidator::USE_INDICES)
             ->parametersByKeys([
@@ -114,17 +116,16 @@ final class ItemValidatorTest extends TestCase
             ])
             ->validate($item);
 
-        self::assertTrue($result->errors->hasErrors());
-        self::assertSame('foo', $result->value);
-        self::assertSame(['bar' => 2], $result->parameters);
-        self::assertTrue($result->errors->has('foo'));
+        self::assertTrue($validation->isFailed());
+        self::assertNull($validation->data);
+        self::assertTrue($validation->errors->has('foo'));
     }
 
     #[Test]
     public function it_will_succeed_validating_parameters_by_keys_and_override_parameters_validator_return(): void
     {
         $item = Item::fromPair(['foo', [['foo', 1], ['bar', 2]]]);
-        $result = $this->validator
+        $validation = $this->validator
             ->value(fn (mixed $value): bool => true)
             ->parameters(fn (Parameters $parameters) => $parameters->allowedKeys(['foo', 'bar']), ItemValidator::USE_KEYS)
             ->parametersByIndices([
@@ -132,8 +133,9 @@ final class ItemValidatorTest extends TestCase
             ])
             ->validate($item);
 
-        self::assertTrue($result->errors->hasNoError());
-        self::assertSame('foo', $result->value);
-        self::assertSame([1 => ['bar', 2]], $result->parameters);
+        self::assertTrue($validation->isSuccess());
+        self::assertInstanceOf(ParsedItem::class, $validation->data);
+        self::assertSame('foo', $validation->data->value);
+        self::assertSame([1 => ['bar', 2]], iterator_to_array($validation->data->parameters, true));
     }
 }
