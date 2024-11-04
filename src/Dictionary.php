@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
-use BackedEnum;
 use CallbackFilterIterator;
 use Countable;
 use DateTimeInterface;
 use Iterator;
 use IteratorAggregate;
-use ReflectionEnum;
-use ReflectionEnumBackedCase;
 use Stringable;
 use TypeError;
 
@@ -31,7 +28,7 @@ use function is_string;
  *
  * @phpstan-import-type SfMemberInput from StructuredField
  *
- * @implements ArrayAccess<BackedEnum|string, InnerList|Item>
+ * @implements ArrayAccess<string, InnerList|Item>
  * @implements IteratorAggregate<string, InnerList|Item>
  */
 final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, StructuredField
@@ -97,7 +94,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param Dictionary|Parameters|iterable<array{0:BackedEnum|string, 1:InnerList|Item|SfMemberInput}> $pairs
+     * @param Dictionary|Parameters|iterable<array{0:string, 1:InnerList|Item|SfMemberInput}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
@@ -132,13 +129,6 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
             $pairs instanceof Parameters => new self($pairs),
             default => new self((function (iterable $pairs) use ($converter) {
                 foreach ($pairs as [$key, $member]) {
-                    if ($key instanceof BackedEnum) {
-                        $key = $key->value;
-                        if (!is_string($key)) {
-                            throw new SyntaxError('The BackedEnum value must be an string.');
-                        }
-                    }
-
                     yield $key => $converter($member);
                 }
             })($pairs)),
@@ -272,10 +262,10 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Tells whether the instance contain a members at the specified offsets.
      */
-    public function has(BackedEnum|string ...$keys): bool
+    public function has(string ...$keys): bool
     {
         foreach ($keys as $key) {
-            if (!array_key_exists(($key instanceof BackedEnum ? $key->value : $key), $this->members)) {
+            if (!array_key_exists($key, $this->members)) {
                 return false;
             }
         }
@@ -286,33 +276,15 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Returns true only if the instance only contains the listed keys, false otherwise.
      *
-     * @param array<string>|class-string<BackedEnum> $keys
+     * @param array<string> $keys
      */
-    public function allowedKeys(array|string $keys): bool
+    public function allowedKeys(array $keys): bool
     {
-        if (is_array($keys)) {
-            $keys = array_keys(array_fill_keys($keys, true));
-            foreach ($keys as $item) {
-                if (!is_string($item)) { /* @phpstan-ignore-line */
-                    throw new TypeError('The parameter keys must be strings.');
-                }
+        $keys = array_keys(array_fill_keys($keys, true));
+        foreach ($keys as $item) {
+            if (!is_string($item)) { /* @phpstan-ignore-line */
+                throw new TypeError('The parameter keys must be strings.');
             }
-        }
-
-        if (is_string($keys)) {
-            if (!enum_exists($keys)) {
-                throw new TypeError('When a string, the input should refer to an Backed Enum class.');
-            }
-
-            $reflection = new ReflectionEnum($keys);
-            if (!$reflection->isBacked() || 'string' !== $reflection->getBackingType()->getName()) {
-                throw new TypeError('When a string, the input should refer to an Backed Enum class.');
-            }
-
-            $keys = array_map(
-                fn (ReflectionEnumBackedCase $enum): string => (string) $enum->getBackingValue(),
-                $reflection->getCases()
-            );
         }
 
         foreach ($this->members as $key => $member) {
@@ -321,19 +293,15 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
             }
         }
 
-        return [] !== $keys;
+        return [] !== $keys && [] !== $this->members;
     }
 
     /**
      * @throws SyntaxError If the key is invalid
      * @throws InvalidOffset If the key is not found
      */
-    public function getByKey(BackedEnum|string $key): InnerList|Item
+    public function getByKey(string $key): InnerList|Item
     {
-        if ($key instanceof BackedEnum) {
-            $key = $key->value;
-        }
-
         return $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
     }
 
@@ -376,16 +344,8 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @return array{0:string, 1:InnerList|Item}
      */
-    public function getByIndex(BackedEnum|int $index): array
+    public function getByIndex(int $index): array
     {
-        if ($index instanceof BackedEnum) {
-            if (!is_int($index->value)) {
-                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
-            }
-
-            $index = $index->value;
-        }
-
         $foundOffset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         foreach ($this->toPairs() as $offset => $pair) {
             if ($offset === $foundOffset) {
@@ -437,13 +397,9 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * @throws SyntaxError If the string key is not a valid
      */
     public function add(
-        BackedEnum|string $key,
+        string $key,
         iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
-        if ($key instanceof BackedEnum) {
-            $key = $key->value;
-        }
-
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
 
@@ -467,13 +423,8 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      */
-    private function remove(BackedEnum|string|int ...$keys): self
+    private function remove(string|int ...$keys): self
     {
-        $keys = array_map(fn (BackedEnum|string|int $key): string|int => match (true) {
-            $key instanceof BackedEnum => $key->value,
-            default => $key,
-        }, $keys);
-
         if ([] === $this->members || [] === $keys) {
             return $this;
         }
@@ -507,7 +458,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      */
-    public function removeByIndices(BackedEnum|int ...$indices): self
+    public function removeByIndices(int ...$indices): self
     {
         return $this->remove(...$indices);
     }
@@ -518,7 +469,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      */
-    public function removeByKeys(BackedEnum|string ...$keys): self
+    public function removeByKeys(string ...$keys): self
     {
         return $this->remove(...$keys);
     }
@@ -533,13 +484,9 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * @throws SyntaxError If the string key is not a valid
      */
     public function append(
-        BackedEnum|string $key,
+        string $key,
         iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
-        if ($key instanceof BackedEnum) {
-            $key = $key->value;
-        }
-
         $members = $this->members;
         unset($members[$key]);
 
@@ -557,13 +504,9 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * @throws SyntaxError If the string key is not a valid
      */
     public function prepend(
-        BackedEnum|string $key,
+        string $key,
         iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
-        if ($key instanceof BackedEnum) {
-            $key = $key->value;
-        }
-
         $members = $this->members;
         unset($members[$key]);
 
@@ -616,16 +559,8 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @param array{0:string, 1:InnerList|Item|SfMemberInput} ...$members
      */
-    public function insert(BackedEnum|int $index, array ...$members): self
+    public function insert(int $index, array ...$members): self
     {
-        if ($index instanceof BackedEnum) {
-            if (!is_int($index->value)) {
-                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
-            }
-
-            $index = $index->value;
-        }
-
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
         return match (true) {
@@ -649,16 +584,8 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @param array{0:string, 1:InnerList|Item|SfMemberInput} $pair
      */
-    public function replace(BackedEnum|int $index, array $pair): self
+    public function replace(int $index, array $pair): self
     {
-        if ($index instanceof BackedEnum) {
-            if (!is_int($index->value)) {
-                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
-            }
-
-            $index = $index->value;
-        }
-
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         $pair[1] = self::filterMember($pair[1]);
         $pairs = iterator_to_array($this->toPairs());
@@ -706,7 +633,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param BackedEnum|string $offset
+     * @param string $offset
      */
     public function offsetExists(mixed $offset): bool
     {
@@ -714,7 +641,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param BackedEnum|string $offset
+     * @param string $offset
      */
     public function offsetGet(mixed $offset): InnerList|Item
     {

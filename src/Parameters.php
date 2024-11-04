@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
-use BackedEnum;
 use Bakame\Http\StructuredFields\Validation\ParsedParameters;
 use Bakame\Http\StructuredFields\Validation\Violation;
 use Bakame\Http\StructuredFields\Validation\ViolationList;
@@ -15,8 +14,6 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Iterator;
 use IteratorAggregate;
-use ReflectionEnum;
-use ReflectionEnumBackedCase;
 use Stringable;
 use TypeError;
 
@@ -36,7 +33,7 @@ use function is_string;
  * @phpstan-import-type SfParameterKeyRule from ItemValidator
  * @phpstan-import-type SfParameterIndexRule from ItemValidator
  *
- * @implements ArrayAccess<BackedEnum|string, InnerList|Item>
+ * @implements ArrayAccess<string, InnerList|Item>
  * @implements IteratorAggregate<string, InnerList|Item>
  */
 final class Parameters implements ArrayAccess, Countable, IteratorAggregate, StructuredField
@@ -101,7 +98,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param Parameters|Dictionary|iterable<array{0:BackedEnum|string, 1:SfItemInput}> $pairs
+     * @param Parameters|Dictionary|iterable<array{0:string, 1:SfItemInput}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
@@ -110,13 +107,6 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
             $pairs instanceof Dictionary => new self($pairs),
             default => new self((function (iterable $pairs) {
                 foreach ($pairs as [$key, $member]) {
-                    if ($key instanceof BackedEnum) {
-                        $key = $key->value;
-                        if (!is_string($key)) {
-                            throw new SyntaxError('The BackedEnum value must be an string.');
-                        }
-                    }
-
                     yield $key => $member;
                 }
             })($pairs)),
@@ -212,10 +202,10 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Tells whether the instance contain a members at the specified offsets.
      */
-    public function has(BackedEnum|string ...$keys): bool
+    public function has(string ...$keys): bool
     {
         foreach ($keys as $key) {
-            if (!array_key_exists(($key instanceof BackedEnum ? $key->value : $key), $this->members)) {
+            if (!array_key_exists($key, $this->members)) {
                 return false;
             }
         }
@@ -228,12 +218,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @throws Violation|InvalidOffset
      */
-    public function getByKey(BackedEnum|string $key, ?callable $validate = null): Item
+    public function getByKey(string $key, ?callable $validate = null): Item
     {
-        if ($key instanceof BackedEnum) {
-            $key = $key->value;
-        }
-
         $value = $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
         if (null === $validate) {
             return $value;
@@ -340,33 +326,15 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Returns true only if the instance only contains the listed keys, false otherwise.
      *
-     * @param array<string>|class-string<BackedEnum> $keys
+     * @param array<string> $keys
      */
-    public function allowedKeys(array|string $keys): bool
+    public function allowedKeys(array $keys): bool
     {
-        if (is_array($keys)) {
-            $keys = array_keys(array_fill_keys($keys, true));
-            foreach ($keys as $item) {
-                if (!is_string($item)) { /* @phpstan-ignore-line */
-                    throw new TypeError('The parameter keys must be strings.');
-                }
+        $keys = array_keys(array_fill_keys($keys, true));
+        foreach ($keys as $item) {
+            if (!is_string($item)) { /* @phpstan-ignore-line */
+                throw new TypeError('The parameter keys must be strings.');
             }
-        }
-
-        if (is_string($keys)) {
-            if (!enum_exists($keys)) {
-                throw new TypeError('When a string, the input should refer to an Backed Enum class.');
-            }
-
-            $reflection = new ReflectionEnum($keys);
-            if (!$reflection->isBacked() || 'string' !== $reflection->getBackingType()->getName()) {
-                throw new TypeError('When a string, the input should refer to an Backed Enum class.');
-            }
-
-            $keys = array_map(
-                fn (ReflectionEnumBackedCase $enum): string => (string) $enum->getBackingValue(),
-                $reflection->getCases()
-            );
         }
 
         foreach ($this->members as $key => $member) {
@@ -388,7 +356,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      * @return SfType|null
      */
     public function valueByKey(
-        BackedEnum|string $key,
+        string $key,
         ?callable $validate = null,
         bool|string $required = false,
         ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
@@ -403,10 +371,6 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
             $message = $required;
             if (!is_string($message) || '' === trim($message)) {
                 $message = "The required parameter '{key}' is missing.";
-            }
-
-            if ($key instanceof BackedEnum) {
-                $key = $key->value;
             }
 
             throw new Violation(strtr($message, ['{key}' => $key]), previous: $exception);
@@ -443,16 +407,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @return array{0:string, 1:SfType}|array{}
      */
-    public function valueByIndex(BackedEnum|int $index, ?callable $validate = null, bool|string $required = false, array $default = []): array
+    public function valueByIndex(int $index, ?callable $validate = null, bool|string $required = false, array $default = []): array
     {
-        if ($index instanceof BackedEnum) {
-            if (!is_int($index->value)) {
-                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
-            }
-
-            $index = $index->value;
-        }
-
         $default = match (true) {
             [] === $default => [],
             !array_is_list($default) => throw new SyntaxError('The pair must be represented by an array as a list.'), /* @phpstan-ignore-line */
@@ -501,13 +457,9 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     public function add(
-        BackedEnum|string $key,
+        string $key,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
-        if ($key instanceof BackedEnum) {
-            $key = $key->value;
-        }
-
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
 
@@ -525,13 +477,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         };
     }
 
-    private function remove(BackedEnum|string|int ...$keys): self
+    private function remove(string|int ...$keys): self
     {
-        $keys = array_map(fn (BackedEnum|string|int $key): string|int => match (true) {
-            $key instanceof BackedEnum => $key->value,
-            default => $key,
-        }, $keys);
-
         if ([] === $this->members || [] === $keys) {
             return $this;
         }
@@ -559,24 +506,20 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         };
     }
 
-    public function removeByIndices(BackedEnum|int ...$indices): self
+    public function removeByIndices(int ...$indices): self
     {
         return $this->remove(...$indices);
     }
 
-    public function removeByKeys(BackedEnum|string ...$keys): self
+    public function removeByKeys(string ...$keys): self
     {
         return $this->remove(...$keys);
     }
 
     public function append(
-        BackedEnum|string $key,
+        string $key,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
-        if ($key instanceof BackedEnum) {
-            $key = $key->value;
-        }
-
         $members = $this->members;
         unset($members[$key]);
 
@@ -584,12 +527,9 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     public function prepend(
-        BackedEnum|string $key,
+        string $key,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
-        if ($key instanceof BackedEnum) {
-            $key = $key->value;
-        }
         $members = $this->members;
         unset($members[$key]);
 
@@ -627,16 +567,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @param array{0:string, 1:SfItemInput} ...$members
      */
-    public function insert(BackedEnum|int $index, array ...$members): self
+    public function insert(int $index, array ...$members): self
     {
-        if ($index instanceof BackedEnum) {
-            if (!is_int($index->value)) {
-                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
-            }
-
-            $index = $index->value;
-        }
-
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
         return match (true) {
@@ -655,16 +587,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @param array{0:string, 1:SfItemInput} $pair
      */
-    public function replace(BackedEnum|int $index, array $pair): self
+    public function replace(int $index, array $pair): self
     {
-        if ($index instanceof BackedEnum) {
-            if (!is_int($index->value)) {
-                throw new TypeError($index::class.' must be a BackedEnum with integer as backed type.');
-            }
-
-            $index = $index->value;
-        }
-
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         $pair[1] = self::filterMember($pair[1]);
         $pairs = iterator_to_array($this->toPairs());
@@ -702,7 +626,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param BackedEnum|string $offset
+     * @param string $offset
      */
     public function offsetExists(mixed $offset): bool
     {
@@ -710,7 +634,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param BackedEnum|string $offset
+     * @param string $offset
      */
     public function offsetGet(mixed $offset): Item
     {

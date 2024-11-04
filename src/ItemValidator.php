@@ -137,18 +137,20 @@ final class ItemValidator
             try {
                 $item = Item::fromHttpValue($item);
             } catch (SyntaxError $exception) {
-                $violations->add(ErrorCode::FailedItemParsing, new Violation('The item string could not be parsed.', previous: $exception));
+                $violations->add(ErrorCode::FailedItemParsing->value, new Violation('The item string could not be parsed.', previous: $exception));
 
                 return new ParsedItem($itemValue, [], $violations);
             }
         }
 
-        if (null !== $this->valueConstraint) {
-            try {
-                $itemValue = $item->value($this->valueConstraint);
-            } catch (Violation $exception) {
-                $violations->add(ErrorCode::InvalidItemValue, $exception);
-            }
+        try {
+            $itemValue = $item->value($this->valueConstraint);
+        } catch (Violation $exception) {
+            $violations->add(ErrorCode::InvalidItemValue->value, $exception);
+        }
+
+        if ([] == $this->parametersMembersConstraints && null === $this->parametersConstraint) {
+            $violations->add(ErrorCode::MissingParameterConstraints->value, new Violation('The item parameters constraints are missing.'));
         }
 
         $parsedParameters = null;
@@ -163,10 +165,10 @@ final class ItemValidator
 
         $errorMessage = $this->applyParametersConstraint($item->parameters());
         if (!is_bool($errorMessage)) {
-            $violations->add(ErrorCode::InvalidParametersValues, new Violation($errorMessage));
+            $violations->add(ErrorCode::InvalidParametersValues->value, new Violation($errorMessage));
         }
 
-        $parsedParameters = $parsedParameters?->values() ?? [];
+        $parsedParameters = $parsedParameters?->parameters ?? [];
         if ([] === $this->parametersMembersConstraints && true === $errorMessage) {
             $parsedParameters = match ($this->parametersType) {
                 self::USE_KEYS => array_map(fn (Item $item) => $item->value(), [...$item->parameters()]), /* @phpstan-ignore-line */

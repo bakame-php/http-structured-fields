@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-use BackedEnum;
 use Bakame\Http\StructuredFields\Validation\Violation;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -36,7 +35,7 @@ trait ParameterAccess
      * @return SfType|null
      */
     public function parameterByKey(
-        BackedEnum|string $key,
+        string $key,
         ?callable $validate = null,
         bool|string $required = false,
         ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null

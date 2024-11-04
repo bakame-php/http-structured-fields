@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields\Validation;
 
 use ArrayAccess;
-use BackedEnum;
 use Bakame\Http\StructuredFields\InvalidOffset;
 use Countable;
 use Iterator;
@@ -23,7 +22,7 @@ use const ARRAY_FILTER_USE_BOTH;
 
 /**
  * @implements IteratorAggregate<array-key,Violation>
- * @implements ArrayAccess<BackedEnum|array-key,Violation>
+ * @implements ArrayAccess<array-key,Violation>
  */
 final class ViolationList implements IteratorAggregate, Countable, ArrayAccess, Stringable
 {
@@ -72,7 +71,7 @@ final class ViolationList implements IteratorAggregate, Countable, ArrayAccess, 
     }
 
     /**
-     * @param BackedEnum|string|int $offset
+     * @param string|int $offset
      */
     public function offsetExists(mixed $offset): bool
     {
@@ -80,7 +79,7 @@ final class ViolationList implements IteratorAggregate, Countable, ArrayAccess, 
     }
 
     /**
-     * @param BackedEnum|string|int $offset
+     * @param string|int $offset
      *
      * @return Violation
      */
@@ -90,19 +89,15 @@ final class ViolationList implements IteratorAggregate, Countable, ArrayAccess, 
     }
 
     /**
-     * @param BackedEnum|string|int $offset
+     * @param string|int $offset
      */
     public function offsetUnset(mixed $offset): void
     {
-        if ($offset instanceof BackedEnum) {
-            $offset = $offset->value;
-        }
-
         unset($this->errors[$offset]);
     }
 
     /**
-     * @param BackedEnum|string|int|null $offset
+     * @param string|int|null $offset
      * @param Violation $value
      */
     public function offsetSet(mixed $offset, mixed $value): void
@@ -113,12 +108,8 @@ final class ViolationList implements IteratorAggregate, Countable, ArrayAccess, 
         $this->add($offset, $value);
     }
 
-    public function has(BackedEnum|string|int $offset): bool
+    public function has(string|int $offset): bool
     {
-        if ($offset instanceof BackedEnum) {
-            $offset = $offset->value;
-        }
-
         if (is_int($offset)) {
             return null !== $this->filterIndex($offset);
         }
@@ -126,26 +117,18 @@ final class ViolationList implements IteratorAggregate, Countable, ArrayAccess, 
         return array_key_exists($offset, $this->errors);
     }
 
-    public function get(BackedEnum|string|int $offset): Violation
+    public function get(string|int $offset): Violation
     {
-        if ($offset instanceof BackedEnum) {
-            $offset = $offset->value;
-        }
-
         return $this->errors[$this->filterIndex($offset) ?? throw InvalidOffset::dueToIndexNotFound($offset)];
     }
 
-    public function add(BackedEnum|string|int $offset, Violation $error): void
+    public function add(string|int $offset, Violation $error): void
     {
-        if ($offset instanceof BackedEnum) {
-            $offset = $offset->value;
-        }
-
         $this->errors[$offset] = $error;
     }
 
     /**
-     * @param iterable<array-key|BackedEnum, Violation> $errors
+     * @param iterable<array-key, Violation> $errors
      */
     public function addAll(iterable $errors): void
     {

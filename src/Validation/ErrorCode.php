@@ -13,4 +13,13 @@ enum ErrorCode: string
     case FailedItemParsing = '@failed.item.parsing';
     case InvalidItemValue = '@invalid.item.value';
     case InvalidParametersValues = '@invalid.parameters.values';
+    case MissingParameterConstraints = '@missing.parameters.constraints';
+
+    /**
+     * @return array<string>
+     */
+    public static function list(): array
+    {
+        return array_map(fn (self $case) => $case->value, self::cases());
+    }
 }

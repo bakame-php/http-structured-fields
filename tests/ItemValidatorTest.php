@@ -25,8 +25,9 @@ final class ItemValidatorTest extends TestCase
         $result = $this->validator->validate('foo');
 
         self::assertTrue($result->errors->hasErrors());
-        self::assertCount(1, $result->errors);
-        self::assertSame("The item value 'foo' failed validation.", $result->errors[ErrorCode::InvalidItemValue]->getMessage());
+        self::assertCount(2, $result->errors);
+        self::assertSame("The item value 'foo' failed validation.", $result->errors[ErrorCode::InvalidItemValue->value]->getMessage());
+        self::assertSame('The item parameters constraints are missing.', $result->errors[ErrorCode::MissingParameterConstraints->value]->getMessage());
     }
 
     #[Test]
@@ -34,11 +35,12 @@ final class ItemValidatorTest extends TestCase
     {
         $result = $this->validator
             ->value(fn (mixed $value): bool => true)
+            ->parameters(fn (mixed $value): bool => true)
             ->validate('foo');
 
         self::assertTrue($result->errors->hasNoError());
         self::assertEquals(Token::fromString('foo'), $result->value);
-        self::assertSame([], $result->parameters());
+        self::assertSame([], $result->parameters);
     }
 
     #[Test]
@@ -47,13 +49,13 @@ final class ItemValidatorTest extends TestCase
         $item = Item::fromString('foo')->addParameter('foo', 'bar');
         $result = $this->validator
             ->value(fn (mixed $value): bool => true)
-            ->parameters(fn (Parameters $parameters) => $parameters->allowedKeys(ErrorCode::class))
+            ->parameters(fn (Parameters $parameters) => $parameters->allowedKeys(ErrorCode::list()))
             ->validate($item);
 
         self::assertTrue($result->errors->hasErrors());
         self::assertSame('foo', $result->value);
-        self::assertSame([], $result->parameters());
-        self::assertTrue($result->errors->has(ErrorCode::InvalidParametersValues));
+        self::assertSame([], $result->parameters);
+        self::assertTrue($result->errors->has(ErrorCode::InvalidParametersValues->value));
     }
 
     #[Test]
@@ -62,13 +64,13 @@ final class ItemValidatorTest extends TestCase
         $item = Item::fromString('foo');
         $result = $this->validator
             ->value(fn (mixed $value): bool => true)
-            ->parameters(fn (Parameters $parameters) => $parameters->allowedKeys(ErrorCode::class))
+            ->parameters(fn (Parameters $parameters) => $parameters->allowedKeys(ErrorCode::list()))
             ->validate($item);
 
         self::assertTrue($result->errors->hasErrors());
         self::assertSame('foo', $result->value);
-        self::assertSame([], $result->parameters());
-        self::assertTrue($result->errors->has(ErrorCode::InvalidParametersValues));
+        self::assertSame([], $result->parameters);
+        self::assertTrue($result->errors->has(ErrorCode::InvalidParametersValues->value));
     }
 
     #[Test]
@@ -82,12 +84,7 @@ final class ItemValidatorTest extends TestCase
 
         self::assertFalse($result->errors->hasErrors());
         self::assertSame('foo', $result->value);
-        self::assertSame(['foo' => 1, 'bar' => 2], $result->parameters());
-        self::assertSame(1, $result['foo']);
-        self::assertSame(2, $result['bar']);
-
-        $this->expectExceptionObject(InvalidOffset::dueToMemberNotFound(2));
-        $notFound = $result[2];
+        self::assertSame(['foo' => 1, 'bar' => 2], $result->parameters);
     }
 
     #[Test]
@@ -101,12 +98,7 @@ final class ItemValidatorTest extends TestCase
 
         self::assertFalse($result->errors->hasErrors());
         self::assertSame('foo', $result->value);
-        self::assertSame([['foo', 1], ['bar', 2]], $result->parameters());
-        self::assertSame(['foo', 1], $result[0]);
-        self::assertSame(['bar', 2], $result[1]);
-
-        $this->expectExceptionObject(InvalidOffset::dueToMemberNotFound('foo'));
-        $notFound = $result['foo'];
+        self::assertSame([['foo', 1], ['bar', 2]], $result->parameters);
     }
 
     #[Test]
@@ -124,7 +116,7 @@ final class ItemValidatorTest extends TestCase
 
         self::assertTrue($result->errors->hasErrors());
         self::assertSame('foo', $result->value);
-        self::assertSame(['bar' => 2], $result->parameters());
+        self::assertSame(['bar' => 2], $result->parameters);
         self::assertTrue($result->errors->has('foo'));
     }
 
@@ -142,6 +134,6 @@ final class ItemValidatorTest extends TestCase
 
         self::assertTrue($result->errors->hasNoError());
         self::assertSame('foo', $result->value);
-        self::assertSame([1 => ['bar', 2]], $result->parameters());
+        self::assertSame([1 => ['bar', 2]], $result->parameters);
     }
 }

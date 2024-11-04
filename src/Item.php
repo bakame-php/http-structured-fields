@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
-use BackedEnum;
 use Bakame\Http\StructuredFields\Validation\Violation;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -72,7 +71,7 @@ final class Item implements StructuredField
     }
 
     /**
-     * @param array{0: SfItemInput|BackedEnum, 1: Parameters|iterable<array{0:BackedEnum|string, 1:SfItemInput}>} $pair
+     * @param array{0: SfItemInput, 1: Parameters|iterable<array{0:string, 1:SfItemInput}>} $pair
      *
      * @throws SyntaxError If the pair or its content is not valid.
      */
