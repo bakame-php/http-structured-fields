@@ -16,7 +16,6 @@ use DateTimeInterface;
 use Iterator;
 use IteratorAggregate;
 use Stringable;
-use TypeError;
 
 use function array_key_exists;
 use function array_keys;
@@ -332,19 +331,13 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     public function allowedKeys(array $keys): bool
     {
         $keys = array_keys(array_fill_keys($keys, true));
-        foreach ($keys as $item) {
-            if (!is_string($item)) { /* @phpstan-ignore-line */
-                throw new TypeError('The parameter keys must be strings.');
-            }
-        }
-
         foreach ($this->members as $key => $member) {
             if (!in_array($key, $keys, true)) {
                 return false;
             }
         }
 
-        return [] !== $keys && [] !== $this->members;
+        return [] !== $keys;
     }
 
     /**

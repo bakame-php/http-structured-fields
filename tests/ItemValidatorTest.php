@@ -60,7 +60,7 @@ final class ItemValidatorTest extends TestCase
     }
 
     #[Test]
-    public function it_will_fail_validating_missing_parameters_when_the_item_has_no_parameters(): void
+    public function it_will_successfully_validating_missing_parameters_when_the_item_has_no_parameters(): void
     {
         $item = Item::fromString('foo');
         $validation = $this->validator
@@ -68,9 +68,7 @@ final class ItemValidatorTest extends TestCase
             ->parameters(fn (Parameters $parameters) => $parameters->allowedKeys(ErrorCode::list()))
             ->validate($item);
 
-        self::assertTrue($validation->isFailed());
-        self::assertNull($validation->data);
-        self::assertTrue($validation->errors->has(ErrorCode::InvalidParametersValues->value));
+        self::assertTrue($validation->isSuccess());
     }
 
     #[Test]
