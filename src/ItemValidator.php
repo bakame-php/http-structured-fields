@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Bakame\Http\StructuredFields\Validation\ErrorCode;
-use Bakame\Http\StructuredFields\Validation\ParsedItem;
-use Bakame\Http\StructuredFields\Validation\ParsedParameters;
+use Bakame\Http\StructuredFields\Validation\ProcessedItem;
+use Bakame\Http\StructuredFields\Validation\ProcessedParameters;
 use Bakame\Http\StructuredFields\Validation\Result;
 use Bakame\Http\StructuredFields\Validation\Violation;
 use Bakame\Http\StructuredFields\Validation\ViolationList;
@@ -130,7 +130,7 @@ final class ItemValidator
     /**
      * Validates the structured field Item.
      *
-     * @return Result<ParsedItem>|Result<null>
+     * @return Result<ProcessedItem>|Result<null>
      */
     public function validate(Item|Stringable|string $item): Result
     {
@@ -156,7 +156,7 @@ final class ItemValidator
             $violations->add(ErrorCode::MissingParameterConstraints->value, new Violation('The item parameters constraints are missing.'));
         }
 
-        $parsedParameters = new ParsedParameters();
+        $parsedParameters = new ProcessedParameters();
         if ([] !== $this->parametersMembersConstraints) {
             $parsedParameters = match ($this->parametersType) {
                 self::USE_INDICES => $item->parameters()->validateByIndices($this->parametersMembersConstraints), /* @phpstan-ignore-line */
@@ -175,10 +175,10 @@ final class ItemValidator
             $violations->add(ErrorCode::InvalidParametersValues->value, new Violation($errorMessage));
         }
 
-        /** @var ParsedParameters $parsedParameters */
-        $parsedParameters = $parsedParameters ?? new ParsedParameters();
+        /** @var ProcessedParameters $parsedParameters */
+        $parsedParameters = $parsedParameters ?? new ProcessedParameters();
         if ([] === $this->parametersMembersConstraints && true === $errorMessage) {
-            $parsedParameters = new ParsedParameters(match ($this->parametersType) {
+            $parsedParameters = new ProcessedParameters(match ($this->parametersType) {
                 self::USE_KEYS => array_map(fn (Item $item) => $item->value(), [...$item->parameters()]), /* @phpstan-ignore-line */
                 default => array_map(fn (array $pair) => [$pair[0], $pair[1]->value()], [...$item->parameters()->toPairs()]),
             });
@@ -186,7 +186,7 @@ final class ItemValidator
 
         return match ($violations->hasErrors()) {
             true => Result::failed($violations),
-            default => Result::success(new ParsedItem($itemValue, $parsedParameters)),
+            default => Result::success(new ProcessedItem($itemValue, $parsedParameters)),
         };
     }
 

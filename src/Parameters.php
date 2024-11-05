@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
-use Bakame\Http\StructuredFields\Validation\ParsedParameters;
+use Bakame\Http\StructuredFields\Validation\ProcessedParameters;
 use Bakame\Http\StructuredFields\Validation\Result;
 use Bakame\Http\StructuredFields\Validation\Violation;
 use Bakame\Http\StructuredFields\Validation\ViolationList;
@@ -376,7 +376,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @param array<string, SfParameterKeyRule> $rules
      *
-     * @return Result<ParsedParameters>|Result<null>
+     * @return Result<ProcessedParameters>|Result<null>
      */
     public function validateByKeys(array $rules): Result
     {
@@ -392,7 +392,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
 
         return match ($violations->hasErrors()) {
             true => Result::failed($violations),
-            default => Result::success(new ParsedParameters($parameters)),
+            default => Result::success(new ProcessedParameters($parameters)),
         };
     }
 
@@ -440,7 +440,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @param array<int, SfParameterIndexRule> $rules
      *
-     * @return Result<ParsedParameters>|Result<null>
+     * @return Result<ProcessedParameters>|Result<null>
      */
     public function validateByIndices(array $rules): Result
     {
@@ -456,7 +456,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
 
         return match ($violations->hasErrors()) {
             true => Result::failed($violations),
-            default => Result::success(new ParsedParameters($parameters)),
+            default => Result::success(new ProcessedParameters($parameters)),
         };
     }
 

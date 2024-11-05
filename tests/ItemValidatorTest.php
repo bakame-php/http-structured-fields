@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Bakame\Http\StructuredFields\Validation\ErrorCode;
-use Bakame\Http\StructuredFields\Validation\ParsedItem;
+use Bakame\Http\StructuredFields\Validation\ProcessedItem;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
@@ -40,7 +40,7 @@ final class ItemValidatorTest extends TestCase
             ->validate('foo');
 
         self::assertTrue($validation->isSuccess());
-        self::assertInstanceOf(ParsedItem::class, $validation->data);
+        self::assertInstanceOf(ProcessedItem::class, $validation->data);
         self::assertEquals(Token::fromString('foo'), $validation->data->value);
         self::assertSame([], iterator_to_array($validation->data->parameters, true));
     }
@@ -81,7 +81,7 @@ final class ItemValidatorTest extends TestCase
             ->validate($item);
 
         self::assertFalse($validation->isFailed());
-        self::assertInstanceOf(ParsedItem::class, $validation->data);
+        self::assertInstanceOf(ProcessedItem::class, $validation->data);
         self::assertSame('foo', $validation->data->value);
         self::assertSame(['foo' => 1, 'bar' => 2], iterator_to_array($validation->data->parameters, true));
     }
@@ -96,7 +96,7 @@ final class ItemValidatorTest extends TestCase
             ->validate($item);
 
         self::assertTrue($validation->isSuccess());
-        self::assertInstanceOf(ParsedItem::class, $validation->data);
+        self::assertInstanceOf(ProcessedItem::class, $validation->data);
         self::assertSame('foo', $validation->data->value);
         self::assertSame([['foo', 1], ['bar', 2]], iterator_to_array($validation->data->parameters, true));
     }
@@ -132,7 +132,7 @@ final class ItemValidatorTest extends TestCase
             ->validate($item);
 
         self::assertTrue($validation->isSuccess());
-        self::assertInstanceOf(ParsedItem::class, $validation->data);
+        self::assertInstanceOf(ProcessedItem::class, $validation->data);
         self::assertSame('foo', $validation->data->value);
         self::assertSame([1 => ['bar', 2]], iterator_to_array($validation->data->parameters, true));
     }
