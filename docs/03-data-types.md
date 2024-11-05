@@ -1,5 +1,26 @@
 # Structured Fields Data Types
 
+## Value type conversion to PHP
+
+The RFC defines five (5) data types for which the package provides a class based implementation.
+Those implementations classes are all immutable and final to make sure they are always
+in compliance with the RFC.
+
+The table below summarizes the data type system.
+
+| RFC Type      | PHP Type                  | Package Enum Name      | Package Enum Value |
+|---------------|---------------------------|------------------------|--------------------|
+| List          | class `OuterList`         | `DataType::List`       | `list`             | 
+| Dictionary    | class `Dictionary`        | `DataType::Dictionary` | `dictionary`       | 
+| Item          | class `Item`              | `DataType::Item`       | `item`             |
+| InnerList     | class `InnerList`         | `DataType::InnerList`  | `innerlist`        | 
+| Parameters    | class `Parameters`        | `DataType::Parameters` | `parameters`       | 
+
+
+The RFC dictates that any encountered complete field can only be a `List`, a `Dictionary` or a `Item`. The other types
+are only used within the confine of the 3 other main types. From those 5 data types, only the `Item` is not
+a container and is the structure which contains the 8 base types.
+
 #### Items value
 
 The `Item` value object exposes the following named constructors to instantiate

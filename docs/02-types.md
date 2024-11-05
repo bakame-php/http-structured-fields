@@ -88,20 +88,21 @@ use Bakame\Http\StructuredFields\DisplayString;
 $token = Token::fromString('application/text+xml');
 echo $token->toString(); // returns 'application/text+xml'
 
-$byte = DisplayString::fromDecoded('füü');
-$byte->decoded(); // returns 'füü'
-$byte->encoded(); // returns 'f%c3%bc%c3%bc'
+$displayString = DisplayString::fromDecoded('füü');
+$displayString->decoded(); // returns 'füü'
+$displayString->encoded(); // returns 'f%c3%bc%c3%bc'
 
-$displayString = ByteSequence::fromDecoded('Hello world!');
+$byte = ByteSequence::fromDecoded('Hello world!');
 $byte->decoded(); // returns 'Hello world!'
 $byte->encoded(); // returns 'SGVsbG8gd29ybGQh'
 
 $token->equals($byte); // will return false;
 $displayString->equals($byte); // will return false;
 $byte->equals(ByteSequence::fromEncoded('SGVsbG8gd29ybGQh')); // will return true
+$displayString->equals(DisplayString::fromEncoded('f%c3%bc%c3%bc')); // will return true
 
-$token->type(); // returns Type::Token enum
-$byte->type();  // returns Type::ByteSequence
+$token->type();         // returns Type::Token
+$byte->type();          // returns Type::ByteSequence
 $displayString->type(); // returns Type::DisplayString
 ```
 
