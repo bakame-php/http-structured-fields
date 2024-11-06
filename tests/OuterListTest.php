@@ -23,9 +23,9 @@ final class OuterListTest extends StructuredFieldTestCase
         $arrayParams = [$stringItem, $booleanItem];
         $instance = OuterList::new(...$arrayParams);
 
-        self::assertSame($stringItem, $instance->get(0));
-        self::assertTrue($instance->hasMembers());
-        self::assertFalse($instance->hasNoMembers());
+        self::assertSame($stringItem, $instance->getByIndex(0));
+        self::assertTrue($instance->isNotEmpty());
+        self::assertFalse($instance->isEmpty());
         self::assertEquals($arrayParams, [...$instance]);
     }
 
@@ -38,7 +38,7 @@ final class OuterListTest extends StructuredFieldTestCase
         $instance = OuterList::new(...$arrayParams);
 
         self::assertCount(2, $instance);
-        self::assertSame($booleanItem, $instance->get(1));
+        self::assertSame($booleanItem, $instance->getByIndex(1));
         self::assertTrue($instance->has(0, 1));
 
         $deletedInstance = $instance->remove(1);
@@ -47,7 +47,7 @@ final class OuterListTest extends StructuredFieldTestCase
         self::assertFalse($deletedInstance->has(1));
 
         $newInstance = $deletedInstance->push(Item::fromString('BarBaz'));
-        $member = $newInstance->get(1);
+        $member = $newInstance->getByIndex(1);
 
         self::assertCount(2, $newInstance);
         self::assertInstanceOf(Item::class, $member);
@@ -57,8 +57,8 @@ final class OuterListTest extends StructuredFieldTestCase
         $altInstance = $newInstance->remove(0, 1);
 
         self::assertCount(0, $altInstance);
-        self::assertTrue($altInstance->hasNoMembers());
-        self::assertFalse($altInstance->hasMembers());
+        self::assertTrue($altInstance->isEmpty());
+        self::assertFalse($altInstance->isNotEmpty());
     }
 
     #[Test]
@@ -78,7 +78,7 @@ final class OuterListTest extends StructuredFieldTestCase
             ->replace(0, Item::new(ByteSequence::fromDecoded('Hello World')));
 
         self::assertCount(3, $instance);
-        self::assertTrue($instance->hasMembers());
+        self::assertTrue($instance->isNotEmpty());
         self::assertSame(':SGVsbG8gV29ybGQ=:, 42.0, 42', $instance->toHttpValue());
         self::assertSame(':SGVsbG8gV29ybGQ=:, 42.0, 42', (string) $instance);
     }
@@ -125,7 +125,7 @@ final class OuterListTest extends StructuredFieldTestCase
 
         $this->expectException(InvalidOffset::class);
 
-        $instance->get(3);
+        $instance->getByIndex(3);
     }
 
     #[Test]
@@ -173,11 +173,11 @@ final class OuterListTest extends StructuredFieldTestCase
         $input = ['foobar', 0, false, $token, $innerList];
         $structuredField = OuterList::new(...$input);
 
-        self::assertInstanceOf(Item::class, $structuredField->get(2));
-        self::assertFalse($structuredField->get(2)->value());
+        self::assertInstanceOf(Item::class, $structuredField->getByIndex(2));
+        self::assertFalse($structuredField->getByIndex(2)->value());
 
-        self::assertInstanceOf(InnerList::class, $structuredField->get(-1));
-        self::assertEquals(Item::fromString('barbaz'), $structuredField->push('barbaz')->get(-1));
+        self::assertInstanceOf(InnerList::class, $structuredField->getByIndex(-1));
+        self::assertEquals(Item::fromString('barbaz'), $structuredField->push('barbaz')->getByIndex(-1));
     }
 
     #[Test]
@@ -185,7 +185,7 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $structuredField = OuterList::new('foobar', 'foobar', 'zero', 0);
 
-        self::assertInstanceOf(Item::class, $structuredField->get(0));
+        self::assertInstanceOf(Item::class, $structuredField->getByIndex(0));
         self::assertInstanceOf(Item::class, $structuredField[0]);
 
         self::assertFalse(isset($structuredField[42]));

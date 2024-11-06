@@ -121,8 +121,8 @@ final class ParametersTest extends StructuredFieldTestCase
         $altInstance = $addedInstance->removeByKeys('foobar', 'string');
 
         self::assertCount(0, $altInstance);
-        self::assertFalse($altInstance->hasMembers());
-        self::assertTrue($altInstance->hasNoMembers());
+        self::assertFalse($altInstance->isNotEmpty());
+        self::assertTrue($altInstance->isEmpty());
     }
 
     #[Test]
@@ -352,9 +352,9 @@ final class ParametersTest extends StructuredFieldTestCase
     {
         $instance = Parameters::new()->add('foo', 'bar');
 
-        self::assertTrue($instance->hasMembers());
+        self::assertTrue($instance->isNotEmpty());
         self::assertSame($instance->removeByIndices(), $instance);
-        self::assertFalse($instance->removeByKeys('foo')->hasMembers());
+        self::assertFalse($instance->removeByKeys('foo')->isNotEmpty());
 
         $instanceWithoutMembers = Parameters::new();
         self::assertSame($instanceWithoutMembers->removeByKeys(), $instanceWithoutMembers);

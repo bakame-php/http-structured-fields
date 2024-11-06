@@ -1,6 +1,6 @@
 # Structured Fields Data Types
 
-## Value type conversion to PHP
+## Introduction
 
 The RFC defines five (5) data types for which the package provides a class based implementation.
 Those implementations classes are all immutable and final to make sure they are always
@@ -19,7 +19,18 @@ The table below summarizes the data type system.
 
 The RFC dictates that any encountered complete field can only be a `List`, a `Dictionary` or a `Item`. The other types
 are only used within the confine of the 3 other main types. From those 5 data types, only the `Item` is not
-a container and is the structure which contains the 8 base types.
+a container and is the only structure which contains the actual values of the field. 
+
+```php
+
+```
+
+
+## Containers
+
+The containers all expose
+
+
 
 #### Items value
 

@@ -127,6 +127,13 @@ final class ItemValidator
         );
     }
 
+    public function __invoke(Item|Stringable|string $item): bool|string
+    {
+        $result = $this->validate($item);
+
+        return $result->isSuccess() ? true : (string) $result->errors;
+    }
+
     /**
      * Validates the structured field Item.
      *
@@ -184,7 +191,7 @@ final class ItemValidator
             });
         }
 
-        return match ($violations->hasErrors()) {
+        return match ($violations->isNotEmpty()) {
             true => Result::failed($violations),
             default => Result::success(new ProcessedItem($itemValue, $parsedParameters)),
         };

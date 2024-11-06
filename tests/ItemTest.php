@@ -383,7 +383,7 @@ final class ItemTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        Item::fromPair($pair);  // @phpstan-ignore-line
+        Item::fromPair($pair);
     }
 
     /**
@@ -446,8 +446,8 @@ final class ItemTest extends StructuredFieldTestCase
         self::assertTrue($instance1->parameterByKey('a'));
         self::assertSame(['a', true], $instance1->parameterByIndex(0));
         self::assertNull($instance5->parameterByKey('a'));
-        self::assertTrue($instance5->parameters()->hasNoMembers());
-        self::assertTrue($instance6->parameters()->hasNoMembers());
+        self::assertTrue($instance5->parameters()->isEmpty());
+        self::assertTrue($instance6->parameters()->isEmpty());
         self::assertNull($instance1->parameterByKey('non-existing-key'));
         self::assertSame([], $instance1->parameterByIndex(42));
     }
@@ -463,8 +463,8 @@ final class ItemTest extends StructuredFieldTestCase
             ->withoutParameterByIndices(-2)
             ->insertParameters(1, ['d', Token::fromString('*/*')]);
 
-        self::assertTrue($instance1->parameters()->hasNoMembers());
-        self::assertTrue($instance2->parameters()->hasMembers());
+        self::assertTrue($instance1->parameters()->isEmpty());
+        self::assertTrue($instance2->parameters()->isNotEmpty());
         self::assertCount(4, $instance2->parameters());
         self::assertEquals(['d', Token::fromString('*/*')], $instance2->parameterByIndex(1));
         self::assertSame(['b', false], $instance2->parameterByIndex(0));

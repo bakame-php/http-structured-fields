@@ -71,16 +71,17 @@ final class Item implements StructuredField
     }
 
     /**
-     * @param array{0: SfItemInput, 1: Parameters|iterable<array{0:string, 1:SfItemInput}>} $pair
+     * @param array{0: SfItemInput, 1?: Parameters|iterable<array{0:string, 1:SfItemInput}>}|array<mixed> $pair
      *
      * @throws SyntaxError If the pair or its content is not valid.
      */
     public static function fromPair(array $pair): self
     {
         return match (true) {
-            [] === $pair, !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an non-empty array as a list.'), // @phpstan-ignore-line
-            2 !== count($pair) => throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.'), // @phpstan-ignore-line
-            default => new self(new Value($pair[0]), $pair[1] instanceof Parameters ? $pair[1] : Parameters::fromPairs($pair[1])),
+            [] === $pair, !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an non-empty array as a list.'),
+            2 == count($pair) => new self(new Value($pair[0]), $pair[1] instanceof Parameters ? $pair[1] : Parameters::fromPairs($pair[1])),
+            1 === count($pair) => new self(new Value($pair[0]), Parameters::new()),
+            default => throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.'),
         };
     }
 

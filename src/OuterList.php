@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
+use Bakame\Http\StructuredFields\Validation\Violation;
 use Countable;
 use DateTimeInterface;
 use Iterator;
@@ -106,11 +107,15 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
                 throw new SyntaxError('The pair must be represented by an array as a list.');
             }
 
-            if (2 !== count($pair)) {
-                throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.');
+            if ([] === $pair) {
+                return InnerList::new();
             }
 
-            [$member, $parameters] = $pair;
+            [$member, $parameters] = match (count($pair)) {
+                2 => $pair,
+                1 => [$pair[0], []],
+                default => throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.'),
+            };
 
             return is_iterable($member) ? InnerList::fromPair([$member, $parameters]) : Item::fromPair([$member, $parameters]);
         };
@@ -176,12 +181,12 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
         return count($this->members);
     }
 
-    public function hasNoMembers(): bool
+    public function isEmpty(): bool
     {
-        return !$this->hasMembers();
+        return !$this->isNotEmpty();
     }
 
-    public function hasMembers(): bool
+    public function isNotEmpty(): bool
     {
         return [] !== $this->members;
     }
@@ -219,9 +224,27 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
         };
     }
 
-    public function get(int $index): InnerList|Item
+    /**
+     * @param ?callable(InnerList|Item): (bool|string) $validate
+     *
+     * @throws SyntaxError|Violation|StructuredFieldError
+     */
+    public function getByIndex(int $index, ?callable $validate = null): InnerList|Item
     {
-        return $this->members[$this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index)];
+        $value = $this->members[$this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index)];
+        if (null === $validate) {
+            return $value;
+        }
+
+        if (true === ($exceptionMessage = $validate($value))) {
+            return $value;
+        }
+
+        if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
+            $exceptionMessage = "The member at position '{index}' whose value is '{value}' failed validation.";
+        }
+
+        throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{value}' => $value->toHttpValue()]));
     }
 
     public function first(): InnerList|Item|null
@@ -359,7 +382,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
      */
     public function offsetGet(mixed $offset): InnerList|Item
     {
-        return $this->get($offset);
+        return $this->getByIndex($offset);
     }
 
     public function offsetUnset(mixed $offset): void

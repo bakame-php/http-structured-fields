@@ -6,11 +6,11 @@ create, update and validate HTTP Structured Fields in PHP according to the [RFC9
 Once installed you will be able to do the following:
 
 ```php
-use Bakame\Http\StructuredFields\OuterList;
+use Bakame\Http\StructuredFields\DataType;
 
 //1 - parsing an Accept Header
 $fieldValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
-$field = OuterList::fromHttpValue($fieldValue);
+$field = DataType::List->parse($fieldValue);
 $field[1]->value()->toString(); // returns 'application/xhtml+xml'
 $field[1]->parameterByKey(key: 'q', default: 1.0); // returns 1.0 if the parameter is not defined
 ```

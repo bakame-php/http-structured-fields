@@ -13,8 +13,9 @@ use Stringable;
  * @phpstan-type SfTypeInput SfType|DateTimeInterface
  * @phpstan-type SfItemInput Item|SfTypeInput|StructuredFieldProvider|StructuredField
  * @phpstan-type SfMemberInput iterable<SfItemInput>|SfItemInput
- * @phpstan-type SfInnerListPair array{0:iterable<SfItemInput>, 1:Parameters|iterable<array{0:string, 1:SfItemInput}>}
- * @phpstan-type SfItemPair array{0:SfTypeInput, 1:Parameters|iterable<array{0:string, 1:SfItemInput}>}
+ * @phpstan-type SfParameterInput iterable<array{0:string, 1?:SfItemInput}>
+ * @phpstan-type SfInnerListPair array{0:iterable<SfItemInput>, 1?:Parameters|SfParameterInput}
+ * @phpstan-type SfItemPair array{0:SfTypeInput, 1?:Parameters|SfParameterInput}
  */
 interface StructuredField extends Stringable
 {

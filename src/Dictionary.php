@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
+use Bakame\Http\StructuredFields\Validation\Violation;
 use CallbackFilterIterator;
 use Countable;
 use DateTimeInterface;
@@ -93,7 +94,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param Dictionary|Parameters|iterable<array{0:string, 1:InnerList|Item|SfMemberInput}> $pairs
+     * @param Dictionary|Parameters|iterable<array{0:string, 1?:InnerList|Item|SfMemberInput}> $pairs
      */
     public static function fromPairs(iterable $pairs): self
     {
@@ -114,11 +115,15 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
                 throw new SyntaxError('The pair must be represented by an array as a list.');
             }
 
-            if (2 !== count($pair)) {
-                throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.');
+            if ([] === $pair) {
+                return InnerList::new();
             }
 
-            [$member, $parameters] = $pair;
+            [$member, $parameters] = match (count($pair)) {
+                2 => $pair,
+                1 => [$pair[0], []],
+                default => throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.'),
+            };
 
             return is_iterable($member) ? InnerList::fromPair([$member, $parameters]) : Item::fromPair([$member, $parameters]);
         };
@@ -215,15 +220,15 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Tells whether the instance contains no members.
      */
-    public function hasNoMembers(): bool
+    public function isEmpty(): bool
     {
-        return !$this->hasMembers();
+        return !$this->isNotEmpty();
     }
 
     /**
      * Tells whether the instance contains any members.
      */
-    public function hasMembers(): bool
+    public function isNotEmpty(): bool
     {
         return [] !== $this->members;
     }
@@ -290,12 +295,26 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @throws SyntaxError If the key is invalid
-     * @throws InvalidOffset If the key is not found
+     * @param ?callable(Item|InnerList): (bool|string) $validate
+     *
+     * @throws InvalidOffset|Violation|StructuredFieldError
      */
-    public function getByKey(string $key): InnerList|Item
+    public function getByKey(string $key, ?callable $validate = null): Item|InnerList
     {
-        return $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
+        $value = $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
+        if (null === $validate) {
+            return $value;
+        }
+
+        if (true === ($exceptionMessage = $validate($value))) {
+            return $value;
+        }
+
+        if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
+            $exceptionMessage = "The parameter '{key}' whose value is '{value}' failed validation.";
+        }
+
+        throw new Violation(strtr($exceptionMessage, ['{key}' => $key, '{value}' => $value->toHttpValue()]));
     }
 
     /**
@@ -333,16 +352,34 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * Returns the item or the inner-list and its key as attached to the given
      * collection according to their index position otherwise throw.
      *
-     * @throws InvalidOffset If the key is not found
+     * @param ?callable(Item|InnerList, string): (bool|string) $validate
+     *
+     * @throws InvalidOffset|Violation|StructuredFieldError
      *
      * @return array{0:string, 1:InnerList|Item}
      */
-    public function getByIndex(int $index): array
+    public function getByIndex(int $index, ?callable $validate = null): array
     {
         $foundOffset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
+
+        $validator = function (Item|InnerList $value, string $key, int $index, callable $validate): array {
+            if (true === ($exceptionMessage = $validate($value, $key))) {
+                return [$key, $value];
+            }
+
+            if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
+                $exceptionMessage = "The member at position '{index}' whose name is '{key}' with the value '{value}' failed validation.";
+            }
+
+            throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{key}' => $key, '{value}' => $value->toHttpValue()]));
+        };
+
         foreach ($this->toPairs() as $offset => $pair) {
             if ($offset === $foundOffset) {
-                return $pair;
+                return match ($validate) {
+                    null => $pair,
+                    default =>  $validator($pair[1], $pair[0], $index, $validate),
+                };
             }
         }
 

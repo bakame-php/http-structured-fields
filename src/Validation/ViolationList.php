@@ -60,14 +60,14 @@ final class ViolationList implements IteratorAggregate, Countable, ArrayAccess, 
         return array_map(fn (Violation $e): string => $e->getMessage(), $this->errors);
     }
 
-    public function hasNoError(): bool
+    public function isEmpty(): bool
     {
         return [] === $this->errors;
     }
 
-    public function hasErrors(): bool
+    public function isNotEmpty(): bool
     {
-        return ! $this->hasNoError();
+        return ! $this->isEmpty();
     }
 
     /**

@@ -24,7 +24,7 @@ final class ViolationListTest extends TestCase
     #[Test]
     public function it_is_empty_by_default(): void
     {
-        self::assertTrue($this->violationList->hasNoError());
+        self::assertTrue($this->violationList->isEmpty());
         self::assertCount(0, $this->violationList);
     }
 
@@ -35,8 +35,8 @@ final class ViolationListTest extends TestCase
         $list = new ViolationList([$violation]);
 
         self::assertCount(1, $list);
-        self::assertFalse($list->hasNoError());
-        self::assertTrue($list->hasErrors());
+        self::assertFalse($list->isEmpty());
+        self::assertTrue($list->isNotEmpty());
         self::assertSame($violation, $list[0]);
     }
 
@@ -67,7 +67,7 @@ final class ViolationListTest extends TestCase
         $this->violationList->addAll($violations);
 
         self::assertCount(3, $this->violationList);
-        self::assertTrue($this->violationList->hasErrors());
+        self::assertTrue($this->violationList->isNotEmpty());
         self::assertFalse($this->violationList->has(ErrorCode::FailedItemParsing->value));
         self::assertSame($violation1, $this->violationList->get('error 1'));
         self::assertSame($violation2, $this->violationList['error 2']);

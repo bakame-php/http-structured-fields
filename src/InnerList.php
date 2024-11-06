@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
+use Bakame\Http\StructuredFields\Validation\Violation;
 use Countable;
 use DateTimeInterface;
 use Iterator;
@@ -29,6 +30,7 @@ use const ARRAY_FILTER_USE_KEY;
  * @phpstan-import-type SfType from StructuredField
  * @phpstan-import-type SfItemInput from StructuredField
  * @phpstan-import-type SfInnerListPair from StructuredField
+ * @phpstan-import-type SfParameterInput from StructuredField
  *
  * @implements  ArrayAccess<int, Item>
  * @implements  IteratorAggregate<int, Item>
@@ -94,18 +96,16 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
     }
 
     /**
-     * @param array{
-     *     0:iterable<SfItemInput>,
-     *     1:Parameters|iterable<array{0:string, 1:SfItemInput}>
-     * } $pair
+     * @param array{0:iterable<SfItemInput>, 1?:Parameters|SfParameterInput}|array<mixed> $pair
      */
     public static function fromPair(array $pair): self
     {
         return match (true) {
-            [] === $pair => self::new(), // @phpstan-ignore-line
-            !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'), // @phpstan-ignore-line
-            2 !== count($pair) => throw new SyntaxError('The pair first member must be the member list and the second member the inner list parameters.'), // @phpstan-ignore-line
-            default => new self($pair[0], !$pair[1] instanceof Parameters ? Parameters::fromPairs($pair[1]) : $pair[1]),
+            [] === $pair => self::new(),
+            !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'),
+            2 === count($pair) => new self($pair[0], !$pair[1] instanceof Parameters ? Parameters::fromPairs($pair[1]) : $pair[1]),
+            1 === count($pair) => new self($pair[0], Parameters::new()),
+            default => throw new SyntaxError('The pair first member must be the member list and the second member the inner list parameters.'),
         };
     }
 
@@ -168,12 +168,12 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
         return count($this->members);
     }
 
-    public function hasNoMembers(): bool
+    public function isEmpty(): bool
     {
-        return !$this->hasMembers();
+        return !$this->isNotEmpty();
     }
 
-    public function hasMembers(): bool
+    public function isNotEmpty(): bool
     {
         return [] !== $this->members;
     }
@@ -211,9 +211,27 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
         };
     }
 
-    public function get(int $index): Item
+    /**
+     * @param ?callable(Item): (bool|string) $validate
+     *
+     * @throws SyntaxError|Violation|StructuredFieldError
+     */
+    public function getByIndex(int $index, ?callable $validate = null): Item
     {
-        return $this->members[$this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index)];
+        $value = $this->members[$this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index)];
+        if (null === $validate) {
+            return $value;
+        }
+
+        if (true === ($exceptionMessage = $validate($value))) {
+            return $value;
+        }
+
+        if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
+            $exceptionMessage = "The item at '{index}' whose value is '{value}' failed validation.";
+        }
+
+        throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{value}' => $value->toHttpValue()]));
     }
 
     public function first(): ?Item
@@ -350,7 +368,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
      */
     public function offsetGet(mixed $offset): Item
     {
-        return $this->get($offset);
+        return $this->getByIndex($offset);
     }
 
     public function offsetUnset(mixed $offset): void

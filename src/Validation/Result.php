@@ -20,12 +20,12 @@ final class Result
 
     public function isSuccess(): bool
     {
-        return $this->errors->hasNoError();
+        return $this->errors->isEmpty();
     }
 
     public function isFailed(): bool
     {
-        return $this->errors->hasErrors();
+        return $this->errors->isNotEmpty();
     }
 
     /**

@@ -55,8 +55,8 @@ final class DictionaryTest extends StructuredFieldTestCase
         $instance = Dictionary::fromAssociative($arrayParams);
 
         self::assertCount(2, $instance);
-        self::assertTrue($instance->hasMembers());
-        self::assertFalse($instance->hasNoMembers());
+        self::assertTrue($instance->isNotEmpty());
+        self::assertFalse($instance->isEmpty());
 
         $deletedInstance = $instance->removeByKeys('boolean');
 
@@ -78,7 +78,7 @@ final class DictionaryTest extends StructuredFieldTestCase
         $deleteAgain = $appendInstance->removeByKeys('foobar', 'string');
 
         self::assertCount(0, $deleteAgain);
-        self::assertFalse($deleteAgain->hasMembers());
+        self::assertFalse($deleteAgain->isNotEmpty());
     }
 
     #[Test]
@@ -247,14 +247,14 @@ final class DictionaryTest extends StructuredFieldTestCase
     {
         $newInstance = Dictionary::new()->add('foo', 'bar');
 
-        self::assertTrue($newInstance->hasMembers());
+        self::assertTrue($newInstance->isNotEmpty());
         self::assertCount(1, $newInstance);
 
         $newInstance2 = $newInstance->add('foo', 'bar');
         self::assertCount(1, $newInstance2);
         self::assertSame($newInstance, $newInstance2);
 
-        self::assertFalse($newInstance->removeByKeys('foo')->hasMembers());
+        self::assertFalse($newInstance->removeByKeys('foo')->isNotEmpty());
         self::assertSame($newInstance, $newInstance->removeByKeys('baz', 'bar', 'yolo-not-there'));
         self::assertSame($newInstance, $newInstance->removeByIndices(325));
 
@@ -392,8 +392,8 @@ final class DictionaryTest extends StructuredFieldTestCase
             ->removeByIndices(-2)
             ->insert(1, ['d', Token::fromString('*/*')]);
 
-        self::assertTrue($instance1->hasNoMembers());
-        self::assertTrue($instance2->hasMembers());
+        self::assertTrue($instance1->isEmpty());
+        self::assertTrue($instance2->isNotEmpty());
         self::assertCount(4, $instance2);
         self::assertEquals(['d', Item::fromToken('*/*')], $instance2->getByIndex(1));
         self::assertEquals(['b', Item::false()], $instance2->getByIndex(0));

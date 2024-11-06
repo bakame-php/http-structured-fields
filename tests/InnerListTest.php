@@ -19,10 +19,10 @@ final class InnerListTest extends TestCase
         $arrayParams = [$stringItem, $booleanItem];
         $instance = InnerList::fromAssociative($arrayParams, ['test' => Item::new(42)]);
 
-        self::assertSame($stringItem, $instance->get(0));
-        self::assertTrue($instance->hasMembers());
-        self::assertFalse($instance->hasNoMembers());
-        self::assertTrue($instance->parameters()->hasMembers());
+        self::assertSame($stringItem, $instance->getByIndex(0));
+        self::assertTrue($instance->isNotEmpty());
+        self::assertFalse($instance->isEmpty());
+        self::assertTrue($instance->parameters()->isNotEmpty());
         self::assertEquals($arrayParams, [...$instance]);
     }
 
@@ -35,7 +35,7 @@ final class InnerListTest extends TestCase
 
         self::assertCount(2, $instance);
         self::assertTrue($instance->has(1));
-        self::assertFalse($instance->parameters()->hasMembers());
+        self::assertFalse($instance->parameters()->isNotEmpty());
 
         $instance = $instance->remove(1);
 
@@ -46,7 +46,7 @@ final class InnerListTest extends TestCase
             ->push('BarBaz')
             ->insert(0, 'foo');
 
-        $member = $instance->get(1);
+        $member = $instance->getByIndex(1);
 
         self::assertCount(3, $instance);
         self::assertIsString($member->value());
@@ -56,8 +56,8 @@ final class InnerListTest extends TestCase
 
         self::assertCount(0, $instance);
 
-        self::assertFalse($instance->hasMembers());
-        self::assertTrue($instance->hasNoMembers());
+        self::assertFalse($instance->isNotEmpty());
+        self::assertTrue($instance->isEmpty());
     }
 
     #[Test]
@@ -70,7 +70,7 @@ final class InnerListTest extends TestCase
             ->replace(0, ByteSequence::fromDecoded('Hello World'));
 
         self::assertCount(3, $container);
-        self::assertTrue($container->hasMembers());
+        self::assertTrue($container->isNotEmpty());
         self::assertSame('(:SGVsbG8gV29ybGQ=: 42.0 42)', $container->toHttpValue());
         self::assertSame('(:SGVsbG8gV29ybGQ=: 42.0 42)', (string) $container);
     }
@@ -122,7 +122,7 @@ final class InnerListTest extends TestCase
 
         $this->expectException(InvalidOffset::class);
 
-        $instance->get(3);
+        $instance->getByIndex(3);
     }
 
     #[Test]
@@ -153,10 +153,10 @@ final class InnerListTest extends TestCase
         self::assertCount(3, $instance);
         self::assertCount(1, $instance->parameters());
         self::assertSame('bar(', $instance->parameters()->getByKey('foo')->value());
-        self::assertSame('hello)world', $instance->get(0)->value());
-        self::assertSame(42, $instance->get(1)->value());
-        self::assertSame(42.0, $instance->get(2)->value());
-        self::assertEquals(Token::fromString('doe'), $instance->get(2)->parameters()->getByKey('john')->value());
+        self::assertSame('hello)world', $instance->getByIndex(0)->value());
+        self::assertSame(42, $instance->getByIndex(1)->value());
+        self::assertSame(42.0, $instance->getByIndex(2)->value());
+        self::assertEquals(Token::fromString('doe'), $instance->getByIndex(2)->parameters()->getByKey('john')->value());
     }
 
     #[Test]
@@ -189,8 +189,8 @@ final class InnerListTest extends TestCase
         $input = ['foobar', 0, false, $token];
         $structuredField = InnerList::new(...$input);
 
-        self::assertFalse($structuredField->get(2)->value());
-        self::assertEquals($token, $structuredField->get(-1)->value());
+        self::assertFalse($structuredField->getByIndex(2)->value());
+        self::assertEquals($token, $structuredField->getByIndex(-1)->value());
     }
 
     #[Test]
@@ -224,7 +224,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(SyntaxError::class);
 
-        InnerList::fromPair($pair);  // @phpstan-ignore-line
+        InnerList::fromPair($pair);
     }
 
     /**
@@ -263,8 +263,8 @@ final class InnerListTest extends TestCase
         self::assertNotSame($instance1->parameters(), $instance3->parameters());
         self::assertEquals([...$instance1], [...$instance3]);
         self::assertSame($instance1, $instance4);
-        self::assertFalse($instance5->parameters()->hasMembers());
-        self::assertTrue($instance6->parameters()->hasNoMembers());
+        self::assertFalse($instance5->parameters()->isNotEmpty());
+        self::assertTrue($instance6->parameters()->isEmpty());
         self::assertTrue($instance1->parameterByKey('a'));
         self::assertNull($instance5->parameterByKey('a'));
     }
@@ -280,8 +280,8 @@ final class InnerListTest extends TestCase
             ->withoutParameterByIndices(-2)
             ->insertParameters(1, ['d', Token::fromString('*/*')]);
 
-        self::assertTrue($instance1->parameters()->hasNoMembers());
-        self::assertTrue($instance2->parameters()->hasMembers());
+        self::assertTrue($instance1->parameters()->isEmpty());
+        self::assertTrue($instance2->parameters()->isNotEmpty());
         self::assertCount(4, $instance2->parameters());
         self::assertEquals(['d', Token::fromString('*/*')], $instance2->parameterByIndex(1));
         self::assertSame(['b', false], $instance2->parameterByIndex(0));
@@ -294,7 +294,7 @@ final class InnerListTest extends TestCase
     {
         $structuredField = InnerList::new('foobar', 'foobar', 'zero', 0);
 
-        self::assertSame($structuredField->get(0), $structuredField[0]);
+        self::assertSame($structuredField->getByIndex(0), $structuredField[0]);
 
         self::assertFalse(isset($structuredField[42]));
     }

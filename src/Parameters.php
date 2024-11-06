@@ -65,7 +65,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
 
         return match (true) {
             !$member instanceof Item => Item::new($member),
-            $member->parameters()->hasNoMembers() => $member,
+            $member->parameters()->isEmpty() => $member,
             default => throw new InvalidArgument('The "'.$member::class.'" instance is not a Bare Item.'),
         };
     }
@@ -166,12 +166,12 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         return count($this->members);
     }
 
-    public function hasNoMembers(): bool
+    public function isEmpty(): bool
     {
-        return !$this->hasMembers();
+        return !$this->isNotEmpty();
     }
 
-    public function hasMembers(): bool
+    public function isNotEmpty(): bool
     {
         return [] !== $this->members;
     }
@@ -390,7 +390,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
             }
         }
 
-        return match ($violations->hasErrors()) {
+        return match ($violations->isNotEmpty()) {
             true => Result::failed($violations),
             default => Result::success(new ProcessedParameters($parameters)),
         };
@@ -454,7 +454,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
             }
         }
 
-        return match ($violations->hasErrors()) {
+        return match ($violations->isNotEmpty()) {
             true => Result::failed($violations),
             default => Result::success(new ProcessedParameters($parameters)),
         };
