@@ -41,7 +41,7 @@ final class OuterListTest extends StructuredFieldTestCase
         self::assertSame($booleanItem, $instance->getByIndex(1));
         self::assertTrue($instance->has(0, 1));
 
-        $deletedInstance = $instance->remove(1);
+        $deletedInstance = $instance->removeByIndices(1);
 
         self::assertCount(1, $deletedInstance);
         self::assertFalse($deletedInstance->has(1));
@@ -54,7 +54,7 @@ final class OuterListTest extends StructuredFieldTestCase
         self::assertIsString($member->value());
         self::assertStringContainsString('BarBaz', $member->value());
 
-        $altInstance = $newInstance->remove(0, 1);
+        $altInstance = $newInstance->removeByIndices(0, 1);
 
         self::assertCount(0, $altInstance);
         self::assertTrue($altInstance->isEmpty());
@@ -160,7 +160,7 @@ final class OuterListTest extends StructuredFieldTestCase
             ->unshift()
             ->push()
             ->insert(1)
-            ->remove(42, 46);
+            ->removeByIndices(42, 46);
 
         self::assertSame($container, $sameContainer);
     }

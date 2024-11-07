@@ -29,13 +29,13 @@
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.64.0",
         "httpwg/structured-field-tests": "*@dev",
-        "phpstan/phpstan": "^1.12.7",
+        "phpstan/phpstan": "^1.12.8",
         "phpstan/phpstan-strict-rules": "^1.6.1",
         "phpstan/phpstan-phpunit": "^1.4.0",
         "phpstan/phpstan-deprecation-rules": "^1.2.1",
-        "phpunit/phpunit": "^10.5.15 || ^11.4.1",
+        "phpunit/phpunit": "^10.5.15 || ^11.4.3",
         "phpbench/phpbench": "^1.3.1",
-        "symfony/var-dumper": "^6.4.11",
+        "symfony/var-dumper": "^6.4.14",
         "bakame/aide-base32": "dev-main"
     },
     "autoload": {

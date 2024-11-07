@@ -37,7 +37,7 @@ final class InnerListTest extends TestCase
         self::assertTrue($instance->has(1));
         self::assertFalse($instance->parameters()->isNotEmpty());
 
-        $instance = $instance->remove(1);
+        $instance = $instance->removeByIndices(1);
 
         self::assertCount(1, $instance);
         self::assertFalse($instance->has(1));
@@ -52,7 +52,7 @@ final class InnerListTest extends TestCase
         self::assertIsString($member->value());
         self::assertStringContainsString('helloWorld', $member->value());
 
-        $instance = $instance->remove(0, 1, 2);
+        $instance = $instance->removeByIndices(0, 1, 2);
 
         self::assertCount(0, $instance);
 
@@ -179,7 +179,7 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_returns_the_same_object_if_no_member_is_removed(): void
     {
-        self::assertCount(0, InnerList::new()->remove(0));
+        self::assertCount(0, InnerList::new()->removeByIndices(0));
     }
 
     #[Test]

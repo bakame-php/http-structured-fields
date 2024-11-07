@@ -336,7 +336,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
         };
     }
 
-    public function remove(int ...$indices): self
+    public function removeByIndices(int ...$indices): self
     {
         $max = count($this->members);
         $indices = array_filter(
