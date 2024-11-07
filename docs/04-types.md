@@ -115,4 +115,4 @@ $displayString->type(); // returns Type::DisplayString
 The RFC does not provide direct access to those values, to get to these values you need
 to use one of its data type structure.
 
-[Value types](/docs/03-data-types.md) →
+&larr; [Data Type](03-parsing.md)  |  [Validation](05-validation.md) &rarr;

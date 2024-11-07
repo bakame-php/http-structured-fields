@@ -8,21 +8,22 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - `Ietf` enum.
 - methods `fromRFC9651`, `fromRfc8941`, `toRFC9651`, `toRfc8941`, to ease Type and StructuredFields convertion between RFC.
-- methods `map`, `reduce`, `filter`, `sort` to `all containers classes.
+- methods `map`, `reduce`, `filter`, `sort` to all containers classes.
 - `StructuredFieldProvider` interface
-- Added a validation mechanism to facilitate Item validation against a field definition.
+- Added a validation mechanism to facilitate `Item` validation against a field definition.
 - `Item::parameterByKey` replaces `Item::parameter`
-- `Item::tryNew`
+- `Item::tryNew` which returns `null` instead of throwing an exception
 - `Parameters::getByKey` replaces `Parameters::get`
 - `Parameters::getByIndex` replaces `Parameters::pair`
 - `Parameters::valueByKey`
 - `Parameters::valueByIndex`
 - `Dictionary::getByKey` replaces `Dictionary::get`
 - `Dictionary::getByIndex` replaces `Dictionary::pair`
+- `OuterList::getByIndex` replaces `OuterList::get`
+- `InnerList::getByIndex` replaces `InnerList::get`
 
 ### Fixed
 
-- Removed the `Parser` from the public API.
 - Fixed `Type` inference when instantiating the `Value` class.
 - Fixed `Type::tryFromVariable` and  `Type::fromVariable` methods
 
@@ -32,6 +33,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Removed
 
+- Removed the `Parser` from the public API.
 - `MemberContainer`, `MemberList`, `MemberOrderedMap`, and all the Parser related methods.
 - All deprecated methods during the version 1 cycle.
 - `Item::parameter` replaced by `Item::parameterByKey`
