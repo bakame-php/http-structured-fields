@@ -1,4 +1,4 @@
-# Structured Fields Data Types
+# Building and Updating Fields
 
 ## Items value
 
@@ -40,7 +40,8 @@ Item::withValue(DateTimeInterface|ByteSequence|Token|DisplayString|string|int|fl
 
 ### Ordered Maps
 
-The `Dictionary` and `Parameters` are ordered map instances. They can be built using their keys with an associative iterable structure as shown below
+The `Dictionary` and `Parameters` are ordered map instances. They can be built using their keys with an
+associative iterable structure as shown below
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
@@ -55,7 +56,7 @@ echo $value->toHttpValue(); //"b=?0, a=bar, c=@1671800423"
 echo $value;                //"b=?0, a=bar, c=@1671800423"
 ```
 
-or using their indexes with an iterable structure of pairs (tuple) as defined in the RFC:
+or using their indices with an iterable structure of pairs (tuple) as defined in the RFC:
 
 ```php
 use Bakame\Http\StructuredFields\Parameters;
@@ -110,7 +111,7 @@ echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
 
 It is possible to also build `Dictionary` and `Parameters` instances
-using indexes and pair as per described in the RFC.
+using indices and pair as described in the RFC.
 
 The `$pair` parameter is a tuple (ie: an array as list with exactly two members) where:
 
@@ -154,14 +155,8 @@ echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 > [!CAUTION]
 > on duplicate `keys` pair values are merged as per RFC logic.
 
-The `remove` always accepted string or integer as input.
-
-```php
-$field = Dictionary::fromHttpValue('b=?0, a=(bar "42" 42 42.0), c=@1671800423');
-echo $field->remove('b', 2)->toHttpValue(); // returns a=(bar "42" 42 42.0)
-```
-
-If a stricter approach is needed, use the following new methods `removeByIndices` and/or `removeByKeys`:
+The following methods `removeByIndices` and/or `removeByKeys` allow removing members
+per indices or per keys.
 
 ```php
 use Bakame\Http\StructuredFields\Parameters;
@@ -380,11 +375,5 @@ echo InnerList::new('foo', 'bar')
 // both flow return the InnerList HTTP value 
 // ("foo" "bar");expire=@1681538756;path="/";max-age=2500
 ```
-
-### Validation
-
-Even if your parsing is successful it does not guarantee that the resulting object comply with
-the field definition. Please head over the validation page to have an understanding on how
-to leverage the package validation features
 
 &larr; [Types](03-types.md)  |  [Validation](05-validation.md) &rarr;

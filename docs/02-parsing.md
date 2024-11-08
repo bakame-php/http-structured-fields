@@ -122,22 +122,28 @@ $field[0]->parameterByKey('q'); // returns null
 - each `Item` can have an attached `Parameters` container
 - Member of the `Parameters` container can be accessed by named from the `Item` they are attached to.
 
-### Data Types serialization
+## Serializing fields
 
-To make serialization easier, each Data type implementation is able to convert itself into 
-an HTTP text representation using the `toHttpValue` method. The method is complementary to
-the `fromHttpValue` method in that it does the opposite of that method. Just like the `fromHttpValue`,
-it can take an optional `Ietf` enum to specifu which RFC versio should be use for serialization.
+Each Data type implementation is able to convert itself into a proper HTTP text representation
+using its `toHttpValue` method. The method is complementary to the `fromHttpValue` named constructor
+in that it does the opposite of that method. Just like the `fromHttpValue`, it can take an optional
+`Ietf` enum to specifu which RFC version it should adhere to for serialization. And two syntactic
+methods `toRfc9651` and `toRfc8941` are also present to ease usage. Last but not least All classes
+implements the `Stringable` interface using the latest accepted RFC.
 
 ```php
-$fieldValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
+$fieldValue = 'text/html,    application/xhtml+xml,   application/xml;q=0.9,   image/webp,   */*;q=0.8';
 $field = DataType::List->parse($fieldValue);
 $field->toHttpValue();
-// returns 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
+(string) $field;
+// both calls will return
+// 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
 ```
+
+The method applies by default all the normalizations transformation recommended by the RFC. 
 
 > [!TIP]
 > This is the mechanism used by the `DataType::serialize` method. Once the Structured
 > field has been created, the method calls its `toHttpValue` method.
 
-&larr; [Basic Usage](01-basic-usage.md)  |  [Type](03-types.md) &rarr;
+&larr; [Basic Usage](01-basic-usage.md)  |  [Value Types](03-types.md) &rarr;

@@ -2,7 +2,7 @@
 
 ## Value type conversion to PHP
 
-The RFC defines several value types for which the package either convert to PHP native type whenever possible
+The RFC defines several value types that the package either convert to PHP native type whenever possible
 or provides a class based alternative. The table below summarizes the value type system.
 
 | RFC Type      | PHP Type                  | Package Enum Name     | Package Enum Value | RFC min. version |
@@ -22,8 +22,10 @@ or provides a class based alternative. The table below summarizes the value type
 > to the string type according to the RFC.
 
 ```php
-$newPermissions = $permissions->add('gyroscope',  ["https://a.bébé.com"]);
- // will trigger a SyntaxError because a structured field string can not contain UTF-8 characters
+Item::fromString("https://a.bébé.com");
+ // will trigger a SyntaxError because a
+ // structured field string type can not
+ // contain UTF-8 characters
 ```
 
 > [!NOTE]
@@ -42,7 +44,7 @@ use Bakame\Http\StructuredFields\Type;
 
 echo Type::fromVariable(42)->value;  // returns 'integer'
 echo Type::fromVariable(42.0)->name; // returns 'Decimal'
-echo Type::fromVariable(new SplTempFileObject()); // throws InvalidArgument
+echo Type::fromVariable("https://a.bébé.com"); // throws InvalidArgument
 echo Type::tryFromVariable(new SplTempFileObject()); // returns null
 ```
 
