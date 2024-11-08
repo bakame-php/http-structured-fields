@@ -1,4 +1,6 @@
-# Parsing HTTP Fields
+# Parsing and Serializing HTTP Fields
+
+## Parsing fields
 
 Processing HTTP Fields has never been easy as it was never standardized before. With structured fields this aspect
 of processing HTTP fields is made predicable you will not have to re-invent the wheel for each new fields.
@@ -6,11 +8,12 @@ To do so the RFC defines 3 main structures an HTTP fields can have. It can be a 
 an `Item`. By specifying that your field is one of those structure you already gave the author the complete
 implementation of the field or at least the way it should be parsed.
 
+### Structured Fields Data Types
+
 If we go back to our first example, the permission policy field, it is defined as a `Dictionary` as such the
 package will use the `Dictionary` parsing process to split the field accordingly.
 
 ```php
-use Bakame\Http\StructuredFields\DataType;
 use Bakame\Http\StructuredFields\Dictionary;
 
 $headerLine = 'picture-in-picture=(), geolocation=(self "https://example.com/"), camera=*'; 
@@ -49,7 +52,7 @@ $field = OuterList::fromHttpValue($headerLine, Ietf::Rfc8941);
 // will trigger a SyntaxError because the field syntax is invalid for RFC8941
 ```
 
-Each construct also provide two syntactic sugar methods, the `fromRfc9651` and `fromRfc8941`
+Each construct also provides two syntactic sugar methods, the `fromRfc9651` and `fromRfc8941`
 named constructors, if you are more comfortable not using the `Ietf` enum.
 
 ```php
@@ -63,6 +66,12 @@ $field = Item::fromRfc8941($headerLine);
 // will trigger a SyntaxError because the field syntax is invalid for RFC8941
 ```
 
+> [!TIP]
+> The `DataType::parse` method uses the `fromHttpValue` named constructor for
+> each specific class to generate the structured field PHP representation.
+
+### Data Types relationships
+
 Once parsed, each data type will expose its content depending on its specification. What's
 important to remember is that apart from the `Item` all the other data types are containers.
 As such their data can be accessible via their indices (for all containers) and also via
@@ -74,9 +83,10 @@ construct can be summarized as follows:
 - `OuterList` and `InnerList` members can only be accessed by their indices;
 - `Dictionary` and `Parameters` members can also be accessed by their name;
 - `Item` and `InnerList` instancs can have a `Parameters` container attached to.
-- `Item` contain in a `Parameters` container can not have parameters attached to them to avoud recursion. They are named **Bare Item**.
+- `Item` contain in a `Parameters` container **can not have** parameters attached to them to avoid recursion. They are named **Bare Item**.
+- `Item` contain in a `InnerList` container **can have** parameters attached to them.
 
-Let's use simples examples to illustrate those rules:
+Let's use simple examples to illustrate those rules:
 
 ```php
 use Bakame\Http\StructuredFields\DataType;
@@ -100,7 +110,6 @@ In the example above:
 The following field is an example from the Accept header which is already structured fields compliant.
 
 ```php
-//1 - parsing an Accept Header
 $fieldValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
 $field = DataType::List->parse($fieldValue);
 $field[2]->value()->toString(); // returns 'application/xml'
@@ -113,4 +122,22 @@ $field[0]->parameterByKey('q'); // returns null
 - each `Item` can have an attached `Parameters` container
 - Member of the `Parameters` container can be accessed by named from the `Item` they are attached to.
 
-&larr; [Basic Usage](01-basic-usage.md)  |  [Data Type](03-data-type.md) &rarr;
+### Data Types serialization
+
+To make serialization easier, each Data type implementation is able to convert itself into 
+an HTTP text representation using the `toHttpValue` method. The method is complementary to
+the `fromHttpValue` method in that it does the opposite of that method. Just like the `fromHttpValue`,
+it can take an optional `Ietf` enum to specifu which RFC versio should be use for serialization.
+
+```php
+$fieldValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
+$field = DataType::List->parse($fieldValue);
+$field->toHttpValue();
+// returns 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
+```
+
+> [!TIP]
+> This is the mechanism used by the `DataType::serialize` method. Once the Structured
+> field has been created, the method calls its `toHttpValue` method.
+
+&larr; [Basic Usage](01-basic-usage.md)  |  [Data Type](03-data-types.md) &rarr;
