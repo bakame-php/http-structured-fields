@@ -2,6 +2,18 @@
 
 ## Items value
 
+The defined types are all attached to an `Item` object where their value and
+type are accessible using the following methods:
+
+```php
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Type;
+
+$item = Item::fromHttpValue('@1234567890');
+$item->type();  // return Type::Date;
+$item->value()  // return the equivalent to DateTimeImmutable('@1234567890');
+```
+
 The `Item` value object exposes the following named constructors to instantiate
 bare items (ie: item without parameters attached to them).
 
@@ -38,6 +50,84 @@ Item::withValue(DateTimeInterface|ByteSequence|Token|DisplayString|string|int|fl
 
 ## Containers
 
+All containers objects implement PHP `IteratorAggregate`, `Countable` and `ArrayAccess`
+interfaces. Their members can be accessed using the following shared methods
+
+```php
+$container->keys(): array<string|int>;
+$container->hasIndex(string|int ...$offsets): bool;
+$container->getByIndex(int $offset): StructuredField;
+$container->isNotEmpty(): bool;
+$container->isEmpty(): bool;
+```
+
+> [!IMPORTANT]
+> The `getByIndex` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
+
+To avoid invalid states, `ArrayAccess` modifying methods throw a `ForbiddenOperation`
+if you try to use them on any container object:
+
+```php
+use Bakame\Http\StructuredFields\Parameters;
+
+$value = Parameters::fromHttpValue(';a=foobar');
+$value['a']->value(); // return 'foobar'
+$value['b'];          // triggers a InvalidOffset exception, the index does not exist
+$value['a'] = 23      // triggers a ForbiddenOperation exception
+unset($value['a']);   // triggers a ForbiddenOperation exception
+```
+
+The `Dictionary` and `Parameters` classes also allow:
+
+- accessing its members as pairs:
+
+```php
+$container->hasPair(int ...$offsets): bool;
+$container->getByIndex(int $offset): array{0:string, 1:StructuredField};
+$container->toPairs(): iterable<array{0:string, 1:StructuredField}>;
+```
+
+> [!IMPORTANT]
+> The `getByIndex` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
+
+- accessing its members as value using their key:
+
+```php
+$container->hasKey(string ...$offsets): bool;
+$container->getByKey(string $offset): StructuredField;
+```
+
+> [!IMPORTANT]
+> The `getByKey` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
+
+
+#### Accessing the parameters values
+
+Accessing the associated `Parameters` instance attached to an `InnerList` or a `Item` instances
+is done using the following methods:
+
+```php
+use Bakame\Http\StructuredFields\InnerList;
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Parameters;
+
+$field->parameterByKey(string $key): ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool|null;
+$field->parameters(): Parameters;
+$field->parameterByIndex(int $index): array{0:string, 1:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|boo}
+InnerList::toPair(): array{0:list<Item>, 1:Parameters}>};
+Item::toPair(): array{0:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool, 1:Parameters}>};
+```
+
+> [!NOTE]
+> - The `parameterByKey` method returns `null` if no value is found for the given key.
+> - The `parameterByIndex` method returns an empty array if no parameter is found for the given index.
+
+### Building and Updating Structured Fields Values
+
+Every value object can be used as a builder to create an HTTP field value. Because we are
+using immutable value objects any change to the value object will return a new instance
+with the changes applied and leave the original instance unchanged.
+
 ### Ordered Maps
 
 The `Dictionary` and `Parameters` are ordered map instances. They can be built using their keys with an
@@ -73,19 +163,16 @@ echo $value;                //;b=?0;a=bar;c=@1671800423
 ```
 
 If the preference is to use the builder pattern, the same result can be achieved with the
-following steps:
-
-- First create a `Parameters` or a `Dictionary` instance using the `new` named constructor which
-  returns a new instance with no members.
-- And then, use any of the following modifying methods to populate it.
+following steps. You, first, create a `Parameters` or a `Dictionary` instance using the
+`new` named constructor which returns a new instance with no members.vAnd then,
+use any of the following modifying methods to populate it.
 
 ```php
 $map->add(string $key, $value): static;
 $map->append(string $key, $value): static;
 $map->prepend(string $key, $value): static;
 $map->mergeAssociative(...$others): static;
-$map->mergePairs(...$others): static;
-$map->remove(string|int ...$key): static;
+$map->removeByKeys(string ...$keys): static;
 ```
 
 As shown below:
@@ -123,7 +210,7 @@ $map->unshift(array ...$pairs): static;
 $map->push(array ...$pairs): static;
 $map->insert(int $key, array ...$pairs): static;
 $map->replace(int $key, array $pair): static;
-$map->removeByKeys(string ...$keys): static;
+$map->mergePairs(...$others): static;
 $map->removeByIndices(int ...$indices): static;
 ```
 
@@ -237,7 +324,7 @@ $list->unshift(...$members): static;
 $list->push(...$members): static;
 $list->insert(int $key, ...$members): static;
 $list->replace(int $key, $member): static;
-$list->remove(int ...$key): static;
+$list->removeByIndices(int ...$key): static;
 ```
 
 as shown below
