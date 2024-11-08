@@ -112,9 +112,8 @@ $displayString->type(); // returns Type::DisplayString
 > The classes DO NOT expose the `Stringable` interface to help distinguish
 > them from the string type or a stringable object
 
-## Structured Field Data Types
+> [!IMPORTANT]
+> Values are not directly accessible. They can only be retrieved from an Item
+> Data type.
 
-The RFC does not provide direct access to those values, to get to these values you need
-to use one of its data type structure.
-
-&larr; [Parsing and Serializing](02-parsing.md)  |  [Data Types](04-data-types.md) &rarr;
+&larr; [Parsing and Serializing](02-parsing-serializing.md)  |  [Build and Update](04-api.md) &rarr;

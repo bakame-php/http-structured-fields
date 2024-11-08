@@ -33,7 +33,7 @@ $permissions['camera']->value();               // returns '*' the sole value att
 > If parsing fails a `SyntaxError` exception is thrown with the information about why the conversion
 > could not be achieved.
 
-## Building the Field
+## Creating a new field
 
 Conversely, if you need to quickly create a permission policy HTTP field text representation, the package
 provides the following ways to do so:
@@ -54,9 +54,4 @@ that the package can easily simplify for you as you will learn while reading thi
 The goal of the example is to show that even without dwelling too much into the ins and out
 of the package you can easily and quickly parse or serialize compliant fields in PHP.
 
-## Structured Fields Data Types
-
-For a more in depth presentation of each structure and their method please head on over to the next chapter 
-to understand the RFC data types and how they relate to PHP.
-
-&larr; [Intro](00-intro.md)  |  [Parsing and Serializing](02-parsing.md) &rarr;
+&larr; [Intro](00-intro.md)  |  [Parsing and Serializing](02-parsing-serializing.md) &rarr;

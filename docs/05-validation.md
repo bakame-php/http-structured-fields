@@ -113,5 +113,4 @@ $parameters = Parameters::fromHttpValue(';baz=42;bar=toto')->validateByKeys([
 The returned value contains the validated parametes as well as a `ViolationList` object which contains all the violations
 found if any.
 
-
-&larr; [Data Types](04-data-types.md)
+&larr; [Build and Update](04-api.md)

@@ -77,26 +77,16 @@ $value['a'] = 23      // triggers a ForbiddenOperation exception
 unset($value['a']);   // triggers a ForbiddenOperation exception
 ```
 
-The `Dictionary` and `Parameters` classes also allow:
-
-- accessing its members as pairs:
-
-```php
-$container->hasIndices(int ...$offsets): bool;
-$container->getByIndex(int $offset): array{0:string, 1:StructuredField};
-$container->toPairs(): iterable<array{0:string, 1:StructuredField}>;
-```
-
-> [!IMPORTANT]
-> The `getByIndex` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
-
-- accessing its members as value using their key:
+The `Dictionary` and `Parameters` classes also allow accessing its members as value using their key:
 
 ```php
 $container->hasKey(string ...$offsets): bool;
 $container->getByKey(string $offset): StructuredField;
-$container->getIterator(); iterable<string, StructuredField>
+$container->toAssociative(); iterable<string, StructuredField>
 ```
+
+Because they are Ordered Map the `ArrayAccess` methods instead of using the index uses the key to allow a
+quicker, friendlier access to the value than calling `getByKey`.
 
 > [!IMPORTANT]
 > The `getByKey` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
@@ -463,4 +453,4 @@ echo InnerList::new('foo', 'bar')
 // ("foo" "bar");expire=@1681538756;path="/";max-age=2500
 ```
 
-&larr; [Types](03-types.md)  |  [Validation](05-validation.md) &rarr;
+&larr; [Types](03-value-types.md)  |  [Validation](05-validation.md) &rarr;
