@@ -29,7 +29,7 @@ use function is_string;
  * @phpstan-import-type SfMemberInput from StructuredField
  *
  * @implements ArrayAccess<string, InnerList|Item>
- * @implements IteratorAggregate<string, InnerList|Item>
+ * @implements IteratorAggregate<int, array{0:string, 1:InnerList|Item}>
  */
 final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, StructuredField
 {
@@ -130,7 +130,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
 
         return match (true) {
             $pairs instanceof Dictionary,
-            $pairs instanceof Parameters => new self($pairs),
+            $pairs instanceof Parameters => new self($pairs->toAssociative()),
             default => new self((function (iterable $pairs) use ($converter) {
                 foreach ($pairs as [$key, $member]) {
                     yield $key => $converter($member);
@@ -236,7 +236,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @return Iterator<string, InnerList|Item>
      */
-    public function getIterator(): Iterator
+    public function toAssociative(): Iterator
     {
         yield from $this->members;
     }
@@ -246,7 +246,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @return Iterator<int, array{0:string, 1:InnerList|Item}>
      */
-    public function toPairs(): Iterator
+    public function getIterator(): Iterator
     {
         foreach ($this->members as $index => $member) {
             yield [$index, $member];
@@ -382,7 +382,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
             throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{key}' => $key, '{value}' => $value->toHttpValue()]));
         };
 
-        foreach ($this->toPairs() as $offset => $pair) {
+        foreach ($this->getIterator() as $offset => $pair) {
             if ($offset === $foundOffset) {
                 return match ($validate) {
                     null => $pair,
@@ -481,7 +481,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
             [] === $indices => $this,
             $max === count($indices) => self::new(),
             default => self::fromPairs((function (array $offsets) {
-                foreach ($this->toPairs() as $offset => $pair) {
+                foreach ($this->getIterator() as $offset => $pair) {
                     if (!array_key_exists($offset, $offsets)) {
                         yield $pair;
                     }
@@ -564,7 +564,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
         return match (true) {
             [] === $pairs => $this,
             default => self::fromPairs((function (iterable $pairs) {
-                yield from $this->toPairs();
+                yield from $this->getIterator();
                 yield from $pairs;
             })($pairs)),
         };
@@ -584,7 +584,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
             [] === $pairs => $this,
             default => self::fromPairs((function (iterable $pairs) {
                 yield from $pairs;
-                yield from $this->toPairs();
+                yield from $this->getIterator();
             })($pairs)),
         };
     }
@@ -610,7 +610,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
                 array_splice($newMembers, $offset, 0, $members);
 
                 return self::fromPairs($newMembers);
-            })($this->toPairs()),
+            })($this->getIterator()),
         };
     }
 
@@ -626,7 +626,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         $pair[1] = self::filterMember($pair[1]);
-        $pairs = iterator_to_array($this->toPairs());
+        $pairs = iterator_to_array($this->getIterator());
 
         return match (true) {
             $pairs[$offset] == $pair => $this,
@@ -640,13 +640,19 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param iterable<string, InnerList|Item|SfMemberInput> ...$others
+     * @param self|iterable<string, InnerList|Item|SfMemberInput> ...$others
      */
     public function mergeAssociative(iterable ...$others): self
     {
         $members = $this->members;
         foreach ($others as $other) {
-            $members = [...$members, ...self::fromAssociative($other)->members];
+            if ($other instanceof self) {
+                $other = $other->toAssociative();
+            }
+
+            foreach ($other as $key => $value) {
+                $members[$key] = $value;
+            }
         }
 
         return new self($members);
@@ -664,7 +670,12 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     {
         $members = $this->members;
         foreach ($others as $other) {
-            $members = [...$members, ...self::fromPairs($other)->members];
+            if (!$other instanceof self) {
+                $other = self::fromPairs($other);
+            }
+            foreach ($other->toAssociative() as $key => $value) {
+                $members[$key] = $value;
+            }
         }
 
         return new self($members);
@@ -707,7 +718,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      */
     public function map(callable $callback): Iterator
     {
-        foreach ($this->toPairs() as $offset => $member) {
+        foreach ($this->getIterator() as $offset => $member) {
             yield ($callback)($member, $offset);
         }
     }
@@ -722,7 +733,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      */
     public function reduce(callable $callback, mixed $initial = null): mixed
     {
-        foreach ($this->toPairs() as $offset => $pair) {
+        foreach ($this->getIterator() as $offset => $pair) {
             $initial = $callback($initial, $pair, $offset);
         }
 
@@ -736,7 +747,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      */
     public function filter(callable $callback): self
     {
-        return self::fromPairs(new CallbackFilterIterator($this->toPairs(), $callback));
+        return self::fromPairs(new CallbackFilterIterator($this->getIterator(), $callback));
     }
 
     /**
@@ -746,7 +757,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      */
     public function sort(callable $callback): self
     {
-        $members = iterator_to_array($this->toPairs());
+        $members = iterator_to_array($this->getIterator());
         usort($members, $callback);
 
         return self::fromPairs($members);

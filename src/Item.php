@@ -57,7 +57,7 @@ final class Item implements StructuredField
     /**
      * Returns a new instance from a value type and an iterable of key-value parameters.
      *
-     * @param iterable<string, SfItemInput> $parameters
+     * @param Parameters|iterable<string, SfItemInput> $parameters
      *
      * @throws SyntaxError If the value or the parameters are not valid
      */

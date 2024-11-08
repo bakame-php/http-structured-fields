@@ -27,8 +27,8 @@ final class DictionaryTest extends StructuredFieldTestCase
         self::assertSame($stringItem, $instance->getByKey('string'));
         self::assertTrue($instance->hasKeys('string', 'string'));
         self::assertFalse($instance->hasKeys('string', 'no-present'));
-        self::assertEquals([['string', $stringItem], ['boolean', $booleanItem]], [...$instance->toPairs()]);
-        self::assertEquals($arrayParams, [...$instance]);
+        self::assertEquals([['string', $stringItem], ['boolean', $booleanItem]], [...$instance->getIterator()]);
+        self::assertEquals($arrayParams, [...$instance->toAssociative()]);
     }
 
     #[Test]
@@ -42,8 +42,8 @@ final class DictionaryTest extends StructuredFieldTestCase
         self::assertSame(['string', $stringItem], $instance->getByIndex(0));
         self::assertSame($stringItem, $instance->getByKey('string'));
         self::assertTrue($instance->hasKeys('string'));
-        self::assertEquals($arrayParams, [...$instance->toPairs()]);
-        self::assertEquals(['string' => $stringItem, 'boolean' => $booleanItem], [...$instance]);
+        self::assertEquals($arrayParams, [...$instance->getIterator()]);
+        self::assertEquals(['string' => $stringItem, 'boolean' => $booleanItem], [...$instance->toAssociative()]);
     }
 
     #[Test]
@@ -229,7 +229,10 @@ final class DictionaryTest extends StructuredFieldTestCase
         $instance3 = clone $instance1;
         $instance4 = clone $instance2;
 
-        self::assertEquals($instance3->mergeAssociative($instance4), $instance1->mergePairs($instance2));
+        self::assertEquals(
+            $instance3->mergeAssociative($instance4),
+            $instance1->mergePairs($instance2)
+        );
     }
 
     #[Test]

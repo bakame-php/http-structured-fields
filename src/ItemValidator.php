@@ -186,8 +186,8 @@ final class ItemValidator
         $parsedParameters = $parsedParameters ?? new ProcessedParameters();
         if ([] === $this->parametersMembersConstraints && true === $errorMessage) {
             $parsedParameters = new ProcessedParameters(match ($this->parametersType) {
-                self::USE_KEYS => array_map(fn (Item $item) => $item->value(), [...$item->parameters()]), /* @phpstan-ignore-line */
-                default => array_map(fn (array $pair) => [$pair[0], $pair[1]->value()], [...$item->parameters()->toPairs()]),
+                self::USE_KEYS => array_map(fn (Item $item) => $item->value(), [...$item->parameters()->toAssociative()]), /* @phpstan-ignore-line */
+                default => array_map(fn (array $pair) => [$pair[0], $pair[1]->value()], [...$item->parameters()]),
             });
         }
 

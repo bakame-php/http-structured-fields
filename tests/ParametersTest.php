@@ -30,7 +30,7 @@ final class ParametersTest extends StructuredFieldTestCase
         self::assertSame($stringItem, $instance->getByKey('string'));
         self::assertTrue($instance->hasKeys('string'));
 
-        self::assertEquals($arrayParams, [...$instance]);
+        self::assertEquals($arrayParams, [...$instance->toAssociative()]);
     }
 
     #[Test]
@@ -46,7 +46,7 @@ final class ParametersTest extends StructuredFieldTestCase
         self::assertTrue($instance->hasKeys('string'));
         self::assertEquals(
             [['string', $stringItem], ['boolean', $booleanItem]],
-            [...$instance->toPairs()]
+            [...$instance]
         );
     }
 
@@ -58,7 +58,7 @@ final class ParametersTest extends StructuredFieldTestCase
         Parameters::fromAssociative([
             'foo' => Item::fromAssociative(
                 true,
-                Parameters::fromAssociative(['bar' => Item::false()])
+                Parameters::fromAssociative(['bar' => false])
             ),
         ]);
     }
@@ -88,10 +88,10 @@ final class ParametersTest extends StructuredFieldTestCase
         $booleanItem = Item::true();
         $instance = Parameters::fromAssociative(['string' => 'helloWorld', 'boolean' => true]);
 
-        self::assertCount(2, $instance);
+        self::assertCount(2, [...$instance->toAssociative()]);
         self::assertEquals(
             [['string', $stringItem], ['boolean', $booleanItem]],
-            [...$instance->toPairs()]
+            [...$instance]
         );
 
         $deletedInstance = $instance->removeByKeys('boolean');
