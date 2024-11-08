@@ -39,12 +39,12 @@ final class OuterListTest extends StructuredFieldTestCase
 
         self::assertCount(2, $instance);
         self::assertSame($booleanItem, $instance->getByIndex(1));
-        self::assertTrue($instance->has(0, 1));
+        self::assertTrue($instance->hasIndices(0, 1));
 
         $deletedInstance = $instance->removeByIndices(1);
 
         self::assertCount(1, $deletedInstance);
-        self::assertFalse($deletedInstance->has(1));
+        self::assertFalse($deletedInstance->hasIndices(1));
 
         $newInstance = $deletedInstance->push(Item::fromString('BarBaz'));
         $member = $newInstance->getByIndex(1);
@@ -121,7 +121,7 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $instance = OuterList::new();
 
-        self::assertFalse($instance->has(3));
+        self::assertFalse($instance->hasIndices(3));
 
         $this->expectException(InvalidOffset::class);
 
@@ -213,12 +213,12 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $instance = OuterList::new();
 
-        self::assertSame([], $instance->keys());
+        self::assertSame([], $instance->indices());
 
         $newInstance = $instance
             ->push(Item::false(), Item::true());
 
-        self::assertSame([0, 1], $newInstance->keys());
+        self::assertSame([0, 1], $newInstance->indices());
 
         $container = OuterList::new()
             ->unshift('42')
@@ -226,6 +226,6 @@ final class OuterListTest extends StructuredFieldTestCase
             ->insert(1, 42.0)
             ->replace(0, ByteSequence::fromDecoded('Hello World'));
 
-        self::assertSame([0, 1, 2], $container->keys());
+        self::assertSame([0, 1, 2], $container->indices());
     }
 }

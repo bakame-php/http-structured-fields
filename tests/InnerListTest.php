@@ -34,13 +34,13 @@ final class InnerListTest extends TestCase
         $instance = InnerList::new($stringItem, $booleanItem);
 
         self::assertCount(2, $instance);
-        self::assertTrue($instance->has(1));
+        self::assertTrue($instance->hasIndices(1));
         self::assertFalse($instance->parameters()->isNotEmpty());
 
         $instance = $instance->removeByIndices(1);
 
         self::assertCount(1, $instance);
-        self::assertFalse($instance->has(1));
+        self::assertFalse($instance->hasIndices(1));
 
         $instance = $instance
             ->push('BarBaz')
@@ -118,7 +118,7 @@ final class InnerListTest extends TestCase
     {
         $instance = InnerList::new();
 
-        self::assertFalse($instance->has(3));
+        self::assertFalse($instance->hasIndices(3));
 
         $this->expectException(InvalidOffset::class);
 
@@ -321,12 +321,12 @@ final class InnerListTest extends TestCase
     {
         $instance = InnerList::new();
 
-        self::assertSame([], $instance->keys());
+        self::assertSame([], $instance->indices());
 
         $newInstance = $instance
             ->push(Item::false(), Item::true());
 
-        self::assertSame([0, 1], $newInstance->keys());
+        self::assertSame([0, 1], $newInstance->indices());
 
         $container = InnerList::new()
             ->unshift('42')
@@ -334,6 +334,6 @@ final class InnerListTest extends TestCase
             ->insert(1, 42.0)
             ->replace(0, ByteSequence::fromDecoded('Hello World'));
 
-        self::assertSame([0, 1, 2], $container->keys());
+        self::assertSame([0, 1, 2], $container->indices());
     }
 }

@@ -181,12 +181,12 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
     /**
      * @return array<int>
      */
-    public function keys(): array
+    public function indices(): array
     {
         return array_keys($this->members);
     }
 
-    public function has(int ...$indices): bool
+    public function hasIndices(int ...$indices): bool
     {
         $max = count($this->members);
         foreach ($indices as $offset) {
@@ -360,7 +360,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
      */
     public function offsetExists(mixed $offset): bool
     {
-        return $this->has($offset);
+        return $this->hasIndices($offset);
     }
 
     /**

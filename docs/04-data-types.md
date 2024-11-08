@@ -54,9 +54,9 @@ All containers objects implement PHP `IteratorAggregate`, `Countable` and `Array
 interfaces. Their members can be accessed using the following shared methods
 
 ```php
-$container->keys(): array<string|int>;
-$container->hasIndex(string|int ...$offsets): bool;
-$container->getByIndex(int $offset): StructuredField;
+$container->indices(): array<int>;
+$container->hasIndices(int ...$offsets): bool;
+$container->getByIndex(int $offset): StructuredField|array{0:string, 1:StructuredField};
 $container->isNotEmpty(): bool;
 $container->isEmpty(): bool;
 ```
@@ -82,7 +82,7 @@ The `Dictionary` and `Parameters` classes also allow:
 - accessing its members as pairs:
 
 ```php
-$container->hasPair(int ...$offsets): bool;
+$container->hasIndices(int ...$offsets): bool;
 $container->getByIndex(int $offset): array{0:string, 1:StructuredField};
 $container->toPairs(): iterable<array{0:string, 1:StructuredField}>;
 ```
@@ -95,13 +95,13 @@ $container->toPairs(): iterable<array{0:string, 1:StructuredField}>;
 ```php
 $container->hasKey(string ...$offsets): bool;
 $container->getByKey(string $offset): StructuredField;
+$container->getIterator(); iterable<string, StructuredField>
 ```
 
 > [!IMPORTANT]
 > The `getByKey` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
 
-
-#### Accessing the parameters values
+### Accessing the parameters values
 
 Accessing the associated `Parameters` instance attached to an `InnerList` or a `Item` instances
 is done using the following methods:
@@ -122,7 +122,7 @@ Item::toPair(): array{0:ByteSequence|Token|DisplayString|DateTimeImmutable|Strin
 > - The `parameterByKey` method returns `null` if no value is found for the given key.
 > - The `parameterByIndex` method returns an empty array if no parameter is found for the given index.
 
-### Building and Updating Structured Fields Values
+## Building and Updating Structured Fields Values
 
 Every value object can be used as a builder to create an HTTP field value. Because we are
 using immutable value objects any change to the value object will return a new instance

@@ -264,9 +264,17 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
+     * @return array<int>
+     */
+    public function indices(): array
+    {
+        return array_keys($this->keys());
+    }
+
+    /**
      * Tells whether the instance contain a members at the specified offsets.
      */
-    public function has(string ...$keys): bool
+    public function hasKeys(string ...$keys): bool
     {
         foreach ($keys as $key) {
             if (!array_key_exists($key, $this->members)) {
@@ -320,7 +328,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Tells whether a pair is attached to the given index position.
      */
-    public function hasPair(int ...$indexes): bool
+    public function hasIndices(int ...$indexes): bool
     {
         $max = count($this->members);
         foreach ($indexes as $index) {
@@ -667,7 +675,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      */
     public function offsetExists(mixed $offset): bool
     {
-        return $this->has($offset);
+        return $this->hasKeys($offset);
     }
 
     /**

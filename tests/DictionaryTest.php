@@ -25,8 +25,8 @@ final class DictionaryTest extends StructuredFieldTestCase
 
         self::assertSame(['string', $stringItem], $instance->getByIndex(0));
         self::assertSame($stringItem, $instance->getByKey('string'));
-        self::assertTrue($instance->has('string', 'string'));
-        self::assertFalse($instance->has('string', 'no-present'));
+        self::assertTrue($instance->hasKeys('string', 'string'));
+        self::assertFalse($instance->hasKeys('string', 'no-present'));
         self::assertEquals([['string', $stringItem], ['boolean', $booleanItem]], [...$instance->toPairs()]);
         self::assertEquals($arrayParams, [...$instance]);
     }
@@ -41,7 +41,7 @@ final class DictionaryTest extends StructuredFieldTestCase
 
         self::assertSame(['string', $stringItem], $instance->getByIndex(0));
         self::assertSame($stringItem, $instance->getByKey('string'));
-        self::assertTrue($instance->has('string'));
+        self::assertTrue($instance->hasKeys('string'));
         self::assertEquals($arrayParams, [...$instance->toPairs()]);
         self::assertEquals(['string' => $stringItem, 'boolean' => $booleanItem], [...$instance]);
     }
@@ -61,11 +61,11 @@ final class DictionaryTest extends StructuredFieldTestCase
         $deletedInstance = $instance->removeByKeys('boolean');
 
         self::assertCount(1, $deletedInstance);
-        self::assertFalse($deletedInstance->has('boolean'));
-        self::assertFalse($deletedInstance->hasPair(1));
+        self::assertFalse($deletedInstance->hasKeys('boolean'));
+        self::assertFalse($deletedInstance->hasIndices(1));
 
         $appendInstance = $deletedInstance->append('foobar', Item::new('BarBaz'));
-        self::assertTrue($appendInstance->hasPair(1));
+        self::assertTrue($appendInstance->hasIndices(1));
 
         self::assertSame($appendInstance, $appendInstance->append('foobar', Item::new('BarBaz')));
 
@@ -94,7 +94,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     {
         $instance = Dictionary::new();
 
-        self::assertFalse($instance->has('foobar'));
+        self::assertFalse($instance->hasKeys('foobar'));
 
         $this->expectException(InvalidOffset::class);
 
@@ -106,8 +106,8 @@ final class DictionaryTest extends StructuredFieldTestCase
     {
         $instance = Dictionary::new();
 
-        self::assertFalse($instance->hasPair(1, 2, 3));
-        self::assertFalse($instance->hasPair());
+        self::assertFalse($instance->hasIndices(1, 2, 3));
+        self::assertFalse($instance->hasIndices());
 
         $this->expectException(InvalidOffset::class);
 

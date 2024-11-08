@@ -26,9 +26,9 @@ final class ParametersTest extends StructuredFieldTestCase
         $instance = Parameters::fromAssociative($arrayParams);
 
         self::assertSame(['string', $stringItem], $instance->getByIndex(0));
-        self::assertTrue($instance->has('string', 'string'));
+        self::assertTrue($instance->hasKeys('string', 'string'));
         self::assertSame($stringItem, $instance->getByKey('string'));
-        self::assertTrue($instance->has('string'));
+        self::assertTrue($instance->hasKeys('string'));
 
         self::assertEquals($arrayParams, [...$instance]);
     }
@@ -43,7 +43,7 @@ final class ParametersTest extends StructuredFieldTestCase
 
         self::assertSame(['string', $stringItem], $instance->getByIndex(0));
         self::assertSame($stringItem, $instance->getByKey('string'));
-        self::assertTrue($instance->has('string'));
+        self::assertTrue($instance->hasKeys('string'));
         self::assertEquals(
             [['string', $stringItem], ['boolean', $booleanItem]],
             [...$instance->toPairs()]
@@ -96,8 +96,8 @@ final class ParametersTest extends StructuredFieldTestCase
 
         $deletedInstance = $instance->removeByKeys('boolean');
         self::assertCount(1, $deletedInstance);
-        self::assertFalse($deletedInstance->has('boolean'));
-        self::assertFalse($deletedInstance->hasPair(1));
+        self::assertFalse($deletedInstance->hasKeys('boolean'));
+        self::assertFalse($deletedInstance->hasIndices(1));
 
         $instance = new class () implements StructuredFieldProvider {
             public function toStructuredField(): StructuredField
@@ -108,9 +108,9 @@ final class ParametersTest extends StructuredFieldTestCase
 
         $addedInstance = $deletedInstance->append('foobar', $instance);
         self::assertSame($addedInstance, $addedInstance->append('foobar', Item::new('BarBaz')));
-        self::assertTrue($addedInstance->hasPair(1));
-        self::assertFalse($addedInstance->hasPair(3, 23));
-        self::assertFalse($addedInstance->hasPair());
+        self::assertTrue($addedInstance->hasIndices(1));
+        self::assertFalse($addedInstance->hasIndices(3, 23));
+        self::assertFalse($addedInstance->hasIndices());
 
         $foundItem = $addedInstance->getByIndex(1);
 
@@ -151,8 +151,8 @@ final class ParametersTest extends StructuredFieldTestCase
 
         $instance = Parameters::new();
 
-        self::assertFalse($instance->has('foobar', 'barbaz'));
-        self::assertFalse($instance->has());
+        self::assertFalse($instance->hasKeys('foobar', 'barbaz'));
+        self::assertFalse($instance->hasKeys());
 
         $instance->getByKey('foobar');
     }
@@ -162,7 +162,7 @@ final class ParametersTest extends StructuredFieldTestCase
     {
         $instance = Parameters::new();
 
-        self::assertFalse($instance->hasPair(3));
+        self::assertFalse($instance->hasIndices(3));
 
         $this->expectException(InvalidOffset::class);
 
