@@ -1,38 +1,6 @@
 # Structured Fields Data Types
 
-## Introduction
-
-The RFC defines five (5) data types for which the package provides a class based implementation.
-Those implementations classes are all immutable and final to make sure they are always
-in compliance with the RFC.
-
-The table below summarizes the data type system.
-
-| RFC Type      | PHP Type                  | Package Enum Name      | Package Enum Value |
-|---------------|---------------------------|------------------------|--------------------|
-| List          | class `OuterList`         | `DataType::List`       | `list`             | 
-| Dictionary    | class `Dictionary`        | `DataType::Dictionary` | `dictionary`       | 
-| Item          | class `Item`              | `DataType::Item`       | `item`             |
-| InnerList     | class `InnerList`         | `DataType::InnerList`  | `innerlist`        | 
-| Parameters    | class `Parameters`        | `DataType::Parameters` | `parameters`       | 
-
-
-The RFC dictates that any encountered complete field can only be a `List`, a `Dictionary` or a `Item`. The other types
-are only used within the confine of the 3 other main types. From those 5 data types, only the `Item` is not
-a container and is the only structure which contains the actual values of the field. 
-
-```php
-
-```
-
-
-## Containers
-
-The containers all expose
-
-
-
-#### Items value
+## Items value
 
 The `Item` value object exposes the following named constructors to instantiate
 bare items (ie: item without parameters attached to them).
@@ -419,4 +387,4 @@ Even if your parsing is successful it does not guarantee that the resulting obje
 the field definition. Please head over the validation page to have an understanding on how
 to leverage the package validation features
 
-&larr; [Basic Usage](02-parsing.md)  |  [Data Type](04-types.md) &rarr;
+&larr; [Types](03-types.md)  |  [Validation](05-validation.md) &rarr;

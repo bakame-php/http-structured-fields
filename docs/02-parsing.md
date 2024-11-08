@@ -140,4 +140,4 @@ $field->toHttpValue();
 > This is the mechanism used by the `DataType::serialize` method. Once the Structured
 > field has been created, the method calls its `toHttpValue` method.
 
-&larr; [Basic Usage](01-basic-usage.md)  |  [Data Type](03-data-types.md) &rarr;
+&larr; [Basic Usage](01-basic-usage.md)  |  [Type](03-types.md) &rarr;

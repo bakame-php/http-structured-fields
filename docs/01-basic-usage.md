@@ -59,4 +59,4 @@ of the package you can easily and quickly parse or serialize compliant fields in
 For a more in depth presentation of each structure and their method please head on over to the next chapter 
 to understand the RFC data types and how they relate to PHP.
 
-&larr; [Intro](00-intro.md)  |  [Parsing Fields](02-parsing.md) &rarr;
+&larr; [Intro](00-intro.md)  |  [Parsing and Serializing](02-parsing.md) &rarr;

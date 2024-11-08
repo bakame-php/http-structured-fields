@@ -114,4 +114,4 @@ The returned value contains the validated parametes as well as a `ViolationList`
 found if any.
 
 
-&larr; [Type](04-types.md)
+&larr; [Data Types](04-data-types.md)
