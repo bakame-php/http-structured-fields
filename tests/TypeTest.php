@@ -19,9 +19,9 @@ final class TypeTest extends TestCase
     }
 
     #[Test]
-    public function it_will_return_true_if_the_type_is_valid_but_its_value_is_invalid(): void
+    public function it_will_return_false_if_the_type_is_valid_but_its_value_is_invalid(): void
     {
-        self::assertTrue(Type::Integer->equals(Type::tryFromVariable(1_000_000_000_000_000)));
+        self::assertFalse(Type::Integer->equals(Type::tryFromVariable(1_000_000_000_000_000)));
     }
 
     #[Test]
