@@ -419,4 +419,4 @@ Even if your parsing is successful it does not guarantee that the resulting obje
 the field definition. Please head over the validation page to have an understanding on how
 to leverage the package validation features
 
-&larr; [Basic Usage](02-parsing.md)  |  [Data Type](04-type.md) &rarr;
+&larr; [Basic Usage](02-parsing.md)  |  [Data Type](04-types.md) &rarr;
