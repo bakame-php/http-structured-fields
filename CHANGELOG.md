@@ -21,11 +21,14 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Dictionary::getByIndex` replaces `Dictionary::pair`
 - `OuterList::getByIndex` replaces `OuterList::get`
 - `InnerList::getByIndex` replaces `InnerList::get`
+- `Dictionary::toAssociative` and `Parameters::toAssociative`
 
 ### Fixed
 
 - Fixed `Type` inference when instantiating the `Value` class.
 - Fixed `Type::tryFromVariable` and  `Type::fromVariable` methods
+- Container `IteratorAggregate` interface always uses the `index` as key; it uses to be the `key` for Ordered Map.
+- `append`, `prepend` and `add` methods now accept `null` as value which result in doing nothing for consistency.
 
 ### Deprecated
 
@@ -44,6 +47,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `OuterList:remove` replaced by `OuterList:removeByIndices`
 - `InnerList:remove` replaced by `InnerList:removeByIndices`
 - `::hasNoMember` and `::hasMembers` methods have been replaced by `isEmpty` and `isNotEmpty` on containers
+- `Dictionary::toPairs` and `Parameters::toPairs`
 
 ## [1.3.0](https://github.com/bakame-php/http-structured-fields/compare/1.2.2...1.3.0) - 2024-01-05
 

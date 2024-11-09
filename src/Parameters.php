@@ -338,7 +338,6 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      */
     public function allowedKeys(array $keys): bool
     {
-        $keys = array_keys(array_fill_keys($keys, true));
         foreach ($this->members as $key => $member) {
             if (!in_array($key, $keys, true)) {
                 return false;
@@ -468,10 +467,16 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         };
     }
 
+    /**
+     * @param StructuredFieldProvider|StructuredField|SfType|null $member
+     */
     public function add(
         string $key,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
+        if (null === $member) {
+            return $this;
+        }
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
 
@@ -528,20 +533,33 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         return $this->remove(...$keys);
     }
 
+    /**
+     * @param StructuredFieldProvider|StructuredField|SfType|null $member
+     */
     public function append(
         string $key,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
+        if (null === $member) {
+            return $this;
+        }
+
         $members = $this->members;
         unset($members[$key]);
 
         return $this->newInstance([...$members, MapKey::from($key)->value => self::filterMember($member)]);
     }
 
+    /**
+     * @param StructuredFieldProvider|StructuredField|SfType|null $member
+     */
     public function prepend(
         string $key,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
+        if (null === $member) {
+            return $this;
+        }
         $members = $this->members;
         unset($members[$key]);
 

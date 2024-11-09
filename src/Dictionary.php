@@ -292,7 +292,6 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      */
     public function allowedKeys(array $keys): bool
     {
-        $keys = array_keys(array_fill_keys($keys, true));
         foreach ($this->members as $key => $member) {
             if (!in_array($key, $keys, true)) {
                 return false;
@@ -430,14 +429,17 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param InnerList|Item|SfMemberInput $member
+     * @param InnerList|Item|SfMemberInput|null $member
      *
      * @throws SyntaxError If the string key is not a valid
      */
     public function add(
         string $key,
-        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
+        if (null === $member) {
+            return $this;
+        }
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
 
@@ -518,13 +520,16 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param InnerList|Item|SfMemberInput $member
+     * @param InnerList|Item|SfMemberInput|null $member
      * @throws SyntaxError If the string key is not a valid
      */
     public function append(
         string $key,
-        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
+        if (null === $member) {
+            return $this;
+        }
         $members = $this->members;
         unset($members[$key]);
 
@@ -537,14 +542,17 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param InnerList|Item|SfMemberInput $member
+     * @param InnerList|Item|SfMemberInput|null $member
      *
      * @throws SyntaxError If the string key is not a valid
      */
     public function prepend(
         string $key,
-        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
+        if (null === $member) {
+            return $this;
+        }
         $members = $this->members;
         unset($members[$key]);
 

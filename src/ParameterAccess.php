@@ -76,11 +76,13 @@ trait ParameterAccess
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
+     * @param StructuredFieldProvider|StructuredField|SfType|null $member
+     *
      * @throws SyntaxError If the string key is not a valid
      */
     public function addParameter(
         string $key,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): static {
         return $this->withParameters($this->parameters()->add($key, $member));
     }
@@ -91,11 +93,13 @@ trait ParameterAccess
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
+     * @param StructuredFieldProvider|StructuredField|SfType|null $member
+     *
      * @throws SyntaxError If the string key is not a valid
      */
     public function prependParameter(
         string $key,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool  $member
+        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null  $member
     ): static {
         return $this->withParameters($this->parameters()->prepend($key, $member));
     }
@@ -106,11 +110,13 @@ trait ParameterAccess
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
+     * @param StructuredFieldProvider|StructuredField|SfType|null $member
+     *
      * @throws SyntaxError If the string key is not a valid
      */
     public function appendParameter(
         string $key,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): static {
         return $this->withParameters($this->parameters()->append($key, $member));
     }

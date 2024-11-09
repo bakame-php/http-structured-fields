@@ -9,13 +9,15 @@ A way to prevent that is to add simple validation rules on the field value or st
 ## Validating a Bare Item.
 
 To validate the expected value of an `Item` you need to provide a callback to the `Item::value` method.
-Let's say the RFC says that the value can only be a string or a token you can translate that requiremebt as follow
+Let's say the RFC says that the value can only be a string or a token you can translate that requirement as follows
 
 ```php
 
 use Bakame\Http\StructuredFields\Type;
 
-$value = Item::fromString('42')->value(is_string(...));
+$field = Item::fromHttpValeue('bar;baz=42');
+
+$value = $field->value(fn (mixed $value) => Type::fromVariable($value)->isOneOf(Type::Token, Type::String));
 ```
 
 If the value is valid then it will populate the `$value` variable; otherwise an `Violation` exception will be thrown.
@@ -26,7 +28,9 @@ error, you can specify the template message to be used by the exception.
 ```php
 use Bakame\Http\StructuredFields\Type;
 
-$value = Item::fromDecimal(42)
+$field = Item::fromHttpValeue('42.0;baz=42');
+
+$value = $field
     ->value(
         fn (mixed $value) => match (true) {
             Type::fromVariable($value)->isOneOf(Type::Token, Type::String) => true,
@@ -93,13 +97,13 @@ $parameters->valueByIndex(
 The most common use case of parameters involve more than one parameter to validate. Imagine we have to validate
 the cookie field. It will contain more than one parameter so instead of comparing each parameter separately the
 package allows validating multiple parameters at the same time using the `Parameters::validateByKeys` and its
-couterpart `Parameters::validateByIndices.`
+counterpart `Parameters::validateByIndices.`
 
 ```php
 use Bakame\Http\StructuredFields\ByteSequence;
 use Bakame\Http\StructuredFields\Parameters;
 
-$parameters = Parameters::fromHttpValue(';baz=42;bar=toto')->validateByKeys([
+$result = Parameters::fromHttpValue(';baz=42;bar=toto')->validateByKeys([
     [
         'bar' => [
             'validate' => fn (mixed $value) => $value instanceof ByteSequence ? true : "The '{key}' parameter '{value}' is invalid",
@@ -110,7 +114,7 @@ $parameters = Parameters::fromHttpValue(';baz=42;bar=toto')->validateByKeys([
 ]);
 ```
 
-The returned value contains the validated parametes as well as a `ViolationList` object which contains all the violations
+The returned value is a contains the validated parameters as well as a `ViolationList` object which contains all the violations
 found if any.
 
 &larr; [Build and Update](04-api.md)
