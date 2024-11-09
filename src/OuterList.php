@@ -88,8 +88,16 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
     /**
      * @param iterable<SfInnerListPair|SfItemPair>|InnerList $pairs
      */
-    public static function fromPairs(iterable $pairs): self
+    public static function fromPairs(StructuredFieldProvider|iterable $pairs): self
     {
+        if ($pairs instanceof StructuredFieldProvider) {
+            $pairs = $pairs->toStructuredField();
+        }
+
+        if (!is_iterable($pairs)) {
+            throw new InvalidArgument('The "'.$pairs::class.'" instance can not be used for creating a .'.self::class.' structured field.');
+        }
+
         $converter = function (mixed $pair): InnerList|Item {
             if ($pair instanceof StructuredFieldProvider) {
                 $pair = $pair->toStructuredField();

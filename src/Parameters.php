@@ -86,8 +86,16 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @param iterable<string, SfItemInput> $members
      */
-    public static function fromAssociative(iterable $members): self
+    public static function fromAssociative(StructuredFieldProvider|iterable $members): self
     {
+        if ($members instanceof StructuredFieldProvider) {
+            $members = $members->toStructuredField();
+        }
+
+        if (!is_iterable($members)) {
+            throw new InvalidArgument('The "'.$members::class.'" instance can not be used for creating a .'.self::class.' structured field.');
+        }
+
         return new self($members);
     }
 
@@ -98,10 +106,18 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param Parameters|Dictionary|iterable<array{0:string, 1:SfItemInput}> $pairs
+     * @param Parameters|Dictionary|StructuredFieldProvider|iterable<array{0:string, 1:SfItemInput}> $pairs
      */
-    public static function fromPairs(iterable $pairs): self
+    public static function fromPairs(StructuredFieldProvider|iterable $pairs): self
     {
+        if ($pairs instanceof StructuredFieldProvider) {
+            $pairs = $pairs->toStructuredField();
+        }
+
+        if (!is_iterable($pairs)) {
+            throw new InvalidArgument('The "'.$pairs::class.'" instance can not be used for creating a .'.self::class.' structured field.');
+        }
+
         return match (true) {
             $pairs instanceof Parameters,
             $pairs instanceof Dictionary => new self($pairs->toAssociative()),
@@ -654,7 +670,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @param Parameters|Dictionary|iterable<array{0:string, 1:SfItemInput}> ...$others
      */
-    public function mergePairs(Dictionary|Parameters|iterable ...$others): self
+    public function mergePairs(Dictionary|Parameters|StructuredFieldProvider|iterable ...$others): self
     {
         $members = $this->members;
         foreach ($others as $other) {
