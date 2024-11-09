@@ -21,31 +21,31 @@ use IteratorAggregate;
 final class ProcessedParameters implements ArrayAccess, Countable, IteratorAggregate
 {
     /**
-     * @param array<array-key, array{0:string, 1:SfType}|array{}|SfType|null> $parameters
+     * @param array<array-key, array{0:string, 1:SfType}|array{}|SfType|null> $values
      */
     public function __construct(
-        public readonly array $parameters = [],
+        private readonly array $values = [],
     ) {
     }
 
     public function count(): int
     {
-        return count($this->parameters);
+        return count($this->values);
     }
 
     public function getIterator(): Iterator
     {
-        yield from $this->parameters;
+        yield from $this->values;
     }
 
     public function offsetExists($offset): bool
     {
-        return array_key_exists($offset, $this->parameters);
+        return array_key_exists($offset, $this->values);
     }
 
     public function offsetGet($offset): mixed
     {
-        return $this->offsetExists($offset) ? $this->parameters[$offset] : throw InvalidOffset::dueToMemberNotFound($offset);
+        return $this->offsetExists($offset) ? $this->values[$offset] : throw InvalidOffset::dueToMemberNotFound($offset);
     }
 
     public function offsetUnset(mixed $offset): void
@@ -56,5 +56,13 @@ final class ProcessedParameters implements ArrayAccess, Countable, IteratorAggre
     public function offsetSet(mixed $offset, mixed $value): void
     {
         throw new ForbiddenOperation(self::class.' instance can not be updated using '.ArrayAccess::class.' methods.');
+    }
+
+    /**
+     * @return array<array-key, array{0:string, 1:SfType}|array{}|SfType|null>
+     */
+    public function values(): array
+    {
+        return $this->values;
     }
 }
