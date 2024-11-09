@@ -176,6 +176,9 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         return [] !== $this->members;
     }
 
+    /**
+     * @return Iterator<string, Item>
+     */
     public function toAssociative(): Iterator
     {
         yield from $this->members;
