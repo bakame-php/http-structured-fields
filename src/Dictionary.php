@@ -664,13 +664,20 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param self|iterable<string, InnerList|Item|SfMemberInput> ...$others
+     * @param StructuredFieldProvider|Dictionary|Parameters|iterable<string, InnerList|Item|SfMemberInput> ...$others
      */
-    public function mergeAssociative(iterable ...$others): self
+    public function mergeAssociative(StructuredFieldProvider|iterable ...$others): self
     {
         $members = $this->members;
         foreach ($others as $other) {
-            if ($other instanceof self) {
+            if ($other instanceof StructuredFieldProvider) {
+                $other = $other->toStructuredField();
+                if (!is_iterable($other)) {
+                    throw new InvalidArgument('The "'.$other::class.'" instance can not be used for creating a .'.self::class.' structured field.');
+                }
+            }
+
+            if ($other instanceof self || $other instanceof Parameters) {
                 $other = $other->toAssociative();
             }
 
@@ -688,9 +695,9 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param Dictionary|Parameters|iterable<array{0:string, 1:InnerList|Item|SfMemberInput}> ...$others
+     * @param StructuredFieldProvider|Dictionary|Parameters|iterable<array{0:string, 1:InnerList|Item|SfMemberInput}> ...$others
      */
-    public function mergePairs(Dictionary|Parameters|iterable ...$others): self
+    public function mergePairs(StructuredFieldProvider|Dictionary|Parameters|iterable ...$others): self
     {
         $members = $this->members;
         foreach ($others as $other) {

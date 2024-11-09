@@ -649,13 +649,20 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param self|iterable<string, SfItemInput> ...$others
+     * @param StructuredFieldProvider|Parameters|iterable<string, SfItemInput> ...$others
      */
-    public function mergeAssociative(iterable ...$others): self
+    public function mergeAssociative(StructuredFieldProvider|iterable ...$others): self
     {
         $members = $this->members;
         foreach ($others as $other) {
-            if ($other instanceof self) {
+            if ($other instanceof StructuredFieldProvider) {
+                $other = $other->toStructuredField();
+                if (!is_iterable($other)) {
+                    throw new InvalidArgument('The "'.$other::class.'" instance can not be used for creating a .'.self::class.' structured field.');
+                }
+            }
+
+            if ($other instanceof self || $other instanceof Dictionary) {
                 $other = $other->toAssociative();
             }
 
@@ -668,7 +675,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param Parameters|Dictionary|iterable<array{0:string, 1:SfItemInput}> ...$others
+     * @param StructuredFieldProvider|Parameters|Dictionary|iterable<array{0:string, 1:SfItemInput}> ...$others
      */
     public function mergePairs(Dictionary|Parameters|StructuredFieldProvider|iterable ...$others): self
     {
