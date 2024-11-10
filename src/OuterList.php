@@ -268,10 +268,10 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
     /**
      * Inserts members at the beginning of the list.
      *
-     * @param InnerList|Item|SfMemberInput ...$members
+     * @param StructuredFieldProvider|InnerList|Item|SfMemberInput ...$members
      */
     public function unshift(
-        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        StructuredFieldProvider|StructuredField|iterable|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ): self {
         $membersToAdd = array_reduce(
             $members,

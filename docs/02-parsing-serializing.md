@@ -140,7 +140,7 @@ $field->toHttpValue();
 // 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
 ```
 
-The method applies by default all the normalizations transformation recommended by the RFC. 
+The `toHttpValue` method applies by default all the normalizations recommended by the RFC. 
 
 > [!TIP]
 > This is the mechanism used by the `DataType::serialize` method. Once the Structured

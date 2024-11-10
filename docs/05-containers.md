@@ -1,54 +1,6 @@
-# Building and Updating Fields
-
-## Items value
-
-The defined types are all attached to an `Item` object where their value and
-type are accessible using the following methods:
-
-```php
-use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\Type;
-
-$item = Item::fromHttpValue('@1234567890');
-$item->type();  // return Type::Date;
-$item->value()  // return the equivalent to DateTimeImmutable('@1234567890');
-```
-
-The `Item` value object exposes the following named constructors to instantiate
-bare items (ie: item without parameters attached to them).
-
-```php
-use Bakame\Http\StructuredFields\ByteSequence;
-use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\Token;
-
-Item:new(DateTimeInterface|ByteSequence|Token|DisplayString|string|int|array|float|bool $value): self
-Item:tryNew(mixed $value): ?self
-Item::fromDecodedByteSequence(Stringable|string $value): self;
-Item::fromEncodedDisplayString(Stringable|string $value): self;
-Item::fromDecodedDisplayString(Stringable|string $value): self;
-Item::fromEncodedByteSequence(Stringable|string $value): self;
-Item::fromToken(Stringable|string $value): self;
-Item::fromString(Stringable|string $value): self;
-Item::fromDate(DateTimeInterface $datetime): self;
-Item::fromDateFormat(string $format, string $datetime): self;
-Item::fromDateString(string $datetime, DateTimeZone|string|null $timezone = null): self;
-Item::fromTimestamp(int $value): self;
-Item::fromDecimal(int|float $value): self;
-Item::fromInteger(int|float $value): self;
-Item::true(): self;
-Item::false(): self;
-```
-
-To update the `Item` instance value, use the `withValue` method:
-
-```php
-use Bakame\Http\StructuredFields\Item;
-
-Item::withValue(DateTimeInterface|ByteSequence|Token|DisplayString|string|int|float|bool $value): static
-```
-
 ## Containers
+
+### Common API
 
 All containers objects implement PHP `IteratorAggregate`, `Countable` and `ArrayAccess`
 interfaces. Their members can be accessed using the following shared methods
@@ -60,6 +12,10 @@ $container->getByIndex(int $offset): StructuredField|array{0:string, 1:Structure
 $container->isNotEmpty(): bool;
 $container->isEmpty(): bool;
 ```
+
+When iterating over a container, the iterator offset is the positional index of each member
+and the value represent the member itself or a tuple containing the member key and its value (for
+ordered map).
 
 > [!IMPORTANT]
 > The `getByIndex` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
@@ -77,6 +33,149 @@ $value['a'] = 23      // triggers a ForbiddenOperation exception
 unset($value['a']);   // triggers a ForbiddenOperation exception
 ```
 
+## Updating Structured Fields Values
+
+Every value object can be used as a builder to create an HTTP field value. Because we are
+using immutable value objects any change to the value object will return a new instance
+with the changes applied and leave the original instance unchanged. All containers
+expose the following methods to handle their members according to their indices.
+
+```php
+$map->unshift(...$members): static;
+$map->push(...$members): static;
+$map->insert(int $index, ...$members): static;
+$map->replace(int $index, $member): static;
+$map->mergePairs(...$others): static;
+$map->removeByIndices(int ...$indices): static;
+```
+
+The type of the `$members`, `$member` and `$orhers` value will depend on the accepted types
+of the container.
+
+## Automatic conversion
+
+By default, all the method are strictly typed. But, for all containers, to ease instantiation the following automatic
+conversion are applied on the member argument of each modifying methods.
+
+If the submitted type is:
+
+-  a `StructuredFieldProvider` implementing object, the `toStructuredField` will be called.
+-  a `StructuredField` implementing object, it will be passed as is
+-  an iterable structure, it will be converted to an `InnerList` instance
+-  otherwise, it is converted into an `Item`.
+
+If no conversion is possible an `InvalidArgument` exception will be thrown.
+
+This means that both constructs below built equal objects
+
+```php
+use Bakame\Http\StructuredFields\Dictionary;
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Token;
+
+echo Dictionary::new()
+    ->add('a', InnerList::new(
+        Item::fromToken('bar'),
+        Item::fromString('42'),
+        Item::fromInteger(42),
+        Item::fromDecimal(42)
+     ))
+    ->prepend('b', Item::false())
+    ->append('c', Item::fromDateString('2022-12-23 13:00:23'))
+    ->toHttpValue()
+;
+
+echo Dictionary::new()
+    ->add('a', [Token::fromString('bar'), '42', 42, 42.0])
+    ->prepend('b', false)
+    ->append('c', new DateTimeImmutable('2022-12-23 13:00:23'))
+    ->toHttpValue()
+;
+
+ // both will return 'b=?0, a=(bar "42" 42 42.0), c=@1671800423
+```
+
+Of course, it is possible to mix both notations.
+
+## Lists
+
+To create `OuterList` and `InnerList` instances you can use the `new` named constructor
+which takes a single variadic parameter `$members`:
+
+```php
+use Bakame\Http\StructuredFields\InnerList;
+use Bakame\Http\StructuredFields\ByteSequence;
+
+$list = InnerList::new(
+    ByteSequence::fromDecoded('Hello World'),
+    42.0,
+    42
+);
+
+echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
+echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
+```
+
+Once again, the builder pattern can be used via a combination of the `new`
+named constructor and the use any of the following modifying methods.
+
+```php
+$list->unshift(...$members): static;
+$list->push(...$members): static;
+$list->insert(int $key, ...$members): static;
+$list->replace(int $key, $member): static;
+$list->removeByIndices(int ...$key): static;
+```
+
+- For `OuterList`, the member can be an `Item` or an `InnerList`
+- For `InnerList` only `Item` instances are expected.
+
+as shown below
+
+```php
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\InnerList;
+
+$list = InnerList::new()
+    ->unshift('42')
+    ->push(42)
+    ->insert(1, 42.0)
+    ->replace(0, ByteSequence::fromDecoded('Hello World'));
+
+echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
+echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
+```
+
+It is possible to create an `OuterList` or an `InnerList` based on an iterable structure
+of pairs.
+
+```php
+use Bakame\Http\StructuredFields\OuterList;
+
+$list = OuterList::fromPairs([
+    [
+        ['foo', 'bar'],
+        [
+            ['expire', new DateTime('2024-01-01 12:33:45')],
+            ['path', '/'],
+            [ 'max-age', 2500],
+            ['secure', true],
+            ['httponly', true],
+            ['samesite', Token::fromString('lax')],
+        ]
+    ],
+    [
+        'coucoulesamis', 
+        [['a', false]],
+    ]
+]);
+```
+
+The pairs definitions are the same as for creating either a `InnerList` or an `Item` using
+their respective `fromPair` method.
+
+## Ordered Maps
+
 The `Dictionary` and `Parameters` classes also allow accessing its members as value using their key:
 
 ```php
@@ -91,34 +190,10 @@ quicker, friendlier access to the value than calling `getByKey`.
 > [!IMPORTANT]
 > The `getByKey` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
 
-### Accessing the parameters values
+- For `Dictionary`, the member can be an `Item` or an `InnerList`.
+- For `Parmameters` only bare `Item` instances are expected.
 
-Accessing the associated `Parameters` instance attached to an `InnerList` or a `Item` instances
-is done using the following methods:
-
-```php
-use Bakame\Http\StructuredFields\InnerList;
-use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\Parameters;
-
-$field->parameterByKey(string $key): ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool|null;
-$field->parameters(): Parameters;
-$field->parameterByIndex(int $index): array{0:string, 1:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|boo}
-InnerList::toPair(): array{0:list<Item>, 1:Parameters}>};
-Item::toPair(): array{0:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool, 1:Parameters}>};
-```
-
-> [!NOTE]
-> - The `parameterByKey` method returns `null` if no value is found for the given key.
-> - The `parameterByIndex` method returns an empty array if no parameter is found for the given index.
-
-## Building and Updating Structured Fields Values
-
-Every value object can be used as a builder to create an HTTP field value. Because we are
-using immutable value objects any change to the value object will return a new instance
-with the changes applied and leave the original instance unchanged.
-
-### Ordered Maps
+## Ordered Maps
 
 The `Dictionary` and `Parameters` are ordered map instances. They can be built using their keys with an
 associative iterable structure as shown below
@@ -243,125 +318,28 @@ echo $field->removeByIndices(4, 2, 0)->toHttpValue();                      // re
 echo $field->removeByKeys('expire', 'httponly', 'max-age')->toHttpValue(); // returns ;path="/";secure;samesite=lax
 ```
 
-### Automatic conversion
+### Accessing the parameters values
 
-For all containers, to ease instantiation the following automatic conversion are applied on
-the member argument of each modifying methods.
-
-If the submitted type is:
-
--  a `StructuredField` implementing object, it will be passed as is
--  an iterable structure, it will be converted to an `InnerList` instance using `InnerList::new`
--  otherwise, it is converted into an `Item` using the `Item::new` named constructor.
-
-If no conversion is possible an `InvalidArgument` exception will be thrown.
-
-This means that both constructs below built equal objects
+Accessing the associated `Parameters` instance attached to an `InnerList` or a `Item` instances
+is done using the following methods:
 
 ```php
-use Bakame\Http\StructuredFields\Dictionary;
+use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\Token;
+use Bakame\Http\StructuredFields\Parameters;
 
-echo Dictionary::new()
-    ->add('a', InnerList::new(
-        Item::fromToken('bar'),
-        Item::fromString('42'),
-        Item::fromInteger(42),
-        Item::fromDecimal(42)
-     ))
-    ->prepend('b', Item::false())
-    ->append('c', Item::fromDateString('2022-12-23 13:00:23'))
-    ->toHttpValue()
-;
-
-echo Dictionary::new()
-    ->add('a', [Token::fromString('bar'), '42', 42, 42.0])
-    ->prepend('b', false)
-    ->append('c', new DateTimeImmutable('2022-12-23 13:00:23'))
-    ->toHttpValue()
-;
-
- // both will return 'b=?0, a=(bar "42" 42 42.0), c=@1671800423
+$field->parameterByKey(string $key): ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool|null;
+$field->parameters(): Parameters;
+$field->parameterByIndex(int $index): array{0:string, 1:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|boo}
+InnerList::toPair(): array{0:list<Item>, 1:Parameters}>};
+Item::toPair(): array{0:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool, 1:Parameters}>};
 ```
 
-Of course, it is possible to mix both notations.
+> [!NOTE]
+> - The `parameterByKey` method returns `null` if no value is found for the given key.
+> - The `parameterByIndex` method returns an empty array if no parameter is found for the given index.
 
-### Lists
-
-To create `OuterList` and `InnerList` instances you can use the `new` named constructor
-which takes a single variadic parameter `$members`:
-
-```php
-use Bakame\Http\StructuredFields\InnerList;
-use Bakame\Http\StructuredFields\ByteSequence;
-
-$list = InnerList::new(
-    ByteSequence::fromDecoded('Hello World'),
-    42.0,
-    42
-);
-
-echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
-echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
-```
-
-Once again, the builder pattern can be used via a combination of the `new`
-named constructor and the use any of the following modifying methods.
-
-```php
-$list->unshift(...$members): static;
-$list->push(...$members): static;
-$list->insert(int $key, ...$members): static;
-$list->replace(int $key, $member): static;
-$list->removeByIndices(int ...$key): static;
-```
-
-as shown below
-
-```php
-use Bakame\Http\StructuredFields\ByteSequence;
-use Bakame\Http\StructuredFields\InnerList;
-
-$list = InnerList::new()
-    ->unshift('42')
-    ->push(42)
-    ->insert(1, 42.0)
-    ->replace(0, ByteSequence::fromDecoded('Hello World'));
-
-echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
-echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
-```
-
-It is also possible to create an `OuterList` based on an iterable structure
-of pairs.
-
-```php
-use Bakame\Http\StructuredFields\OuterList;
-
-$list = OuterList::fromPairs([
-    [
-        ['foo', 'bar'],
-        [
-            ['expire', new DateTime('2024-01-01 12:33:45')],
-            ['path', '/'],
-            [ 'max-age', 2500],
-            ['secure', true],
-            ['httponly', true],
-            ['samesite', Token::fromString('lax')],
-        ]
-    ],
-    [
-        'coucoulesamis', 
-        [['a', false]],
-    ]
-]);
-```
-
-The pairs definitions are the same as for creating either a `InnerList` or an `Item` using
-their respective `fromPair` method.
-
-### Adding and updating parameters
+## Adding and updating parameters
 
 To ease working with instances that have a `Parameters` object attached to, the following
 methods are added:
