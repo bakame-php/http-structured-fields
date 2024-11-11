@@ -44,11 +44,11 @@ final class ViolationListTest extends TestCase
     public function it_can_add_a_violation(): void
     {
         $violation = new Violation('This is a violation.');
-        $this->violationList->add(ErrorCode::FailedItemParsing->value, $violation);
+        $this->violationList->add(ErrorCode::ItemFailedParsing->value, $violation);
 
         self::assertCount(1, $this->violationList);
-        self::assertSame($violation, $this->violationList->get(ErrorCode::FailedItemParsing->value));
-        self::assertSame($violation, $this->violationList[ErrorCode::FailedItemParsing->value]);
+        self::assertSame($violation, $this->violationList->get(ErrorCode::ItemFailedParsing->value));
+        self::assertSame($violation, $this->violationList[ErrorCode::ItemFailedParsing->value]);
     }
 
     #[Test]
@@ -68,7 +68,7 @@ final class ViolationListTest extends TestCase
 
         self::assertCount(3, $this->violationList);
         self::assertTrue($this->violationList->isNotEmpty());
-        self::assertFalse($this->violationList->has(ErrorCode::FailedItemParsing->value));
+        self::assertFalse($this->violationList->has(ErrorCode::ItemFailedParsing->value));
         self::assertSame($violation1, $this->violationList->get('error 1'));
         self::assertSame($violation2, $this->violationList['error 2']);
         self::assertSame([

@@ -52,7 +52,8 @@ Item::withValue(DateTimeInterface|ByteSequence|Token|DisplayString|string|int|fl
 ## Item value validation
 
 To validate the expected value of an `Item` you need to provide a callback to the `Item::value` method.
-Let's say the RFC says that the value can only be a string or a token you can translate that requirement as follows
+Let's say the field definition states that the value can only be a string or a token you can
+translate that requirement as follows
 
 ```php
 

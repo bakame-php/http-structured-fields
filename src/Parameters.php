@@ -5,10 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
-use Bakame\Http\StructuredFields\Validation\ProcessedParameters;
-use Bakame\Http\StructuredFields\Validation\Result;
 use Bakame\Http\StructuredFields\Validation\Violation;
-use Bakame\Http\StructuredFields\Validation\ViolationList;
 use CallbackFilterIterator;
 use Countable;
 use DateTimeImmutable;
@@ -30,8 +27,6 @@ use function is_string;
  *
  * @phpstan-import-type SfItemInput from StructuredField
  * @phpstan-import-type SfType from StructuredField
- * @phpstan-import-type SfParameterKeyRule from ItemValidator
- * @phpstan-import-type SfParameterIndexRule from ItemValidator
  *
  * @implements ArrayAccess<string, InnerList|Item>
  * @implements IteratorAggregate<int, array{0:string, 1:Item}>
@@ -398,31 +393,6 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * Validate the current parameter object using its keys and return the parsed values and the errors.
-     *
-     * @param array<string, SfParameterKeyRule> $rules
-     *
-     * @return Result<ProcessedParameters>|Result<null>
-     */
-    public function validateByKeys(array $rules): Result
-    {
-        $parameters = [];
-        $violations = new ViolationList();
-        foreach ($rules as $key => $rule) {
-            try {
-                $parameters[$key] = $this->valueByKey($key, $rule['validate'] ?? null, $rule['required'] ?? false, $rule['default'] ?? null);
-            } catch (Violation $exception) {
-                $violations[$key] = $exception;
-            }
-        }
-
-        return match ($violations->isNotEmpty()) {
-            true => Result::failed($violations),
-            default => Result::success(new ProcessedParameters($parameters)),
-        };
-    }
-
-    /**
      * Returns the member value and name as pair or an empty array if no members value exists.
      *
      * @param ?callable(SfType, string): (bool|string) $validate
@@ -459,31 +429,6 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
 
             throw new Violation(strtr($message, ['{index}' => $index]), previous: $exception);
         }
-    }
-
-    /**
-     * Validate the current parameter object using its indices and return the parsed values and the errors.
-     *
-     * @param array<int, SfParameterIndexRule> $rules
-     *
-     * @return Result<ProcessedParameters>|Result<null>
-     */
-    public function validateByIndices(array $rules): Result
-    {
-        $parameters = [];
-        $violations = new ViolationList();
-        foreach ($rules as $index => $rule) {
-            try {
-                $parameters[$index] = $this->valueByIndex($index, $rule['validate'] ?? null, $rule['required'] ?? false, $rule['default'] ?? []);
-            } catch (Violation $exception) {
-                $violations[$index] = $exception;
-            }
-        }
-
-        return match ($violations->isNotEmpty()) {
-            true => Result::failed($violations),
-            default => Result::success(new ProcessedParameters($parameters)),
-        };
     }
 
     /**

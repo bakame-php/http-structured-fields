@@ -10,10 +10,11 @@ namespace Bakame\Http\StructuredFields\Validation;
  */
 enum ErrorCode: string
 {
-    case FailedItemParsing = '@failed.item.parsing';
-    case InvalidItemValue = '@invalid.item.value';
-    case InvalidParametersValues = '@invalid.parameters.values';
-    case MissingParameterConstraints = '@missing.parameters.constraints';
+    case ItemFailedParsing = '@item.failed.parsing';
+    case ItemValueFailedValidation = '@item.value.failed.validation';
+    case ParametersFailedParsing = '@parameters.failed.parsing';
+    case ParametersMissingConstraints = '@parameters.missing.constraints';
+    case ParametersFailedCriteria = '@parameters.failed.criteria';
 
     /**
      * @return array<string>
