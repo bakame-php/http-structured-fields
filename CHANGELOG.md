@@ -7,26 +7,22 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 ### Added
 
 - `Ietf` enum.
-- methods `fromRFC9651`, `fromRfc8941`, `toRFC9651`, `toRfc8941`, to ease Type and StructuredFields convertion between RFC.
+- methods `fromRFC9651`, `fromRfc8941`, `toRFC9651`, `toRfc8941`, to ease parsing/serializing Structured Fields.
+- method `equals` to allow comparison of Structured Fields values.
 - methods `map`, `reduce`, `filter`, `sort` to all containers classes.
+- methods `isEmpty`, `isNotEmpty` to all containers classes.
+- methods `getByIndex`, `hasIndices`, `indices` to all containers classes.
+- methods `getByKey`, `hasKeys`, `indexByKey`, `keyByIndex`, `toAssociative` to all ordered map classes (`Dictionary` and `Parameters`).
 - `StructuredFieldProvider` interface
-- Added a validation mechanism to facilitate `Item` validation against a field definition.
-- `Item::parameterByKey` replaces `Item::parameter`
+- `Item::parameterByKey` and `Item::parameterByIndex` methods to mirror the new public API.
 - `Item::tryNew` which returns `null` instead of throwing an exception
-- `Parameters::getByKey` replaces `Parameters::get`
-- `Parameters::getByIndex` replaces `Parameters::pair`
 - `Parameters::valueByKey`
 - `Parameters::valueByIndex`
-- `Dictionary::getByKey` replaces `Dictionary::get`
-- `Dictionary::getByIndex` replaces `Dictionary::pair`
-- `OuterList::getByIndex` replaces `OuterList::get`
-- `InnerList::getByIndex` replaces `InnerList::get`
-- `Dictionary::toAssociative` and `Parameters::toAssociative`
+- Added a validation mechanism to facilitate `Item` and `Parameters` validation against field definition.
 
 ### Fixed
 
-- Fixed `Type` inference when instantiating the `Value` class.
-- Fixed `Type::tryFromVariable` and  `Type::fromVariable` methods
+- Fixed `Type` inference.
 - Container `IteratorAggregate` interface always uses the `index` as key; it uses to be the `key` for Ordered Map.
 - `append`, `prepend` and `add` methods now accept `null` as value which result in doing nothing for consistency.
 
@@ -58,7 +54,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Fixed
 
-- `InnerList::fromPair` should not throw if the pair is empty becuse an inner list can be emoty.
+- `InnerList::fromPair` should not throw if the pair is empty because an inner list can be empty.
 
 ### Deprecated
 
@@ -153,7 +149,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `DictionaryParser` interface to return an array representation of a Structured Field dictionary container.
 - `ListParser` interface to return an array representation of a Structured Field list container.
 - `InnerListParser` interface to return an array representation of a Structured Field inner list container.
-- `ValueParser` interface to return a PHP type of a Structured Field Value string representation.
+- `ValueParser` interface to return a PHP type from a Structured Field Value string representation.
 - `Parser` is now part of the public API
 - `Item::fromHttpValue` now has an optional second parameter to shift the parser implementation used
 - `Parameters::fromHttpValue` now has an optional second parameter to shift the parser implementation used
@@ -267,7 +263,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 - **[BC Break]** `OrderedList` is removed, use `OuterList` instead.
 - **[BC Break]**  `ParameterAccess::withoutAllParameters` is removed, use `ParameterAccess::withoutAnyParameters` instead.
-- **[BC Break]**  remove the `$parameters` argument from all `Item` named constuctors except from `Item::from`.
+- **[BC Break]**  remove the `$parameters` argument from all `Item` named constructors except from `Item::from`.
 - **[BC Break]**  remove `InnerList::fromList`, use `InnerList::fromAssociativeParameters` or `InnerList::fromPairParameters` instead.
 - **[BC Break]**  remove `OuterList::fromList`, use `OuterList::from` instead.
 - 
@@ -305,7 +301,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - **[BC Break]** `ForbiddenStateError` exception is removed; the `InvalidArgument` exception is used instead.
 - **[BC Break]** `Item::is*` methods are removed; the enum `Type` is used instead.
 - **[BC Break]** `MemberContainer::clear` method is removed without replacement.
-- **[BC Break]** `MemberOrderedMap::set` and `MemberOrderedMap::delete` methods remonved; use `MemberOrderedMap::add` and `MemberOrderedMap::remove` instead
+- **[BC Break]** `MemberOrderedMap::set` and `MemberOrderedMap::delete` methods removed; use `MemberOrderedMap::add` and `MemberOrderedMap::remove` instead
 
 ## [0.6.0] - 2022-11-12
 

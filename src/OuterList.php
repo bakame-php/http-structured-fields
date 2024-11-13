@@ -179,6 +179,11 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate, Stru
         return $this->toHttpValue();
     }
 
+    public function equals(mixed $other): bool
+    {
+        return $other instanceof self && $other->toHttpValue() === $this->toHttpValue();
+    }
+
     public function getIterator(): Iterator
     {
         yield from $this->members;

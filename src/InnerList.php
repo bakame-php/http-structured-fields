@@ -150,6 +150,11 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate, Stru
         return $this->toHttpValue();
     }
 
+    public function equals(mixed $other): bool
+    {
+        return $other instanceof self && $other->toHttpValue() === $this->toHttpValue();
+    }
+
     /**
      * @return array{0:list<Item>, 1:Parameters}
      */

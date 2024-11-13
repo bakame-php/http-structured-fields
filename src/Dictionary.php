@@ -228,6 +228,11 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
         return $this->toHttpValue();
     }
 
+    public function equals(mixed $other): bool
+    {
+        return $other instanceof self && $other->toHttpValue() === $this->toHttpValue();
+    }
+
     public function count(): int
     {
         return count($this->members);
@@ -407,6 +412,39 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
         }
 
         throw InvalidOffset::dueToIndexNotFound($index);
+    }
+
+    /**
+     * Returns the key associated with the given index or null otherwise.
+     */
+    public function indexByKey(string $key): ?int
+    {
+        foreach ($this as $index => $member) {
+            if ($key === $member[0]) {
+                return $index;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the index associated with the given key or null otherwise.
+     */
+    public function keyByIndex(int $index): ?string
+    {
+        $index = $this->filterIndex($index);
+        if (null === $index) {
+            return null;
+        }
+
+        foreach ($this as $offset => $member) {
+            if ($offset === $index) {
+                return $member[0];
+            }
+        }
+
+        return null;
     }
 
     /**

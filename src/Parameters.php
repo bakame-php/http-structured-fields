@@ -10,6 +10,7 @@ use CallbackFilterIterator;
 use Countable;
 use DateTimeImmutable;
 use DateTimeInterface;
+use Exception;
 use Iterator;
 use IteratorAggregate;
 use Stringable;
@@ -79,7 +80,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      * its keys represent the dictionary entry key
      * its values represent the dictionary entry value
      *
-     * @param iterable<string, SfItemInput> $members
+     * @param StructuredFieldProvider|iterable<string, SfItemInput> $members
      */
     public static function fromAssociative(StructuredFieldProvider|iterable $members): self
     {
@@ -101,7 +102,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
-     * @param Parameters|Dictionary|StructuredFieldProvider|iterable<array{0:string, 1:SfItemInput}> $pairs
+     * @param StructuredFieldProvider|iterable<array{0:string, 1:SfItemInput}> $pairs
      */
     public static function fromPairs(StructuredFieldProvider|iterable $pairs): self
     {
@@ -129,7 +130,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.2
      *
-     * @throws SyntaxError If the string is not a valid
+     * @throws SyntaxError|Exception If the string is not a valid
      */
     public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
@@ -170,6 +171,11 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     public function __toString(): string
     {
         return $this->toHttpValue();
+    }
+
+    public function equals(mixed $other): bool
+    {
+        return $other instanceof self && $other->toHttpValue() === $this->toHttpValue();
     }
 
     public function count(): int
@@ -214,14 +220,6 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @return array<int>
-     */
-    public function indices(): array
-    {
-        return array_keys($this->keys());
-    }
-
-    /**
      * Tells whether the instance contain a members at the specified offsets.
      */
     public function hasKeys(string ...$keys): bool
@@ -256,6 +254,14 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         }
 
         throw new Violation(strtr($exceptionMessage, ['{key}' => $key, '{value}' => $value->toHttpValue()]));
+    }
+
+    /**
+     * @return array<int>
+     */
+    public function indices(): array
+    {
+        return array_keys($this->keys());
     }
 
     public function hasIndices(int ...$indices): bool
@@ -319,6 +325,39 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         }
 
         throw InvalidOffset::dueToIndexNotFound($index);
+    }
+
+    /**
+     * Returns the key associated with the given index or null otherwise.
+     */
+    public function indexByKey(string $key): ?int
+    {
+        foreach ($this as $index => $member) {
+            if ($key === $member[0]) {
+                return $index;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the index associated with the given key or null otherwise.
+     */
+    public function keyByIndex(int $index): ?string
+    {
+        $index = $this->filterIndex($index);
+        if (null === $index) {
+            return null;
+        }
+
+        foreach ($this as $offset => $member) {
+            if ($offset === $index) {
+                return $member[0];
+            }
+        }
+
+        return null;
     }
 
     /**

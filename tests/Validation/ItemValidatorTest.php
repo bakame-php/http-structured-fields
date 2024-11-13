@@ -43,7 +43,7 @@ final class ItemValidatorTest extends TestCase
         self::assertTrue($validation->isSuccess());
         self::assertInstanceOf(ProcessedItem::class, $validation->data);
         self::assertEquals(Token::fromString('foo'), $validation->data->value);
-        self::assertSame([], iterator_to_array($validation->data->parameters, true));
+        self::assertSame([], $validation->data->parameters->values());
     }
 
     #[Test]
@@ -84,7 +84,7 @@ final class ItemValidatorTest extends TestCase
         self::assertFalse($validation->isFailed());
         self::assertInstanceOf(ProcessedItem::class, $validation->data);
         self::assertSame('foo', $validation->data->value);
-        self::assertSame(['foo' => 1, 'bar' => 2], iterator_to_array($validation->data->parameters, true));
+        self::assertSame(['foo' => 1, 'bar' => 2], $validation->data->parameters->values());
     }
 
     #[Test]
@@ -99,7 +99,7 @@ final class ItemValidatorTest extends TestCase
         self::assertTrue($validation->isSuccess());
         self::assertInstanceOf(ProcessedItem::class, $validation->data);
         self::assertSame('foo', $validation->data->value);
-        self::assertSame([['foo', 1], ['bar', 2]], iterator_to_array($validation->data->parameters, true));
+        self::assertSame([['foo', 1], ['bar', 2]], $validation->data->parameters->values());
     }
 
     #[Test]
@@ -141,6 +141,6 @@ final class ItemValidatorTest extends TestCase
         self::assertTrue($validation->isSuccess());
         self::assertInstanceOf(ProcessedItem::class, $validation->data);
         self::assertSame('foo', $validation->data->value);
-        self::assertSame([1 => ['bar', 2]], iterator_to_array($validation->data->parameters, true));
+        self::assertSame([1 => ['bar', 2]], $validation->data->parameters->values());
     }
 }

@@ -402,4 +402,19 @@ final class ParametersTest extends StructuredFieldTestCase
 
         Parameters::fromPairs([['foobar', 'foobar'], ['zero', 0]])['foobar'] = Item::false();
     }
+
+    #[Test]
+    public function it_can_detect_the_member_keys_and_indices(): void
+    {
+        $instance = Parameters::new()
+            ->append('a', Item::false())
+            ->prepend('b', Item::true())
+            ->push(['c', Item::fromToken('blablabla')]);
+
+        self::assertSame(2, $instance->indexByKey('c'));
+        self::assertSame(0, $instance->indexByKey('b'));
+        self::assertNull($instance->indexByKey('foobar'));
+        self::assertSame('c', $instance->keyByIndex(-1));
+        self::assertNull($instance->keyByIndex(23));
+    }
 }

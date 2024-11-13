@@ -329,6 +329,11 @@ final class Item implements StructuredField
         return [$this->value->value, $this->parameters];
     }
 
+    public function equals(mixed $other): bool
+    {
+        return $other instanceof self && $other->toHttpValue() === $this->toHttpValue();
+    }
+
     /**
      * Returns a new instance with the newly associated value.
      *

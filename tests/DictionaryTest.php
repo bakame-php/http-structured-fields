@@ -403,4 +403,19 @@ final class DictionaryTest extends StructuredFieldTestCase
         self::assertEquals(['c', Item::fromString('true')], $instance2->getByIndex(-1));
         self::assertSame('b=?0, d=*/*, a="false", c="true"', $instance2->toHttpValue());
     }
+
+    #[Test]
+    public function it_can_detect_the_member_keys_and_indices(): void
+    {
+        $instance = Dictionary::new()
+            ->append('a', Item::false())
+            ->prepend('b', Item::true())
+            ->push(['c', Item::fromToken('blablabla')]);
+
+        self::assertSame(2, $instance->indexByKey('c'));
+        self::assertSame(0, $instance->indexByKey('b'));
+        self::assertNull($instance->indexByKey('foobar'));
+        self::assertSame('c', $instance->keyByIndex(-1));
+        self::assertNull($instance->keyByIndex(23));
+    }
 }
