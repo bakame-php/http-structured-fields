@@ -30,7 +30,7 @@ final class ParametersTest extends StructuredFieldTestCase
         self::assertSame($stringItem, $instance->getByKey('string'));
         self::assertTrue($instance->hasKeys('string'));
 
-        self::assertEquals($arrayParams, [...$instance->toAssociative()]);
+        self::assertEquals(['string' => $stringItem->value(), 'boolean' => $booleanItem->value()], $instance->toAssociative());
     }
 
     #[Test]

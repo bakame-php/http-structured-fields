@@ -138,8 +138,8 @@ final class ParametersValidator
         $parsedParameters = $parsedParameters ?? new ProcessedParameters();
         if ([] === $this->filterConstraints && true === $errorMessage) {
             $parsedParameters = new ProcessedParameters(match ($this->type) {
-                self::USE_KEYS => array_map(fn (Item $item) => $item->value(), [...$parameters->toAssociative()]),
-                default => array_map(fn (array $pair) => [$pair[0], $pair[1]->value()], [...$parameters]),
+                self::USE_KEYS => $parameters->toAssociative(),
+                default => $parameters->toList(),
             });
         }
 
