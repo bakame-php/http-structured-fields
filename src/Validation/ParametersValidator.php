@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields\Validation;
 
-use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Parameters;
 use Bakame\Http\StructuredFields\StructuredField;
 use Bakame\Http\StructuredFields\SyntaxError;
@@ -96,7 +95,7 @@ final class ParametersValidator
     /**
      * Validates the structured field Item.
      *
-     * @return Result<ProcessedParameters>|Result<null>
+     * @return Result<ValidatedParameters>|Result<null>
      */
     public function validate(Parameters|Stringable|string $parameters): Result
     {
@@ -115,7 +114,7 @@ final class ParametersValidator
             $violations->add(ErrorCode::ParametersMissingConstraints->value, new Violation('The parameters constraints are missing.'));
         }
 
-        $parsedParameters = new ProcessedParameters();
+        $parsedParameters = new ValidatedParameters();
         if ([] !== $this->filterConstraints) {
             $parsedParameters = match ($this->type) {
                 self::USE_INDICES => $this->validateByIndices($parameters),
@@ -134,10 +133,10 @@ final class ParametersValidator
             $violations->add(ErrorCode::ParametersFailedCriteria->value, new Violation($errorMessage));
         }
 
-        /** @var ProcessedParameters $parsedParameters */
-        $parsedParameters = $parsedParameters ?? new ProcessedParameters();
+        /** @var ValidatedParameters $parsedParameters */
+        $parsedParameters = $parsedParameters ?? new ValidatedParameters();
         if ([] === $this->filterConstraints && true === $errorMessage) {
-            $parsedParameters = new ProcessedParameters(match ($this->type) {
+            $parsedParameters = new ValidatedParameters(match ($this->type) {
                 self::USE_KEYS => $parameters->toAssociative(),
                 default => $parameters->toList(),
             });
@@ -170,7 +169,7 @@ final class ParametersValidator
     /**
      * Validate the current parameter object using its keys and return the parsed values and the errors.
      *
-     * @return Result<ProcessedParameters>|Result<null>
+     * @return Result<ValidatedParameters>|Result<null>
      */
     private function validateByKeys(Parameters $parameters): Result /* @phpstan-ignore-line */
     {
@@ -190,14 +189,14 @@ final class ParametersValidator
 
         return match ($violations->isNotEmpty()) {
             true => Result::failed($violations),
-            default => Result::success(new ProcessedParameters($data)),
+            default => Result::success(new ValidatedParameters($data)),
         };
     }
 
     /**
      * Validate the current parameter object using its indices and return the parsed values and the errors.
      *
-     * @return Result<ProcessedParameters>|Result<null>
+     * @return Result<ValidatedParameters>|Result<null>
      */
     public function validateByIndices(Parameters $parameters): Result
     {
@@ -217,7 +216,7 @@ final class ParametersValidator
 
         return match ($violations->isNotEmpty()) {
             true => Result::failed($violations),
-            default => Result::success(new ProcessedParameters($data)),
+            default => Result::success(new ValidatedParameters($data)),
         };
     }
 }

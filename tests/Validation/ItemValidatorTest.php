@@ -41,9 +41,9 @@ final class ItemValidatorTest extends TestCase
             ->validate('foo');
 
         self::assertTrue($validation->isSuccess());
-        self::assertInstanceOf(ProcessedItem::class, $validation->data);
+        self::assertInstanceOf(ValidatedItem::class, $validation->data);
         self::assertEquals(Token::fromString('foo'), $validation->data->value);
-        self::assertSame([], $validation->data->parameters->values());
+        self::assertSame([], $validation->data->parameters->all());
     }
 
     #[Test]
@@ -82,9 +82,9 @@ final class ItemValidatorTest extends TestCase
             ->validate($item);
 
         self::assertFalse($validation->isFailed());
-        self::assertInstanceOf(ProcessedItem::class, $validation->data);
+        self::assertInstanceOf(ValidatedItem::class, $validation->data);
         self::assertSame('foo', $validation->data->value);
-        self::assertSame(['foo' => 1, 'bar' => 2], $validation->data->parameters->values());
+        self::assertSame(['foo' => 1, 'bar' => 2], $validation->data->parameters->all());
     }
 
     #[Test]
@@ -97,9 +97,9 @@ final class ItemValidatorTest extends TestCase
             ->validate($item);
 
         self::assertTrue($validation->isSuccess());
-        self::assertInstanceOf(ProcessedItem::class, $validation->data);
+        self::assertInstanceOf(ValidatedItem::class, $validation->data);
         self::assertSame('foo', $validation->data->value);
-        self::assertSame([['foo', 1], ['bar', 2]], $validation->data->parameters->values());
+        self::assertSame([['foo', 1], ['bar', 2]], $validation->data->parameters->all());
     }
 
     #[Test]
@@ -139,8 +139,8 @@ final class ItemValidatorTest extends TestCase
             ->validate($item);
 
         self::assertTrue($validation->isSuccess());
-        self::assertInstanceOf(ProcessedItem::class, $validation->data);
+        self::assertInstanceOf(ValidatedItem::class, $validation->data);
         self::assertSame('foo', $validation->data->value);
-        self::assertSame([1 => ['bar', 2]], $validation->data->parameters->values());
+        self::assertSame([1 => ['bar', 2]], $validation->data->parameters->all());
     }
 }

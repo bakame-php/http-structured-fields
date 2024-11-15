@@ -69,7 +69,7 @@ final class ItemValidator
     /**
      * Validates the structured field Item.
      *
-     * @return Result<ProcessedItem>|Result<null>
+     * @return Result<ValidatedItem>|Result<null>
      */
     public function validate(Item|Stringable|string $item): Result
     {
@@ -96,7 +96,7 @@ final class ItemValidator
 
         return match ($violations->isNotEmpty()) {
             true => Result::failed($violations),
-            default => Result::success(new ProcessedItem($itemValue, $parsedParameters?->data ?? new ProcessedParameters())),
+            default => Result::success(new ValidatedItem($itemValue, $parsedParameters?->data ?? new ValidatedParameters())),
         };
     }
 }

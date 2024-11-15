@@ -9,11 +9,11 @@ use Bakame\Http\StructuredFields\DisplayString;
 use Bakame\Http\StructuredFields\Token;
 use DateTimeImmutable;
 
-final class ProcessedItem
+final class ValidatedItem
 {
     public function __construct(
         public readonly ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $value,
-        public readonly ProcessedParameters $parameters = new ProcessedParameters(),
+        public readonly ValidatedParameters $parameters = new ValidatedParameters(),
     ) {
     }
 }

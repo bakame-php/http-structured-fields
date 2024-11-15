@@ -18,7 +18,7 @@ use IteratorAggregate;
  * @implements ArrayAccess<array-key, array{0:string, 1:SfType}|array{}|SfType|null>
  * @implements IteratorAggregate<array-key, array{0:string, 1:SfType}|array{}|SfType|null>
  */
-final class ProcessedParameters implements ArrayAccess, Countable, IteratorAggregate
+final class ValidatedParameters implements ArrayAccess, Countable, IteratorAggregate
 {
     /**
      * @param array<array-key, array{0:string, 1:SfType}|array{}|SfType|null> $values
@@ -61,7 +61,7 @@ final class ProcessedParameters implements ArrayAccess, Countable, IteratorAggre
     /**
      * @return array<array-key, array{0:string, 1:SfType}|array{}|SfType|null>
      */
-    public function values(): array
+    public function all(): array
     {
         return $this->values;
     }
