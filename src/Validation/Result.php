@@ -4,16 +4,10 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields\Validation;
 
-/**
- * @template T
- */
 final class Result
 {
-    /**
-     * @param ?T $data
-     */
     private function __construct(
-        public readonly mixed $data,
+        public readonly ValidatedParameters|ValidatedItem|null $data,
         public readonly ViolationList $errors,
     ) {
     }
@@ -28,19 +22,11 @@ final class Result
         return $this->errors->isNotEmpty();
     }
 
-    /**
-     * @param T $data
-     *
-     * @return self<T>
-     */
-    public static function success(mixed $data): self
+    public static function success(ValidatedItem|ValidatedParameters $data): self
     {
         return new self($data, new ViolationList());
     }
 
-    /**
-     * @return self<null>
-     */
     public static function failed(ViolationList $errors): self
     {
         return new self(null, $errors);

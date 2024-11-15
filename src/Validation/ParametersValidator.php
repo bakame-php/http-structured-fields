@@ -94,8 +94,6 @@ final class ParametersValidator
 
     /**
      * Validates the structured field Item.
-     *
-     * @return Result<ValidatedParameters>|Result<null>
      */
     public function validate(Parameters|Stringable|string $parameters): Result
     {
@@ -195,8 +193,6 @@ final class ParametersValidator
 
     /**
      * Validate the current parameter object using its indices and return the parsed values and the errors.
-     *
-     * @return Result<ValidatedParameters>|Result<null>
      */
     public function validateByIndices(Parameters $parameters): Result
     {

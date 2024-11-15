@@ -68,13 +68,10 @@ final class ItemValidator
 
     /**
      * Validates the structured field Item.
-     *
-     * @return Result<ValidatedItem>|Result<null>
      */
     public function validate(Item|Stringable|string $item): Result
     {
         $violations = new ViolationList();
-        $itemValue = null;
         if (!$item instanceof Item) {
             try {
                 $item = Item::fromHttpValue($item);
@@ -88,15 +85,19 @@ final class ItemValidator
         try {
             $itemValue = $item->value($this->valueConstraint);
         } catch (Violation $exception) {
+            $itemValue = null;
             $violations->add(ErrorCode::ItemValueFailedValidation->value, $exception);
         }
 
-        $parsedParameters = $this->parametersConstraint->validate($item->parameters());
-        $violations->addAll($parsedParameters->errors);
+        $validate = $this->parametersConstraint->validate($item->parameters());
+        $violations->addAll($validate->errors);
+        if ($violations->isNotEmpty()) {
+            return Result::failed($violations);
+        }
 
-        return match ($violations->isNotEmpty()) {
-            true => Result::failed($violations),
-            default => Result::success(new ValidatedItem($itemValue, $parsedParameters?->data ?? new ValidatedParameters())),
-        };
+        /** @var ValidatedParameters $validatedParameters */
+        $validatedParameters = $validate->data;
+
+        return Result::success(new ValidatedItem($itemValue, $validatedParameters));
     }
 }
