@@ -137,8 +137,8 @@ final class ParametersValidator
         $parsedParameters = $parsedParameters ?? new ValidatedParameters();
         if ([] === $this->filterConstraints && true === $errorMessage) {
             $parsedParameters = new ValidatedParameters(match ($this->type) {
-                self::USE_KEYS => $parameters->toAssociative(),
-                default => $parameters->toList(),
+                self::USE_KEYS => $this->toAssociative($parameters),
+                default => $this->toList($parameters),
             });
         }
 
@@ -218,5 +218,31 @@ final class ParametersValidator
             true => Result::failed($violations),
             default => Result::success(new ValidatedParameters($data)),
         };
+    }
+
+    /**
+     * @return array<string,SfType>
+     */
+    private function toAssociative(Parameters $parameters): array
+    {
+        $assoc = [];
+        foreach ($parameters as $parameter) {
+            $assoc[$parameter[0]] = $parameter[1]->value();
+        }
+
+        return $assoc;
+    }
+
+    /**
+     * @return array<int, array{0:string, 1:SfType}>
+     */
+    private function toList(Parameters $parameters): array
+    {
+        $list = [];
+        foreach ($parameters as $index => $parameter) {
+            $list[$index] = [$parameter[0], $parameter[1]->value()];
+        }
+
+        return $list;
     }
 }

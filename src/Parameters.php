@@ -194,24 +194,11 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @return array<string, SfType>
+     * @return Iterator<string, Item>
      */
-    public function toAssociative(): array
+    public function toAssociative(): Iterator
     {
-        return array_map(fn (Item $member) => $member->value(), $this->members);
-    }
-
-    /**
-     * @return list<array{0:string, 1:SfType}>
-     */
-    public function toList(): array
-    {
-        $list = [];
-        foreach ($this->members as $index => $member) {
-            $list[] = [$index, $member->value()];
-        }
-
-        return $list;
+        yield from $this->members;
     }
 
     /**
