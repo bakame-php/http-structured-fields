@@ -4,7 +4,7 @@ This is the structure from which you will be able to access the actual field con
 
 ## Items value
 
-The defined types are all attached to an `Item` object where their value and
+The height (8) defined value types are all attached to an `Item` object where their value and
 type are accessible using the following methods:
 
 ```php
@@ -90,7 +90,62 @@ of the failed value.
 
 ## Item Parameters
 
-It is possible to attach parameters to an `Item`. It is also possible to validate the item parameters. Please
-refer to the [Paramemters](parameters.md) page for more information on that.
+Items can have parameters attached to them. Those `Parameters` instances are container and ordered map. It means
+that they members **Bare Items** can be accessed by their indices **but also** by their key which is attached to them.
+
+By default, you can access the member `Item` of a parameters using the following methods:
+
+- `Item::parameters` returns a `Parameters` instance;
+- `Item::parameterByKey` returns the value of the bare item instance attached to the supplied `key`;
+- `Item::parameterByIndex` returns the value of the bare item instance attached to the supplied `index`;
+
+
+### Validating a single Parameter.
+
+The `::parameterByKey` and `::parameterByIndex` methods can be used to validate a parameter value.
+
+```php
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Parameters;
+
+$field = Item::fromHttpValue('"Hello";baz=42;bar=toto');
+$field->parameterByKey('bar'); 
+// will return Token::fromString('toto');
+$field->parameterByKey('bar', fn (mixed $value) => $value instanceof ByteSequence));
+// will throw a generic exception message because the value is not a ByteSequence
+```
+
+Because parameters are optional by default you may also be able to specify a default value
+or require the parameter presence. So the full validation for a single parameter defined by
+its key can be done using the following code.
+
+```php
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Parameters;
+
+$field = Item::fromHttpValue('"Hello";baz=42;bar=toto');
+$field->parameterByKey(
+    key: 'bar', 
+    validate: fn (mixed $value) => $value instanceof ByteSequence ? true : "The '{key}' parameter '{value}' is invalid",
+    required: true,
+    default: ByteSequence::fromDecoded('Hello world!'),
+);
+```
+
+If you want to validate a parameter using its index instead, the method signature is the same but some
+argument will have to be updated to accommodate index searching.
+
+```php
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Parameters;
+
+$field = Item::fromHttpValue('"Hello";baz=42;bar=toto');
+$field->parameterByIndex(
+    index: 1, 
+    validate: fn (mixed $value, string $key) => $value instanceof ByteSequence ? true : "The  parameter '{key}' @t '{index}' whose value is '{value}' is invalid",
+    required: true,
+    default: ['foo', ByteSequence::fromDecoded('Hello world!')],
+);
+```
 
 &larr; [Types](03-value-types.md)  |  [Containers](05-containers.md) &rarr;

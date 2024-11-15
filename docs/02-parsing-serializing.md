@@ -3,10 +3,10 @@
 ## Parsing fields
 
 Processing HTTP Fields has never been easy as it was never standardized before. With structured fields this aspect
-of processing HTTP fields is made predicable you will not have to re-invent the wheel for each new fields.
+of processing HTTP fields is made predicable you will not have to re-invent the wheel for each new field.
 To do so the RFC defines 3 main structures an HTTP fields can have. It can be a `List`, a `Dictionary` or 
-an `Item`. By specifying that your field is one of those structure you already gave the author the complete
-implementation of the field or at least the way it should be parsed.
+an `Item`. By specifying that your field is one of those structures you already gave the author the complete
+process to how it should be parsed.
 
 ### Structured Fields Data Types
 
@@ -33,13 +33,12 @@ the data type system.
 | InnerList     | class `InnerList`         | `DataType::InnerList`  | `innerlist`        | 
 | Parameters    | class `Parameters`        | `DataType::Parameters` | `parameters`       |
 
-Apart from the `Item` all the other types are containers. But all the classes share the same
-method for parsing the HTTP text representation of the header via the `fromHttpValue` named 
-constructor. This method will parse the field string representation and return an instantiated
-PHP class containing the parsing result. Because there's 2 RFC related to structured fields,
-the method accepts an optional enum  `Ietf` that indicates which RFC should be used for 
-conformance. If not enum value is provided, the method will fall back to using the latest
-accepted RFC which is at the moment of writing `RFC9651`.
+All the classes share the same methods for parsing the HTTP text representation of the field. They all use
+the `fromHttpValue` named constructor. This method will parse the field string representation and
+return an instantiated PHP class containing the parsing result. Because there are 2 RFC related
+to structured fields, the method accepts an optional enum `Ietf` that indicates which RFC
+should be used for conformance. If no enum value is provided, the method will fall back
+to using the latest accepted RFC which is at the moment of writing `RFC9651`.
 
 ```php
 use Bakame\Http\StructuredFields\OuterList;
@@ -80,8 +79,8 @@ construct can be summarized as follows:
 
 - `Dictionary`and `OuterList` instances can only contain `Item` and `InnerList`;
 - `InnerList`and `Parameters` instances can only contain `Item`;
-- `OuterList` and `InnerList` members can only be accessed by their indices;
-- `Dictionary` and `Parameters` members can also be accessed by their name;
+- `OuterList` and `InnerList` members can only be accessed by their indices (ie: they are list);
+- `Dictionary` and `Parameters` members can also be accessed by their name (ie: they are ordered map);
 - `Item` and `InnerList` instancs can have a `Parameters` container attached to.
 - `Item` contain in a `Parameters` container **can not have** parameters attached to them to avoid recursion. They are named **Bare Item**.
 - `Item` contain in a `InnerList` container **can have** parameters attached to them.

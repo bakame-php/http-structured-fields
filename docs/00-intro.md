@@ -36,8 +36,4 @@ Use composer:
 composer require bakame/http-structured-fields
 ```
 
-## Using the package
-
-Head on over to the next chapter for a short demonstration.
-
 [Basic usage](/docs/01-basic-usage.md) →`

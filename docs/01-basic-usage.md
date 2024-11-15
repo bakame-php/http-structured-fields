@@ -47,10 +47,11 @@ echo DataType::Dictionary->serialize([
 // returns picture-in-picture=(), geolocation=(self "https://example.com/"), camera=*
 ```
 
-Again, we started from the knowledge that the field is a `Dictionary`, so we will apply the serialization
-mechanism described in the RFC to turn the iterable construct we have into a proper HTTP field text 
-representation. While field building may look overwhelming, it follows a described and tested process
-that the package can easily simplify for you as you will learn while reading this documentation.
+Again, we start from the knowledge that the field is a `Dictionary`, and by default content is added using
+tuple or pairs. As such we can turn the iterable construct we have into a proper HTTP field text 
+representation by applying the serialization mechanism described in the RFC. While field building
+may look overwhelming, at first, it follows a fully described and tested process that the package
+can simplify for you once you read the documentation.
 The goal of the example is to show that even without dwelling too much into the ins and out
 of the package you can easily and quickly parse or serialize compliant fields in PHP.
 
