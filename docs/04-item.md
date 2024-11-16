@@ -4,7 +4,7 @@ This is the structure from which you will be able to access the actual field con
 
 ## Items value
 
-The height (8) defined value types are all attached to an `Item` object where their value and
+The eight (8) defined value types are all attached to an `Item` object where their value and
 type are accessible using the following methods:
 
 ```php

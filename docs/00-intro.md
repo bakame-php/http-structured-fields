@@ -14,6 +14,18 @@ $field[1]->value()->toString(); // returns 'application/xhtml+xml'
 $field[1]->parameterByKey(key: 'q', default: 1.0); // returns 1.0 if the parameter is not defined
 ```
 
+## Motivation
+
+While they are plenty of HTTP headers and trailers, they have historically come each with their own set of 
+rules and constraints when it came to parsing and serializing them. Trying to use the parsing logic of a cookie header
+to parse an accept header will fail. The various parsing logics hinders HTTP headers and trailers usage, modernization
+or security. The [Structured Field RFC](https://www.rfc-editor.org/rfc/rfc9651.html) aim at tackling those issues by
+unifying HTTP headers and trailers parsing and serializing.
+
+New HTTP headers or trailers (called HTTP fields) are encouraged to use the RFC algorithm, data and value types and
+ongoing discussions are happening to [retrofit existing headers that do not match the RFC](https://httpwg.org/http-extensions/draft-ietf-httpbis-retrofit.html) into new 
+shapes that would be compatible with it.
+
 ## Foreword
 
 > [!CAUTION]
