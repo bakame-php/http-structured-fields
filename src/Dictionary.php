@@ -402,11 +402,11 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
             throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{key}' => $key, '{value}' => $value->toHttpValue()]));
         };
 
-        foreach ($this->getIterator() as $offset => $pair) {
+        foreach ($this as $offset => $pair) {
             if ($offset === $foundOffset) {
                 return match ($validate) {
                     null => $pair,
-                    default =>  $validator($pair[1], $pair[0], $index, $validate),
+                    default => $validator($pair[1], $pair[0], $index, $validate),
                 };
             }
         }

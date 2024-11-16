@@ -1,70 +1,125 @@
-# Building and Updating Fields
+# Containers
 
-## Containers
+While building or updating a Bare Item is straightforward, doing the same with the structured field
+requires a bit more logic. In the following sections we will explore how we can access, build and update
+containers.
+
+## Accessing Containers members
 
 All containers objects implement PHP `IteratorAggregate`, `Countable` and `ArrayAccess`
 interfaces. Their members can be accessed using the following shared methods
 
+If we go back to our permission policy field example:
+
 ```php
-$container->indices(): array<int>;
-$container->hasIndices(int ...$offsets): bool;
-$container->getByIndex(int $offset): StructuredField|array{0:string, 1:StructuredField};
-$container->isNotEmpty(): bool;
-$container->isEmpty(): bool;
+$headerLine = 'picture-in-picture=(), geolocation=(self "https://example.com/"), camera=*'; 
+//the raw header line is a structured field dictionary
+$permissions = Dictionary::fromHttpValue($headerLine); // parse the field
+```
+
+The following methods are available, for all containers:
+
+```php
+$permissions->indices();      // returns [0, 1, 2]
+$permissions->hasIndices(-2); // returns true bacause negative index are supported
+$permissions->getByIndex(1);  // returns ['geolocation', InnerList::new(Token::fromString('self'), "https://example.com/")]
+$permissions->isNotEmpty():;  // returns true
+$permissions->isEmpty();      // returns false
 ```
 
 > [!IMPORTANT]
 > The `getByIndex` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
 
+> [!IMPORTANT]
+> For ordered maps, the `getByIndex` method returns a list containing exactly 2 entries.
+> The first entry is the member key, the second entry is the member value.
+> For lists, the method directly returns the value.
+
 To avoid invalid states, `ArrayAccess` modifying methods throw a `ForbiddenOperation`
 if you try to use them on any container object:
 
 ```php
-use Bakame\Http\StructuredFields\Parameters;
-
-$value = Parameters::fromHttpValue(';a=foobar');
-$value['a']->value(); // return 'foobar'
-$value['b'];          // triggers a InvalidOffset exception, the index does not exist
-$value['a'] = 23      // triggers a ForbiddenOperation exception
-unset($value['a']);   // triggers a ForbiddenOperation exception
+$permissions['picture-in-picture']->isEmpty(); // returns true
+$permissions['b'];        // triggers a InvalidOffset exception, the index does not exist
+$permissions['a'] = 23    // triggers a ForbiddenOperation exception
+unset($permissions['a']); // triggers a ForbiddenOperation exception
 ```
+
+> [!IMPORTANT]
+> For ordered map the ArrayAccess interface will use the member key
+> whereas for lists the interface will use the member index.
 
 The `Dictionary` and `Parameters` classes also allow accessing its members as value using their key:
 
 ```php
-$container->hasKey(string ...$offsets): bool;
-$container->getByKey(string $offset): StructuredField;
-$container->toAssociative(); iterable<string, StructuredField>
-$container->keyByIndex(int $index): ?string
-$container->indexByKey(string $key): ?int
-```
+$permissions->hasKey('picture-in-picture');           // returns true
+$permissions->hasKey('picture-in-picture', 'foobar'); // returns false 
+// 'foobar' is not a valid key or at least it is not present
 
-Because they are Ordered Map the `ArrayAccess` methods instead of using the index uses the key to allow a
-quicker, friendlier access to the value than calling `getByKey`.
+$permissions->getByKey('camera'); // returns Item::fromToken('*');
+$permissions->toAssociative(); // returns an iterator
+// the iterator key is the member key and the value is the member value
+// the offset is "lost"
+$permissions->keyByIndex(42); // returns null because there's no member with the offset 42
+$permissions->keyByIndex(2);  // returns 'camera'
+
+$permissions->indexByKey('foobar'): // returns null because there's no member with the key 'foobar'
+$permissions->indexByKey('geolocation'): // returns 1
+```
 
 > [!IMPORTANT]
 > The `getByKey` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
 
+> [!TIP]
+> The `ArrayAccess` interface proxy the result from `getByIndex` in list.
+> The `ArrayAccess` interface proxy the result from `getByKey` in ordered map.
+
 ### Accessing the parameters values
 
-Accessing the associated `Parameters` instance attached to an `InnerList` or a `Item` instances
-is done using the following methods:
+As we have already seen, it is possible to access the `Parameters` values directly
+from the `Item` instance. The same public API is used from the `InnerList`.
+
+On the other hand if you already have a `Parameters` instance you can use the
+`valueByKey` and `valueByIndex` methods to directly access the value from a single
+parameter.
+
+> [!TIP]
+> The `parameterByKey` proxy the result from `valueByKey`.
+> The `parameterByIndex` proxy the result from `valueByIndex`.
+
+## Container validations
+
+### Parameters validation
+
+We have already seen when validating the `Item` the `ParametersValidator` class. Apart from it, all the
+ordered map exposes the `allowedKeys` method which returns true if all the parameters present in the `Parameters`
+uses one of the submitted key.
 
 ```php
-use Bakame\Http\StructuredFields\InnerList;
-use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\Parameters;
-
-$field->parameterByKey(string $key): ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool|null;
-$field->parameters(): Parameters;
-$field->parameterByIndex(int $index): array{0:string, 1:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|boo}
-InnerList::toPair(): array{0:list<Item>, 1:Parameters}>};
-Item::toPair(): array{0:ByteSequence|Token|DisplayString|DateTimeImmutable|Stringable|string|int|float|bool, 1:Parameters}>};
+$permissions->allowedKeys('picture-in-picture', 'geolocation', 'camera', 'foobar'); //returns true
+// even thought the `foobar` key is not used it is allowed.
+$permissions->allowedKeys('picture-in-picture', 'camera'); //returns false
+// the 'geolocation' key is present but not allowed in the list!
 ```
 
-> [!NOTE]
-> - The `parameterByKey` method returns `null` if no value is found for the given key.
-> - The `parameterByIndex` method returns an empty array if no parameter is found for the given index.
+This method can be used by the `ParametersValidator::filterByCriteria` method if needed.
+
+### Value validation
+
+`getByIndex` and `getByKey` method accept an optional callable `validate` method. This method can be used 
+to validate the expected returned value.
+
+```php
+$permissions->getByKey('geolocation', function (mixed $member) {
+    // add your validation rules heres 
+    // or create a separate invokable class
+});
+
+$permissions->getByIndex(1, function (mixed $member, string $key) {
+    // add your validation rules heres 
+    // or create a separate invokable class
+});
+```
 
 ## Building and Updating Structured Fields Values
 
