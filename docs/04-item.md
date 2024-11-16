@@ -148,4 +148,82 @@ $field->parameterByIndex(
 );
 ```
 
+### Validating the full Item
+
+To completely filter an Item you need to:
+- validate its value
+- validate each one of its parameters
+- validate the full parameters bag if necessary
+
+To do so the package provides 2 classes the `ParametersValidator` and the `ItemValidator`. Both classes are used to validate
+in full an `Item`. Both classes expose a `validate` method which will return a `Result` instance containing the filtered data
+in case of success or a `ViolationList` class which contains all the `Validations` errors found.
+
+```php
+use Bakame\Http\StructuredFields\Item;
+use Bakame\Http\StructuredFields\Token;
+use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Validation\ItemValidator;
+use Bakame\Http\StructuredFields\Validation\ParametersValidator;
+use Bakame\Http\StructuredFields\Type;
+use Bakame\Http\StructuredFields\Parameters;
+
+$field = Item::fromHttpValue('"Hello";baz=42;bar="toto"');
+$validator = ItemValidator::new()
+    ->value(fn (mixed $value) => match (true) {
+        Type::fromVariable($value)->isOneOf(Type::Token, Type::String) => true,
+        default => "The value '{value}' failed the RFC validation."
+    })
+    ->parameters(
+        ParametersValidator::new()
+            ->filterByKeys([
+                'bar' => [
+                    'validate' => fn (mixed $value) => Type::String->supports($value) ? true : "The '{key}' parameter '{value}' is invalid",
+                    'required' => true,
+                ],
+                'baz' => [
+                    'validate' => Type::Integer->supports(...),
+                    'required' => true,
+                ],
+                'foo' => [
+                    'validate' => Type::Token->supports(...),
+                    'default' => Token::fromString('hello'),
+                ],
+            ])
+            ->filterByCriteria(fn (Parameters $parameters) => $parameters->isNotEmpty())
+    );
+
+$validation = $validator->validate($field);
+if ($validation->isFailed()) {
+    echo (string) $validation->errors; //returs a summary of all the error messages received.
+} else {
+    $itemValue = $validation->data->value;
+    $parameters = $validatuon->data->parameters->all();
+    echo $parameters['bar']; // returns 'toto';
+    echo $parameters['baz']; // returns 42
+    echo $parameters['foo']; // returns Token::fromString('hello');
+}
+```
+
+The validation is deemed successfully if all the constraints are met successfully otherwise the validation failed.
+When the validation fails only the `errors` readonly property of the `Result` class is filled; on success only
+the `data` readonly property of the `Result` class is.
+
+In the Above example the `ParametersValidator::filterByKeys` is used but if the Item parameters are defined using their
+indices you can then use the `ParametersValidator::filterByIndices`. Its parameters are the same only the default are
+changed to reflect the same difference seen between `parameterByKey` and `parameterByIndex`.
+
+In the example we also use the `ParametersValidator::filterByCriteria` which expect a callback that will validate the
+full `Parameters` container. 
+
+The 3 methods are all optional but at least one must be used otherwise a `Violation` exception will be thrown. Of note,
+if only the `filterByCriteria` method is used, the full parameters values will be return otherwise only the filtered keys
+or indices are returned.
+
+The `ParametersValidator::filterByKeys` and `ParametersValidator::filterByIndices` methods are exclusive. If you use both
+the last one called will be the one used during validation.
+
+Last but not least, there are other methods that can be used to validate the `Parameters` container but we will see 
+them when learning about containers.
+
 &larr; [Types](03-value-types.md)  |  [Containers](05-containers.md) &rarr;
