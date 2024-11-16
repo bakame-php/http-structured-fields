@@ -8,7 +8,6 @@ Once installed you will be able to do the following:
 ```php
 use Bakame\Http\StructuredFields\DataType;
 
-//1 - parsing an Accept Header
 $fieldValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
 $field = DataType::List->parse($fieldValue);
 $field[1]->value()->toString(); // returns 'application/xhtml+xml'
