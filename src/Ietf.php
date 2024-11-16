@@ -7,10 +7,10 @@ namespace Bakame\Http\StructuredFields;
 use DateTimeImmutable;
 use DateTimeZone;
 
-enum Ietf: string
+enum Ietf
 {
-    case Rfc8941 = 'RFC8941';
-    case Rfc9651 = 'RFC9651';
+    case Rfc8941;
+    case Rfc9651;
 
     public function uri(): string
     {

@@ -256,7 +256,7 @@ echo $parameters['baz']; // returns 42
 echo $parameters['foo']; // returns Token::fromString('hello');
 ```
 
-In this case the `data` property will directly contains the filtered parameters values.
+In this case the `data` property will directly contain the filtered parameters values.
 
 Last but not least, there are other methods that can be used to validate the `Parameters` container, but we will see 
 them when learning about ordered map containers in general.
