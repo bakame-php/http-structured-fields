@@ -33,6 +33,17 @@ the data type system.
 | InnerList     | class `InnerList`         | `DataType::InnerList`  | `innerlist`        | 
 | Parameters    | class `Parameters`        | `DataType::Parameters` | `parameters`       |
 
+As example the following existing headers can be classified within the Structured Fields:
+
+- The `Keep-Alive` header is a `Dictionary` 
+- The `Accept` headers are `List`
+- The `Content-Type` header is an `Item`
+
+These example are taken from a list of [already supported fields](https://httpwg.org/http-extensions/draft-ietf-httpbis-retrofit.html)
+
+> [!NOTE]
+> This means that those headers are already supported when parsing or serializing them by the package
+
 All the classes share the same methods for parsing the HTTP text representation of the field. They all use
 the `fromHttpValue` named constructor. This method will parse the field string representation and
 return an instantiated PHP class containing the parsing result. Because there are 2 RFC related
