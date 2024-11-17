@@ -69,3 +69,8 @@ By default, you can access the member `Item` of a parameters using the following
 - `Item::parameters` returns a `Parameters` instance;
 - `Item::parameterByKey` returns the value of the bare item instance attached to the supplied `key`;
 - `Item::parameterByIndex` returns the value of the bare item instance attached to the supplied `index`;
+
+It is possible to alter and modify the `Parameters` attached to an `Item` but this section
+will be explored in the next section about the containers.
+
+&larr; [Value Types](03-value-types.md)  |  [Containers](05-containers.md) &rarr;

@@ -116,4 +116,4 @@ $displayString->type(); // returns Type::DisplayString
 > Values are not directly accessible. They can only be retrieved from an Item
 > Data type.
 
-&larr; [Parsing and Serializing](02-parsing-serializing.md)  |  [Item API](04-item.md) &rarr;
+&larr; [Parsing and Serializing](02-parsing-serializing.md)  |  [Item](04-item.md) &rarr;

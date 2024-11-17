@@ -27,6 +27,8 @@ $permissions['picture-in-picture']->isEmpty(); // returns true because the list 
 count($permissions['geolocation']);            // returns 2 the 'geolocation' feature has 2 values associated to it via a list
 $permissions['geolocation'][-1]->value();      // returns the last value of the list 'https://example.com/'
 $permissions['camera']->value();               // returns '*' the sole value attached to the 'camera' feature
+isset($permissions['yolo']);                   // returns false this permission does not exust
+$permissions->isEmpty();                       // returns false the dictionary contains some permissions
 ```
 
 > [!WARNING]

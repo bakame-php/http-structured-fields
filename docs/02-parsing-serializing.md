@@ -107,7 +107,7 @@ $permissions['picture-in-picture']->isEmpty(); // picture-in-picture returned va
 count($permissions['geolocation']);            // geolocation returned value is an InnerList of 3 Items
 $permissions['geolocation'][1]->value();       // returns "https://example.com/"
 $permissions['camera']->value();               // camera only value is a single Item
-$permissions->getByIndex(2);                   // returns a tuple as n array ['camera', Item::fromPair(['*', []])]
+$permissions->getByIndex(2);                   // returns an array ['camera', Item::fromPair(['*', []])]
 ```
 
 In the example above:
