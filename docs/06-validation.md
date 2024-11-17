@@ -3,14 +3,14 @@
 When it comes to make sure about the incoming data the package provides a simple approach around validation,
 To learn and understand the package validation mechanism we will look at a real world example and expand on it.
 
-So what we are going to do try to validate the following putative HTTP field `temperature`.
+So what we are going to do is validating the following putative HTTP field `temperature`.
 
-The field is defined as a List. meaning it can contain multiple temperature
-definitions as items. Each temperature entry MUST contain a temperature value express in Celsius.
-The temperature has the following required parameters `date`, `longitude` and `latitude`
-and an optional `location` parameter which is a human-readable name of the location where
-the temperature was read. The `location` can be a `string` or a `displaystring`. The latitude
-and longitude are express as `decimal` values. You will find below an example of such HTTP field.
+> The field is defined as a List. meaning it can contain multiple temperature
+> definitions as items. Each temperature entry MUST contain a temperature value express in Celsius.
+> The temperature has the following required parameters `date`, `longitude` and `latitude`
+> and an optional `location` parameter which is a human-readable name of the location where
+> the temperature was read. The `location` can be a `string` or a `displaystring`. The latitude
+> and longitude are express as `decimal` values. You will find below an example of such HTTP field.
 
 ```bash
 temperature: 18.3;location=%"lagos";date=@1731573026;longitude=6.418;latitude=3.389, 12.8;date=@1730894400;longitude=6.418;latitude=3.389
@@ -37,11 +37,15 @@ So far so good, the field is successfully parsed by the package.
 
 ### Validating each entry separately
 
-Each entry can be validated separately using a callback on the `getBy*` methods attached to any container.
-Here we are using a `List` container so we could do the following:
+Each entry can be validated separately using a callback on the `getBy*` methods
+attached to any container. Here we are using a `List` container, so we can do
+the following:
 
 ```php
-$temperature1 = $field->getByIndex(index: 1, validate: fn (Item|InnerList $member) => $member instanceof Item);
+$temperature1 = $field->getByIndex(
+    index: 1,
+    validate: fn (Item|InnerList $member) => $member instanceof Item
+);
 ```
 
 If the `validate` callback returns `true` then it means that the value accessed by the field validate
@@ -50,11 +54,11 @@ If you omit the `validate` argument or do not pass it (which is the default) the
 returned as is without any check.
 
 In my example the constraint state that the return value MUST be a `Item` so if I indeed have
-a `List` but the second member of that list is an InnerList instead of being an Item an `Violation`
+a `List` but the second member of that list is an `InnerList` instead an `Violation`
 exception will be thrown.
 
-The `Violation` exception thrown will have a generic message stating that the field does not
-match the expected specification. But you can change that message if you want. Instead of
+The `Violation` exception thrown will have a generic message stating that the field failed
+validation. But you can adapt the error message if you want. To do so, instead of
 returning `false` on error you can return a template string.
 
 ```php
@@ -71,21 +75,21 @@ $temperature1 = $field->getByIndex(
 // The field `1`; `12.8;date=@1730894400;longitude=6.418;latitude=3.389` failed.
 ```
 
-The template string can return the incoming data if needed for loging. It supports the
+The template string can return the incoming data if needed for logging. It supports the
 following variables:
 
 - `{index}` the member index
 - `{value}` the member value in its serialized version
 - `{key}` the member key (only available with `Dictionary` and `Parameters`)
 
-Now that we know how to discriminate between an `InnerList` and a `Item` we may want to validate
+Now that we know how to discriminate between an `InnerList` and a `Item` we want to validate
 the `Item` entry.
 
 ### Validating the Item value
 
 To validate the expected value of an `Item` you need to provide a callback to the `Item::value` method.
 The callback behave exactly how the callback from the container was described. The only difference
-is that the expected value of the callback is one of the eight value type.
+is that the expected value of the callback is one of the eight value types.
 
 Our field definition states:
 
@@ -102,7 +106,7 @@ $value = $member->value(Type::Decimal->supports(...));
 
 The `Type` enum contains a `supports` method which returns `true` if the submitted value
 is of the specified value type; otherwise it will return `false`. Again if we need 
-a more specific error message in our `Violation` exception we could change the code 
+a more specific error message in our `Violation` exception we can change the code 
 to something more meaningful.
 
 ```php
@@ -110,9 +114,12 @@ use Bakame\Http\StructuredFields\Type;
 
 $value = $member
     ->value(
-        fn (mixed $value) => match (true) {
-            Type::Decimal->supports($value) => true,
-            default => "The value '{value}' failed the RFC validation."
+        function (mixed $value): bool|string {
+            if (!Type::Decimal->supports($value)) {
+                return "The value '{value}' failed the RFC validation.";
+            }
+
+            return true; 
         }
     );
 // the following exception will be thrown
@@ -120,40 +127,43 @@ $value = $member
 ```
 
 > [!NOTE]
-> we used `mixed` as parameter type for convenience the real parameter type should be
-> DateTimeImmutable|ByteSequence|Token|DisplayString|string|int|float|bool
+> we used `mixed` as parameter type for convenience but the effective parameter type should be
+> `ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool`
 
-### Validating the Item associated parameters.
+### Validating the Item parameters.
 
 ### Checking for allowed keys
 
 Before validating the content of the `Parameters` container we need to make
 sure the container contains the proper data. That all the allowed keys are
 present. To do so we can use the `Parameters::allowedKeys` method. This
-method expects a variadic list of keys. If other keys not present in the
-list are found in the container the method will return false. If we
+method expects a list of keys. If other keys not present in the
+list are found in the container the method will return `false`. If we
 go back to our definition. We know that the allowed parameters keys attached
 to the item are: `location`, `longitude`, `latitude` and `date`
 
 ```php
 use Bakame\Http\StructuredFields\Validation\Violation;
 
-if (!$member->parameters()->allowedKeys('location', 'longitude', 'latitude', 'date')) {
+if (!$member->parameters()->allowedKeys(['location', 'longitude', 'latitude', 'date'])) {
     throw new Violation('The parameters contains extra keys that are not allowed.');
 }
 ```
+
+> [!TIP]
+> The `Dictionary` class also exposes an `allowedKeys` method which behave the same way.
 
 > [!WARNING]
 > if the parameters container is empty no error will be triggered
 
 ### Validating single parameters
 
-The `::parameterByKey` and `::parameterByIndex` methods can be used to validate a parameter value.
+The `parameterByKey` and `parameterByIndex` methods can be used to validate a parameter value.
 Since in our field there is no mention of offset, we will use the `::parameterByKey` method.
 
 Let's try to validate the `longitude` parameter
 
-Because parameters are optional by default and the `longitude` parameter is reauired we must
+Because parameters are optional by default and the `longitude` parameter is required we must
 require its presence. So to fully validate the parameter we need to do the following
 
 ```php
@@ -169,13 +179,14 @@ $member->parameterBykey(
 
 > [!NOTE]
 > `parameterByIndex` uses the same parameter only the callback parameter are
-> different as a second paraneter the strin key is added to the callback
+> different as a second parameter the string key is added to the callback
 > for validation purpose.
 
 ### Validating the complete Parameter container
 
 We could iterate the same type of code for each parameter separately but the code
-would quickly become complex. So to avoid this the package introduces a `ParametersValidator`.
+would quickly become complex. So to avoid repetition, the package
+introduces a `ParametersValidator`.
 
 To instantiate this class you just need to call its `new` static method.
 
@@ -186,10 +197,11 @@ $parametersValidator = ParametersValidator::new()
 ```
 
 This class can aggregate all the rules for a parameter container, applies them all at
-once an returns a result you can use to quickly know if your parameters do met all the
-criteria.
+once and returns a result you can use to quickly know whether your parameters do meet
+all the criteria.
 
-So if we go back to the HTTP field definitions we can create the following `ParametersValidator`.
+Going back to the HTTP field definitions we can translate the requirements and create the
+following `ParametersValidator`.
 
 We need to make sure about the allowed keys for that. the class has a `filterByCriteria` which
 expects the `Parameters` container as its sole argument.
@@ -197,16 +209,16 @@ expects the `Parameters` container as its sole argument.
 ```php
 $parametersValidator = ParametersValidator::new()
     ->filterByCriteria(function (Parameters $parameters): bool|string {
-        $parameters->allowedKeys('location', 'longiturde', 'latitude', 'date')
+        return $parameters->allowedKeys(['location', 'longitude', 'latitude', 'date']);
     });
 ```
 
 The `ParametersValidator` class is immutable so each added rules returns a new instance.
 
-Then we can add all the key checks using an associative `array` where each key will be
-the parameter `key` the value will also be an array which takes the parameters of the
-`parameterByKey` method. so we have the following for instance fot the `longitude` parameter
-we did earlier
+Then we can add all the key checks using an associative `array` where each entry index
+will be the parameter `key` and each entry value will also be an array which takes
+the parameters of the `parameterByKey` method. For instance for the `longitude` parameter
+we did earlier we end up with the following entries.
 
 ```php
 use Bakame\Http\StructuredFields\Type;
@@ -238,7 +250,10 @@ use Bakame\Http\StructuredFields\Type;
 use Bakame\Http\StructuredFields\Validation\ParametersValidator;
 
 $parametersValidator = ParametersValidator::new()
-    ->filterByCriteria(fn (Parameters $parameters): bool|string => $parameters->allowedKeys('location', 'longiturde', 'latitude', 'date'))
+    ->filterByCriteria(
+        fn (Parameters $parameters): bool|string => $parameters
+            ->allowedKeys(['location', 'longitude', 'latitude', 'date'])
+    )
     ->filterByKeys([
         'location' => [
             'validate' => fn (mixed $value) => Type::fromVariable($value)->isOneOf(Type::String, Type::DisplayString),
@@ -276,8 +291,7 @@ $parametersValidator = ParametersValidator::new()
     ]);
 ```
 
-We can now validate the parameters by calling the `validate`  method of the `ParametersValidator` 
-class:
+We can now validate the parameters by calling the `ParametersValidator::validate` method:
 
 ```php
 $validation = $parametersValidator->validate($members->parameters());
@@ -287,11 +301,11 @@ if ($validation->isFailed()) {
 }
 ```
 
-The `$result` is a `Validation\Result` class which tells whether the validation was successfully
+The `$result` is a `Result` class which tells whether the validation was successfully
 performed or not. In case of errors, the class exposes a `ViolationList` collection via its 
-public readonly property `errors` which contains all the `Violation` exception triggered during
-the validation process. In case of success, the class will return the filtered data via it's 
-public readonly property `data`. 
+public readonly property `errors` which contains all the `Violation` exceptions triggered
+during the validation process. In case of success, the class will return the filtered
+data via it's public readonly property `data`. 
 
 ```php
 $validation = $parametersValidator->validate($members->parameters());
@@ -304,7 +318,7 @@ if ($validation->isSucces()) {
 ```
 
 > [!NOTE]
-> If we only have validated the `longitude` parameter. it would have been
+> If we only had validated the `longitude` parameter. it would have been
 > the only one present in the returned data.
 
 > [!NOTE]
@@ -320,9 +334,9 @@ There are two differences when it is used:
 $validation = $parametersValidator->validate($members->parameters());
 if ($validation->isSucces()) {
     $parameters = $validation->data->all();
-    $parameters[0] = ['longitude', 6.418]
-    $parameters[1] = ['location', null];
-    $parameters[2] = ['date', new DateTimeImmutable('@1730894400')];
+    $parameters[0]; // returns ['longitude', 6.418]
+    $parameters[1]; // returns ['location', null];
+    $parameters[2]; // returns ['date', new DateTimeImmutable('@1730894400')];
 }
 ```
 
@@ -333,8 +347,8 @@ if ($validation->isSucces()) {
 ### Validating the full Item
 
 Now that we have validated the parameters and the item value. It would be nice to 
-have the same validation result for the Item sowe do it once, so let's use the
-`ItemValidator` class then.
+validate the `Item` once with all the rules. To do so, let's use the `ItemValidator`
+class.
 
 ```php
 use Bakame\Http\StructuredFields\Validation\ItemValidator;
@@ -383,7 +397,7 @@ if ($validation->isSuccess()) {
 So now let's go back to where we started.
 
 ```php
-$temparatureValidator = function (Item|InnerList $member) use ($itemValidator): bool|string {
+$temperatureValidator = function (Item|InnerList $member) use ($itemValidator): bool|string {
     if (!$member instanceof Item) {
         return 'The field `{index}`; `{value}` failed.';
     }
@@ -395,8 +409,8 @@ $temperature1 = $field->getByIndex(index: 1, validate: $temparatureValidator);
 ```
 
 The `ParametersValidator` and the `ItemValidator` are invokable, so we can use them
-as such if we want which simplifies a lot the code. So once you have configured
-your validator in a class it becomes easier to reuse it to validate your data.
+directly with the `getBy*` methods. So once you have configured your validator in a
+class it becomes easier to reuse it to validate your data.
 
 > [!NOTE]
 > When used as invokable the validators return `true` on success and the aggregated 
@@ -408,9 +422,9 @@ your validator in a class it becomes easier to reuse it to validate your data.
 
 > [!TIP]
 > Once you have a specific class to validate a single entry for your list or dictionary it is 
-> easy to validate all the container using either the `map` or the `reduce` method associated 
-> with each container.
+> easy to validate all the container using either the `map`, `filter` or the `reduce` method 
+> associated with each container.
 
-To show how this can be achieved you can check the odebase from [HTTP Cache Status](https://github.com/bakame-php/http-cache-status)
+To show how this can be achieved you can check the codebase from [HTTP Cache Status](https://github.com/bakame-php/http-cache-status)
 
 &larr; [Containers](05-containers.md) 
