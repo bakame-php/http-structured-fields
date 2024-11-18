@@ -506,7 +506,7 @@ final class ItemTest extends StructuredFieldTestCase
         $item = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
         self::assertTrue($item->parameterByName('a'));
         self::assertTrue($item->parameterByName('a', fn (mixed $value) => true));
-        self::assertFalse($item->parameterByName(key: 'b', default: false));
+        self::assertFalse($item->parameterByName(name: 'b', default: false));
     }
 
     #[Test]
@@ -516,7 +516,7 @@ final class ItemTest extends StructuredFieldTestCase
 
         $this->expectExceptionObject(new Violation('The exception has been triggered'));
 
-        $item->parameterByName(key: 'a', validate:fn (mixed $value): string => 'The exception has been triggered');
+        $item->parameterByName(name: 'a', validate:fn (mixed $value): string => 'The exception has been triggered');
     }
 
     #[Test]
@@ -526,7 +526,7 @@ final class ItemTest extends StructuredFieldTestCase
 
         $this->expectExceptionObject(new Violation("The required parameter 'b' is missing."));
 
-        $item->parameterByName(key: 'b', required: true);
+        $item->parameterByName(name: 'b', required: true);
     }
 
     #[Test]
@@ -536,7 +536,7 @@ final class ItemTest extends StructuredFieldTestCase
 
         $this->expectExceptionObject(new Violation("The parameter 'a' whose value is '?1' failed validation."));
 
-        $item->parameterByName(key: 'a', validate:fn (mixed $value): bool => false);
+        $item->parameterByName(name: 'a', validate:fn (mixed $value): bool => false);
     }
 
     #[Test]
