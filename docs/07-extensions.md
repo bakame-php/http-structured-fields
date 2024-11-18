@@ -1,3 +1,8 @@
+---
+title: Interacting with PHP ecosystem
+order: 8
+---
+
 # Interacting with PHP ecosystem
 
 All Datatypes expose the `Stringable` interface while it is recommended to use

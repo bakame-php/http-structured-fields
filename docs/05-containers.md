@@ -1,3 +1,8 @@
+---
+title: The Structured Field containers Data Types
+order: 6
+---
+
 # Containers
 
 While building or updating a Bare Item is straightforward, doing the same with the structured field

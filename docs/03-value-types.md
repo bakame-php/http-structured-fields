@@ -1,3 +1,8 @@
+---
+title: HTTP Fields value types
+order: 4
+---
+
 # Structured Fields Values
 
 ## Value type conversion to PHP

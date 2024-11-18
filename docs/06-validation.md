@@ -1,3 +1,8 @@
+---
+title: Structured Field validation
+order: 7
+---
+
 # Validation
 
 When it comes to make sure about the incoming data the package provides a simple approach around validation,
