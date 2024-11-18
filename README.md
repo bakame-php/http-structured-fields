@@ -7,7 +7,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/bakame/http-structured-fields.svg?style=flat-square)](https://packagist.org/packages/bakame/http-structured-fields)
 [![Sponsor development of this project](https://img.shields.io/badge/sponsor%20this%20package-%E2%9D%A4-ff69b4.svg?style=flat-square)](https://github.com/sponsors/nyamsprod)
 
-`bakame/http-structured-fields` is a framework-agnostic PHP library that allows you to parse, serialize 
+`bakame/http-structured-fields` is a framework-agnostic PHP library that allows you to parse, serialize, 
 create, update and validate HTTP Structured Fields in PHP according to the [RFC9651](https://www.rfc-editor.org/rfc/rfc9651.html).
 
 Once installed you will be able to do the following:
