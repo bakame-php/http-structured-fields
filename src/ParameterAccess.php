@@ -34,13 +34,13 @@ trait ParameterAccess
      *
      * @return SfType|null
      */
-    public function parameterByKey(
-        string $key,
+    public function parameterByName(
+        string $name,
         ?callable $validate = null,
         bool|string $required = false,
         ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
     ): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null {
-        return $this->parameters->valueByKey($key, $validate, $required, $default);
+        return $this->parameters->valueByName($name, $validate, $required, $default);
     }
 
     /**
@@ -81,10 +81,10 @@ trait ParameterAccess
      * @throws SyntaxError If the string key is not a valid
      */
     public function addParameter(
-        string $key,
+        string $name,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): static {
-        return $this->withParameters($this->parameters()->add($key, $member));
+        return $this->withParameters($this->parameters()->add($name, $member));
     }
 
     /**
@@ -98,10 +98,10 @@ trait ParameterAccess
      * @throws SyntaxError If the string key is not a valid
      */
     public function prependParameter(
-        string $key,
+        string $name,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null  $member
     ): static {
-        return $this->withParameters($this->parameters()->prepend($key, $member));
+        return $this->withParameters($this->parameters()->prepend($name, $member));
     }
 
     /**
@@ -115,10 +115,10 @@ trait ParameterAccess
      * @throws SyntaxError If the string key is not a valid
      */
     public function appendParameter(
-        string $key,
+        string $name,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): static {
-        return $this->withParameters($this->parameters()->append($key, $member));
+        return $this->withParameters($this->parameters()->append($name, $member));
     }
 
     /**
@@ -164,9 +164,9 @@ trait ParameterAccess
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      */
-    public function withoutParameterByKeys(string ...$keys): static
+    public function withoutParameterByNames(string ...$names): static
     {
-        return $this->withParameters($this->parameters()->removeByKeys(...$keys));
+        return $this->withParameters($this->parameters()->removeByKeys(...$names));
     }
 
     /**

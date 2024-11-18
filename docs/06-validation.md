@@ -172,7 +172,7 @@ Because parameters are optional by default and the `longitude` parameter is requ
 require its presence. So to fully validate the parameter we need to do the following
 
 ```php
-$member->parameterBykey(
+$member->parameterByName(
     key: 'longitude',
     validate: fn (mixed $value) => match (true) {
         Type::Decimal->supports($value) => true,
@@ -257,9 +257,9 @@ use Bakame\Http\StructuredFields\Validation\ParametersValidator;
 $parametersValidator = ParametersValidator::new()
     ->filterByCriteria(
         fn (Parameters $parameters): bool|string => $parameters
-            ->allowedKeys(['location', 'longitude', 'latitude', 'date'])
+            ->allowedNames(['location', 'longitude', 'latitude', 'date'])
     )
-    ->filterByKeys([
+    ->filterByNames([
         'location' => [
             'validate' => fn (mixed $value) => Type::fromVariable($value)->isOneOf(Type::String, Type::DisplayString),
         ],

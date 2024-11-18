@@ -116,7 +116,7 @@ final class ParametersValidator
         if ([] !== $this->filterConstraints) {
             $parsedParameters = match ($this->type) {
                 self::USE_INDICES => $this->validateByIndices($parameters),
-                default => $this->validateByKeys($parameters),
+                default => $this->validateByNames($parameters),
             };
 
             if ($parsedParameters->isFailed()) {
@@ -169,19 +169,19 @@ final class ParametersValidator
      *
      * @return Result<ValidatedParameters>|Result<null>
      */
-    private function validateByKeys(Parameters $parameters): Result /* @phpstan-ignore-line */
+    private function validateByNames(Parameters $parameters): Result /* @phpstan-ignore-line */
     {
         $data = [];
         $violations = new ViolationList();
         /**
-         * @var string $key
+         * @var string $name
          * @var SfParameterKeyRule $rule
          */
-        foreach ($this->filterConstraints as $key => $rule) {
+        foreach ($this->filterConstraints as $name => $rule) {
             try {
-                $data[$key] = $parameters->valueByKey($key, $rule['validate'] ?? null, $rule['required'] ?? false, $rule['default'] ?? null);
+                $data[$name] = $parameters->valueByName($name, $rule['validate'] ?? null, $rule['required'] ?? false, $rule['default'] ?? null);
             } catch (Violation $exception) {
-                $violations[$key] = $exception;
+                $violations[$name] = $exception;
             }
         }
 

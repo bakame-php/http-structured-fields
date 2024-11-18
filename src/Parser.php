@@ -161,13 +161,13 @@ final class Parser
         $map = [];
         $remainder = ltrim((string) $httpValue, ' ');
         while ('' !== $remainder) {
-            $key = MapKey::fromStringBeginning($remainder)->value;
-            $remainder = substr($remainder, strlen($key));
+            $name = MapKey::fromStringBeginning($remainder)->value;
+            $remainder = substr($remainder, strlen($name));
             if ('' === $remainder || '=' !== $remainder[0]) {
                 $remainder = '=?1'.$remainder;
             }
 
-            [$map[$key], $offset] = $this->extractItemOrInnerList(substr($remainder, 1));
+            [$map[$name], $offset] = $this->extractItemOrInnerList(substr($remainder, 1));
             $remainder = self::removeCommaSeparatedWhiteSpaces($remainder, ++$offset);
         }
 
@@ -343,12 +343,12 @@ final class Parser
         $remainder = $httpValue;
         while ('' !== $remainder && ';' === $remainder[0]) {
             $remainder = ltrim(substr($remainder, 1), ' ');
-            $key = MapKey::fromStringBeginning($remainder)->value;
-            $map[$key] = true;
-            $remainder = substr($remainder, strlen($key));
+            $name = MapKey::fromStringBeginning($remainder)->value;
+            $map[$name] = true;
+            $remainder = substr($remainder, strlen($name));
             if ('' !== $remainder && '=' === $remainder[0]) {
                 $remainder = substr($remainder, 1);
-                [$map[$key], $offset] = $this->extractValue($remainder);
+                [$map[$name], $offset] = $this->extractValue($remainder);
                 $remainder = substr($remainder, $offset);
             }
         }
