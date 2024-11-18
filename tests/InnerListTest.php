@@ -197,7 +197,7 @@ final class InnerListTest extends TestCase
     public function it_can_create_via_with_parameters_method_a_new_object(): void
     {
         $instance = new class () implements StructuredFieldProvider {
-            public function toStructuredField(): StructuredField
+            public function toStructuredField(): Item
             {
                 return Item::new(Token::fromString('babayaga'));
             }

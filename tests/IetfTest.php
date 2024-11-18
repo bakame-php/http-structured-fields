@@ -82,7 +82,7 @@ final class IetfTest extends TestCase
 
         yield 'structuredFieldProvider supported' => [
             'value' => new class () implements StructuredFieldProvider {
-                public function toStructuredField(): StructuredField
+                public function toStructuredField(): Item
                 {
                     return Item::fromInteger(123456789);
                 }

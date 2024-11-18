@@ -1,6 +1,6 @@
 # Interacting with PHP ecosystem
 
-All Datatype expose the `Stringable` interface while it is recommended to use
+All Datatypes expose the `Stringable` interface while it is recommended to use
 the `toHttpValue` method for better granularity. Supporting the `Stringable`
 interface allows the package to easily interface with packages and frameworks
 which expects a string or a stringable object when adding or updating
@@ -21,7 +21,7 @@ expose no particular interface.
 > [!IMPORTANT]
 > The `StructuredField` interface should be seen as an internal implementation detail 
 > and should not be implemented outside the package. While PHP does not prohibit such 
-> action, **you MUST NOT implement the `StructuredField`  interface.**
+> action, **you MUST NOT implement the `StructuredField` interface.**
 
 The reason for disallowing the `StructuredField` interface is simple. We want to ensure
 that in any situation the RFC is being respected. The contract is between the RFC and your
@@ -35,9 +35,9 @@ On the other hand to allow composition the package does expose the `StructuredFi
 interface StructuredFieldProvider
 {
     /**
-     * Returns an object implementing the StructuredField interface.
+     * Returns ane of the StructuredField Data Type class.
      */
-    public function toStructuredField(): StructuredField;
+    public function toStructuredField(): OuterList|Dictionary|Item|InnerList|Parameters;
 }
 ```
 
@@ -68,7 +68,7 @@ class readonly AcceptHeaderItem implements StructuredFieldProvider
         public float $quality = 1.0
     ) {}
 
-    public function toStructuredField(): StructuredField
+    public function toStructuredField(): Item
     {
         return Item::fromToken($this->value)
             ->withParameters(

@@ -87,40 +87,6 @@ parameter.
 > The `parameterByKey` proxy the result from `valueByKey`.
 > The `parameterByIndex` proxy the result from `valueByIndex`.
 
-## Container validations
-
-### Parameters validation
-
-We have already seen when validating the `Item` the `ParametersValidator` class. Apart from it, all the
-ordered map exposes the `allowedKeys` method which returns true if all the parameters present in the `Parameters`
-uses one of the submitted key.
-
-```php
-$permissions->allowedKeys('picture-in-picture', 'geolocation', 'camera', 'foobar'); //returns true
-// even thought the `foobar` key is not used it is allowed.
-$permissions->allowedKeys('picture-in-picture', 'camera'); //returns false
-// the 'geolocation' key is present but not allowed in the list!
-```
-
-This method can be used by the `ParametersValidator::filterByCriteria` method if needed.
-
-### Value validation
-
-`getByIndex` and `getByKey` method accept an optional callable `validate` method. This method can be used 
-to validate the expected returned value.
-
-```php
-$permissions->getByKey('geolocation', function (mixed $member) {
-    // add your validation rules heres 
-    // or create a separate invokable class
-});
-
-$permissions->getByIndex(1, function (mixed $member, string $key) {
-    // add your validation rules heres 
-    // or create a separate invokable class
-});
-```
-
 ## Building and Updating Structured Fields Values
 
 Every value object can be used as a builder to create an HTTP field value. Because we are
@@ -259,7 +225,7 @@ the member argument of each modifying methods.
 
 If the submitted type is:
 
--  a `StructuredField` implementing object, it will be passed as is
+-  one of the five Data type implementing object, it will be passed as is
 -  an iterable structure, it will be converted to an `InnerList` instance using `InnerList::new`
 -  otherwise, it is converted into an `Item` using the `Item::new` named constructor.
 

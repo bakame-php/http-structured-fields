@@ -100,7 +100,7 @@ final class ParametersTest extends StructuredFieldTestCase
         self::assertFalse($deletedInstance->hasIndices(1));
 
         $instance = new class () implements StructuredFieldProvider {
-            public function toStructuredField(): StructuredField
+            public function toStructuredField(): Item
             {
                 return Item::fromString('BarBaz');
             }

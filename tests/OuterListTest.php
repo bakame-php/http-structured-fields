@@ -65,7 +65,7 @@ final class OuterListTest extends StructuredFieldTestCase
     public function it_can_unshift_insert_and_replace(): void
     {
         $anonymous = new class () implements StructuredFieldProvider {
-            public function toStructuredField(): StructuredField
+            public function toStructuredField(): Item
             {
                 return Item::fromInteger(42);
             }

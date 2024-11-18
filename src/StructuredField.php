@@ -9,6 +9,8 @@ use DateTimeInterface;
 use Stringable;
 
 /**
+ * @internal The interface MUST not be implemented outside the package codebase
+ *
  * @phpstan-type SfType ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool
  * @phpstan-type SfTypeInput SfType|DateTimeInterface
  * @phpstan-type SfItemInput Item|SfTypeInput|StructuredFieldProvider|StructuredField
