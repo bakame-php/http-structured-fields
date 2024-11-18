@@ -7,13 +7,13 @@ namespace Bakame\Http\StructuredFields\Validation;
 use ArrayAccess;
 use Bakame\Http\StructuredFields\ForbiddenOperation;
 use Bakame\Http\StructuredFields\InvalidOffset;
-use Bakame\Http\StructuredFields\StructuredField;
+use Bakame\Http\StructuredFields\StructuredFieldProvider;
 use Countable;
 use Iterator;
 use IteratorAggregate;
 
 /**
- * @phpstan-import-type SfType from StructuredField
+ * @phpstan-import-type SfType from StructuredFieldProvider
  *
  * @implements ArrayAccess<array-key, array{0:string, 1:SfType}|array{}|SfType|null>
  * @implements IteratorAggregate<array-key, array{0:string, 1:SfType}|array{}|SfType|null>

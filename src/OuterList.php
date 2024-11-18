@@ -29,9 +29,9 @@ use const ARRAY_FILTER_USE_KEY;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#name-lists
  *
- * @phpstan-import-type SfMemberInput from StructuredField
- * @phpstan-import-type SfInnerListPair from StructuredField
- * @phpstan-import-type SfItemPair from StructuredField
+ * @phpstan-import-type SfMemberInput from StructuredFieldProvider
+ * @phpstan-import-type SfInnerListPair from StructuredFieldProvider
+ * @phpstan-import-type SfItemPair from StructuredFieldProvider
  *
  * @implements ArrayAccess<int, InnerList|Item>
  * @implements IteratorAggregate<int, InnerList|Item>

@@ -12,8 +12,8 @@ use DateTimeInterface;
  * Common manipulation methods used when interacting with an object
  * with a Parameters instance attached to it.
  *
- * @phpstan-import-type SfType from StructuredField
- * @phpstan-import-type SfItemInput from StructuredField
+ * @phpstan-import-type SfType from StructuredFieldProvider
+ * @phpstan-import-type SfItemInput from StructuredFieldProvider
  */
 trait ParameterAccess
 {

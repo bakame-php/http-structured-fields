@@ -26,8 +26,8 @@ use function is_string;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.2
  *
- * @phpstan-import-type SfItemInput from StructuredField
- * @phpstan-import-type SfType from StructuredField
+ * @phpstan-import-type SfItemInput from StructuredFieldProvider
+ * @phpstan-import-type SfType from StructuredFieldProvider
  *
  * @implements ArrayAccess<string, InnerList|Item>
  * @implements IteratorAggregate<int, array{0:string, 1:Item}>

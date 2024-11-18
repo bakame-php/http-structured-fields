@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields\Validation;
 
 use Bakame\Http\StructuredFields\Item;
-use Bakame\Http\StructuredFields\StructuredField;
+use Bakame\Http\StructuredFields\StructuredFieldProvider;
 use Bakame\Http\StructuredFields\SyntaxError;
 use Stringable;
 
 /**
  * Structured field Item validator.
  *
- * @phpstan-import-type SfType from StructuredField
+ * @phpstan-import-type SfType from StructuredFieldProvider
  */
 final class ItemValidator
 {

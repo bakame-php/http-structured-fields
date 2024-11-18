@@ -27,10 +27,10 @@ use const ARRAY_FILTER_USE_KEY;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.1
  *
- * @phpstan-import-type SfType from StructuredField
- * @phpstan-import-type SfItemInput from StructuredField
- * @phpstan-import-type SfInnerListPair from StructuredField
- * @phpstan-import-type SfParameterInput from StructuredField
+ * @phpstan-import-type SfType from StructuredFieldProvider
+ * @phpstan-import-type SfItemInput from StructuredFieldProvider
+ * @phpstan-import-type SfInnerListPair from StructuredFieldProvider
+ * @phpstan-import-type SfParameterInput from StructuredFieldProvider
  *
  * @implements  ArrayAccess<int, Item>
  * @implements  IteratorAggregate<int, Item>
