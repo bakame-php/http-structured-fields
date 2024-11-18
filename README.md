@@ -17,9 +17,9 @@ use Bakame\Http\StructuredFields\OuterList;
 
 //1 - parsing an Accept Header
 $fieldValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
-$field = OuterList::fromRfc9651($fieldValue);
-$field[1]->value()->toString(); // returns 'application/xhtml+xml'
-$field[1]->parameterByKey(key: 'q', default: 1.0); // returns 1.0 if the parameter is not defined
+$container = OuterList::fromRfc9651($fieldValue);
+$container[1]->value()->toString(); // returns 'application/xhtml+xml'
+$container[1]->parameterByKey(key: 'q', default: 1.0); // returns 1.0 if the parameter is not defined
 ```
 
 ## System Requirements
