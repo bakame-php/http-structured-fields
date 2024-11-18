@@ -57,27 +57,27 @@ unset($permissions['a']); // triggers a ForbiddenOperation exception
 The `Dictionary` and `Parameters` classes also allow accessing its members as value using their key:
 
 ```php
-$permissions->hasKey('picture-in-picture');           // returns true
-$permissions->hasKey('picture-in-picture', 'foobar'); // returns false 
+$permissions->hasName('picture-in-picture');           // returns true
+$permissions->hasName('picture-in-picture', 'foobar'); // returns false 
 // 'foobar' is not a valid key or at least it is not present
 
-$permissions->getByKey('camera'); // returns Item::fromToken('*');
+$permissions->getByName('camera'); // returns Item::fromToken('*');
 $permissions->toAssociative(); // returns an iterator
 // the iterator key is the member key and the value is the member value
 // the offset is "lost"
-$permissions->keyByIndex(42); // returns null because there's no member with the offset 42
-$permissions->keyByIndex(2);  // returns 'camera'
+$permissions->nameByIndex(42); // returns null because there's no member with the offset 42
+$permissions->nameByIndex(2);  // returns 'camera'
 
-$permissions->indexByKey('foobar'): // returns null because there's no member with the key 'foobar'
-$permissions->indexByKey('geolocation'): // returns 1
+$permissions->indexByName('foobar'): // returns null because there's no member with the key 'foobar'
+$permissions->indexByName('geolocation'): // returns 1
 ```
 
 > [!IMPORTANT]
-> The `getByKey` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
+> The `getByName` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
 
 > [!TIP]
 > The `ArrayAccess` interface proxy the result from `getByIndex` in list.
-> The `ArrayAccess` interface proxy the result from `getByKey` in ordered map.
+> The `ArrayAccess` interface proxy the result from `getByName` in ordered map.
 
 ### Accessing the parameters values
 
@@ -85,11 +85,11 @@ As we have already seen, it is possible to access the `Parameters` values direct
 from the `Item` instance. The same public API is used from the `InnerList`.
 
 On the other hand if you already have a `Parameters` instance you can use the
-`valueByKey` and `valueByIndex` methods to directly access the value from a single
+`valueByName` and `valueByIndex` methods to directly access the value from a single
 parameter.
 
 > [!TIP]
-> The `parameterByKey` proxy the result from `valueByKey`.
+> The `parameterByKey` proxy the result from `valueByName`.
 > The `parameterByIndex` proxy the result from `valueByIndex`.
 
 ## Building and Updating Structured Fields Values
@@ -138,11 +138,11 @@ following steps. You, first, create a `Parameters` or a `Dictionary` instance us
 use any of the following modifying methods to populate it.
 
 ```php
-$map->add(string $key, $value): static;
-$map->append(string $key, $value): static;
-$map->prepend(string $key, $value): static;
+$map->add(string $name, $value): static;
+$map->append(string $name, $value): static;
+$map->prepend(string $name, $value): static;
 $map->mergeAssociative(...$others): static;
-$map->removeByKeys(string ...$keys): static;
+$map->removeByKeys(string ...$names): static;
 ```
 
 As shown below:
@@ -384,9 +384,9 @@ Both objects provide additional modifying methods to help deal with parameters.
 You can attach and update the associated `Parameters` instance using the following methods.
 
 ```php
-$field->addParameter(string $key, mixed $value): static;
-$field->appendParameter(string $key, mixed $value): static;
-$field->prependParameter(string $key, mixed $value): static;
+$field->addParameter(string $name, mixed $value): static;
+$field->appendParameter(string $name, mixed $value): static;
+$field->prependParameter(string $name, mixed $value): static;
 $field->withoutParameters(string ...$keys): static; // this method is deprecated as of version 1.1 use withoutParametersByKeys instead
 $field->withoutAnyParameter(): static;
 $field->withParameters(Parameters $parameters): static;

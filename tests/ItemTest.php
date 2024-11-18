@@ -342,8 +342,8 @@ final class ItemTest extends StructuredFieldTestCase
     {
         $instance = Item::fromHttpValue('1; a; b=?0');
 
-        self::assertTrue($instance->parameters()->getByKey('a')->value());
-        self::assertFalse($instance->parameters()->getByKey('b')->value());
+        self::assertTrue($instance->parameters()->getByName('a')->value());
+        self::assertFalse($instance->parameters()->getByName('b')->value());
     }
 
     #[Test]
@@ -351,7 +351,7 @@ final class ItemTest extends StructuredFieldTestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        Item::fromHttpValue('1; a; b=?0')->parameters()->getByKey('bar')->value();
+        Item::fromHttpValue('1; a; b=?0')->parameters()->getByName('bar')->value();
     }
 
     #[Test]
@@ -434,8 +434,8 @@ final class ItemTest extends StructuredFieldTestCase
         $instance7 = $instance1->addParameter('a', true);
         $instance2 = $instance1->appendParameter('a', true);
         $instance3 = $instance1->prependParameter('a', false);
-        $instance4 = $instance1->withoutParameterByKeys('b');
-        $instance5 = $instance1->withoutParameterByKeys('a');
+        $instance4 = $instance1->withoutParameterByNames('b');
+        $instance5 = $instance1->withoutParameterByNames('a');
         $instance6 = $instance1->withoutAnyParameter();
 
         self::assertSame($instance1, $instance2);
@@ -443,12 +443,12 @@ final class ItemTest extends StructuredFieldTestCase
         self::assertNotSame($instance1, $instance3);
         self::assertEquals($instance1->value(), $instance3->value());
         self::assertSame($instance1, $instance4);
-        self::assertTrue($instance1->parameterByKey('a'));
+        self::assertTrue($instance1->parameterByName('a'));
         self::assertSame(['a', true], $instance1->parameterByIndex(0));
-        self::assertNull($instance5->parameterByKey('a'));
+        self::assertNull($instance5->parameterByName('a'));
         self::assertTrue($instance5->parameters()->isEmpty());
         self::assertTrue($instance6->parameters()->isEmpty());
-        self::assertNull($instance1->parameterByKey('non-existing-key'));
+        self::assertNull($instance1->parameterByName('non-existing-key'));
         self::assertSame([], $instance1->parameterByIndex(42));
     }
 
@@ -504,9 +504,9 @@ final class ItemTest extends StructuredFieldTestCase
     public function it_can_validate_the_item_parameter_value(): void
     {
         $item = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
-        self::assertTrue($item->parameterByKey('a'));
-        self::assertTrue($item->parameterByKey('a', fn (mixed $value) => true));
-        self::assertFalse($item->parameterByKey(key: 'b', default: false));
+        self::assertTrue($item->parameterByName('a'));
+        self::assertTrue($item->parameterByName('a', fn (mixed $value) => true));
+        self::assertFalse($item->parameterByName(name: 'b', default: false));
     }
 
     #[Test]
@@ -516,7 +516,7 @@ final class ItemTest extends StructuredFieldTestCase
 
         $this->expectExceptionObject(new Violation('The exception has been triggered'));
 
-        $item->parameterByKey(key: 'a', validate:fn (mixed $value): string => 'The exception has been triggered');
+        $item->parameterByName(name: 'a', validate:fn (mixed $value): string => 'The exception has been triggered');
     }
 
     #[Test]
@@ -526,7 +526,7 @@ final class ItemTest extends StructuredFieldTestCase
 
         $this->expectExceptionObject(new Violation("The required parameter 'b' is missing."));
 
-        $item->parameterByKey(key: 'b', required: true);
+        $item->parameterByName(name: 'b', required: true);
     }
 
     #[Test]
@@ -536,7 +536,7 @@ final class ItemTest extends StructuredFieldTestCase
 
         $this->expectExceptionObject(new Violation("The parameter 'a' whose value is '?1' failed validation."));
 
-        $item->parameterByKey(key: 'a', validate:fn (mixed $value): bool => false);
+        $item->parameterByName(name: 'a', validate:fn (mixed $value): bool => false);
     }
 
     #[Test]

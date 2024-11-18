@@ -52,7 +52,7 @@ final class ItemValidatorTest extends TestCase
         $item = Item::fromString('foo')->addParameter('foo', 'bar');
         $validation = $this->validator
             ->value(fn (mixed $value): bool => true)
-            ->parameters(ParametersValidator::new()->filterByCriteria(fn (Parameters $parameters) => $parameters->allowedKeys(ErrorCode::list())))
+            ->parameters(ParametersValidator::new()->filterByCriteria(fn (Parameters $parameters) => $parameters->allowedNames(ErrorCode::list())))
             ->validate($item);
 
         self::assertTrue($validation->isFailed());
@@ -66,7 +66,7 @@ final class ItemValidatorTest extends TestCase
         $item = Item::fromString('foo');
         $validation = $this->validator
             ->value(fn (mixed $value): bool => true)
-            ->parameters(ParametersValidator::new()->filterByCriteria(fn (Parameters $parameters) => $parameters->allowedKeys(ErrorCode::list())))
+            ->parameters(ParametersValidator::new()->filterByCriteria(fn (Parameters $parameters) => $parameters->allowedNames(ErrorCode::list())))
             ->validate($item);
 
         self::assertTrue($validation->isSuccess());
@@ -78,7 +78,7 @@ final class ItemValidatorTest extends TestCase
         $item = Item::fromPair(['foo', [['foo', 1], ['bar', 2]]]);
         $validation = $this->validator
             ->value(fn (mixed $value): bool => true)
-            ->parameters(ParametersValidator::new()->filterByCriteria(fn (Parameters $parameters) => $parameters->allowedKeys(['foo', 'bar'])))
+            ->parameters(ParametersValidator::new()->filterByCriteria(fn (Parameters $parameters) => $parameters->allowedNames(['foo', 'bar'])))
             ->validate($item);
 
         self::assertFalse($validation->isFailed());
@@ -93,7 +93,7 @@ final class ItemValidatorTest extends TestCase
         $item = Item::fromPair(['foo', [['foo', 1], ['bar', 2]]]);
         $validation = $this->validator
             ->value(fn (mixed $value): bool => true)
-            ->parameters(ParametersValidator::new()->filterByCriteria(fn (Parameters $parameters) => $parameters->allowedKeys(['foo', 'bar']), ParametersValidator::USE_INDICES))
+            ->parameters(ParametersValidator::new()->filterByCriteria(fn (Parameters $parameters) => $parameters->allowedNames(['foo', 'bar']), ParametersValidator::USE_INDICES))
             ->validate($item);
 
         self::assertTrue($validation->isSuccess());
@@ -106,7 +106,7 @@ final class ItemValidatorTest extends TestCase
     public function it_will_fail_validating_parameters_by_keys(): void
     {
         $parametersValidator = ParametersValidator::new()
-            ->filterByCriteria(fn (Parameters $parameters) => $parameters->allowedKeys(['foo', 'bar']), ParametersValidator::USE_INDICES)
+            ->filterByCriteria(fn (Parameters $parameters) => $parameters->allowedNames(['foo', 'bar']), ParametersValidator::USE_INDICES)
             ->filterByKeys([
                 'foo' => ['validate' => fn (mixed $value): bool => false],
                 'bar' => ['validate' => fn (mixed $value): bool => true],
@@ -127,7 +127,7 @@ final class ItemValidatorTest extends TestCase
     public function it_will_succeed_validating_parameters_by_keys_and_override_parameters_validator_return(): void
     {
         $parametersValidator = ParametersValidator::new()
-            ->filterByCriteria(fn (Parameters $parameters) => $parameters->allowedKeys(['foo', 'bar']), ParametersValidator::USE_INDICES)
+            ->filterByCriteria(fn (Parameters $parameters) => $parameters->allowedNames(['foo', 'bar']), ParametersValidator::USE_INDICES)
             ->filterByIndices([
                 1 => ['validate' => fn (mixed $value, string $key): bool => true],
             ]);

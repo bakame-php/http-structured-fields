@@ -24,9 +24,9 @@ final class DictionaryTest extends StructuredFieldTestCase
 
 
         self::assertSame(['string', $stringItem], $instance->getByIndex(0));
-        self::assertSame($stringItem, $instance->getByKey('string'));
-        self::assertTrue($instance->hasKeys('string', 'string'));
-        self::assertFalse($instance->hasKeys('string', 'no-present'));
+        self::assertSame($stringItem, $instance->getByName('string'));
+        self::assertTrue($instance->hasNames('string', 'string'));
+        self::assertFalse($instance->hasNames('string', 'no-present'));
         self::assertEquals([['string', $stringItem], ['boolean', $booleanItem]], [...$instance->getIterator()]);
         self::assertEquals($arrayParams, [...$instance->toAssociative()]);
     }
@@ -40,8 +40,8 @@ final class DictionaryTest extends StructuredFieldTestCase
         $instance = Dictionary::fromPairs($arrayParams);
 
         self::assertSame(['string', $stringItem], $instance->getByIndex(0));
-        self::assertSame($stringItem, $instance->getByKey('string'));
-        self::assertTrue($instance->hasKeys('string'));
+        self::assertSame($stringItem, $instance->getByName('string'));
+        self::assertTrue($instance->hasNames('string'));
         self::assertEquals($arrayParams, [...$instance->getIterator()]);
         self::assertEquals(['string' => $stringItem, 'boolean' => $booleanItem], [...$instance->toAssociative()]);
     }
@@ -58,10 +58,10 @@ final class DictionaryTest extends StructuredFieldTestCase
         self::assertTrue($instance->isNotEmpty());
         self::assertFalse($instance->isEmpty());
 
-        $deletedInstance = $instance->removeByKeys('boolean');
+        $deletedInstance = $instance->removeByNames('boolean');
 
         self::assertCount(1, $deletedInstance);
-        self::assertFalse($deletedInstance->hasKeys('boolean'));
+        self::assertFalse($deletedInstance->hasNames('boolean'));
         self::assertFalse($deletedInstance->hasIndices(1));
 
         $appendInstance = $deletedInstance->append('foobar', Item::new('BarBaz'));
@@ -75,7 +75,7 @@ final class DictionaryTest extends StructuredFieldTestCase
         self::assertIsString($foundItem[1]->value());
         self::assertStringContainsString('BarBaz', $foundItem[1]->value());
 
-        $deleteAgain = $appendInstance->removeByKeys('foobar', 'string');
+        $deleteAgain = $appendInstance->removeByNames('foobar', 'string');
 
         self::assertCount(0, $deleteAgain);
         self::assertFalse($deleteAgain->isNotEmpty());
@@ -86,7 +86,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     {
         $instance = Dictionary::new();
 
-        self::assertSame($instance, $instance->removeByKeys('foo', 'bar', 'baz'));
+        self::assertSame($instance, $instance->removeByNames('foo', 'bar', 'baz'));
     }
 
     #[Test]
@@ -94,11 +94,11 @@ final class DictionaryTest extends StructuredFieldTestCase
     {
         $instance = Dictionary::new();
 
-        self::assertFalse($instance->hasKeys('foobar'));
+        self::assertFalse($instance->hasNames('foobar'));
 
         $this->expectException(InvalidOffset::class);
 
-        $instance->getByKey('foobar');
+        $instance->getByName('foobar');
     }
 
     #[Test]
@@ -154,13 +154,13 @@ final class DictionaryTest extends StructuredFieldTestCase
     {
         $instance = Dictionary::new();
 
-        self::assertSame([], $instance->keys());
+        self::assertSame([], $instance->names());
 
         $newInstance = $instance
             ->append('a', Item::false())
             ->prepend('b', Item::true());
 
-        self::assertSame(['b', 'a'], $newInstance->keys());
+        self::assertSame(['b', 'a'], $newInstance->names());
     }
 
     #[Test]
@@ -173,8 +173,8 @@ final class DictionaryTest extends StructuredFieldTestCase
         $instance4 = $instance1->mergeAssociative($instance2, $instance3);
 
         self::assertCount(2, $instance4);
-        self::assertEquals(Item::new(42), $instance4->getByKey('a'));
-        self::assertEquals(Item::true(), $instance4->getByKey('b'));
+        self::assertEquals(Item::new(42), $instance4->getByName('a'));
+        self::assertEquals(Item::true(), $instance4->getByName('b'));
     }
 
     #[Test]
@@ -187,8 +187,8 @@ final class DictionaryTest extends StructuredFieldTestCase
         $instance4 = $instance3->mergeAssociative($instance2, $instance1);
 
         self::assertCount(2, $instance4);
-        self::assertEquals(Item::false(), $instance4->getByKey('a'));
-        self::assertEquals(Item::true(), $instance4->getByKey('b'));
+        self::assertEquals(Item::false(), $instance4->getByName('a'));
+        self::assertEquals(Item::true(), $instance4->getByName('b'));
     }
 
     #[Test]
@@ -208,8 +208,8 @@ final class DictionaryTest extends StructuredFieldTestCase
 
         self::assertCount(2, $instance4);
 
-        self::assertEquals(Item::false(), $instance4->getByKey('a'));
-        self::assertEquals(Item::true(), $instance4->getByKey('b'));
+        self::assertEquals(Item::false(), $instance4->getByName('a'));
+        self::assertEquals(Item::true(), $instance4->getByName('b'));
     }
 
     #[Test]
@@ -257,8 +257,8 @@ final class DictionaryTest extends StructuredFieldTestCase
         self::assertCount(1, $newInstance2);
         self::assertSame($newInstance, $newInstance2);
 
-        self::assertFalse($newInstance->removeByKeys('foo')->isNotEmpty());
-        self::assertSame($newInstance, $newInstance->removeByKeys('baz', 'bar', 'yolo-not-there'));
+        self::assertFalse($newInstance->removeByNames('foo')->isNotEmpty());
+        self::assertSame($newInstance, $newInstance->removeByNames('baz', 'bar', 'yolo-not-there'));
         self::assertSame($newInstance, $newInstance->removeByIndices(325));
 
         $instanceWithoutMember = Dictionary::new();
@@ -277,8 +277,8 @@ final class DictionaryTest extends StructuredFieldTestCase
             ['token', $token],
         ]);
 
-        self::assertInstanceOf(Item::class, $structuredField->getByKey('false'));
-        self::assertFalse($structuredField->getByKey('false')->value());
+        self::assertInstanceOf(Item::class, $structuredField->getByName('false'));
+        self::assertFalse($structuredField->getByName('false')->value());
     }
 
     #[Test]
@@ -293,10 +293,10 @@ final class DictionaryTest extends StructuredFieldTestCase
             ['token', $token],
         ]);
 
-        self::assertInstanceOf(Item::class, $structuredField->getByKey('false'));
+        self::assertInstanceOf(Item::class, $structuredField->getByName('false'));
         self::assertInstanceOf(Item::class, $structuredField['false']);
 
-        self::assertFalse($structuredField->getByKey('false')->value());
+        self::assertFalse($structuredField->getByName('false')->value());
         self::assertFalse($structuredField['false']->value());
         self::assertFalse(isset($structuredField['toto']));
     }
@@ -322,8 +322,8 @@ final class DictionaryTest extends StructuredFieldTestCase
     {
         $instance = Dictionary::new();
 
-        self::assertSame([], $instance->keys());
-        self::assertSame(['a', 'b'], $instance->push(['a', false], ['b', true])->keys());
+        self::assertSame([], $instance->names());
+        self::assertSame(['a', 'b'], $instance->push(['a', false], ['b', true])->names());
 
         $container = Dictionary::new()
             ->unshift(['a', '42'])
@@ -331,7 +331,7 @@ final class DictionaryTest extends StructuredFieldTestCase
             ->insert(1, ['c', 42.0])
             ->replace(0, ['d', 'forty-two']);
 
-        self::assertSame(['d', 'c', 'b'], $container->keys());
+        self::assertSame(['d', 'c', 'b'], $container->names());
         self::assertSame('d="forty-two", c=42.0, b=42', $container->toHttpValue());
     }
 
@@ -391,7 +391,7 @@ final class DictionaryTest extends StructuredFieldTestCase
             ->push(['a', true], ['v', ByteSequence::fromDecoded('I will be removed')], ['c', 'true'])
             ->unshift(['b', $instance])
             ->replace(1, ['a', 'false'])
-            ->removeByKeys('toto')
+            ->removeByNames('toto')
             ->removeByIndices(-2)
             ->insert(1, ['d', Token::fromString('*/*')]);
 
@@ -412,10 +412,10 @@ final class DictionaryTest extends StructuredFieldTestCase
             ->prepend('b', Item::true())
             ->push(['c', Item::fromToken('blablabla')]);
 
-        self::assertSame(2, $instance->indexByKey('c'));
-        self::assertSame(0, $instance->indexByKey('b'));
-        self::assertNull($instance->indexByKey('foobar'));
-        self::assertSame('c', $instance->keyByIndex(-1));
-        self::assertNull($instance->keyByIndex(23));
+        self::assertSame(2, $instance->indexByName('c'));
+        self::assertSame(0, $instance->indexByName('b'));
+        self::assertNull($instance->indexByName('foobar'));
+        self::assertSame('c', $instance->nameByIndex(-1));
+        self::assertNull($instance->nameByIndex(23));
     }
 }

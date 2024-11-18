@@ -43,8 +43,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     private function __construct(iterable $members = [])
     {
         $filteredMembers = [];
-        foreach ($members as $key => $member) {
-            $filteredMembers[MapKey::from($key)->value] = self::filterMember($member);
+        foreach ($members as $name => $member) {
+            $filteredMembers[MapKey::from($name)->value] = self::filterMember($member);
         }
 
         $this->members = $filteredMembers;
@@ -118,8 +118,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
             $pairs instanceof Parameters,
             $pairs instanceof Dictionary => new self($pairs->toAssociative()),
             default => new self((function (iterable $pairs) {
-                foreach ($pairs as [$key, $member]) {
-                    yield $key => $member;
+                foreach ($pairs as [$name, $member]) {
+                    yield $name => $member;
                 }
             })($pairs)),
         };
@@ -214,7 +214,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * @return array<string>
      */
-    public function keys(): array
+    public function names(): array
     {
         return array_keys($this->members);
     }
@@ -222,15 +222,15 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Tells whether the instance contain a members at the specified offsets.
      */
-    public function hasKeys(string ...$keys): bool
+    public function hasNames(string ...$names): bool
     {
-        foreach ($keys as $key) {
-            if (!array_key_exists($key, $this->members)) {
+        foreach ($names as $name) {
+            if (!array_key_exists($name, $this->members)) {
                 return false;
             }
         }
 
-        return [] !== $keys;
+        return [] !== $names;
     }
 
     /**
@@ -238,9 +238,9 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @throws Violation|InvalidOffset
      */
-    public function getByKey(string $key, ?callable $validate = null): Item
+    public function getByName(string $name, ?callable $validate = null): Item
     {
-        $value = $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
+        $value = $this->members[$name] ?? throw InvalidOffset::dueToNameNotFound($name);
         if (null === $validate) {
             return $value;
         }
@@ -250,10 +250,10 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         }
 
         if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
-            $exceptionMessage = "The parameter '{key}' whose value is '{value}' failed validation.";
+            $exceptionMessage = "The parameter '{name}' whose value is '{value}' failed validation.";
         }
 
-        throw new Violation(strtr($exceptionMessage, ['{key}' => $key, '{value}' => $value->toHttpValue()]));
+        throw new Violation(strtr($exceptionMessage, ['{name}' => $name, '{value}' => $value->toHttpValue()]));
     }
 
     /**
@@ -261,7 +261,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      */
     public function indices(): array
     {
-        return array_keys($this->keys());
+        return array_keys($this->names());
     }
 
     public function hasIndices(int ...$indices): bool
@@ -303,16 +303,16 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     {
         $foundOffset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
-        $validator = function (Item $value, string $key, int $index, callable $validate): array {
-            if (true === ($exceptionMessage = $validate($value->value(), $key))) {
-                return [$key, $value];
+        $validator = function (Item $value, string $name, int $index, callable $validate): array {
+            if (true === ($exceptionMessage = $validate($value->value(), $name))) {
+                return [$name, $value];
             }
 
             if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
-                $exceptionMessage = "The parameter at position '{index}' whose name is '{key}' with the value '{value}' failed validation.";
+                $exceptionMessage = "The parameter at position '{index}' whose name is '{name}' with the value '{value}' failed validation.";
             }
 
-            throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{key}' => $key, '{value}' => $value->toHttpValue()]));
+            throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{name}' => $name, '{value}' => $value->toHttpValue()]));
         };
 
         foreach ($this as $offset => $pair) {
@@ -330,10 +330,10 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Returns the key associated with the given index or null otherwise.
      */
-    public function indexByKey(string $key): ?int
+    public function indexByName(string $name): ?int
     {
         foreach ($this as $index => $member) {
-            if ($key === $member[0]) {
+            if ($name === $member[0]) {
                 return $index;
             }
         }
@@ -344,7 +344,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Returns the index associated with the given key or null otherwise.
      */
-    public function keyByIndex(int $index): ?string
+    public function nameByIndex(int $index): ?string
     {
         $index = $this->filterIndex($index);
         if (null === $index) {
@@ -387,17 +387,17 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     /**
      * Returns true only if the instance only contains the listed keys, false otherwise.
      *
-     * @param array<string> $keys
+     * @param array<string> $names
      */
-    public function allowedKeys(array $keys): bool
+    public function allowedNames(array $names): bool
     {
-        foreach ($this->members as $key => $member) {
-            if (!in_array($key, $keys, true)) {
+        foreach ($this->members as $name => $member) {
+            if (!in_array($name, $names, true)) {
                 return false;
             }
         }
 
-        return [] !== $keys;
+        return [] !== $names;
     }
 
     /**
@@ -409,14 +409,14 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      *
      * @return SfType|null
      */
-    public function valueByKey(
-        string $key,
+    public function valueByName(
+        string $name,
         ?callable $validate = null,
         bool|string $required = false,
         ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
     ): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null {
         try {
-            return $this->getByKey($key, $validate)->value();
+            return $this->getByName($name, $validate)->value();
         } catch (InvalidOffset $exception) {
             if (false === $required) {
                 return $default;
@@ -424,10 +424,10 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
 
             $message = $required;
             if (!is_string($message) || '' === trim($message)) {
-                $message = "The required parameter '{key}' is missing.";
+                $message = "The required parameter '{name}' is missing.";
             }
 
-            throw new Violation(strtr($message, ['{key}' => $key]), previous: $exception);
+            throw new Violation(strtr($message, ['{name}' => $name]), previous: $exception);
         }
     }
 
@@ -447,9 +447,9 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
             [] === $default => [],
             !array_is_list($default) => throw new SyntaxError('The pair must be represented by an array as a list.'), /* @phpstan-ignore-line */
             2 !== count($default) => throw new SyntaxError('The pair first member is the name; its second member is its value.'), /* @phpstan-ignore-line */
-            null === ($key = MapKey::tryFrom($default[0])?->value) => throw new SyntaxError('The pair first member is invalid.'),
+            null === ($name = MapKey::tryFrom($default[0])?->value) => throw new SyntaxError('The pair first member is invalid.'),
             null === ($value = Item::tryNew($default[1])?->value()) => throw new SyntaxError('The pair second member is invalid.'),
-            default => [$key, $value],
+            default => [$name, $value],
         };
 
         try {
@@ -474,14 +474,14 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      * @param StructuredFieldProvider|StructuredField|SfType|null $member
      */
     public function add(
-        string $key,
+        string $name,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
         }
         $members = $this->members;
-        $members[MapKey::from($key)->value] = self::filterMember($member);
+        $members[MapKey::from($name)->value] = self::filterMember($member);
 
         return $this->newInstance($members);
     }
@@ -497,21 +497,21 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         };
     }
 
-    private function remove(string|int ...$keys): self
+    private function remove(string|int ...$names): self
     {
-        if ([] === $this->members || [] === $keys) {
+        if ([] === $this->members || [] === $names) {
             return $this;
         }
 
         $offsets = array_keys($this->members);
         $max = count($offsets);
-        $reducer = fn (array $carry, string|int $key): array => match (true) {
-            is_string($key) && (false !== ($position = array_search($key, $offsets, true))),
-            is_int($key) && (null !== ($position = $this->filterIndex($key, $max))) => [$position => true] + $carry,
+        $reducer = fn (array $carry, string|int $name): array => match (true) {
+            is_string($name) && (false !== ($position = array_search($name, $offsets, true))),
+            is_int($name) && (null !== ($position = $this->filterIndex($name, $max))) => [$position => true] + $carry,
             default => $carry,
         };
 
-        $indices = array_reduce($keys, $reducer, []);
+        $indices = array_reduce($names, $reducer, []);
 
         return match (true) {
             [] === $indices => $this,
@@ -531,16 +531,16 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         return $this->remove(...$indices);
     }
 
-    public function removeByKeys(string ...$keys): self
+    public function removeByKeys(string ...$names): self
     {
-        return $this->remove(...$keys);
+        return $this->remove(...$names);
     }
 
     /**
      * @param StructuredFieldProvider|StructuredField|SfType|null $member
      */
     public function append(
-        string $key,
+        string $name,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
@@ -548,25 +548,25 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
         }
 
         $members = $this->members;
-        unset($members[$key]);
+        unset($members[$name]);
 
-        return $this->newInstance([...$members, MapKey::from($key)->value => self::filterMember($member)]);
+        return $this->newInstance([...$members, MapKey::from($name)->value => self::filterMember($member)]);
     }
 
     /**
      * @param StructuredFieldProvider|StructuredField|SfType|null $member
      */
     public function prepend(
-        string $key,
+        string $name,
         StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
         }
         $members = $this->members;
-        unset($members[$key]);
+        unset($members[$name]);
 
-        return $this->newInstance([MapKey::from($key)->value => self::filterMember($member), ...$members]);
+        return $this->newInstance([MapKey::from($name)->value => self::filterMember($member), ...$members]);
     }
 
     /**
@@ -650,8 +650,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
                 $other = $other->toAssociative();
             }
 
-            foreach ($other as $key => $value) {
-                $members[$key] = $value;
+            foreach ($other as $name => $value) {
+                $members[$name] = $value;
             }
         }
 
@@ -668,8 +668,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
             if (!$other instanceof self) {
                 $other = self::fromPairs($other);
             }
-            foreach ($other->toAssociative() as $key => $value) {
-                $members[$key] = $value;
+            foreach ($other->toAssociative() as $name => $value) {
+                $members[$name] = $value;
             }
         }
 
@@ -681,7 +681,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      */
     public function offsetExists(mixed $offset): bool
     {
-        return $this->hasKeys($offset);
+        return $this->hasNames($offset);
     }
 
     /**
@@ -689,7 +689,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
      */
     public function offsetGet(mixed $offset): Item
     {
-        return $this->getByKey($offset);
+        return $this->getByName($offset);
     }
 
     public function offsetUnset(mixed $offset): void

@@ -26,9 +26,9 @@ final class ParametersTest extends StructuredFieldTestCase
         $instance = Parameters::fromAssociative($arrayParams);
 
         self::assertSame(['string', $stringItem], $instance->getByIndex(0));
-        self::assertTrue($instance->hasKeys('string', 'string'));
-        self::assertSame($stringItem, $instance->getByKey('string'));
-        self::assertTrue($instance->hasKeys('string'));
+        self::assertTrue($instance->hasNames('string', 'string'));
+        self::assertSame($stringItem, $instance->getByName('string'));
+        self::assertTrue($instance->hasNames('string'));
 
         self::assertEquals(['string' => $stringItem, 'boolean' => $booleanItem], [...$instance->toAssociative()]);
     }
@@ -42,8 +42,8 @@ final class ParametersTest extends StructuredFieldTestCase
         $instance = Parameters::fromPairs($arrayParams);
 
         self::assertSame(['string', $stringItem], $instance->getByIndex(0));
-        self::assertSame($stringItem, $instance->getByKey('string'));
-        self::assertTrue($instance->hasKeys('string'));
+        self::assertSame($stringItem, $instance->getByName('string'));
+        self::assertTrue($instance->hasNames('string'));
         self::assertEquals(
             [['string', $stringItem], ['boolean', $booleanItem]],
             [...$instance]
@@ -96,7 +96,7 @@ final class ParametersTest extends StructuredFieldTestCase
 
         $deletedInstance = $instance->removeByKeys('boolean');
         self::assertCount(1, $deletedInstance);
-        self::assertFalse($deletedInstance->hasKeys('boolean'));
+        self::assertFalse($deletedInstance->hasNames('boolean'));
         self::assertFalse($deletedInstance->hasIndices(1));
 
         $instance = new class () implements StructuredFieldProvider {
@@ -151,10 +151,10 @@ final class ParametersTest extends StructuredFieldTestCase
 
         $instance = Parameters::new();
 
-        self::assertFalse($instance->hasKeys('foobar', 'barbaz'));
-        self::assertFalse($instance->hasKeys());
+        self::assertFalse($instance->hasNames('foobar', 'barbaz'));
+        self::assertFalse($instance->hasNames());
 
-        $instance->getByKey('foobar');
+        $instance->getByName('foobar');
     }
 
     #[Test]
@@ -204,8 +204,8 @@ final class ParametersTest extends StructuredFieldTestCase
     {
         $instance = Parameters::new();
 
-        self::assertSame([], $instance->keys());
-        self::assertSame(['a', 'b'], $instance->push(['a', false], ['b', true])->keys());
+        self::assertSame([], $instance->names());
+        self::assertSame(['a', 'b'], $instance->push(['a', false], ['b', true])->names());
 
         $container = Parameters::new()
             ->unshift(['a', '42'])
@@ -213,7 +213,7 @@ final class ParametersTest extends StructuredFieldTestCase
             ->insert(1, ['c', 42.0])
             ->replace(0, ['d', 'forty-two']);
 
-        self::assertSame(['d', 'c', 'b'], $container->keys());
+        self::assertSame(['d', 'c', 'b'], $container->names());
         self::assertSame(';d="forty-two";c=42.0;b=42', $container->toHttpValue());
     }
 
@@ -244,13 +244,13 @@ final class ParametersTest extends StructuredFieldTestCase
     {
         $instance = Parameters::new();
 
-        self::assertSame([], $instance->keys());
+        self::assertSame([], $instance->names());
 
         $newInstance = Parameters::new()
             ->append('a', Item::false())
             ->prepend('b', Item::true());
 
-        self::assertSame(['b', 'a'], $newInstance->keys());
+        self::assertSame(['b', 'a'], $newInstance->names());
     }
 
     #[Test]
@@ -262,8 +262,8 @@ final class ParametersTest extends StructuredFieldTestCase
 
         $instance4 = $instance1->mergeAssociative($instance2, $instance3);
 
-        self::assertEquals(Item::fromInteger(42), $instance4->getByKey('a'));
-        self::assertEquals(Item::true(), $instance4->getByKey('b'));
+        self::assertEquals(Item::fromInteger(42), $instance4->getByName('a'));
+        self::assertEquals(Item::true(), $instance4->getByName('b'));
     }
 
     #[Test]
@@ -275,8 +275,8 @@ final class ParametersTest extends StructuredFieldTestCase
 
         $instance4 = $instance3->mergeAssociative($instance2, $instance1);
 
-        self::assertEquals(Item::false(), $instance4->getByKey('a'));
-        self::assertEquals(Item::true(), $instance4->getByKey('b'));
+        self::assertEquals(Item::false(), $instance4->getByName('a'));
+        self::assertEquals(Item::true(), $instance4->getByName('b'));
     }
 
     #[Test]
@@ -297,8 +297,8 @@ final class ParametersTest extends StructuredFieldTestCase
         $instance4 = $instance3->mergePairs($instance2, $instance1);
 
         self::assertCount(2, $instance4);
-        self::assertEquals(Item::false(), $instance4->getByKey('a'));
-        self::assertEquals(Item::true(), $instance4->getByKey('b'));
+        self::assertEquals(Item::false(), $instance4->getByName('a'));
+        self::assertEquals(Item::true(), $instance4->getByName('b'));
     }
 
     #[Test]
@@ -327,7 +327,7 @@ final class ParametersTest extends StructuredFieldTestCase
             'boolean' => Item::true(),
         ]);
 
-        self::assertSame('helloWorld', $instance->getByKey('string')->value());
+        self::assertSame('helloWorld', $instance->getByName('string')->value());
     }
 
     #[Test]
@@ -380,9 +380,9 @@ final class ParametersTest extends StructuredFieldTestCase
             ['token', $token],
         ]);
 
-        self::assertSame($structuredField->getByKey('false'), $structuredField['false']);
+        self::assertSame($structuredField->getByName('false'), $structuredField['false']);
 
-        self::assertFalse($structuredField->getByKey('false')->value());
+        self::assertFalse($structuredField->getByName('false')->value());
         self::assertFalse($structuredField['false']->value());
         self::assertFalse(isset($structuredField['toto']));
     }
@@ -411,10 +411,10 @@ final class ParametersTest extends StructuredFieldTestCase
             ->prepend('b', Item::true())
             ->push(['c', Item::fromToken('blablabla')]);
 
-        self::assertSame(2, $instance->indexByKey('c'));
-        self::assertSame(0, $instance->indexByKey('b'));
-        self::assertNull($instance->indexByKey('foobar'));
-        self::assertSame('c', $instance->keyByIndex(-1));
-        self::assertNull($instance->keyByIndex(23));
+        self::assertSame(2, $instance->indexByName('c'));
+        self::assertSame(0, $instance->indexByName('b'));
+        self::assertNull($instance->indexByName('foobar'));
+        self::assertSame('c', $instance->nameByIndex(-1));
+        self::assertNull($instance->nameByIndex(23));
     }
 }
