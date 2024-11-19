@@ -28,7 +28,7 @@ use Bakame\Http\StructuredFields\Byte;
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 
-Item:new(DateTimeInterface|ByteSequence|Token|DisplayString|string|int|array|float|bool $value): self
+Item:new(DateTimeInterface|Byte|Token|DisplayString|string|int|array|float|bool $value): self
 Item:tryNew(mixed $value): ?self
 Item::fromDecodedByteSequence(Stringable|string $value): self;
 Item::fromEncodedDisplayString(Stringable|string $value): self;
@@ -51,7 +51,7 @@ To update the `Item` instance value, use the `withValue` method:
 ```php
 use Bakame\Http\StructuredFields\Item;
 
-Item::withValue(DateTimeInterface|ByteSequence|Token|DisplayString|string|int|float|bool $value): static
+Item::withValue(DateTimeInterface|Byte|Token|DisplayString|string|int|float|bool $value): static
 ```
 
 ## Item Parameters

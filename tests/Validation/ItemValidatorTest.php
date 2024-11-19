@@ -107,7 +107,7 @@ final class ItemValidatorTest extends TestCase
     {
         $parametersValidator = ParametersValidator::new()
             ->filterByCriteria(fn (Parameters $parameters) => $parameters->allowedNames(['foo', 'bar']), ParametersValidator::USE_INDICES)
-            ->filterByKeys([
+            ->filterByNames([
                 'foo' => ['validate' => fn (mixed $value): bool => false],
                 'bar' => ['validate' => fn (mixed $value): bool => true],
             ]);

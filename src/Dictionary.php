@@ -433,7 +433,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Returns the index associated with the given key or null otherwise.
+     * Returns the index associated with the given name or null otherwise.
      */
     public function nameByIndex(int $index): ?string
     {

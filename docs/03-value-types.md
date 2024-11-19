@@ -17,7 +17,7 @@ or provides a class based alternative. The table below summarizes the value type
 | String        | `string`                  | `Type::String`        | `string`           | RFC8941          |
 | Boolean       | `bool`                    | `Type::Boolean`       | `boolean`          | RFC8941          |
 | Token         | class `Token`             | `Type::Token`         | `token`            | RFC8941          |
-| Byte Sequence | class `ByteSequence`      | `Type::ByteSequence`  | `binary`           | RFC8941          |
+| Byte Sequence | class `Byte`              | `Type::Byte`          | `binary`           | RFC8941          |
 | Date          | class `DateTimeImmutable` | `Type::Date`          | `date`             | RFC9651          |
 | DisplayString | class `DisplayString`     | `Type::DisplayString` | `displaystring`    | RFC9651          |
 
@@ -70,7 +70,7 @@ Type::fromVariable(42)->isOneOf(Type::Token, Type::Integer); //return true
 
 The RFC defines three (3) specific data types that can not be represented by
 PHP default type system, for them, we have defined three classes `Token`,
-`ByteSequence` and `DisplayString` to help with their representation.
+`Byte` and `DisplayString` to help with their representation.
 
 ```php
 use Bakame\Http\StructuredFields\Byte;
@@ -78,8 +78,8 @@ use Bakame\Http\StructuredFields\DisplayString;
 use Bakame\Http\StructuredFields\Token;
 
 Token::fromString(string|Stringable $value): Token
-Byte::fromDecoded(string|Stringable $value): ByteSequence;
-Byte::fromEncoded(string|Stringable $value): ByteSequence;
+Byte::fromDecoded(string|Stringable $value): Byte;
+Byte::fromEncoded(string|Stringable $value): Byte;
 DisplayString::fromDecoded(string|Stringable $value): DisplayString;
 DisplayString::fromEncoded(string|Stringable $value): DisplayString;
 ```
@@ -109,7 +109,7 @@ $byte->equals(Byte::fromEncoded('SGVsbG8gd29ybGQh')); // will return true
 $displayString->equals(DisplayString::fromEncoded('f%c3%bc%c3%bc')); // will return true
 
 $token->type();         // returns Type::Token
-$byte->type();          // returns Type::ByteSequence
+$byte->type();          // returns Type::Byte
 $displayString->type(); // returns Type::DisplayString
 ```
 

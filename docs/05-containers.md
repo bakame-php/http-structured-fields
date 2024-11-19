@@ -352,7 +352,7 @@ use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 
-//@type SfItemInput ByteSequence|Token|DateTimeInterface|string|int|float|bool
+//@type SfItemInput Byte|Token|DateTimeInterface|string|int|float|bool
 
 Item::fromAssociative(SfItemInput $value, Parameters|iterable<string, SfItemInput> $parameters): self;
 Item::fromPair(array{0:SfItemInput, 1:Parameters|iterable<array{0:string, 1:SfItemInput}>} $pair): self;

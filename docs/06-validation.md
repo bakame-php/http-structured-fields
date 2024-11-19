@@ -133,7 +133,7 @@ $value = $member
 
 > [!NOTE]
 > we used `mixed` as parameter type for convenience but the effective parameter type should be
-> `ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool`
+> `Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool`
 
 ### Validating the Item parameters.
 

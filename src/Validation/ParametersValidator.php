@@ -14,7 +14,7 @@ use Stringable;
  *
  * @phpstan-import-type SfType from StructuredFieldProvider
  *
- * @phpstan-type SfParameterKeyRule array{validate?:callable(SfType): (bool|string), required?:bool|string, default?:SfType|null}
+ * @phpstan-type SfParameterNameRule array{validate?:callable(SfType): (bool|string), required?:bool|string, default?:SfType|null}
  * @phpstan-type SfParameterIndexRule array{validate?:callable(SfType, string): (bool|string), required?:bool|string, default?:array{0:string, 1:SfType}|array{}}
  */
 final class ParametersValidator
@@ -25,12 +25,12 @@ final class ParametersValidator
     /** @var ?callable(Parameters): (string|bool) */
     private mixed $criteria;
     private int $type;
-    /** @var array<string, SfParameterKeyRule>|array<int, SfParameterIndexRule> */
+    /** @var array<string, SfParameterNameRule>|array<int, SfParameterIndexRule> */
     private array $filterConstraints;
 
     /**
      * @param ?callable(Parameters): (string|bool) $criteria
-     * @param array<string, SfParameterKeyRule>|array<int, SfParameterIndexRule> $filterConstraints
+     * @param array<string, SfParameterNameRule>|array<int, SfParameterIndexRule> $filterConstraints
      */
     private function __construct(
         ?callable $criteria = null,
@@ -65,9 +65,9 @@ final class ParametersValidator
      * On success populate the result item property
      * On failure populates the result errors property
      *
-     * @param array<string, SfParameterKeyRule> $constraints
+     * @param array<string, SfParameterNameRule> $constraints
      */
-    public function filterByKeys(array $constraints): self
+    public function filterByNames(array $constraints): self
     {
         return new self($this->criteria, self::USE_KEYS, $constraints);
     }
@@ -175,7 +175,7 @@ final class ParametersValidator
         $violations = new ViolationList();
         /**
          * @var string $name
-         * @var SfParameterKeyRule $rule
+         * @var SfParameterNameRule $rule
          */
         foreach ($this->filterConstraints as $name => $rule) {
             try {

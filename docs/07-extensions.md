@@ -12,7 +12,7 @@ which expects a string or a stringable object when adding or updating
 HTTP field values.
 
 ```php
-$container = InnerList::new(ByteSequence::fromDecoded('Hello World'), 42.0, 42);
+$container = InnerList::new(Byte::fromDecoded('Hello World'), 42.0, 42);
 
 $container->toHttpValue(); // returns '(:SGVsbG8gV29ybGQ=: 42.0 42)'
 echo $container;           // returns '(:SGVsbG8gV29ybGQ=: 42.0 42)' 
