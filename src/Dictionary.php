@@ -31,7 +31,7 @@ use function is_string;
  * @implements ArrayAccess<string, InnerList|Item>
  * @implements IteratorAggregate<int, array{0:string, 1:InnerList|Item}>
  */
-final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, StructuredField
+final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
 {
     /** @var array<string, InnerList|Item> */
     private readonly array $members;
@@ -60,7 +60,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
 
         return match (true) {
             $member instanceof InnerList || $member instanceof Item => $member,
-            $member instanceof StructuredField => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
+            $member instanceof OuterList || $member instanceof Dictionary || $member instanceof Parameters => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             is_iterable($member) => InnerList::new(...$member),
             default => Item::new($member),
         };
@@ -489,7 +489,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      */
     public function add(
         string $name,
-        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -579,7 +579,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      */
     public function append(
         string $name,
-        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -602,7 +602,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate, Str
      */
     public function prepend(
         string $name,
-        iterable|StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;

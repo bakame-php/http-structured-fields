@@ -31,7 +31,7 @@ final class Record
         public readonly array $canonical,
         public readonly bool $mustFail,
         public readonly bool $canFail,
-        public readonly ?StructuredField $expected
+        public readonly OuterList|Dictionary|InnerList|Item|Parameters|null $expected
     ) {
     }
 
@@ -53,7 +53,7 @@ final class Record
         );
     }
 
-    private static function parseExpected(string $dataTypeValue, array $expected): ?StructuredField
+    private static function parseExpected(string $dataTypeValue, array $expected): OuterList|Dictionary|InnerList|Item|Parameters|null
     {
         return match (DataType::tryFrom($dataTypeValue)) {
             DataType::Dictionary => self::parseDictionary($expected),

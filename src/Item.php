@@ -21,7 +21,7 @@ use function count;
  * @phpstan-import-type SfItemPair from StructuredFieldProvider
  * @phpstan-import-type SfTypeInput from StructuredFieldProvider
  */
-final class Item implements StructuredField
+final class Item
 {
     use ParameterAccess;
 
