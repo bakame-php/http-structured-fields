@@ -26,13 +26,13 @@ use function is_string;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.2
  *
- * @phpstan-import-type SfItemInput from StructuredField
- * @phpstan-import-type SfType from StructuredField
+ * @phpstan-import-type SfItemInput from StructuredFieldProvider
+ * @phpstan-import-type SfType from StructuredFieldProvider
  *
  * @implements ArrayAccess<string, InnerList|Item>
  * @implements IteratorAggregate<int, array{0:string, 1:Item}>
  */
-final class Parameters implements ArrayAccess, Countable, IteratorAggregate, StructuredField
+final class Parameters implements ArrayAccess, Countable, IteratorAggregate
 {
     /** @var array<string, Item> */
     private readonly array $members;
@@ -471,11 +471,11 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param StructuredFieldProvider|StructuredField|SfType|null $member
+     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType|null $member
      */
     public function add(
         string $name,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -537,11 +537,11 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param StructuredFieldProvider|StructuredField|SfType|null $member
+     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType|null $member
      */
     public function append(
         string $name,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -554,11 +554,11 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate, Str
     }
 
     /**
-     * @param StructuredFieldProvider|StructuredField|SfType|null $member
+     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType|null $member
      */
     public function prepend(
         string $name,
-        StructuredFieldProvider|StructuredField|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;

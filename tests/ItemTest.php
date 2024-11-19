@@ -14,7 +14,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Stringable;
 
 /**
- * @phpstan-import-type SfItemInput from StructuredField
+ * @phpstan-import-type SfItemInput from StructuredFieldProvider
  */
 final class ItemTest extends StructuredFieldTestCase
 {

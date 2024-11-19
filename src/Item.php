@@ -16,12 +16,12 @@ use function count;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3
  *
- * @phpstan-import-type SfType from StructuredField
- * @phpstan-import-type SfItemInput from StructuredField
- * @phpstan-import-type SfItemPair from StructuredField
- * @phpstan-import-type SfTypeInput from StructuredField
+ * @phpstan-import-type SfType from StructuredFieldProvider
+ * @phpstan-import-type SfItemInput from StructuredFieldProvider
+ * @phpstan-import-type SfItemPair from StructuredFieldProvider
+ * @phpstan-import-type SfTypeInput from StructuredFieldProvider
  */
-final class Item implements StructuredField
+final class Item
 {
     use ParameterAccess;
 

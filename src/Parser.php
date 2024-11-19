@@ -33,7 +33,7 @@ use function substr;
  * @internal Do not use directly this class as it's behaviour and return type
  *           MAY change significantly even during a major release cycle.
  *
- * @phpstan-import-type SfType from StructuredField
+ * @phpstan-import-type SfType from StructuredFieldProvider
  */
 final class Parser
 {

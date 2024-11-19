@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
 /**
- * @phpstan-import-type SfType from StructuredField
+ * @phpstan-import-type SfType from StructuredFieldProvider
  */
 final class ParserTest extends StructuredFieldTestCase
 {

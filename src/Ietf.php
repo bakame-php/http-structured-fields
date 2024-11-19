@@ -42,7 +42,12 @@ enum Ietf
             $value = $value->toStructuredField();
         }
 
-        if ($value instanceof StructuredField) {
+        if ($value instanceof OuterList ||
+            $value instanceof InnerList ||
+            $value instanceof Dictionary ||
+            $value instanceof Parameters ||
+            $value instanceof Item
+        ) {
             try {
                 $value->toHttpValue($this);
 
