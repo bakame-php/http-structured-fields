@@ -43,7 +43,7 @@ final class Item
 
     /**
      * Returns a new instance from an HTTP Header or Trailer value string
-     * in compliance with RFC8941.
+     * in compliance with a published RFC.
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3
      *

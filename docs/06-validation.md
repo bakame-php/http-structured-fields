@@ -137,26 +137,26 @@ $value = $member
 
 ### Validating the Item parameters.
 
-### Checking for allowed keys
+### Checking for allowed names
 
 Before validating the content of the `Parameters` container we need to make
-sure the container contains the proper data. That all the allowed keys are
-present. To do so we can use the `Parameters::allowedKeys` method. This
-method expects a list of keys. If other keys not present in the
+sure the container contains the proper data. That all the allowed names are
+present. To do so we can use the `Parameters::allowedNames` method. This
+method expects a list of names. If other names not present in the
 list are found in the container the method will return `false`. If we
-go back to our definition. We know that the allowed parameters keys attached
+go back to our definition. We know that the allowed parameters names attached
 to the item are: `location`, `longitude`, `latitude` and `date`
 
 ```php
 use Bakame\Http\StructuredFields\Validation\Violation;
 
-if (!$member->parameters()->allowedKeys(['location', 'longitude', 'latitude', 'date'])) {
-    throw new Violation('The parameters contains extra keys that are not allowed.');
+if (!$member->parameters()->allowedNames(['location', 'longitude', 'latitude', 'date'])) {
+    throw new Violation('The parameters contains extra names that are not allowed.');
 }
 ```
 
 > [!TIP]
-> The `Dictionary` class also exposes an `allowedKeys` method which behave the same way.
+> The `Dictionary` class also exposes an `allowedNames` method which behave the same way.
 
 > [!WARNING]
 > if the parameters container is empty no error will be triggered
@@ -208,13 +208,13 @@ all the criteria.
 Going back to the HTTP field definitions we can translate the requirements and create the
 following `ParametersValidator`.
 
-We need to make sure about the allowed keys for that. the class has a `filterByCriteria` which
+We need to make sure about the allowed names for that. the class has a `filterByCriteria` which
 expects the `Parameters` container as its sole argument.
 
 ```php
 $parametersValidator = ParametersValidator::new()
     ->filterByCriteria(function (Parameters $parameters): bool|string {
-        return $parameters->allowedKeys(['location', 'longitude', 'latitude', 'date']);
+        return $parameters->allowedNames(['location', 'longitude', 'latitude', 'date']);
     });
 ```
 
@@ -228,7 +228,7 @@ we did earlier we end up with the following entries.
 ```php
 use Bakame\Http\StructuredFields\Type;
 
-$parametersValidator = ->filterByKeys([
+$parametersValidator = ->filterByNames([
         'longitude' => [
             'validate' => function (mixed $value) {
                  if (!Type::Decimal->supports($value)) {
@@ -242,7 +242,7 @@ $parametersValidator = ->filterByKeys([
     ]);
 ```
 
-We can do the same for all the other keys, the available parameters are:
+We can do the same for all the other names, the available parameters are:
 - `validate`: the callback used for validation; `null` by default
 - `required`: a boolean telling whether the parameter presence is required; `false` by default
 - `default`: the default value if the parameter is optional; `null` by default.
@@ -329,7 +329,7 @@ if ($validation->isSucces()) {
 > [!NOTE]
 > If we only use the `filterByCriteria` method the full parameter data is returned.
 
- A `filterByIndices` method exists and behave exactly as the `filterByKeys` method.
+ A `filterByIndices` method exists and behave exactly as the `filterByNames` method.
 There are two differences when it is used:
  
 - The callback parameters are different (they match those of `parameterByIndex`)

@@ -100,7 +100,7 @@ with the changes applied and leave the original instance unchanged.
 
 ### Ordered Maps
 
-The `Dictionary` and `Parameters` are ordered map instances. They can be built using their keys with an
+The `Dictionary` and `Parameters` are ordered map instances. They can be built using their names with an
 associative iterable structure as shown below
 
 ```php
@@ -142,7 +142,7 @@ $map->add(string $name, $value): static;
 $map->append(string $name, $value): static;
 $map->prepend(string $name, $value): static;
 $map->mergeAssociative(...$others): static;
-$map->removeByKeys(string ...$names): static;
+$map->removeByNames(string ...$names): static;
 ```
 
 As shown below:
@@ -210,17 +210,17 @@ echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
 
 > [!CAUTION]
-> on duplicate `keys` pair values are merged as per RFC logic.
+> on duplicate `names` pair values are merged as per RFC logic.
 
-The following methods `removeByIndices` and/or `removeByKeys` allow removing members
-per indices or per keys.
+The following methods `removeByIndices` and/or `removeByNames` allow removing members
+per indices or per names.
 
 ```php
 use Bakame\Http\StructuredFields\Parameters;
 
 $field = Parameters::fromHttpValue(';expire=@1681504328;path="/";max-age=2500;secure;httponly=?0;samesite=lax');
 echo $field->removeByIndices(4, 2, 0)->toHttpValue();                      // returns ;path="/";secure;samesite=lax
-echo $field->removeByKeys('expire', 'httponly', 'max-age')->toHttpValue(); // returns ;path="/";secure;samesite=lax
+echo $field->removeByNames('expire', 'httponly', 'max-age')->toHttpValue(); // returns ;path="/";secure;samesite=lax
 ```
 
 ### Automatic conversion
@@ -387,14 +387,14 @@ You can attach and update the associated `Parameters` instance using the followi
 $field->addParameter(string $name, mixed $value): static;
 $field->appendParameter(string $name, mixed $value): static;
 $field->prependParameter(string $name, mixed $value): static;
-$field->withoutParameters(string ...$keys): static; // this method is deprecated as of version 1.1 use withoutParametersByKeys instead
+$field->withoutParameters(string ...$names): static; // this method is deprecated as of version 1.1 use withoutParametersByKeys instead
 $field->withoutAnyParameter(): static;
 $field->withParameters(Parameters $parameters): static;
 $field->pushParameters(array ...$pairs): static
 $field->unshiftParameters(array ...$pairs): static
 $field->insertParameters(int $index, array ...$pairs): static
 $field->replaceParameter(int $index, array $pair): static
-$field->withoutParametersByKeys(string ...$keys): static
+$field->withoutParametersByNames(string ...$names): static
 $field->withoutParametersByIndices(int ...$indices): static
 ```
 

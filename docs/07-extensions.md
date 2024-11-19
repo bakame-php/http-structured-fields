@@ -23,14 +23,8 @@ echo $container;           // returns '(:SGVsbG8gV29ybGQ=: 42.0 42)'
 As a rule of thumb all the classes from this package are final and immutable and
 expose no particular interface.
 
-> [!IMPORTANT]
-> The `StructuredField` interface should be seen as an internal implementation detail 
-> and should not be implemented outside the package. While PHP does not prohibit such 
-> action, **you MUST NOT implement the `StructuredField` interface.**
-
-The reason for disallowing the `StructuredField` interface is simple. We want to ensure
-that in any situation the RFC is being respected. The contract is between the RFC and your
-code the package only acts as a link between both parties.
+The reason is to ensure that in any situation the RFC is being respected. The contract
+is between the RFC and your code the package only acts as a link between both parties.
 
 ## Closed for extension opened for composition
 
@@ -49,8 +43,8 @@ interface StructuredFieldProvider
 This interface should return one of the DataType class and this is the interface that needs
 to be implemented. All the containers are able to work with a `StructuredFieldProvider`.
 
-Imagine you have an `AcceptHeaderItem` class and you want to take advantage of the package. You
-only have to implemente the `StructuredFieldProvider`. Once done, your class will be able to
+Imagine you have an `AcceptHeaderItem` class, and you want to take advantage of the package. You
+only have to implement the `StructuredFieldProvider`. Once done, your class will be able to
 work with the `OuterList` class.
 
 ```php
