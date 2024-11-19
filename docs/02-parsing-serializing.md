@@ -161,4 +161,4 @@ The `toHttpValue` method applies by default all the normalizations recommended b
 > This is the mechanism used by the `DataType::serialize` method. Once the Structured
 > field has been created, the method calls its `toHttpValue` method.
 
-&larr; [Basic Usage](01-basic-usage.md)  |  [Value Types](03-value-types.md) &rarr;
+&larr; [Basic Usage](01-basic-usage.md)  |  [Accessing Field Values](03-field-values.md) &rarr;

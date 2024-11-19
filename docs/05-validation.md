@@ -432,4 +432,4 @@ class it becomes easier to reuse it to validate your data.
 
 To show how this can be achieved you can check the codebase from [HTTP Cache Status](https://github.com/bakame-php/http-cache-status)
 
-&larr; [Containers](05-containers.md)  | [Extending the package functionalities](07-extensions.md)
+&larr; [Containers](04-containers.md)  | [Extending the package functionalities](07-extensions.md)

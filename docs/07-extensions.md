@@ -1,12 +1,22 @@
 ---
-title: Interacting with PHP ecosystem
+title: Interacting with the PHP ecosystem
 order: 8
 ---
 
-# Interacting with PHP ecosystem
+# Interacting with the PHP ecosystem
+
+## Everything is final
+
+As a rule of thumb all the classes from this package are final and immutable and
+expose no particular interface.
+
+The reason is to ensure that in any situation the RFC is being respected. The contract
+is between the RFC and your code the package only acts as a link between both parties.
+
+## DataTypes are Stringable
 
 All Datatypes expose the `Stringable` interface while it is recommended to use
-the `toHttpValue` method for better granularity. Supporting the `Stringable`
+the `toHttpValue` method for better granularity but supporting the `Stringable`
 interface allows the package to easily interface with packages and frameworks
 which expects a string or a stringable object when adding or updating
 HTTP field values.
@@ -18,17 +28,10 @@ $container->toHttpValue(); // returns '(:SGVsbG8gV29ybGQ=: 42.0 42)'
 echo $container;           // returns '(:SGVsbG8gV29ybGQ=: 42.0 42)' 
 ```
 
-## Everything is final
-
-As a rule of thumb all the classes from this package are final and immutable and
-expose no particular interface.
-
-The reason is to ensure that in any situation the RFC is being respected. The contract
-is between the RFC and your code the package only acts as a link between both parties.
-
 ## Closed for extension opened for composition
 
-On the other hand to allow composition the package does expose the `StructuredFieldProvider` interface.
+While the DataTypes can not be extended, to allow composition, the package exposes
+the `StructuredFieldProvider` interface.
 
 ```php
 interface StructuredFieldProvider
@@ -40,11 +43,11 @@ interface StructuredFieldProvider
 }
 ```
 
-This interface should return one of the DataType class and this is the interface that needs
-to be implemented. All the containers are able to work with a `StructuredFieldProvider`.
+This interface should return one of the DataType instance and all the containers are able to work
+with object that implement the interface.
 
-Imagine you have an `AcceptHeaderItem` class, and you want to take advantage of the package. You
-only have to implement the `StructuredFieldProvider`. Once done, your class will be able to
+As an example, imagine you have an `AcceptHeaderItem` class, and you want to take advantage of the package.
+You will have to implement the `StructuredFieldProvider`. Once done, your class will be able to
 work with the `OuterList` class.
 
 ```php
@@ -91,11 +94,11 @@ echo OuterList::new($json, $csv);
 ```
 
 In the example provided we added the interface on the class itself but of course you are free to use
-a different approach, as long as you end up have a class that implements the `StructuredFieldProvider`
+a different approach, as long as you end up having a class that implements the `StructuredFieldProvider`
 contract.
 
 To show how this can be achieved you can check the codebase from [HTTP Cache Status](https://github.com/bakame-php/http-cache-status)
 which uses the interface. Of note by using this interface you can completely hide the presence of 
 this package to your end users if needed.
 
-&larr; [Validation](06-validation.md) 
+&larr; [Validation](05-validation.md) 

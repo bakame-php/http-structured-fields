@@ -56,8 +56,7 @@ composer require bakame/http-structured-fields
 
 - [Basic usage](01-basic-usage.md)
 - [Parsing and Serializing](02-parsing-serializing.md)
-- [Structured Field Value Types](03-value-types.md)
-- [The Item Data Type](04-item.md)
-- [The Structured Field Containers](05-containers.md)
-- [HTTP Fields Validation](06-validation.md)
+- [Accessing The Field Values](03-field-values.md)
+- [Working with the Containers Data Type](04-containers.md)
+- [Structured Field Validation](05-validation.md)
 - [Interacting with the PHP Ecosystem](07-extensions.md)

@@ -428,4 +428,4 @@ echo InnerList::new('foo', 'bar')
 // ("foo" "bar");expire=@1681538756;path="/";max-age=2500
 ```
 
-&larr; [Item](04-item.md)  |  [Validation](06-validation.md) &rarr;
+&larr; [Accessing Field Values](03-field-values.md)  |  [Validation](05-validation) &rarr;
