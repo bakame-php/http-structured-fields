@@ -52,4 +52,12 @@ Use composer:
 composer require bakame/http-structured-fields
 ```
 
-[Basic usage](/docs/01-basic-usage.md) →`
+## Using the package
+
+- [Basic usage](01-basic-usage.md)
+- [Parsing and Serializing](02-parsing-serializing.md)
+- [Structured Field Value Types](03-value-types.md)
+- [Structured Field Item Data Type](04-item.md)
+- [Structured Field Containers Data Type](05-containers.md)
+- [Structured Field Validation](06-validation.md)
+- [Interacting with the PHP Ecosystem](07-extensions.md)
