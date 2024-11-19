@@ -17,7 +17,7 @@ or provides a class based alternative. The table below summarizes the value type
 | String        | `string`                  | `Type::String`        | `string`           | RFC8941          |
 | Boolean       | `bool`                    | `Type::Boolean`       | `boolean`          | RFC8941          |
 | Token         | class `Token`             | `Type::Token`         | `token`            | RFC8941          |
-| Byte Sequence | class `Byte`              | `Type::Byte`          | `binary`           | RFC8941          |
+| Byte Sequence | class `Bytes`             | `Type::Bytes`         | `binary`           | RFC8941          |
 | Date          | class `DateTimeImmutable` | `Type::Date`          | `date`             | RFC9651          |
 | DisplayString | class `DisplayString`     | `Type::DisplayString` | `displaystring`    | RFC9651          |
 
@@ -73,13 +73,13 @@ PHP default type system, for them, we have defined three classes `Token`,
 `Byte` and `DisplayString` to help with their representation.
 
 ```php
-use Bakame\Http\StructuredFields\Byte;
+use Bakame\Http\StructuredFields\Bytes;
 use Bakame\Http\StructuredFields\DisplayString;
 use Bakame\Http\StructuredFields\Token;
 
 Token::fromString(string|Stringable $value): Token
-Byte::fromDecoded(string|Stringable $value): Byte;
-Byte::fromEncoded(string|Stringable $value): Byte;
+Bytes::fromDecoded(string|Stringable $value): Byte;
+Bytes::fromEncoded(string|Stringable $value): Byte;
 DisplayString::fromDecoded(string|Stringable $value): DisplayString;
 DisplayString::fromEncoded(string|Stringable $value): DisplayString;
 ```
@@ -89,7 +89,7 @@ instantiated. To access their value, they expose the following API:
 
 ```php
 use Bakame\Http\StructuredFields\Token;
-use Bakame\Http\StructuredFields\Byte;
+use Bakame\Http\StructuredFields\Bytes;
 use Bakame\Http\StructuredFields\DisplayString;
 
 $token = Token::fromString('application/text+xml');
@@ -99,13 +99,13 @@ $displayString = DisplayString::fromDecoded('füü');
 $displayString->decoded(); // returns 'füü'
 $displayString->encoded(); // returns 'f%c3%bc%c3%bc'
 
-$byte = Byte::fromDecoded('Hello world!');
+$byte = Bytes::fromDecoded('Hello world!');
 $byte->decoded(); // returns 'Hello world!'
 $byte->encoded(); // returns 'SGVsbG8gd29ybGQh'
 
 $token->equals($byte); // will return false;
 $displayString->equals($byte); // will return false;
-$byte->equals(Byte::fromEncoded('SGVsbG8gd29ybGQh')); // will return true
+$byte->equals(Bytes::fromEncoded('SGVsbG8gd29ybGQh')); // will return true
 $displayString->equals(DisplayString::fromEncoded('f%c3%bc%c3%bc')); // will return true
 
 $token->type();         // returns Type::Token
@@ -142,16 +142,16 @@ The `Item` value object exposes the following named constructors to instantiate
 bare items (ie: item without parameters attached to them).
 
 ```php
-use Bakame\Http\StructuredFields\Byte;
+use Bakame\Http\StructuredFields\Bytes;
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 
 Item:new(DateTimeInterface|Byte|Token|DisplayString|string|int|array|float|bool $value): self
 Item:tryNew(mixed $value): ?self
-Item::fromDecodedByteSequence(Stringable|string $value): self;
+Item::fromDecodedBytes(Stringable|string $value): self;
 Item::fromEncodedDisplayString(Stringable|string $value): self;
 Item::fromDecodedDisplayString(Stringable|string $value): self;
-Item::fromEncodedByteSequence(Stringable|string $value): self;
+Item::fromEncodedBytes(Stringable|string $value): self;
 Item::fromToken(Stringable|string $value): self;
 Item::fromString(Stringable|string $value): self;
 Item::fromDate(DateTimeInterface $datetime): self;

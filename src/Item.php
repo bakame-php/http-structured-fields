@@ -61,7 +61,7 @@ final class Item
      *
      * @throws SyntaxError If the value or the parameters are not valid
      */
-    public static function fromAssociative(Byte|Token|DisplayString|DateTimeInterface|string|int|float|bool $value, iterable $parameters): self
+    public static function fromAssociative(Bytes|Token|DisplayString|DateTimeInterface|string|int|float|bool $value, iterable $parameters): self
     {
         if (!$parameters instanceof Parameters) {
             $parameters = Parameters::fromAssociative($parameters);
@@ -138,9 +138,9 @@ final class Item
      *
      * @throws SyntaxError if the sequence is invalid
      */
-    public static function fromEncodedByteSequence(Stringable|string $value): self
+    public static function fromEncodedBytes(Stringable|string $value): self
     {
-        return self::fromValue(Value::fromEncodedByteSequence($value));
+        return self::fromValue(Value::fromEncodedBytes($value));
     }
 
     /**
@@ -148,9 +148,9 @@ final class Item
      *
      * @throws SyntaxError if the sequence is invalid
      */
-    public static function fromDecodedByteSequence(Stringable|string $value): self
+    public static function fromDecodedBytes(Stringable|string $value): self
     {
-        return self::fromValue(Value::fromDecodedByteSequence($value));
+        return self::fromValue(Value::fromDecodedBytes($value));
     }
 
     /**
@@ -270,7 +270,7 @@ final class Item
      *
      * @throws Violation
      */
-    public function value(?callable $validate = null): Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool
+    public function value(?callable $validate = null): Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool
     {
         $value = $this->value->value;
         if (null === $validate) {
@@ -343,7 +343,7 @@ final class Item
      * @throws SyntaxError If the value is invalid or not supported
      */
     public function withValue(
-        DateTimeInterface|Byte|Token|DisplayString|string|int|float|bool $value
+        DateTimeInterface|Bytes|Token|DisplayString|string|int|float|bool $value
     ): self {
         $value = new Value($value);
         if ($value->equals($this->value)) {

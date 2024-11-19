@@ -70,8 +70,8 @@ final class TypeTest extends TestCase
                 'expectedType' => Type::Token,
             ],
             'byte' => [
-                'value' => Byte::fromDecoded('😊'),
-                'expectedType' => Type::ByteSequence,
+                'value' => Bytes::fromDecoded('😊'),
+                'expectedType' => Type::Bytes,
             ],
             'datetime implementing object' => [
                 'value' => new DateTime('2020-07-12 13:37:00'),

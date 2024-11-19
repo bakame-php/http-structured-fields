@@ -14,7 +14,7 @@ use function preg_match;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3.5
  */
-final class Byte
+final class Bytes
 {
     private function __construct(
         private readonly string $value
@@ -79,6 +79,6 @@ final class Byte
 
     public function type(): Type
     {
-        return Type::ByteSequence;
+        return Type::Bytes;
     }
 }

@@ -66,7 +66,7 @@ final class Record
     /**
      * @param itemValue $data
      */
-    private static function parseValue(array|string|bool|int|float|null $data): Token|DateTimeImmutable|Byte|DisplayString|string|bool|int|float|null
+    private static function parseValue(array|string|bool|int|float|null $data): Token|DateTimeImmutable|Bytes|DisplayString|string|bool|int|float|null
     {
         return match (true) {
             !is_array($data) => $data,
@@ -76,7 +76,7 @@ final class Record
                 Type::Token => Token::fromString($data['value']),
                 Type::Date => (new DateTimeImmutable())->setTimestamp((int) $data['value']),
                 Type::DisplayString => DisplayString::fromDecoded($data['value']),
-                Type::ByteSequence => Byte::fromDecoded(base32_decode(encoded: $data['value'], strict: true)),
+                Type::Bytes => Bytes::fromDecoded(base32_decode(encoded: $data['value'], strict: true)),
                 default => throw new ValueError('Unknown or unsupported type: '.json_encode($data)),
             },
         };

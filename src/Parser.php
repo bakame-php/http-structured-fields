@@ -69,7 +69,7 @@ final class Parser
      *
      * @throws Exception|SyntaxError
      */
-    public function parseValue(Stringable|string $httpValue): Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool
+    public function parseValue(Stringable|string $httpValue): Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool
     {
         $remainder = trim((string) $httpValue, ' ');
         if ('' === $remainder || 1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $remainder)) {
@@ -529,7 +529,7 @@ final class Parser
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.7
      *
-     * @return array{0:Byte, 1:int}
+     * @return array{0:Bytes, 1:int}
      */
     private static function extractByteSequence(string $httpValue): array
     {
@@ -537,6 +537,6 @@ final class Parser
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Byte Sequence contains invalid characters.");
         }
 
-        return [Byte::fromEncoded($matches['byte']), strlen($matches['sequence'])];
+        return [Bytes::fromEncoded($matches['byte']), strlen($matches['sequence'])];
     }
 }

@@ -15,7 +15,7 @@ enum Type: string
     case Decimal = 'decimal';
     case String = 'string';
     case Token = 'token';
-    case ByteSequence = 'binary';
+    case Bytes = 'binary';
     case DisplayString = 'displaystring';
     case Boolean = 'boolean';
     case Date = 'date';
@@ -59,7 +59,7 @@ enum Type: string
             $variable instanceof Item,
             $variable instanceof Token,
             $variable instanceof DisplayString,
-            $variable instanceof Byte => $variable->type(),
+            $variable instanceof Bytes => $variable->type(),
             $variable instanceof DateTimeInterface && 999_999_999_999_999 >= abs($variable->getTimestamp()) => Type::Date,
             is_int($variable) && 999_999_999_999_999 >= abs($variable) => Type::Integer,
             is_float($variable) && 999_999_999_999 >= abs(floor($variable)) => Type::Decimal,

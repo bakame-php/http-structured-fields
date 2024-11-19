@@ -31,7 +31,7 @@ final class ItemTest extends StructuredFieldTestCase
 
     #[Test]
     #[DataProvider('provideInvalidArguments')]
-    public function it_fails_to_instantiate_an_item(Byte|Token|DateTimeInterface|string|int|float|bool $value): void
+    public function it_fails_to_instantiate_an_item(Bytes|Token|DateTimeInterface|string|int|float|bool $value): void
     {
         $this->expectException(SyntaxError::class);
 
@@ -74,14 +74,14 @@ final class ItemTest extends StructuredFieldTestCase
 
     #[Test]
     #[DataProvider('provideFrom1stArgument')]
-    public function it_instantiate_many_types(Byte|Token|DisplayString|DateTimeInterface|string|int|float|bool $value, string $expected): void
+    public function it_instantiate_many_types(Bytes|Token|DisplayString|DateTimeInterface|string|int|float|bool $value, string $expected): void
     {
         self::assertSame($expected, Item::new($value)->toHttpValue());
     }
 
     #[Test]
     #[DataProvider('provideFrom1stArgument')]
-    public function it_updates_item(Byte|Token|DisplayString|DateTimeInterface|string|int|float|bool $value, string $expected): void
+    public function it_updates_item(Bytes|Token|DisplayString|DateTimeInterface|string|int|float|bool $value, string $expected): void
     {
         $parameters = Parameters::fromAssociative(['foo' => 'bar']);
 
@@ -104,7 +104,7 @@ final class ItemTest extends StructuredFieldTestCase
             'boolean true' => ['value' => true, 'expected' => '?1'],
             'boolean false' => ['value' => false, 'expected' => '?0'],
             'token' => ['value' => Token::fromString('helloworld'), 'expected' => 'helloworld'],
-            'byte sequence' => ['value' => Byte::fromDecoded('foobar'), 'expected' => ':Zm9vYmFy:'],
+            'byte sequence' => ['value' => Bytes::fromDecoded('foobar'), 'expected' => ':Zm9vYmFy:'],
             'datetime' => ['value' => new DateTime('2020-03-04 19:23:15'), 'expected' => '@1583349795'],
         ];
     }
@@ -234,11 +234,11 @@ final class ItemTest extends StructuredFieldTestCase
     #[Test]
     public function it_instantiates_a_binary(): void
     {
-        $byteSequence = Byte::fromDecoded('foobar');
+        $byteSequence = Bytes::fromDecoded('foobar');
 
-        self::assertEquals($byteSequence, Item::new(Byte::fromDecoded('foobar'))->value());
-        self::assertEquals($byteSequence, Item::fromDecodedByteSequence('foobar')->value());
-        self::assertEquals($byteSequence, Item::fromEncodedByteSequence('Zm9vYmFy')->value());
+        self::assertEquals($byteSequence, Item::new(Bytes::fromDecoded('foobar'))->value());
+        self::assertEquals($byteSequence, Item::fromDecodedBytes('foobar')->value());
+        self::assertEquals($byteSequence, Item::fromEncodedBytes('Zm9vYmFy')->value());
     }
 
     #[Test]
@@ -295,8 +295,8 @@ final class ItemTest extends StructuredFieldTestCase
                 'expectedType' => Type::Token,
             ],
             'byte' => [
-                'item' => Item::new(Byte::fromDecoded('😊')),
-                'expectedType' => Type::ByteSequence,
+                'item' => Item::new(Bytes::fromDecoded('😊')),
+                'expectedType' => Type::Bytes,
             ],
             'date-immutable' => [
                 'item' => Item::new(new DateTimeImmutable('2020-07-12 13:37:00')),
@@ -319,7 +319,7 @@ final class ItemTest extends StructuredFieldTestCase
             'float' => 4.2,
             'boolean' => true,
             'token' => Token::fromString('forty-two'),
-            'byte-sequence' => Byte::fromDecoded('a42'),
+            'byte-sequence' => Bytes::fromDecoded('a42'),
             'date' => new DateTimeImmutable('2020-12-01 11:43:17'),
         ];
 
@@ -457,7 +457,7 @@ final class ItemTest extends StructuredFieldTestCase
     {
         $instance1 = Item::new(Token::fromString('babayaga'));
         $instance2 = $instance1
-            ->pushParameters(['a', true], ['v', Byte::fromDecoded('I will be removed')], ['c', 'true'])
+            ->pushParameters(['a', true], ['v', Bytes::fromDecoded('I will be removed')], ['c', 'true'])
             ->unshiftParameters(['b', Item::false()])
             ->replaceParameter(1, ['a', 'false'])
             ->withoutParameterByIndices(-2)

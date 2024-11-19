@@ -38,8 +38,8 @@ trait ParameterAccess
         string $name,
         ?callable $validate = null,
         bool|string $required = false,
-        Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
-    ): Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null {
+        Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
+    ): Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null {
         return $this->parameters->valueByName($name, $validate, $required, $default);
     }
 
@@ -82,7 +82,7 @@ trait ParameterAccess
      */
     public function addParameter(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): static {
         return $this->withParameters($this->parameters()->add($name, $member));
     }
@@ -99,7 +99,7 @@ trait ParameterAccess
      */
     public function prependParameter(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null  $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null  $member
     ): static {
         return $this->withParameters($this->parameters()->prepend($name, $member));
     }
@@ -116,7 +116,7 @@ trait ParameterAccess
      */
     public function appendParameter(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): static {
         return $this->withParameters($this->parameters()->append($name, $member));
     }

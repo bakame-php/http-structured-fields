@@ -75,7 +75,7 @@ final class OuterListTest extends StructuredFieldTestCase
             ->unshift(Item::fromString('42'))
             ->push($anonymous)
             ->insert(1, Item::fromDecimal(42.0))
-            ->replace(0, Item::new(Byte::fromDecoded('Hello World')));
+            ->replace(0, Item::new(Bytes::fromDecoded('Hello World')));
 
         self::assertCount(3, $instance);
         self::assertTrue($instance->isNotEmpty());
@@ -88,16 +88,16 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        OuterList::new()->replace(0, Item::new(Byte::fromDecoded('Hello World')));
+        OuterList::new()->replace(0, Item::new(Bytes::fromDecoded('Hello World')));
     }
 
     #[Test]
     public function it_can_return_the_same_object_if_no_replace_is_needed(): void
     {
-        $item = Item::new(Byte::fromDecoded('Hello World'));
+        $item = Item::new(Bytes::fromDecoded('Hello World'));
         $field = OuterList::new($item);
 
-        self::assertSame($field, $field->replace(0, Byte::fromDecoded('Hello World')));
+        self::assertSame($field, $field->replace(0, Bytes::fromDecoded('Hello World')));
     }
 
     #[Test]
@@ -113,7 +113,7 @@ final class OuterListTest extends StructuredFieldTestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        OuterList::new()->insert(3, Item::new(Byte::fromDecoded('Hello World')));
+        OuterList::new()->insert(3, Item::new(Bytes::fromDecoded('Hello World')));
     }
 
     #[Test]
@@ -224,7 +224,7 @@ final class OuterListTest extends StructuredFieldTestCase
             ->unshift('42')
             ->push(42)
             ->insert(1, 42.0)
-            ->replace(0, Byte::fromDecoded('Hello World'));
+            ->replace(0, Bytes::fromDecoded('Hello World'));
 
         self::assertSame([0, 1, 2], $container->indices());
     }

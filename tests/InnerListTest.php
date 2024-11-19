@@ -67,7 +67,7 @@ final class InnerListTest extends TestCase
             ->unshift('42')
             ->push(42)
             ->insert(1, 42.0)
-            ->replace(0, Byte::fromDecoded('Hello World'));
+            ->replace(0, Bytes::fromDecoded('Hello World'));
 
         self::assertCount(3, $container);
         self::assertTrue($container->isNotEmpty());
@@ -78,10 +78,10 @@ final class InnerListTest extends TestCase
     #[Test]
     public function it_can_return_the_same_object_if_no_replace_is_needed(): void
     {
-        $item = Item::new(Byte::fromDecoded('Hello World'));
+        $item = Item::new(Bytes::fromDecoded('Hello World'));
         $field = InnerList::new($item);
 
-        self::assertSame($field, $field->replace(0, Byte::fromDecoded('Hello World')));
+        self::assertSame($field, $field->replace(0, Bytes::fromDecoded('Hello World')));
     }
 
     #[Test]
@@ -102,7 +102,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        InnerList::new()->replace(0, Byte::fromDecoded('Hello World'));
+        InnerList::new()->replace(0, Bytes::fromDecoded('Hello World'));
     }
 
     #[Test]
@@ -110,7 +110,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(InvalidOffset::class);
 
-        InnerList::new()->insert(3, Byte::fromDecoded('Hello World'));
+        InnerList::new()->insert(3, Bytes::fromDecoded('Hello World'));
     }
 
     #[Test]
@@ -274,7 +274,7 @@ final class InnerListTest extends TestCase
     {
         $instance1 = InnerList::new(Token::fromString('babayaga'), 'a', true);
         $instance2 = $instance1
-            ->pushParameters(['a', true], ['v', Byte::fromDecoded('I will be removed')], ['c', 'true'])
+            ->pushParameters(['a', true], ['v', Bytes::fromDecoded('I will be removed')], ['c', 'true'])
             ->unshiftParameters(['b', Item::false()])
             ->replaceParameter(1, ['a', 'false'])
             ->withoutParameterByIndices(-2)
@@ -332,7 +332,7 @@ final class InnerListTest extends TestCase
             ->unshift('42')
             ->push(42)
             ->insert(1, 42.0)
-            ->replace(0, Byte::fromDecoded('Hello World'));
+            ->replace(0, Bytes::fromDecoded('Hello World'));
 
         self::assertSame([0, 1, 2], $container->indices());
     }

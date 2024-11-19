@@ -413,8 +413,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
         string $name,
         ?callable $validate = null,
         bool|string $required = false,
-        Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
-    ): Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null {
+        Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
+    ): Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null {
         try {
             return $this->getByName($name, $validate)->value();
         } catch (InvalidOffset $exception) {
@@ -475,7 +475,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
      */
     public function add(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -541,7 +541,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
      */
     public function append(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -558,7 +558,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
      */
     public function prepend(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;

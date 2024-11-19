@@ -493,7 +493,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function add(
         string $name,
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -583,7 +583,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function append(
         string $name,
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -606,7 +606,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function prepend(
         string $name,
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;

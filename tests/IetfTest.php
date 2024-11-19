@@ -57,7 +57,7 @@ final class IetfTest extends TestCase
         ];
 
         yield 'bytesequence' => [
-            'value' => Byte::fromEncoded('cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg=='),
+            'value' => Bytes::fromEncoded('cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg=='),
             'expectedRfc8941' => true,
             'expectedRfc9651' => true,
         ];
