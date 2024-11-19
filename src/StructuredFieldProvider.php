@@ -8,7 +8,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 
 /**
- * @phpstan-type StructuredField OuterList|Dictionary|InnerList|Parameters|Item
+ * @phpstan-type StructuredField Dictionary|InnerList|Item|OuterList|Parameters
  * @phpstan-type SfType ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool
  * @phpstan-type SfTypeInput SfType|DateTimeInterface
  * @phpstan-type SfItemInput Item|SfTypeInput|StructuredFieldProvider|StructuredField
@@ -20,7 +20,7 @@ use DateTimeInterface;
 interface StructuredFieldProvider
 {
     /**
-     * Returns ane of the StructuredField Data Type class.
+     * Returns one of the StructuredField Data Type class.
      */
-    public function toStructuredField(): OuterList|Dictionary|Item|InnerList|Parameters;
+    public function toStructuredField(): Dictionary|InnerList|Item|OuterList|Parameters;
 }

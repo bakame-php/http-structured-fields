@@ -37,7 +37,7 @@ $permissions->isEmpty();      // returns false
 
 > [!IMPORTANT]
 > For ordered maps, the `getByIndex` method returns a list containing exactly 2 entries.
-> The first entry is the member key, the second entry is the member value.
+> The first entry is the member name, the second entry is the member value.
 > For lists, the method directly returns the value.
 
 To avoid invalid states, `ArrayAccess` modifying methods throw a `ForbiddenOperation`
@@ -51,24 +51,24 @@ unset($permissions['a']); // triggers a ForbiddenOperation exception
 ```
 
 > [!IMPORTANT]
-> For ordered map the ArrayAccess interface will use the member key
+> For ordered map the ArrayAccess interface will use the member name
 > whereas for lists the interface will use the member index.
 
-The `Dictionary` and `Parameters` classes also allow accessing its members as value using their key:
+The `Dictionary` and `Parameters` classes also allow accessing its members as value using their name:
 
 ```php
 $permissions->hasName('picture-in-picture');           // returns true
 $permissions->hasName('picture-in-picture', 'foobar'); // returns false 
-// 'foobar' is not a valid key or at least it is not present
+// 'foobar' is not a valid name or at least it is not present
 
 $permissions->getByName('camera'); // returns Item::fromToken('*');
 $permissions->toAssociative(); // returns an iterator
-// the iterator key is the member key and the value is the member value
+// the iterator key is the member name and the value is the member value
 // the offset is "lost"
 $permissions->nameByIndex(42); // returns null because there's no member with the offset 42
 $permissions->nameByIndex(2);  // returns 'camera'
 
-$permissions->indexByName('foobar'): // returns null because there's no member with the key 'foobar'
+$permissions->indexByName('foobar'): // returns null because there's no member with the name 'foobar'
 $permissions->indexByName('geolocation'): // returns 1
 ```
 
@@ -89,7 +89,7 @@ On the other hand if you already have a `Parameters` instance you can use the
 parameter.
 
 > [!TIP]
-> The `parameterByKey` proxy the result from `valueByName`.
+> The `parameterByName` proxy the result from `valueByName`.
 > The `parameterByIndex` proxy the result from `valueByIndex`.
 
 ## Building and Updating Structured Fields Values
@@ -172,14 +172,14 @@ using indices and pair as described in the RFC.
 
 The `$pair` parameter is a tuple (ie: an array as list with exactly two members) where:
 
-- the first array member is the parameter `$key`
+- the first array member is the parameter `$name`
 - the second array member is the parameter `$value`
 
 ```php
 $map->unshift(array ...$pairs): static;
 $map->push(array ...$pairs): static;
-$map->insert(int $key, array ...$pairs): static;
-$map->replace(int $key, array $pair): static;
+$map->insert(int $name, array ...$pairs): static;
+$map->replace(int $name, array $pair): static;
 $map->mergePairs(...$others): static;
 $map->removeByIndices(int ...$indices): static;
 ```
@@ -292,9 +292,9 @@ named constructor and the use any of the following modifying methods.
 ```php
 $list->unshift(...$members): static;
 $list->push(...$members): static;
-$list->insert(int $key, ...$members): static;
-$list->replace(int $key, $member): static;
-$list->removeByIndices(int ...$key): static;
+$list->insert(int $index, ...$members): static;
+$list->replace(int $index, $member): static;
+$list->removeByIndices(int ...$index): static;
 ```
 
 as shown below
@@ -387,7 +387,7 @@ You can attach and update the associated `Parameters` instance using the followi
 $field->addParameter(string $name, mixed $value): static;
 $field->appendParameter(string $name, mixed $value): static;
 $field->prependParameter(string $name, mixed $value): static;
-$field->withoutParameters(string ...$names): static; // this method is deprecated as of version 1.1 use withoutParametersByKeys instead
+$field->withoutParametersByNames(string ...$names): static;
 $field->withoutAnyParameter(): static;
 $field->withParameters(Parameters $parameters): static;
 $field->pushParameters(array ...$pairs): static
@@ -400,7 +400,7 @@ $field->withoutParametersByIndices(int ...$indices): static
 
 The `$pair` parameter is a tuple (ie: an array as list with exactly two members) where:
 
-- the first array member is the parameter `$key`
+- the first array member is the parameter `$name`
 - the second array member is the parameter `$value`
 
 > [!WARNING]

@@ -59,8 +59,11 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
         }
 
         return match (true) {
-            $member instanceof InnerList || $member instanceof Item => $member,
-            $member instanceof OuterList || $member instanceof Dictionary || $member instanceof Parameters => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
+            $member instanceof InnerList,
+            $member instanceof Item => $member,
+            $member instanceof OuterList,
+            $member instanceof Dictionary,
+            $member instanceof Parameters => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             is_iterable($member) => InnerList::new(...$member),
             default => Item::new($member),
         };

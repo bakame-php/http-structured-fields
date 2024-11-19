@@ -351,7 +351,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
             count($indices) === $max => self::new(),
             default => new self(array_filter(
                 $this->members,
-                fn (int $key): bool => !in_array($key, $indices, true),
+                fn (int $offset): bool => !in_array($offset, $indices, true),
                 ARRAY_FILTER_USE_KEY
             ), $this->parameters),
         };

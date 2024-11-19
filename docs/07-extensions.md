@@ -34,9 +34,9 @@ On the other hand to allow composition the package does expose the `StructuredFi
 interface StructuredFieldProvider
 {
     /**
-     * Returns ane of the StructuredField Data Type class.
+     * Returns one of the StructuredField Data Type class.
      */
-    public function toStructuredField(): OuterList|Dictionary|Item|InnerList|Parameters;
+    public function toStructuredField(): Dictionary|InnerList|Item|OuterList|Parameters;
 }
 ```
 

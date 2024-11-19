@@ -85,7 +85,7 @@ following variables:
 
 - `{index}` the member index
 - `{value}` the member value in its serialized version
-- `{key}` the member key (only available with `Dictionary` and `Parameters`)
+- `{name}` the member name (only available with `Dictionary` and `Parameters`)
 
 Now that we know how to discriminate between an `InnerList` and a `Item` we want to validate
 the `Item` entry.
@@ -163,8 +163,8 @@ if (!$member->parameters()->allowedNames(['location', 'longitude', 'latitude', '
 
 ### Validating single parameters
 
-The `parameterByKey` and `parameterByIndex` methods can be used to validate a parameter value.
-Since in our field there is no mention of offset, we will use the `::parameterByKey` method.
+The `parameterByName` and `parameterByIndex` methods can be used to validate a parameter value.
+Since in our field there is no mention of offset, we will use the `::parameterByName` method.
 
 Let's try to validate the `longitude` parameter
 
@@ -173,10 +173,10 @@ require its presence. So to fully validate the parameter we need to do the follo
 
 ```php
 $member->parameterByName(
-    key: 'longitude',
+    name: 'longitude',
     validate: fn (mixed $value) => match (true) {
         Type::Decimal->supports($value) => true,
-        default => "The `{key}` '{value}' failed the validation check."
+        default => "The `{name}` '{value}' failed the validation check."
     },
     required: true,
 );
@@ -184,7 +184,7 @@ $member->parameterByName(
 
 > [!NOTE]
 > `parameterByIndex` uses the same parameter only the callback parameter are
-> different as a second parameter the string key is added to the callback
+> different as a second parameter the string name is added to the callback
 > for validation purpose.
 
 ### Validating the complete Parameter container
@@ -220,9 +220,9 @@ $parametersValidator = ParametersValidator::new()
 
 The `ParametersValidator` class is immutable so each added rules returns a new instance.
 
-Then we can add all the key checks using an associative `array` where each entry index
-will be the parameter `key` and each entry value will also be an array which takes
-the parameters of the `parameterByKey` method. For instance for the `longitude` parameter
+Then we can add all the name checks using an associative `array` where each entry index
+will be the parameter `name` and each entry value will also be an array which takes
+the parameters of the `parameterByName` method. For instance for the `longitude` parameter
 we did earlier we end up with the following entries.
 
 ```php
@@ -232,7 +232,7 @@ $parametersValidator = ->filterByNames([
         'longitude' => [
             'validate' => function (mixed $value) {
                  if (!Type::Decimal->supports($value)) {
-                    return "The `{key}` '{value}' failed the validation check.";
+                    return "The `{name}` '{value}' failed the validation check.";
                  }
 
                  return true; 
@@ -266,7 +266,7 @@ $parametersValidator = ParametersValidator::new()
         'longitude' => [
             'validate' => function (mixed $value) {
                  if (!Type::Decimal->supports($value)) {
-                    return "The `{key}` '{value}' failed the validation check.";
+                    return "The `{name}` '{value}' failed the validation check.";
                  }
 
                  return true; 
@@ -276,7 +276,7 @@ $parametersValidator = ParametersValidator::new()
         'latitude' => [
             'validate' => function (mixed $value) {
                  if (!Type::Decimal->supports($value)) {
-                    return "The `{key}` '{value}' failed the validation check.";
+                    return "The `{name}` '{value}' failed the validation check.";
                  }
 
                  return true; 
@@ -286,7 +286,7 @@ $parametersValidator = ParametersValidator::new()
         'date' => [
             'validate' => function (mixed $value) {
                  if (!Type::Date->supports($value)) {
-                    return "The `{key}` '{value}' is not a valid date";
+                    return "The `{name}` '{value}' is not a valid date";
                  }
 
                  return true; 
