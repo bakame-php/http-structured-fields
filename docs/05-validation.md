@@ -1,6 +1,6 @@
 ---
 title: Structured Field validation
-order: 7
+order: 6
 ---
 
 # Validation
