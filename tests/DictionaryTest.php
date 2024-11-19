@@ -388,7 +388,7 @@ final class DictionaryTest extends StructuredFieldTestCase
 
         $instance1 = Dictionary::new();
         $instance2 = $instance1
-            ->push(['a', true], ['v', ByteSequence::fromDecoded('I will be removed')], ['c', 'true'])
+            ->push(['a', true], ['v', Byte::fromDecoded('I will be removed')], ['c', 'true'])
             ->unshift(['b', $instance])
             ->replace(1, ['a', 'false'])
             ->removeByNames('toto')

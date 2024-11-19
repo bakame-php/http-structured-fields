@@ -22,18 +22,20 @@ enum Ietf
 
     public function publishedAt(): DateTimeImmutable
     {
-        return match ($this) {
-            self::Rfc9651 => new DateTimeImmutable('2024-09-01', new DateTimeZone('UTC')),
-            self::Rfc8941 => new DateTimeImmutable('2021-02-01', new DateTimeZone('UTC')),
-        };
+        return new DateTimeImmutable(match ($this) {
+            self::Rfc9651 => '2024-09-01',
+            self::Rfc8941 => '2021-02-01',
+        }, new DateTimeZone('UTC'));
+    }
+
+    public function isActive(): bool
+    {
+        return self::Rfc9651 === $this;
     }
 
     public function isObsolete(): bool
     {
-        return match ($this) {
-            self::Rfc9651 => false,
-            default => true,
-        };
+        return !$this->isActive();
     }
 
     public function supports(mixed $value): bool

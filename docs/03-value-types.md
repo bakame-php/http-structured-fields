@@ -73,13 +73,13 @@ PHP default type system, for them, we have defined three classes `Token`,
 `ByteSequence` and `DisplayString` to help with their representation.
 
 ```php
-use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Byte;
 use Bakame\Http\StructuredFields\DisplayString;
 use Bakame\Http\StructuredFields\Token;
 
 Token::fromString(string|Stringable $value): Token
-ByteSequence::fromDecoded(string|Stringable $value): ByteSequence;
-ByteSequence::fromEncoded(string|Stringable $value): ByteSequence;
+Byte::fromDecoded(string|Stringable $value): ByteSequence;
+Byte::fromEncoded(string|Stringable $value): ByteSequence;
 DisplayString::fromDecoded(string|Stringable $value): DisplayString;
 DisplayString::fromEncoded(string|Stringable $value): DisplayString;
 ```
@@ -89,7 +89,7 @@ instantiated. To access their value, they expose the following API:
 
 ```php
 use Bakame\Http\StructuredFields\Token;
-use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Byte;
 use Bakame\Http\StructuredFields\DisplayString;
 
 $token = Token::fromString('application/text+xml');
@@ -99,13 +99,13 @@ $displayString = DisplayString::fromDecoded('füü');
 $displayString->decoded(); // returns 'füü'
 $displayString->encoded(); // returns 'f%c3%bc%c3%bc'
 
-$byte = ByteSequence::fromDecoded('Hello world!');
+$byte = Byte::fromDecoded('Hello world!');
 $byte->decoded(); // returns 'Hello world!'
 $byte->encoded(); // returns 'SGVsbG8gd29ybGQh'
 
 $token->equals($byte); // will return false;
 $displayString->equals($byte); // will return false;
-$byte->equals(ByteSequence::fromEncoded('SGVsbG8gd29ybGQh')); // will return true
+$byte->equals(Byte::fromEncoded('SGVsbG8gd29ybGQh')); // will return true
 $displayString->equals(DisplayString::fromEncoded('f%c3%bc%c3%bc')); // will return true
 
 $token->type();         // returns Type::Token

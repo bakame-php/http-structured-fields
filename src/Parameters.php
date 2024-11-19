@@ -77,7 +77,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Returns a new instance from an associative iterable construct.
      *
-     * its keys represent the dictionary entry key
+     * its keys represent the dictionary entry name
      * its values represent the dictionary entry value
      *
      * @param StructuredFieldProvider|iterable<string, SfItemInput> $members
@@ -99,7 +99,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
      * Returns a new instance from a pair iterable construct.
      *
      * Each member is composed of an array with two elements
-     * the first member represents the instance entry key
+     * the first member represents the instance entry name
      * the second member represents the instance entry value
      *
      * @param StructuredFieldProvider|iterable<array{0:string, 1:SfItemInput}> $pairs
@@ -328,7 +328,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Returns the key associated with the given index or null otherwise.
+     * Returns the name associated with the given index or null otherwise.
      */
     public function indexByName(string $name): ?int
     {
@@ -342,7 +342,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Returns the index associated with the given key or null otherwise.
+     * Returns the index associated with the given name or null otherwise.
      */
     public function nameByIndex(int $index): ?string
     {
@@ -413,8 +413,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
         string $name,
         ?callable $validate = null,
         bool|string $required = false,
-        ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
-    ): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null {
+        Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
+    ): Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null {
         try {
             return $this->getByName($name, $validate)->value();
         } catch (InvalidOffset $exception) {
@@ -475,7 +475,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
      */
     public function add(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -541,7 +541,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
      */
     public function append(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -558,7 +558,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
      */
     public function prepend(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;

@@ -49,7 +49,7 @@ enum Type: string
             is_int($value) => 'The integer is outside of the valid range for a HTTP structured field integer type',
             is_float($value) => 'The float is outside of the valid range for a HTTP structured field decimal type',
             is_string($value) => 'The string contains characters that are invalid for a HTTP structured field string type',
-            default => (is_object($value) ? 'An instance of "'.$value::class.'"' : 'A value of type "'.gettype($value).'"').' can not be used as an HTTP structured field data type.',
+            default => (is_object($value) ? 'An instance of "'.$value::class.'"' : 'A value of type "'.gettype($value).'"').' can not be used as an HTTP structured field value type.',
         });
     }
 
@@ -59,7 +59,7 @@ enum Type: string
             $variable instanceof Item,
             $variable instanceof Token,
             $variable instanceof DisplayString,
-            $variable instanceof ByteSequence => $variable->type(),
+            $variable instanceof Byte => $variable->type(),
             $variable instanceof DateTimeInterface && 999_999_999_999_999 >= abs($variable->getTimestamp()) => Type::Date,
             is_int($variable) && 999_999_999_999_999 >= abs($variable) => Type::Integer,
             is_float($variable) && 999_999_999_999 >= abs(floor($variable)) => Type::Decimal,

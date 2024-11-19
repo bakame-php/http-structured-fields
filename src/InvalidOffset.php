@@ -25,10 +25,10 @@ final class InvalidOffset extends OutOfBoundsException implements StructuredFiel
     public static function dueToNameNotFound(string|int $name): self
     {
         if (is_int($name)) {
-            return new self('The member key can not be the integer "'.$name.'".');
+            return new self('The member name can not be the integer "'.$name.'".');
         }
 
-        return new self('No member exists with the key "'.$name.'".');
+        return new self('No member exists with the name "'.$name.'".');
     }
 
     public static function dueToMemberNotFound(string|int $offset): self

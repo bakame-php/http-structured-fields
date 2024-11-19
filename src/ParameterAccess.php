@@ -38,8 +38,8 @@ trait ParameterAccess
         string $name,
         ?callable $validate = null,
         bool|string $required = false,
-        ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
-    ): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null {
+        Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
+    ): Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null {
         return $this->parameters->valueByName($name, $validate, $required, $default);
     }
 
@@ -71,52 +71,52 @@ trait ParameterAccess
     abstract public function withParameters(Parameters $parameters): static;
 
     /**
-     * Adds a member if its key is not present at the of the associated parameter instance or update the instance at the given key.
+     * Adds a member if its name is not present at the of the associated parameter instance or update the instance at the given name.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
      * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType|null $member
      *
-     * @throws SyntaxError If the string key is not a valid
+     * @throws SyntaxError If the string name is not a valid
      */
     public function addParameter(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): static {
         return $this->withParameters($this->parameters()->add($name, $member));
     }
 
     /**
-     * Adds a member at the start of the associated parameter instance and deletes any previous reference to the key if present.
+     * Adds a member at the start of the associated parameter instance and deletes any previous reference to the name if present.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
      * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType|null $member
      *
-     * @throws SyntaxError If the string key is not a valid
+     * @throws SyntaxError If the string name is not a valid
      */
     public function prependParameter(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null  $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null  $member
     ): static {
         return $this->withParameters($this->parameters()->prepend($name, $member));
     }
 
     /**
-     * Adds a member at the end of the associated parameter instance and deletes any previous reference to the key if present.
+     * Adds a member at the end of the associated parameter instance and deletes any previous reference to the name if present.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
      * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType|null $member
      *
-     * @throws SyntaxError If the string key is not a valid
+     * @throws SyntaxError If the string name is not a valid
      */
     public function appendParameter(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): static {
         return $this->withParameters($this->parameters()->append($name, $member));
     }

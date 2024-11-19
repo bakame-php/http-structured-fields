@@ -143,7 +143,7 @@ final class ParserTest extends StructuredFieldTestCase
 
     #[Test]
     #[DataProvider('provideHttpValueForDataType')]
-    public function it_parses_basic_data_type(string $httpValue, ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool $expected): void
+    public function it_parses_basic_data_type(string $httpValue, Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool $expected): void
     {
         $field = $this->parser->parseValue($httpValue);
         if (is_scalar($expected)) {
@@ -175,7 +175,7 @@ final class ParserTest extends StructuredFieldTestCase
 
         yield 'it parses an byte sequence' => [
             'httpValue' => ':cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==:',
-            'expected' => ByteSequence::fromEncoded('cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg=='),
+            'expected' => Byte::fromEncoded('cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg=='),
         ];
 
         yield 'it parses an token' => [

@@ -60,7 +60,7 @@ final class ParametersValidator
     }
 
     /**
-     * Validate each parameters value per key.
+     * Validate each parameters value per name.
      *
      * On success populate the result item property
      * On failure populates the result errors property

@@ -12,6 +12,7 @@ use DateTimeInterface;
 use Iterator;
 use IteratorAggregate;
 use Stringable;
+use Throwable;
 
 use function array_key_exists;
 use function array_keys;
@@ -80,7 +81,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Returns a new instance from an associative iterable construct.
      *
-     * its keys represent the dictionary entry key
+     * its keys represent the dictionary entry name
      * its values represent the dictionary entry value
      *
      * @param StructuredFieldProvider|iterable<string, InnerList|Item|SfMemberInput> $members
@@ -102,12 +103,12 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * Returns a new instance from a pair iterable construct.
      *
      * Each member is composed of an array with two elements
-     * the first member represents the instance entry key
+     * the first member represents the instance entry name
      * the second member represents the instance entry value
      *
      * @param StructuredFieldProvider|Dictionary|Parameters|iterable<array{0:string, 1?:InnerList|Item|SfMemberInput}> $pairs
      */
-    public static function fromPairs(StructuredFieldProvider|iterable $pairs): self
+    public static function fromPairs(StructuredFieldProvider|Dictionary|Parameters|iterable $pairs): self
     {
         if ($pairs instanceof StructuredFieldProvider) {
             $pairs = $pairs->toStructuredField();
@@ -163,7 +164,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.2
      *
-     * @throws SyntaxError If the string is not a valid
+     * @throws StructuredFieldError|Throwable
      */
     public static function fromRfc9651(Stringable|string $httpValue): self
     {
@@ -175,7 +176,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      *
      * @see https://www.rfc-editor.org/rfc/rfc8941.html#section-3.2
      *
-     * @throws SyntaxError If the string is not a valid
+     * @throws StructuredFieldError|Throwable
      */
     public static function fromRfc8941(Stringable|string $httpValue): self
     {
@@ -187,7 +188,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.2
      *
-     * @throws SyntaxError If the string is not a valid
+     * @throws StructuredFieldError|Throwable If the string is not a valid
      */
     public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
@@ -380,7 +381,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Returns the item or the inner-list and its key as attached to the given
+     * Returns the item or the inner-list and its name as attached to the given
      * collection according to their index position otherwise throw.
      *
      * @param ?callable(Item|InnerList, string): (bool|string) $validate
@@ -418,7 +419,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Returns the key associated with the given index or null otherwise.
+     * Returns the name associated with the given index or null otherwise.
      */
     public function indexByName(string $name): ?int
     {
@@ -451,7 +452,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Returns the first member whether it is an item or an inner-list and its key as attached to the given
+     * Returns the first member whether it is an item or an inner-list and its name as attached to the given
      * collection according to their index position otherwise returns an empty array.
      *
      * @return array{0:string, 1:InnerList|Item}|array{}
@@ -460,13 +461,13 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     {
         try {
             return $this->getByIndex(0);
-        } catch (InvalidOffset) {
+        } catch (StructuredFieldError) {
             return [];
         }
     }
 
     /**
-     * Returns the first member whether it is an item or an inner-list and its key as attached to the given
+     * Returns the first member whether it is an item or an inner-list and its name as attached to the given
      * collection according to their index position otherwise returns an empty array.
      *
      * @return array{0:string, 1:InnerList|Item}|array{}
@@ -475,24 +476,24 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     {
         try {
             return $this->getByIndex(-1);
-        } catch (InvalidOffset) {
+        } catch (StructuredFieldError) {
             return [];
         }
     }
 
     /**
-     * Adds a member at the end of the instance otherwise updates the value associated with the key if already present.
+     * Adds a member at the end of the instance otherwise updates the value associated with the name if already present.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
      * @param InnerList|Item|SfMemberInput|null $member
      *
-     * @throws SyntaxError If the string key is not a valid
+     * @throws SyntaxError If the string name is not a valid
      */
     public function add(
         string $name,
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -561,7 +562,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Deletes members associated with the list using the member key.
+     * Deletes members associated with the list using the member name.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
@@ -572,17 +573,17 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Adds a member at the end of the instance and deletes any previous reference to the key if present.
+     * Adds a member at the end of the instance and deletes any previous reference to the name if present.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
      * @param InnerList|Item|SfMemberInput|null $member
-     * @throws SyntaxError If the string key is not a valid
+     * @throws SyntaxError If the string name is not a valid
      */
     public function append(
         string $name,
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -594,18 +595,18 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Adds a member at the beginning of the instance and deletes any previous reference to the key if present.
+     * Adds a member at the beginning of the instance and deletes any previous reference to the name if present.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
      * @param InnerList|Item|SfMemberInput|null $member
      *
-     * @throws SyntaxError If the string key is not a valid
+     * @throws SyntaxError If the string name is not a valid
      */
     public function prepend(
         string $name,
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -763,6 +764,8 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
 
     /**
      * @param string $offset
+     *
+     * @throws StructuredFieldError
      */
     public function offsetGet(mixed $offset): InnerList|Item
     {
@@ -790,7 +793,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function map(callable $callback): Iterator
     {
-        foreach ($this->getIterator() as $offset => $member) {
+        foreach ($this as $offset => $member) {
             yield ($callback)($member, $offset);
         }
     }
@@ -805,7 +808,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function reduce(callable $callback, mixed $initial = null): mixed
     {
-        foreach ($this->getIterator() as $offset => $pair) {
+        foreach ($this as $offset => $pair) {
             $initial = $callback($initial, $pair, $offset);
         }
 
@@ -819,7 +822,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function filter(callable $callback): self
     {
-        return self::fromPairs(new CallbackFilterIterator($this->getIterator(), $callback));
+        return self::fromPairs(new CallbackFilterIterator($this, $callback));
     }
 
     /**
@@ -829,7 +832,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function sort(callable $callback): self
     {
-        $members = iterator_to_array($this->getIterator());
+        $members = iterator_to_array($this);
         usort($members, $callback);
 
         return self::fromPairs($members);

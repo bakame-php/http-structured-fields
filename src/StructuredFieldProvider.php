@@ -9,7 +9,7 @@ use DateTimeInterface;
 
 /**
  * @phpstan-type StructuredField Dictionary|InnerList|Item|OuterList|Parameters
- * @phpstan-type SfType ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool
+ * @phpstan-type SfType Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool
  * @phpstan-type SfTypeInput SfType|DateTimeInterface
  * @phpstan-type SfItemInput Item|SfTypeInput|StructuredFieldProvider|StructuredField
  * @phpstan-type SfMemberInput iterable<SfItemInput>|SfItemInput

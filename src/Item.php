@@ -61,7 +61,7 @@ final class Item
      *
      * @throws SyntaxError If the value or the parameters are not valid
      */
-    public static function fromAssociative(ByteSequence|Token|DisplayString|DateTimeInterface|string|int|float|bool $value, iterable $parameters): self
+    public static function fromAssociative(Byte|Token|DisplayString|DateTimeInterface|string|int|float|bool $value, iterable $parameters): self
     {
         if (!$parameters instanceof Parameters) {
             $parameters = Parameters::fromAssociative($parameters);
@@ -270,7 +270,7 @@ final class Item
      *
      * @throws Violation
      */
-    public function value(?callable $validate = null): ByteSequence|Token|DisplayString|DateTimeImmutable|string|int|float|bool
+    public function value(?callable $validate = null): Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool
     {
         $value = $this->value->value;
         if (null === $validate) {
@@ -343,7 +343,7 @@ final class Item
      * @throws SyntaxError If the value is invalid or not supported
      */
     public function withValue(
-        DateTimeInterface|ByteSequence|Token|DisplayString|string|int|float|bool $value
+        DateTimeInterface|Byte|Token|DisplayString|string|int|float|bool $value
     ): self {
         $value = new Value($value);
         if ($value->equals($this->value)) {

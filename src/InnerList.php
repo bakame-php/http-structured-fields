@@ -113,7 +113,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
      * Returns a new instance.
      */
     public static function new(
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ): self {
         return new self($members, Parameters::new());
     }
@@ -258,7 +258,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
      * Inserts members at the beginning of the list.
      */
     public function unshift(
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ): self {
         $membersToAdd = array_reduce(
             $members,
@@ -282,7 +282,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
      * Inserts members at the end of the list.
      */
     public function push(
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ): self {
         $membersToAdd = array_reduce(
             $members,
@@ -309,7 +309,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
      */
     public function insert(
         int $index,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ): self {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
@@ -327,7 +327,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
 
     public function replace(
         int $index,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|ByteSequence|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Byte|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         $member = self::filterMember($member);

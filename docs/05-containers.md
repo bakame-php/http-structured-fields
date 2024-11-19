@@ -5,7 +5,7 @@ order: 6
 
 # Containers
 
-While building or updating a Bare Item is straightforward, doing the same with the structured field
+While building or updating a Bare Item is straightforward, doing the same with the structured field containers
 requires a bit more logic. In the following sections we will explore how we can access, build and update
 containers.
 
@@ -274,10 +274,10 @@ which takes a single variadic parameter `$members`:
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
-use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Byte;
 
 $list = InnerList::new(
-    ByteSequence::fromDecoded('Hello World'),
+    Byte::fromDecoded('Hello World'),
     42.0,
     42
 );
@@ -300,14 +300,14 @@ $list->removeByIndices(int ...$index): static;
 as shown below
 
 ```php
-use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Byte;
 use Bakame\Http\StructuredFields\InnerList;
 
 $list = InnerList::new()
     ->unshift('42')
     ->push(42)
     ->insert(1, 42.0)
-    ->replace(0, ByteSequence::fromDecoded('Hello World'));
+    ->replace(0, Byte::fromDecoded('Hello World'));
 
 echo $list->toHttpValue(); //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
 echo $list;                //'(:SGVsbG8gV29ybGQ=: 42.0 42)'
@@ -347,7 +347,7 @@ To ease working with instances that have a `Parameters` object attached to, the 
 methods are added:
 
 ```php
-use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Byte;
 use Bakame\Http\StructuredFields\InnerList;
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;

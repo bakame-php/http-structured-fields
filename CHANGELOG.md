@@ -6,6 +6,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 
 ### Added
 
+- `Byte` class replace the `ByteSequence` class.
 - `Ietf` enum.
 - methods `fromRFC9651`, `fromRfc8941`, `toRFC9651`, `toRfc8941`, to ease parsing/serializing Structured Fields.
 - method `equals` to allow comparison of Structured Fields values.
@@ -44,6 +45,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `InnerList:remove` replaced by `InnerList:removeByIndices`
 - `::hasNoMember` and `::hasMembers` methods have been replaced by `isEmpty` and `isNotEmpty` on containers
 - `Dictionary::toPairs` and `Parameters::toPairs`
+- `ByteSequence` class replaced by `Byte` class
 
 ## [1.3.0](https://github.com/bakame-php/http-structured-fields/compare/1.2.2...1.3.0) - 2024-01-05
 

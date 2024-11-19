@@ -6,7 +6,7 @@ namespace Bakame\Http\StructuredFields;
 
 use PHPUnit\Framework\Attributes\Test;
 
-final class ByteSequenceTest extends StructuredFieldTestCase
+final class ByteTest extends StructuredFieldTestCase
 {
     /** @var array<string> */
     protected static array $httpWgTestFilenames = [
@@ -18,14 +18,14 @@ final class ByteSequenceTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        ByteSequence::fromEncoded('a a');
+        Byte::fromEncoded('a a');
     }
 
     #[Test]
     public function it_will_return_null_on_invalid_encoded_string(): void
     {
-        self::assertNull(ByteSequence::tryFromEncoded('a a'));
-        self::assertNull(ByteSequence::tryFromEncoded('aaaaa'));
+        self::assertNull(Byte::tryFromEncoded('a a'));
+        self::assertNull(Byte::tryFromEncoded('aaaaa'));
     }
 
     #[Test]
@@ -33,14 +33,14 @@ final class ByteSequenceTest extends StructuredFieldTestCase
     {
         $this->expectException(SyntaxError::class);
 
-        ByteSequence::fromEncoded('aaaaa');
+        Byte::fromEncoded('aaaaa');
     }
 
     #[Test]
     public function it_can_decode_base64_field(): void
     {
         $encoded = 'cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==';
-        $value = ByteSequence::fromEncoded($encoded);
+        $value = Byte::fromEncoded($encoded);
 
         self::assertSame('pretend this is binary content.', $value->decoded());
         self::assertSame($encoded, $value->encoded());
@@ -51,7 +51,7 @@ final class ByteSequenceTest extends StructuredFieldTestCase
     {
         $decoded = 'pretend this is binary content.';
         $encoded = 'cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==';
-        $value = ByteSequence::fromDecoded($decoded);
+        $value = Byte::fromDecoded($decoded);
 
         self::assertSame('pretend this is binary content.', $value->decoded());
         self::assertSame($encoded, $value->encoded());
@@ -62,9 +62,9 @@ final class ByteSequenceTest extends StructuredFieldTestCase
     {
         $decoded = 'pretend this is binary content.';
         $encoded = 'cHJldGVuZCB0aGlzIGlzIGJpbmFyeSBjb250ZW50Lg==';
-        $value = ByteSequence::fromDecoded($decoded);
+        $value = Byte::fromDecoded($decoded);
 
-        self::assertTrue($value->equals(ByteSequence::fromEncoded($encoded)));
-        self::assertFalse($value->equals(ByteSequence::fromDecoded($encoded)));
+        self::assertTrue($value->equals(Byte::fromEncoded($encoded)));
+        self::assertFalse($value->equals(Byte::fromDecoded($encoded)));
     }
 }

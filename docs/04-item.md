@@ -24,7 +24,7 @@ The `Item` value object exposes the following named constructors to instantiate
 bare items (ie: item without parameters attached to them).
 
 ```php
-use Bakame\Http\StructuredFields\ByteSequence;
+use Bakame\Http\StructuredFields\Byte;
 use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 

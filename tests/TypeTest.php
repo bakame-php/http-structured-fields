@@ -70,7 +70,7 @@ final class TypeTest extends TestCase
                 'expectedType' => Type::Token,
             ],
             'byte' => [
-                'value' => ByteSequence::fromDecoded('😊'),
+                'value' => Byte::fromDecoded('😊'),
                 'expectedType' => Type::ByteSequence,
             ],
             'datetime implementing object' => [
