@@ -355,6 +355,6 @@ final class Item
 
     public function withParameters(Parameters $parameters): static
     {
-        return $this->parameters->toHttpValue() === $parameters->toHttpValue() ? $this : new self($this->value, $parameters);
+        return $this->parameters->equals($parameters) ? $this : new self($this->value, $parameters);
     }
 }

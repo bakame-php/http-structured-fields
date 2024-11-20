@@ -251,7 +251,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
 
     public function withParameters(Parameters $parameters): static
     {
-        return ($this->parameters->toHttpValue() === $parameters->toHttpValue()) ? $this : new self($this->members, $parameters);
+        return $this->parameters->equals($parameters) ? $this : new self($this->members, $parameters);
     }
 
     /**
@@ -333,7 +333,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
         $member = self::filterMember($member);
 
         return match (true) {
-            $member->toHttpValue() === $this->members[$offset]->toHttpValue() => $this,
+            $member->equals($this->members[$offset]) => $this,
             default => new self(array_replace($this->members, [$offset => $member]), $this->parameters),
         };
     }
