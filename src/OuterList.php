@@ -361,7 +361,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
         $member = self::filterMember($member);
 
         return match (true) {
-            $member->equals( $this->members[$offset]) => $this,
+            $member->equals($this->members[$offset]) => $this,
             default => new self(...array_replace($this->members, [$offset => $member])),
         };
     }

@@ -257,10 +257,11 @@ final class Value
         }
 
         return match (true) {
-            ($this->value instanceof Bytes || $this->value instanceof Token || $this->value instanceof DisplayString) && $this->value->equals($value),
-            $this->value instanceof DateTimeInterface && $value instanceof DateTimeInterface && $value == $this->value,
-            $value === $this->value => true,
-            default => false,
+            $this->value instanceof Bytes,
+            $this->value instanceof Token,
+            $this->value instanceof DisplayString => $this->value->equals($value),
+            $this->value instanceof DateTimeInterface && $value instanceof DateTimeInterface => $value == $this->value,
+            default => $value === $this->value,
         };
     }
 }
