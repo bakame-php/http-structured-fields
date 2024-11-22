@@ -3,7 +3,7 @@ title: The Structured Field containers Data Types
 order: 5
 ---
 
-# Containers
+# Working with Structured Fields Containers
 
 While building or updating a Bare Item is straightforward, doing the same with the structured field containers
 requires a bit more logic. In the following sections we will explore how we can access, build and update
