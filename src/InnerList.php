@@ -86,8 +86,17 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
      * @param iterable<SfItemInput> $value
      * @param Parameters|iterable<string, SfItemInput> $parameters
      */
-    public static function fromAssociative(iterable $value, iterable $parameters): self
-    {
+    public static function fromAssociative(
+        iterable $value,
+        StructuredFieldProvider|Parameters|iterable $parameters
+    ): self {
+        if ($parameters instanceof StructuredFieldProvider) {
+            $parameters = $parameters->toStructuredField();
+            if (!$parameters instanceof Parameters) {
+                throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Parameters::class.'; '.$parameters::class.' given.');
+            }
+        }
+
         if (!$parameters instanceof Parameters) {
             $parameters = Parameters::fromAssociative($parameters);
         }
@@ -100,13 +109,30 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
      */
     public static function fromPair(array $pair): self
     {
-        return match (true) {
-            [] === $pair => self::new(),
-            !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an array as a list.'),
-            2 === count($pair) => new self($pair[0], !$pair[1] instanceof Parameters ? Parameters::fromPairs($pair[1]) : $pair[1]),
-            1 === count($pair) => new self($pair[0], Parameters::new()),
-            default => throw new SyntaxError('The pair first member must be the member list and the second member the inner list parameters.'),
-        };
+        if ([] === $pair) {
+            return self::new();
+        }
+
+        if (!array_is_list($pair) || 2 < count($pair)) {
+            throw new SyntaxError('The pair must be represented by an non-empty array as a list containing at most 2 members.');
+        }
+
+        if (1 === count($pair)) {
+            return new self($pair[0], Parameters::new());
+        }
+
+        if ($pair[1] instanceof StructuredFieldProvider) {
+            $pair[1] = $pair[1]->toStructuredField();
+            if (!$pair[1] instanceof Parameters) {
+                throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Parameters::class.'; '.$pair[1]::class.' given.');
+            }
+        }
+
+        if (!$pair[1] instanceof Parameters) {
+            $pair[1] = Parameters::fromPairs($pair[1]);
+        }
+
+        return new self($pair[0], $pair[1]);
     }
 
     /**
@@ -249,8 +275,15 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
         return $this->members[$this->filterIndex(-1)] ?? null;
     }
 
-    public function withParameters(Parameters $parameters): static
+    public function withParameters(StructuredFieldProvider|Parameters $parameters): static
     {
+        if ($parameters instanceof StructuredFieldProvider) {
+            $parameters = $parameters->toStructuredField();
+            if (!$parameters instanceof Parameters) {
+                throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Parameters::class.'; '.$parameters::class.' given.');
+            }
+        }
+
         return $this->parameters->equals($parameters) ? $this : new self($this->members, $parameters);
     }
 

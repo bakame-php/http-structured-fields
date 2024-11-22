@@ -85,11 +85,13 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     public static function fromAssociative(StructuredFieldProvider|iterable $members): self
     {
         if ($members instanceof StructuredFieldProvider) {
-            $members = $members->toStructuredField();
-        }
+            $structuredField = $members->toStructuredField();
 
-        if (!is_iterable($members)) {
-            throw new InvalidArgument('The "'.$members::class.'" instance can not be used for creating a .'.self::class.' structured field.');
+            return match (true) {
+                $structuredField instanceof Dictionary,
+                $structuredField instanceof Parameters => new self($structuredField->toAssociative()),
+                default => throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a structured field container; '.$structuredField::class.' given.'),
+            };
         }
 
         return new self($members);

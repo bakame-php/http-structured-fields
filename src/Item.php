@@ -57,12 +57,21 @@ final class Item
     /**
      * Returns a new instance from a value type and an iterable of key-value parameters.
      *
-     * @param Parameters|iterable<string, SfItemInput> $parameters
+     * @param StructuredFieldProvider|Parameters|iterable<string, SfItemInput> $parameters
      *
      * @throws SyntaxError If the value or the parameters are not valid
      */
-    public static function fromAssociative(Bytes|Token|DisplayString|DateTimeInterface|string|int|float|bool $value, iterable $parameters): self
-    {
+    public static function fromAssociative(
+        Bytes|Token|DisplayString|DateTimeInterface|string|int|float|bool $value,
+        StructuredFieldProvider|Parameters|iterable $parameters
+    ): self {
+        if ($parameters instanceof StructuredFieldProvider) {
+            $parameters = $parameters->toStructuredField();
+            if (!$parameters instanceof Parameters) {
+                throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Parameters::class.'; '.$parameters::class.' given.');
+            }
+        }
+
         if (!$parameters instanceof Parameters) {
             $parameters = Parameters::fromAssociative($parameters);
         }
@@ -77,12 +86,23 @@ final class Item
      */
     public static function fromPair(array $pair): self
     {
-        return match (true) {
-            [] === $pair, !array_is_list($pair) => throw new SyntaxError('The pair must be represented by an non-empty array as a list.'),
-            2 == count($pair) => new self(new Value($pair[0]), $pair[1] instanceof Parameters ? $pair[1] : Parameters::fromPairs($pair[1])),
-            1 === count($pair) => new self(new Value($pair[0]), Parameters::new()),
-            default => throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.'),
-        };
+        if ([] === $pair || !array_is_list($pair) || 2 < count($pair)) {
+            throw new SyntaxError('The pair must be represented by an non-empty array as a list containing at most 2 members.');
+        }
+
+        if (1 === count($pair)) {
+            return new self(new Value($pair[0]), Parameters::new());
+        }
+
+        if ($pair[1] instanceof StructuredFieldProvider) {
+            $pair[1] = $pair[1]->toStructuredField();
+        }
+
+        if (!$pair[1] instanceof Parameters) {
+            $pair[1] = Parameters::fromPairs($pair[1]);
+        }
+
+        return new self(new Value($pair[0]), $pair[1]);
     }
 
     /**
@@ -353,8 +373,15 @@ final class Item
         return new self($value, $this->parameters);
     }
 
-    public function withParameters(Parameters $parameters): static
+    public function withParameters(StructuredFieldProvider|Parameters $parameters): static
     {
+        if ($parameters instanceof StructuredFieldProvider) {
+            $parameters = $parameters->toStructuredField();
+            if (!$parameters instanceof Parameters) {
+                throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Parameters::class.'; '.$parameters::class.' given.');
+            }
+        }
+
         return $this->parameters->equals($parameters) ? $this : new self($this->value, $parameters);
     }
 }
