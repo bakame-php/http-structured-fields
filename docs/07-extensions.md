@@ -15,11 +15,11 @@ is between the RFC and your code the package only acts as a link between both pa
 
 ## DataTypes are Stringable
 
-All Datatypes expose the `Stringable` interface while it is recommended to use
-the `toHttpValue` method for better granularity but supporting the `Stringable`
+All Datatypes expose the `Stringable` interface. Supporting the `Stringable`
 interface allows the package to easily interface with packages and frameworks
 which expects a string or a stringable object when adding or updating
-HTTP field values.
+HTTP field values. Having said that, the recommendation is still to use
+the `toHttpValue` method for better granularity and ease of usage.
 
 ```php
 $container = InnerList::new(Byte::fromDecoded('Hello World'), 42.0, 42);
@@ -77,7 +77,7 @@ class readonly AcceptHeaderItem implements StructuredFieldProvider
                 Parameters::new()
                     ->append('q', $this->quality)
                     ->filter(fn (array $pair): bool => $pair[0] !== 'q' || 1.0 !== $pair[1]->value())
-                );
+            );
     }
 }
 ```
