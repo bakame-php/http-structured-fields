@@ -1,8 +1,23 @@
 {
     "name": "bakame/http-structured-fields",
-    "description": "Structured Field Values for HTTP manipulation in PHP",
+    "description": "A PHP library that parses, validates and serializes HTTP structured fields according to the IETF RFCs",
     "type": "library",
-    "keywords": ["http", "http headers", "http trailers", "headers", "trailers", "structured fields", "structured headers", "structured trailers", "parser", "serializer", "rfc8941"],
+    "keywords": [
+        "http",
+        "http headers",
+        "http trailers",
+        "headers",
+        "trailers",
+        "structured fields",
+        "structured headers",
+        "structured trailers",
+        "structured values",
+        "parser",
+        "serializer",
+        "validation",
+        "rfc8941",
+        "rfc9651"
+    ],
     "license": "MIT",
     "authors": [
         {
