@@ -417,6 +417,10 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
         bool|string $required = false,
         Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
     ): Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null {
+        if (null !== $default && null === Type::tryFromVariable($default)) {
+            throw new SyntaxError('The default parameter is invalid.');
+        }
+
         try {
             return $this->getByName($name, $validate)->value();
         } catch (InvalidOffset $exception) {

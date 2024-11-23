@@ -510,6 +510,16 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     #[Test]
+    public function it_will_fail_if_the_default_value_is_invalid_for_the_parameter_name(): void
+    {
+        $item = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
+
+        $this->expectException(SyntaxError::class);
+
+        $item->parameterByName('b', default:'bébé');
+    }
+
+    #[Test]
     public function it_can_validate_and_trigger_a_custom_error_message(): void
     {
         $item = Item::fromAssociative(Token::fromString('babayaga'), ['a' => true]);
