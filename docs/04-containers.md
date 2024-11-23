@@ -20,20 +20,31 @@ If we go back to our permission policy field example:
 $headerLine = 'picture-in-picture=(), geolocation=(self "https://example.com/"), camera=*'; 
 //the raw header line is a structured field dictionary
 $permissions = Dictionary::fromHttpValue($headerLine); // parse the field
-```
-
-The following methods are available, for all containers:
-
-```php
 $permissions->indices();      // returns [0, 1, 2]
-$permissions->hasIndices(-2); // returns true bacause negative index are supported
+$permissions->hasIndices(-2); // returns true because negative index are supported
 $permissions->getByIndex(1);  // returns ['geolocation', InnerList::new(Token::fromString('self'), "https://example.com/")]
+$permissions['geolocation'];  // returns InnerList::new(Token::fromString('self'), "https://example.com/")
+$permissions[1];              // throws a TypeError only string are allowed for Dictionary and Parameters
 $permissions->isNotEmpty():;  // returns true
 $permissions->isEmpty();      // returns false
 ```
 
 > [!IMPORTANT]
 > The `getByIndex` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
+
+Here's an example with a `List` container:
+
+```php
+$headerLine = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8'
+$accepts = OuterList::fromHttpValue($headerLine); // parse the field
+$accepts->indices();          // returns [0, 1, 2, 3, 4]
+$accepts->hasIndices(-2);     // returns true because negative index are supported
+$accepts->getByIndex(1);      // returns Token::fromString('application/xhtml+xml')
+$accepts[1];                  // returns Token::fromString('application/xhtml+xml')
+$accepts['foo'];              // throws a TypeError only integer are allowed for List and InnerList
+$permissions->isNotEmpty():;  // returns true
+$permissions->isEmpty();      // returns false
+```
 
 > [!IMPORTANT]
 > For ordered maps, the `getByIndex` method returns a list containing exactly 2 entries.
@@ -76,8 +87,8 @@ $permissions->indexByName('geolocation'): // returns 1
 > The `getByName` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
 
 > [!TIP]
-> The `ArrayAccess` interface proxy the result from `getByIndex` in list.
-> The `ArrayAccess` interface proxy the result from `getByName` in ordered map.
+> The `ArrayAccess` interface proxy the result from `getByIndex` with `OuterList` and `InnerList`.
+> The `ArrayAccess` interface proxy the result from `getByName`  with `Dictionary` and `Parameters`.
 
 ### Accessing the parameters values
 
@@ -92,9 +103,9 @@ parameter.
 > The `parameterByName` proxy the result from `valueByName`.
 > The `parameterByIndex` proxy the result from `valueByIndex`.
 
-## Building and Updating Structured Fields Values
+## Building and Updating COntainers
 
-Every value object can be used as a builder to create an HTTP field value. Because we are
+Every container can be used as a builder to create an HTTP field value. Because we are
 using immutable value objects any change to the value object will return a new instance
 with the changes applied and leave the original instance unchanged.
 
@@ -116,7 +127,7 @@ echo $value->toHttpValue(); //"b=?0, a=bar, c=@1671800423"
 echo $value;                //"b=?0, a=bar, c=@1671800423"
 ```
 
-or using their indices with an iterable structure of pairs (tuple) as defined in the RFC:
+or using their indices with an iterable structure of pairs as defined in the RFC:
 
 ```php
 use Bakame\Http\StructuredFields\Parameters;
@@ -225,8 +236,8 @@ echo $field->removeByNames('expire', 'httponly', 'max-age')->toHttpValue(); // r
 
 ### Automatic conversion
 
-For all containers, to ease instantiation the following automatic conversion are applied on
-the member argument of each modifying methods.
+Learning new types may be a daunting tasks so for ease of usage, for all containers, the following automatic
+conversion are applied on the member argument of each modifying methods.
 
 If the submitted type is:
 
@@ -384,21 +395,20 @@ Both objects provide additional modifying methods to help deal with parameters.
 You can attach and update the associated `Parameters` instance using the following methods.
 
 ```php
+$field->withParameters(Parameters $parameters): static;
 $field->addParameter(string $name, mixed $value): static;
 $field->appendParameter(string $name, mixed $value): static;
 $field->prependParameter(string $name, mixed $value): static;
-$field->withoutParametersByNames(string ...$names): static;
-$field->withoutAnyParameter(): static;
-$field->withParameters(Parameters $parameters): static;
 $field->pushParameters(array ...$pairs): static
 $field->unshiftParameters(array ...$pairs): static
 $field->insertParameters(int $index, array ...$pairs): static
 $field->replaceParameter(int $index, array $pair): static
 $field->withoutParametersByNames(string ...$names): static
 $field->withoutParametersByIndices(int ...$indices): static
+$field->withoutAnyParameter(): static;
 ```
 
-The `$pair` parameter is a tuple (ie: an array as list with exactly two members) where:
+The `$pair` parameter is an array as list with exactly two members where:
 
 - the first array member is the parameter `$name`
 - the second array member is the parameter `$value`
