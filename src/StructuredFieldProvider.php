@@ -8,10 +8,10 @@ use DateTimeImmutable;
 use DateTimeInterface;
 
 /**
- * @phpstan-type StructuredField Dictionary|InnerList|Item|OuterList|Parameters
  * @phpstan-type SfType Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool
  * @phpstan-type SfTypeInput SfType|DateTimeInterface
- * @phpstan-type SfItemInput Item|SfTypeInput|StructuredFieldProvider|StructuredField
+ * @phpstan-type SfDataTyoe Dictionary|InnerList|Item|OuterList|Parameters
+ * @phpstan-type SfItemInput SfTypeInput|SfDataTyoe|StructuredFieldProvider
  * @phpstan-type SfMemberInput iterable<SfItemInput>|SfItemInput
  * @phpstan-type SfParameterInput iterable<array{0:string, 1?:SfItemInput}>
  * @phpstan-type SfInnerListPair array{0:iterable<SfItemInput>, 1?:Parameters|SfParameterInput}
