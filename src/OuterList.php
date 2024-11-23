@@ -42,7 +42,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     private readonly array $members;
 
     /**
-     * @param InnerList|Item|SfMemberInput ...$members
+     * @param SfMemberInput ...$members
      */
     private function __construct(
         iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
@@ -51,7 +51,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param InnerList|Item|SfMemberInput $member
+     * @param SfMemberInput $member
      */
     private function filterMember(mixed $member): InnerList|Item
     {
@@ -89,7 +89,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param iterable<SfInnerListPair|SfItemPair>|InnerList $pairs
+     * @param StructuredFieldProvider|iterable<SfInnerListPair|SfItemPair> $pairs
      */
     public static function fromPairs(StructuredFieldProvider|iterable $pairs): self
     {
@@ -143,7 +143,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param InnerList|Item|SfMemberInput ...$members
+     * @param SfMemberInput ...$members
      */
     public static function new(iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members): self
     {
@@ -276,7 +276,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Inserts members at the beginning of the list.
      *
-     * @param StructuredFieldProvider|InnerList|Item|SfMemberInput ...$members
+     * @param SfMemberInput ...$members
      */
     public function unshift(
         StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|iterable|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
@@ -302,7 +302,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Inserts members at the end of the list.
      *
-     * @param InnerList|Item|SfMemberInput ...$members
+     * @param SfMemberInput ...$members
      */
     public function push(
         iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
@@ -328,7 +328,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Inserts members starting at the given index.
      *
-     * @param InnerList|Item|SfMemberInput ...$members
+     * @param SfMemberInput ...$members
      *
      * @throws InvalidOffset If the index does not exist
      */
@@ -351,7 +351,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param InnerList|Item|SfMemberInput $member
+     * @param iterable<SfMemberInput>|SfMemberInput $member
      */
     public function replace(
         int $index,

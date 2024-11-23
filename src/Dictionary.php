@@ -38,7 +38,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     private readonly array $members;
 
     /**
-     * @param iterable<string, InnerList|Item|SfMemberInput> $members
+     * @param iterable<string, SfMemberInput> $members
      */
     private function __construct(iterable $members = [])
     {
@@ -51,7 +51,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param InnerList|Item|SfMemberInput $member
+     * @param SfMemberInput $member
      */
     private static function filterMember(mixed $member): InnerList|Item
     {
@@ -84,7 +84,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * its keys represent the dictionary entry name
      * its values represent the dictionary entry value
      *
-     * @param StructuredFieldProvider|iterable<string, InnerList|Item|SfMemberInput> $members
+     * @param StructuredFieldProvider|iterable<string, SfMemberInput> $members
      */
     public static function fromAssociative(StructuredFieldProvider|iterable $members): self
     {
@@ -108,7 +108,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * the first member represents the instance entry name
      * the second member represents the instance entry value
      *
-     * @param StructuredFieldProvider|Dictionary|Parameters|iterable<array{0:string, 1?:InnerList|Item|SfMemberInput}> $pairs
+     * @param StructuredFieldProvider|Dictionary|Parameters|iterable<array{0:string, 1?:SfMemberInput}> $pairs
      */
     public static function fromPairs(StructuredFieldProvider|Dictionary|Parameters|iterable $pairs): self
     {
@@ -489,7 +489,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param InnerList|Item|SfMemberInput|null $member
+     * @param SfMemberInput|null $member
      *
      * @throws SyntaxError If the string name is not a valid
      */
@@ -580,7 +580,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param InnerList|Item|SfMemberInput|null $member
+     * @param SfMemberInput|null $member
      * @throws SyntaxError If the string name is not a valid
      */
     public function append(
@@ -602,7 +602,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param InnerList|Item|SfMemberInput|null $member
+     * @param SfMemberInput|null $member
      *
      * @throws SyntaxError If the string name is not a valid
      */
@@ -625,7 +625,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param array{0:string, 1:InnerList|Item|SfMemberInput} ...$pairs
+     * @param array{0:string, 1:SfMemberInput} ...$pairs
      */
     public function push(array ...$pairs): self
     {
@@ -644,7 +644,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param array{0:string, 1:InnerList|Item|SfMemberInput} ...$pairs
+     * @param array{0:string, 1:SfMemberInput} ...$pairs
      */
     public function unshift(array ...$pairs): self
     {
@@ -663,7 +663,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param array{0:string, 1:InnerList|Item|SfMemberInput} ...$members
+     * @param array{0:string, 1:SfMemberInput} ...$members
      */
     public function insert(int $index, array ...$members): self
     {
@@ -688,7 +688,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      *  This method MUST retain the state of the current instance, and return
      *  an instance that contains the specified changes.
      *
-     * @param array{0:string, 1:InnerList|Item|SfMemberInput} $pair
+     * @param array{0:string, 1:SfMemberInput} $pair
      */
     public function replace(int $index, array $pair): self
     {
@@ -708,7 +708,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param StructuredFieldProvider|Dictionary|Parameters|iterable<string, InnerList|Item|SfMemberInput> ...$others
+     * @param StructuredFieldProvider|Dictionary|Parameters|iterable<string, SfMemberInput> ...$others
      */
     public function mergeAssociative(StructuredFieldProvider|iterable ...$others): self
     {
@@ -739,7 +739,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param StructuredFieldProvider|Dictionary|Parameters|iterable<array{0:string, 1:InnerList|Item|SfMemberInput}> ...$others
+     * @param StructuredFieldProvider|Dictionary|Parameters|iterable<array{0:string, 1:SfMemberInput}> ...$others
      */
     public function mergePairs(StructuredFieldProvider|Dictionary|Parameters|iterable ...$others): self
     {

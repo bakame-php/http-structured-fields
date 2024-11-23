@@ -635,7 +635,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param StructuredFieldProvider|Parameters|iterable<string, SfItemInput> ...$others
+     * @param StructuredFieldProvider|Dictionary|Parameters|iterable<string, SfItemInput> ...$others
      */
     public function mergeAssociative(StructuredFieldProvider|iterable ...$others): self
     {
