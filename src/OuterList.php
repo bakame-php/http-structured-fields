@@ -351,7 +351,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param iterable<SfMemberInput>|SfMemberInput $member
+     * @param SfMemberInput $member
      */
     public function replace(
         int $index,
