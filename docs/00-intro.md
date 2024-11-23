@@ -60,3 +60,4 @@ composer require bakame/http-structured-fields
 - [Working with The Containers](04-containers.md)
 - [Structured Field Validation](05-validation.md)
 - [Interacting with the PHP Ecosystem](07-extensions.md)
+- [Upgrading from 1.x to 2.0](08-migration.md)

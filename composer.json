@@ -1,6 +1,6 @@
 {
     "name": "bakame/http-structured-fields",
-    "description": "A PHP library that parses, validates and serializes HTTP structured fields according to the IETF RFCs",
+    "description": "A PHP library that parses, validates and serializes HTTP structured fields according to RFC9561 and RFC8941",
     "type": "library",
     "keywords": [
         "http",
