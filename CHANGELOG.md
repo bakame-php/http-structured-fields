@@ -21,6 +21,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Parameters::valueByKey`
 - `Parameters::valueByIndex`
 - Added a validation mechanism to facilitate `Item` and `Parameters` validation against field definition.
+- `Dictionary::mergeParametersByPairs`, `Dictionary::mergeParametersByAssociative`
+- `Parameters::mergeParametersByPairs`, `Parameters::mergeParametersByAssociative`
 
 ### Fixed
 

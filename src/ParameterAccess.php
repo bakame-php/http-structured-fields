@@ -231,4 +231,30 @@ trait ParameterAccess
     {
         return $this->withParameters($this->parameters()->filter($callback));
     }
+
+    /**
+     * Merges multiple instances using iterable pairs.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param StructuredFieldProvider|Parameters|Dictionary|iterable<array{0:string, 1:SfItemInput}> ...$others
+     */
+    public function mergeParametersByPairs(...$others): static
+    {
+        return $this->withParameters($this->parameters()->mergePairs(...$others));
+    }
+
+    /**
+     * Merges multiple instances using iterable associative.
+     *
+     * This method MUST retain the state of the current instance, and return
+     * an instance that contains the specified changes.
+     *
+     * @param StructuredFieldProvider|Dictionary|Parameters|iterable<string, SfItemInput> ...$others
+     */
+    public function mergeParametersByAssociative(...$others): static
+    {
+        return $this->withParameters($this->parameters()->mergeAssociative(...$others));
+    }
 }
