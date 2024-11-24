@@ -17,21 +17,24 @@ use ValueError;
  *     can_fail?: bool,
  *     expected?: array,
  * }
- * @phpstan-type itemValue array{__type:string, value:int|string}|string|bool|int|float|null
+ * @phpstan-type CustomValueType array{
+ *      __type: 'binary'|'date'|'displaystring'|'token',
+ *      value: int|string
+ *  }
+ * @phpstan-type ItemValue CustomValueType|string|bool|int|float|null
  */
 final class Record
 {
     private function __construct(
         public readonly string $name,
-        /** @var 'dictionary'|'list'|'item' */
-        public readonly string $type,
+        public readonly DataType $type,
         /** @var array<string> */
         public readonly array $raw,
         /** @var array<string> */
         public readonly array $canonical,
         public readonly bool $mustFail,
         public readonly bool $canFail,
-        public readonly OuterList|Dictionary|InnerList|Item|Parameters|null $expected
+        public readonly OuterList|Dictionary|Item|null $expected
     ) {
     }
 
@@ -41,30 +44,31 @@ final class Record
     public static function fromDecoded(array $data): self
     {
         $data += ['canonical' => $data['raw'], 'must_fail' => false, 'can_fail' => false, 'expected' => []];
+        $dataType = DataType::from($data['header_type']);
 
         return new self(
             $data['name'],
-            $data['header_type'],
+            $dataType,
             $data['raw'],
             $data['canonical'],
             $data['must_fail'],
             $data['can_fail'],
-            self::parseExpected($data['header_type'], $data['expected'])
+            self::parseExpected($dataType, $data['expected'])
         );
     }
 
-    private static function parseExpected(string $dataTypeValue, array $expected): OuterList|Dictionary|InnerList|Item|Parameters|null
+    private static function parseExpected(DataType $dataType, array $expected): OuterList|Dictionary|Item|null
     {
-        return match (DataType::tryFrom($dataTypeValue)) {
+        return match ($dataType) {
             DataType::Dictionary => self::parseDictionary($expected),
             DataType::List => self::parseList($expected),
             DataType::Item => self::parseItem($expected),
-            default => null,
+            default => throw new ValueError('The structured field can not be of the type "'.$dataType->value.'".'),
         };
     }
 
     /**
-     * @param itemValue $data
+     * @param ItemValue $data
      */
     private static function parseValue(array|string|bool|int|float|null $data): Token|DateTimeImmutable|Bytes|DisplayString|string|bool|int|float|null
     {
@@ -83,7 +87,7 @@ final class Record
     }
 
     /**
-     * @param array<array{0:string, 1:itemValue> $parameters
+     * @param array<array{0:string, 1:ItemValue> $parameters
      */
     private static function parseParameters(array $parameters): Parameters
     {
@@ -94,18 +98,16 @@ final class Record
     }
 
     /**
-     * @param array{0:itemValue, 1:array<array{0:string, 1:itemValue}>}|itemValue $value
+     * @param array{0:ItemValue, 1:array<array{0:string, 1:ItemValue}>}|ItemValue $value
      */
-    private static function parseItem(mixed $value): ?Item
+    private static function parseItem(array|string|int $value): ?Item
     {
-        return match (true) {
-            !is_array($value) => Item::new($value),
-            [] === $value => null,
-            default => Item::new([
-                self::parseValue($value[0]),
-                self::parseParameters($value[1]),
-            ]),
-        };
+        return Item::tryfromPair(match (true) {
+            !is_array($value) => [$value],
+            [] === $value => [],
+            1 === count($value) => [$value],
+            default => [self::parseValue($value[0]), self::parseParameters($value[1])],
+        });
     }
 
     private static function parseInnerList(array $innerListPair): InnerList

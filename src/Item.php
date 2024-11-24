@@ -81,6 +81,18 @@ final class Item
 
     /**
      * @param array{0: SfItemInput, 1?: Parameters|iterable<array{0:string, 1:SfItemInput}>}|array<mixed> $pair
+     */
+    public static function tryFromPair(array $pair): ?self
+    {
+        try {
+            return self::fromPair($pair);
+        } catch (StructuredFieldError) {
+            return null;
+        }
+    }
+
+    /**
+     * @param array{0: SfItemInput, 1?: Parameters|iterable<array{0:string, 1:SfItemInput}>}|array<mixed> $pair
      *
      * @throws SyntaxError If the pair or its content is not valid.
      */
