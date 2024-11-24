@@ -6,6 +6,7 @@ namespace Bakame\Http\StructuredFields;
 
 use ArrayAccess;
 use Bakame\Http\StructuredFields\Validation\Violation;
+use Closure;
 use Countable;
 use DateTimeInterface;
 use Iterator;
@@ -179,6 +180,25 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
     public function equals(mixed $other): bool
     {
         return $other instanceof self && $other->toHttpValue() === $this->toHttpValue();
+    }
+
+    /**
+     * @template TWhenParameter
+     *
+     * @param (Closure($this): TWhenParameter)|TWhenParameter $value
+     * @param callable($this, TWhenParameter): ($this|null) $callback
+     */
+    public function when($value, callable $callback): self
+    {
+        if ($value instanceof Closure) {
+            $value = $value($this);
+        }
+
+        if (!$value) {
+            return $this;
+        }
+
+        return $callback($this, $value) ?? $this;
     }
 
     /**

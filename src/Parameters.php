@@ -7,6 +7,7 @@ namespace Bakame\Http\StructuredFields;
 use ArrayAccess;
 use Bakame\Http\StructuredFields\Validation\Violation;
 use CallbackFilterIterator;
+use Closure;
 use Countable;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -178,6 +179,25 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     public function equals(mixed $other): bool
     {
         return $other instanceof self && $other->toHttpValue() === $this->toHttpValue();
+    }
+
+    /**
+     * @template TWhenParameter
+     *
+     * @param (Closure($this): TWhenParameter)|TWhenParameter $value
+     * @param callable($this, TWhenParameter): ($this|null) $callback
+     */
+    public function when($value, callable $callback): self
+    {
+        if ($value instanceof Closure) {
+            $value = $value($this);
+        }
+
+        if (!$value) {
+            return $this;
+        }
+
+        return $callback($this, $value) ?? $this;
     }
 
     public function count(): int
@@ -543,16 +563,12 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType|null $member
+     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType $member
      */
     public function append(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
-        if (null === $member) {
-            return $this;
-        }
-
         $members = $this->members;
         unset($members[$name]);
 
@@ -560,15 +576,12 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType|null $member
+     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType $member
      */
     public function prepend(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
-        if (null === $member) {
-            return $this;
-        }
         $members = $this->members;
         unset($members[$name]);
 

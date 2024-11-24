@@ -9,7 +9,8 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Bytes` class replace the `ByteSequence` class.
 - `Ietf` enum.
 - methods `fromRFC9651`, `fromRfc8941`, `toRFC9651`, `toRfc8941`, to ease parsing/serializing Structured Fields.
-- method `equals` to allow comparison of Structured Fields values.
+- method `equals`, to allow comparison of Structured Fields DataType.
+- method `when` to allow conditional addition to Structured Field DataType.
 - methods `map`, `reduce`, `filter`, `sort` to all containers classes.
 - methods `isEmpty`, `isNotEmpty` to all containers classes.
 - methods `getByIndex`, `hasIndices`, `indices` to all containers classes.

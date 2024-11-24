@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use Bakame\Http\StructuredFields\Validation\Violation;
+use Closure;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
@@ -364,6 +365,25 @@ final class Item
     public function equals(mixed $other): bool
     {
         return $other instanceof self && $other->toHttpValue() === $this->toHttpValue();
+    }
+
+    /**
+     * @template TWhenParameter
+     *
+     * @param (Closure($this): TWhenParameter)|TWhenParameter $value
+     * @param callable($this, TWhenParameter): ($this|null) $callback
+     */
+    public function when($value, callable $callback): self
+    {
+        if ($value instanceof Closure) {
+            $value = $value($this);
+        }
+
+        if (!$value) {
+            return $this;
+        }
+
+        return $callback($this, $value) ?? $this;
     }
 
     /**

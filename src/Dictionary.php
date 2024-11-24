@@ -7,6 +7,7 @@ namespace Bakame\Http\StructuredFields;
 use ArrayAccess;
 use Bakame\Http\StructuredFields\Validation\Violation;
 use CallbackFilterIterator;
+use Closure;
 use Countable;
 use DateTimeInterface;
 use Iterator;
@@ -237,6 +238,25 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     public function equals(mixed $other): bool
     {
         return $other instanceof self && $other->toHttpValue() === $this->toHttpValue();
+    }
+
+    /**
+     * @template TWhenParameter
+     *
+     * @param (Closure($this): TWhenParameter)|TWhenParameter $value
+     * @param callable($this, TWhenParameter): ($this|null) $callback
+     */
+    public function when($value, callable $callback): self
+    {
+        if ($value instanceof Closure) {
+            $value = $value($this);
+        }
+
+        if (!$value) {
+            return $this;
+        }
+
+        return $callback($this, $value) ?? $this;
     }
 
     public function count(): int
@@ -580,16 +600,13 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param SfMemberInput|null $member
+     * @param SfMemberInput $member
      * @throws SyntaxError If the string name is not a valid
      */
     public function append(
         string $name,
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
-        if (null === $member) {
-            return $this;
-        }
         $members = $this->members;
         unset($members[$name]);
 
@@ -602,17 +619,14 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param SfMemberInput|null $member
+     * @param SfMemberInput $member
      *
      * @throws SyntaxError If the string name is not a valid
      */
     public function prepend(
         string $name,
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
-        if (null === $member) {
-            return $this;
-        }
         $members = $this->members;
         unset($members[$name]);
 

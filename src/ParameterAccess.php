@@ -93,13 +93,13 @@ trait ParameterAccess
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
-     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType|null $member
+     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType $member
      *
      * @throws SyntaxError If the string name is not a valid
      */
     public function prependParameter(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null  $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool  $member
     ): static {
         return $this->withParameters($this->parameters()->prepend($name, $member));
     }
@@ -110,13 +110,13 @@ trait ParameterAccess
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
-     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType|null $member
+     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType $member
      *
      * @throws SyntaxError If the string name is not a valid
      */
     public function appendParameter(
         string $name,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         return $this->withParameters($this->parameters()->append($name, $member));
     }
