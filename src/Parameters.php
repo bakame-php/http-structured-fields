@@ -7,7 +7,6 @@ namespace Bakame\Http\StructuredFields;
 use ArrayAccess;
 use Bakame\Http\StructuredFields\Validation\Violation;
 use CallbackFilterIterator;
-use Closure;
 use Countable;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -182,22 +181,23 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @template TWhenParameter
+     * Apply the callback if the given "condition" is (or resolves to) true.
      *
-     * @param (Closure($this): TWhenParameter)|TWhenParameter $value
-     * @param callable($this, TWhenParameter): ($this|null) $callback
+     * @param (callable($this): bool)|bool $condition
+     * @param callable($this): (self|null) $onSuccess
+     * @param ?callable($this): (self|null) $onFail
      */
-    public function when($value, callable $callback): self
+    public function when(callable|bool $condition, callable $onSuccess, ?callable $onFail = null): self
     {
-        if ($value instanceof Closure) {
-            $value = $value($this);
+        if (!is_bool($condition)) {
+            $condition = $condition($this);
         }
 
-        if (!$value) {
-            return $this;
-        }
-
-        return $callback($this, $value) ?? $this;
+        return match (true) {
+            $condition => $onSuccess($this),
+            null !== $onFail => $onFail($this),
+            default => $this,
+        } ?? $this;
     }
 
     public function count(): int
