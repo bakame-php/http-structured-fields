@@ -2,6 +2,8 @@
 
 namespace Bakame\Http\StructuredFields;
 
+use Stringable;
+
 use function preg_match;
 
 /**
@@ -10,29 +12,25 @@ use function preg_match;
  */
 final class MapKey
 {
-    private function __construct(
-        public readonly string $value
-    ) {
+    private function __construct(public readonly string $value)
+    {
     }
 
     /**
      * @throws SyntaxError If the string is not a valid HTTP value field key
      */
-    public static function from(string|int $httpValue): self
+    public static function from(Stringable|string|int $httpValue): self
     {
-        if (!is_string($httpValue)) {
-            throw new SyntaxError('The key must be a string; '.gettype($httpValue).' received.');
-        }
-
-        $instance = self::fromStringBeginning($httpValue);
-        if ($instance->value !== $httpValue) {
+        $key = (string) $httpValue;
+        $instance = self::fromStringBeginning($key);
+        if ($instance->value !== $key) {
             throw new SyntaxError('No valid http value key could be extracted from "'.$httpValue.'".');
         }
 
         return $instance;
     }
 
-    public static function tryFrom(string|int $httpValue): ?self
+    public static function tryFrom(Stringable|string|int $httpValue): ?self
     {
         try {
             return self::from($httpValue);
