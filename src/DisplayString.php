@@ -15,11 +15,10 @@ use function rawurlencode;
 /**
  * @see https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-sfbis#section-4.2.10
  */
-final readonly class DisplayString
+final class DisplayString
 {
-    private function __construct(
-        private string $value
-    ) {
+    private function __construct(private readonly string $value)
+    {
     }
 
     public static function tryFromEncoded(Stringable|string $encoded): ?self

@@ -18,13 +18,13 @@ use IteratorAggregate;
  * @implements ArrayAccess<array-key, array{0:string, 1:SfType}|array{}|SfType|null>
  * @implements IteratorAggregate<array-key, array{0:string, 1:SfType}|array{}|SfType|null>
  */
-final readonly class ValidatedParameters implements ArrayAccess, Countable, IteratorAggregate
+final class ValidatedParameters implements ArrayAccess, Countable, IteratorAggregate
 {
     /**
      * @param array<array-key, array{0:string, 1:SfType}|array{}|SfType|null> $values
      */
     public function __construct(
-        private array $values = [],
+        private readonly array $values = [],
     ) {
     }
 

@@ -35,13 +35,13 @@ use const ARRAY_FILTER_USE_KEY;
  * @implements  ArrayAccess<int, Item>
  * @implements  IteratorAggregate<int, Item>
  */
-final readonly class InnerList implements ArrayAccess, Countable, IteratorAggregate
+final class InnerList implements ArrayAccess, Countable, IteratorAggregate
 {
     use ParameterAccess;
 
     /** @var list<Item> */
-    private array $members;
-    private Parameters $parameters;
+    private readonly array $members;
+    private readonly Parameters $parameters;
 
     /**
      * @param iterable<SfItemInput> $members

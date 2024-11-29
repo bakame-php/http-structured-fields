@@ -14,9 +14,9 @@ use function preg_match;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3.5
  */
-final readonly class Bytes
+final class Bytes
 {
-    private function __construct(private string $value)
+    private function __construct(private readonly string $value)
     {
     }
 

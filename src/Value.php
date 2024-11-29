@@ -28,10 +28,10 @@ use const PHP_ROUND_HALF_EVEN;
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3
  * @internal
  */
-final readonly class Value
+final class Value
 {
-    public Token|Bytes|DisplayString|DateTimeImmutable|int|float|string|bool $value;
-    public Type $type;
+    public readonly Token|Bytes|DisplayString|DateTimeImmutable|int|float|string|bool $value;
+    public readonly Type $type;
 
     /**
      * @throws InvalidArgument

@@ -32,10 +32,10 @@ use function is_string;
  * @implements ArrayAccess<string, InnerList|Item>
  * @implements IteratorAggregate<int, array{0:string, 1:Item}>
  */
-final readonly class Parameters implements ArrayAccess, Countable, IteratorAggregate
+final class Parameters implements ArrayAccess, Countable, IteratorAggregate
 {
     /** @var array<string, Item> */
-    private array $members;
+    private readonly array $members;
 
     /**
      * @param iterable<string, SfItemInput> $members

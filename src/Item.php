@@ -21,14 +21,12 @@ use function count;
  * @phpstan-import-type SfItemPair from StructuredFieldProvider
  * @phpstan-import-type SfTypeInput from StructuredFieldProvider
  */
-final readonly class Item
+final class Item
 {
     use ParameterAccess;
 
-    private function __construct(
-        private Value $value,
-        private Parameters $parameters
-    ) {
+    private function __construct(private readonly Value $value, private readonly Parameters $parameters)
+    {
     }
 
     public static function fromRfc9651(Stringable|string $httpValue): self

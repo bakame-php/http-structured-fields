@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields\Validation;
 
-final readonly class Result
+final class Result
 {
     private function __construct(
-        public ValidatedParameters|ValidatedItem|null $data,
-        public ViolationList $errors,
+        public readonly ValidatedParameters|ValidatedItem|null $data,
+        public readonly ViolationList $errors,
     ) {
     }
 

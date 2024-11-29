@@ -21,7 +21,7 @@ This will edit (or create) your `composer.json` file.
 
 ## PHP version requirement
 
-`bakame/http-structured-fields 2.0` requires a PHP version greater or equal to `8.2` the previous version required `8.1`.
+`bakame/http-structured-fields 2.0` requires a PHP version greater or equal to `8.1` as does the previous version.
 
 ## Interfaces
 
