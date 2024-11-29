@@ -21,13 +21,13 @@ use function count;
  * @phpstan-import-type SfItemPair from StructuredFieldProvider
  * @phpstan-import-type SfTypeInput from StructuredFieldProvider
  */
-final class Item
+final readonly class Item
 {
     use ParameterAccess;
 
     private function __construct(
-        private readonly Value $value,
-        private readonly Parameters $parameters
+        private Value $value,
+        private Parameters $parameters
     ) {
     }
 

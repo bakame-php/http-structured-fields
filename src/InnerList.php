@@ -35,19 +35,21 @@ use const ARRAY_FILTER_USE_KEY;
  * @implements  ArrayAccess<int, Item>
  * @implements  IteratorAggregate<int, Item>
  */
-final class InnerList implements ArrayAccess, Countable, IteratorAggregate
+final readonly class InnerList implements ArrayAccess, Countable, IteratorAggregate
 {
     use ParameterAccess;
 
     /** @var list<Item> */
-    private readonly array $members;
+    private array $members;
+    private Parameters $parameters;
 
     /**
      * @param iterable<SfItemInput> $members
      */
-    private function __construct(iterable $members, private readonly Parameters $parameters)
+    private function __construct(iterable $members, Parameters $parameters)
     {
         $this->members = array_map($this->filterMember(...), array_values([...$members]));
+        $this->parameters = $parameters;
     }
 
     /**

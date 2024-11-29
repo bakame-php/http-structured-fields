@@ -12,9 +12,9 @@ use function preg_match;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#name-tokens
  */
-final class Token
+final readonly class Token
 {
-    private function __construct(private readonly string $value)
+    private function __construct(private string $value)
     {
         if (1 !== preg_match("/^([a-z*][a-z\d:\/!#\$%&'*+\-.^_`|~]*)$/i", $this->value)) {
             throw new SyntaxError('The token '.$this->value.' contains invalid characters.');

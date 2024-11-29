@@ -14,11 +14,10 @@ use function preg_match;
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3.5
  */
-final class Bytes
+final readonly class Bytes
 {
-    private function __construct(
-        private readonly string $value
-    ) {
+    private function __construct(private string $value)
+    {
     }
 
     /**

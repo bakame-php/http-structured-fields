@@ -36,10 +36,10 @@ use const ARRAY_FILTER_USE_KEY;
  * @implements ArrayAccess<int, InnerList|Item>
  * @implements IteratorAggregate<int, InnerList|Item>
  */
-final class OuterList implements ArrayAccess, Countable, IteratorAggregate
+final readonly class OuterList implements ArrayAccess, Countable, IteratorAggregate
 {
     /** @var list<InnerList|Item> */
-    private readonly array $members;
+    private array $members;
 
     /**
      * @param SfMemberInput ...$members

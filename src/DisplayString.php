@@ -15,10 +15,10 @@ use function rawurlencode;
 /**
  * @see https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-sfbis#section-4.2.10
  */
-final class DisplayString
+final readonly class DisplayString
 {
     private function __construct(
-        private readonly string $value
+        private string $value
     ) {
     }
 

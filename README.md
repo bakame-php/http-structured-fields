@@ -24,7 +24,7 @@ $container[1]->parameterByName(key: 'q', default: 1.0); // returns 1.0 if the pa
 
 ## System Requirements
 
-**PHP >= 8.1** is required but the latest stable version of PHP is recommended.
+**PHP >= 8.2** is required but the latest stable version of PHP is recommended.
 
 ## Installation
 

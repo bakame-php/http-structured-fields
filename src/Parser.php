@@ -35,7 +35,7 @@ use function substr;
  *
  * @phpstan-import-type SfType from StructuredFieldProvider
  */
-final class Parser
+final readonly class Parser
 {
     private const REGEXP_BYTE_SEQUENCE = '/^(?<sequence>:(?<byte>[a-z\d+\/=]*):)/i';
     private const REGEXP_BOOLEAN = '/^\?[01]/';
@@ -54,7 +54,7 @@ final class Parser
         return new self($rfc ?? Ietf::Rfc9651);
     }
 
-    public function __construct(private readonly Ietf $rfc)
+    public function __construct(private Ietf $rfc)
     {
     }
 
