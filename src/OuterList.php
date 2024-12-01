@@ -77,15 +77,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
      */
     public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
-        $converter = fn (array $member): InnerList|Item => match (true) {
-            is_array($member[0]) => InnerList::fromAssociative(
-                array_map(fn (array $item) => Item::fromAssociative(...$item), $member[0]),
-                $member[1]
-            ),
-            default => Item::fromAssociative(...$member),
-        };
-
-        return new self(...array_map($converter, Parser::new($rfc)->parseList($httpValue)));
+        return self::fromPairs(Parser::new($rfc)->parseList($httpValue)); /* @phpstan-ignore-line */
     }
 
     /**

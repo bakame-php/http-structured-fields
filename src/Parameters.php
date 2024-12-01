@@ -136,7 +136,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
      */
     public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
-        return new self(Parser::new($rfc)->parseParameters($httpValue));
+        return self::fromPairs(Parser::new($rfc)->parseParameters($httpValue)); /* @phpstan-ignore-line */
     }
 
     public static function fromRfc9651(Stringable|string $httpValue): self

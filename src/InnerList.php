@@ -74,12 +74,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
      */
     public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
-        [$members, $parameters] = Parser::new($rfc)->parseInnerList($httpValue);
-
-        return new self(
-            array_map(fn (array $member): Item => Item::fromAssociative(...$member), $members),
-            Parameters::fromAssociative($parameters)
-        );
+        return self::fromPair(Parser::new($rfc)->parseInnerList($httpValue));
     }
 
     /**

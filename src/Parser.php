@@ -33,11 +33,14 @@ use function substr;
  * @internal Do not use directly this class as it's behaviour and return type
  *           MAY change significantly even during a major release cycle.
  *
- * @phpstan-import-type SfType from StructuredFieldProvider
+ * @phpstan-type SfValue Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool
+ * @phpstan-type SfParameter array<array{0:string, 1:SfValue}>
+ * @phpstan-type SfItem array{0:SfValue, 1: SfParameter}
+ * @phpstan-type SfInnerList array{0:array<SfItem>, 1: SfParameter}
  */
 final class Parser
 {
-    private const REGEXP_BYTE_SEQUENCE = '/^(?<sequence>:(?<byte>[a-z\d+\/=]*):)/i';
+    private const REGEXP_BYTES = '/^(?<sequence>:(?<byte>[a-z\d+\/=]*):)/i';
     private const REGEXP_BOOLEAN = '/^\?[01]/';
     private const REGEXP_DATE = '/^@(?<date>-?\d{1,15})(?:[^\d.]|$)/';
     private const REGEXP_DECIMAL = '/^-?\d{1,12}\.\d{1,3}$/';
@@ -59,36 +62,14 @@ final class Parser
     }
 
     /**
-     * Returns the data type value represented as a PHP type from an HTTP textual representation.
+     * Returns an Item as a PHP list array from an HTTP textual representation.
      *
-     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.4
-     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.5
-     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.6
-     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.7
-     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.8
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#name-parsing-an-item
      *
-     * @throws Exception|SyntaxError
-     */
-    public function parseValue(Stringable|string $httpValue): Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool
-    {
-        $remainder = trim((string) $httpValue, ' ');
-        if ('' === $remainder || 1 === preg_match(self::REGEXP_INVALID_CHARACTERS, $remainder)) {
-            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item value contains invalid characters.");
-        }
-
-        [$value, $offset] = $this->extractValue($remainder);
-        if ('' !== substr($remainder, $offset)) {
-            throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item value contains invalid characters.");
-        }
-
-        return $value;
-    }
-
-    /**
      *
      * @throws Exception|SyntaxError
      *
-     * @return array{0:SfType, 1:array<string, SfType>}
+     * @return SfItem
      */
     public function parseItem(Stringable|string $httpValue): array
     {
@@ -103,17 +84,17 @@ final class Parser
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for an item contains invalid characters.");
         }
 
-        return [$value, $this->parseParameters($remainder)];
+        return [$value, $this->parseParameters($remainder)]; /* @phpstan-ignore-line */
     }
 
     /**
-     * Returns an instance from an HTTP textual representation.
+     * Returns a Parameters ordered map container as a PHP list array from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.2
      *
      * @throws SyntaxError|Exception
      *
-     * @return array<string, SfType>
+     * @return array<SfParameter>
      */
     public function parseParameters(Stringable|string $httpValue): array
     {
@@ -123,7 +104,7 @@ final class Parser
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for Parameters contains invalid characters.");
         }
 
-        return $parameters;
+        return $parameters;  /* @phpstan-ignore-line */
     }
 
     /**
@@ -133,7 +114,7 @@ final class Parser
      *
      * @throws SyntaxError|Exception
      *
-     * @return array<array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}>
+     * @return array<SfInnerList|SfItem>
      */
     public function parseList(Stringable|string $httpValue): array
     {
@@ -148,13 +129,13 @@ final class Parser
     }
 
     /**
-     * Returns an ordered map represented as a PHP associative array from an HTTP textual representation.
+     * Returns a Dictionary represented as a PHP list array from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.2.2
      *
      * @throws SyntaxError|Exception
      *
-     * @return array<string, array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}>
+     * @return array<array{0:string, 1:SfInnerList|SfItem}>
      */
     public function parseDictionary(Stringable|string $httpValue): array
     {
@@ -166,9 +147,11 @@ final class Parser
             if ('' === $remainder || '=' !== $remainder[0]) {
                 $remainder = '=?1'.$remainder;
             }
+            $member = [$name];
 
-            [$map[$name], $offset] = $this->extractItemOrInnerList(substr($remainder, 1));
+            [$member[1], $offset] = $this->extractItemOrInnerList(substr($remainder, 1));
             $remainder = self::removeCommaSeparatedWhiteSpaces($remainder, ++$offset);
+            $map[] = $member;
         }
 
         return $map;
@@ -181,7 +164,7 @@ final class Parser
      *
      * @throws SyntaxError|Exception
      *
-     * @return array{0:array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}
+     * @return SfInnerList
      */
     public function parseInnerList(Stringable|string $httpValue): array
     {
@@ -241,7 +224,7 @@ final class Parser
      *
      * @throws SyntaxError|Exception
      *
-     * @return array{0:array{0:SfType|array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}, 1:int}
+     * @return array{0: SfInnerList|SfItem, 1:int}
      */
     private function extractItemOrInnerList(string $httpValue): array
     {
@@ -261,7 +244,7 @@ final class Parser
      *
      * @throws SyntaxError|Exception
      *
-     * @return array{0:array{0:array<array{0:SfType, 1:array<string, SfType>}>, 1:array<string, SfType>}, 1:int}
+     * @return array{0: SfInnerList, 1 :int}
      */
     private function extractInnerList(string $httpValue): array
     {
@@ -293,7 +276,7 @@ final class Parser
      *
      * @throws SyntaxError|Exception
      *
-     * @return array{0:array{0:SfType, 1:array<string, SfType>}, 1:string}
+     * @return array{0:SfItem, 1:string}
      */
     private function extractItem(string $remainder): array
     {
@@ -311,13 +294,13 @@ final class Parser
      *
      * @throws SyntaxError|Exception
      *
-     * @return array{0:SfType, 1:int}
+     * @return array{0:SfValue, 1:int}
      */
     private function extractValue(string $httpValue): array
     {
         return match (true) {
             '"' === $httpValue[0] => self::extractString($httpValue),
-            ':' === $httpValue[0] => self::extractByteSequence($httpValue),
+            ':' === $httpValue[0] => self::extractBytes($httpValue),
             '?' === $httpValue[0] => self::extractBoolean($httpValue),
             '@' === $httpValue[0] => self::extractDate($httpValue, $this->rfc),
             str_starts_with($httpValue, '%"') => self::extractDisplayString($httpValue, $this->rfc),
@@ -334,7 +317,7 @@ final class Parser
      *
      * @throws SyntaxError|Exception
      *
-     * @return array{0:array<string, SfType>, 1:int}
+     * @return array{0:SfParameter, 1:int}
      */
     private function extractParametersValues(Stringable|string $httpValue): array
     {
@@ -344,13 +327,15 @@ final class Parser
         while ('' !== $remainder && ';' === $remainder[0]) {
             $remainder = ltrim(substr($remainder, 1), ' ');
             $name = MapKey::fromStringBeginning($remainder)->value;
-            $map[$name] = true;
+            $member = [$name, true];
             $remainder = substr($remainder, strlen($name));
             if ('' !== $remainder && '=' === $remainder[0]) {
                 $remainder = substr($remainder, 1);
-                [$map[$name], $offset] = $this->extractValue($remainder);
+                [$member[1], $offset] = $this->extractValue($remainder);
                 $remainder = substr($remainder, $offset);
             }
+
+            $map[] = $member;
         }
 
         return [$map, strlen($httpValue) - strlen($remainder)];
@@ -519,7 +504,7 @@ final class Parser
     {
         preg_match(self::REGEXP_TOKEN, $httpValue, $found);
 
-        $token = $found['token'] ?? '';
+        $token = $found['token'] ?? throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Token contains invalid characters.");
 
         return [Token::fromString($token), strlen($token)];
     }
@@ -531,9 +516,9 @@ final class Parser
      *
      * @return array{0:Bytes, 1:int}
      */
-    private static function extractByteSequence(string $httpValue): array
+    private static function extractBytes(string $httpValue): array
     {
-        if (1 !== preg_match(self::REGEXP_BYTE_SEQUENCE, $httpValue, $matches)) {
+        if (1 !== preg_match(self::REGEXP_BYTES, $httpValue, $matches)) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Byte Sequence contains invalid characters.");
         }
 

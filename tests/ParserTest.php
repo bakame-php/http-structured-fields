@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bakame\Http\StructuredFields;
 
 use DateTimeImmutable;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
 /**
@@ -57,8 +56,8 @@ final class ParserTest extends StructuredFieldTestCase
     {
         $field = $this->parser->parseDictionary('a=@12345678;key=1');
 
-        self::assertInstanceOf(DateTimeImmutable::class, $field['a'][0]);
-        self::assertSame(1, $field['a'][1]['key']);
+        self::assertInstanceOf(DateTimeImmutable::class, $field[0][1][0]);
+        self::assertSame('key', $field[0][1][1][0][0]);
     }
 
     #[Test]
@@ -141,18 +140,6 @@ final class ParserTest extends StructuredFieldTestCase
         $this->parser->parseInnerList('"hello)world" 42 42.0;john=doe);foo="bar("');
     }
 
-    #[Test]
-    #[DataProvider('provideHttpValueForDataType')]
-    public function it_parses_basic_data_type(string $httpValue, Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool $expected): void
-    {
-        $field = $this->parser->parseValue($httpValue);
-        if (is_scalar($expected)) {
-            self::assertSame($expected, $field);
-        } else {
-            self::assertEquals($expected, $field);
-        }
-    }
-
     /**
      * @return iterable<array{httpValue:string, expected:SfType}>
      */
@@ -201,32 +188,6 @@ final class ParserTest extends StructuredFieldTestCase
         yield 'it parses a display string' => [
             'httpValue' => '%"b%c3%a9b%c3%a9"',
             'expected' => DisplayString::fromDecoded('bébé'),
-        ];
-    }
-
-    #[Test]
-    #[DataProvider('provideInvalidHttpValueForDataType')]
-    public function it_fails_to_parse_basic_data_type(string $httpValue): void
-    {
-        $this->expectException(SyntaxError::class);
-
-        $this->parser->parseValue($httpValue);
-    }
-
-    /**
-     * @return array<array<string>>
-     */
-    public static function provideInvalidHttpValueForDataType(): array
-    {
-        return [
-            ['!invalid'],
-            ['"inva'."\n".'lid"'],
-            ['@1_000_000_000_000.0'],
-            ['-1_000_000_000_000.0'],
-            ['      '],
-            ['%"b%c3%a9b%c3%a9'],
-            ['%b%c3%a9b%c3%a9"'],
-            ['%"b%C3%A9b%C3%A9"'],
         ];
     }
 }

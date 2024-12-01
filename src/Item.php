@@ -49,7 +49,7 @@ final class Item
      */
     public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
-        return self::fromAssociative(...Parser::new($rfc)->parseItem($httpValue));
+        return self::fromPair(Parser::new($rfc)->parseItem($httpValue));
     }
 
     /**

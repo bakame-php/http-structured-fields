@@ -16,7 +16,6 @@ use Throwable;
 
 use function array_key_exists;
 use function array_keys;
-use function array_map;
 use function count;
 use function implode;
 use function is_array;
@@ -194,15 +193,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
     {
-        $converter = fn (array $member): InnerList|Item => match (true) {
-            is_array($member[0]) => InnerList::fromAssociative(
-                array_map(fn (array $item) => Item::fromAssociative(...$item), $member[0]),
-                $member[1]
-            ),
-            default => Item::fromAssociative(...$member),
-        };
-
-        return new self(array_map($converter, Parser::new($rfc)->parseDictionary($httpValue)));
+        return self::fromPairs(Parser::new($rfc)->parseDictionary($httpValue)); /* @phpstan-ignore-line */
     }
 
     public function toRfc9651(): string

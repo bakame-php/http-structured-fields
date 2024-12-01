@@ -20,7 +20,7 @@ final class ParserBench
     #[Bench\Assert('mode(variant.mem.peak) < 2097152'), Bench\Assert('mode(variant.time.avg) < 10000000')]
     public function benchParsingAList(): void
     {
-        $httpValue = '("lang" "en-US"); expires=@1623233894; samesite=Strict; secure';
+        $httpValue = '("lang" "en-US" token); expires=@1623233894; samesite=Strict; secure';
         for ($i = 0; $i < 100_000; $i++) {
             $this->parser->parseList($httpValue);
         }
@@ -42,7 +42,7 @@ final class ParserBench
     #[Bench\Assert('mode(variant.mem.peak) < 2097152'), Bench\Assert('mode(variant.time.avg) < 10000000')]
     public function benchParsingAnDictionary(): void
     {
-        $httpValue = 'lang="en-US"; samesite=Strict; secure, type=42.0; expires=@1623233894';
+        $httpValue = 'code=token, lang="en-US"; samesite=Strict; secure, type=42.0; expires=@1623233894';
         for ($i = 0; $i < 100_000; $i++) {
             $this->parser->parseDictionary($httpValue);
         }
