@@ -23,9 +23,9 @@ $container[1]->parameterByName(name: 'q', default: 1.0); // returns 1.0 if the p
 
 While they are plenty of HTTP headers and trailers, they have historically come each with their own set of 
 rules and constraints when it came to parsing and serializing them. Trying to use the parsing logic of a cookie header
-to parse an accept header will fail. The various parsing logics hinders HTTP headers and trailers usage, modernization
-or security. The [Structured Field RFC](https://www.rfc-editor.org/rfc/rfc9651.html) aim at tackling those issues by
-unifying HTTP headers and trailers parsing and serializing.
+to parse an accept header will fail. The various parsing logics hinder HTTP headers and trailers usage, modernization
+or security. The [Structured Field RFC](https://www.rfc-editor.org/rfc/rfc9651.html) aim at tackling those issues by unifying HTTP headers and trailers
+parsing and serializing.
 
 New HTTP headers or trailers (called HTTP fields) are encouraged to use the RFC algorithm, data and value types and
 ongoing discussions are happening to [retrofit existing headers that do not match the RFC](https://httpwg.org/http-extensions/draft-ietf-httpbis-retrofit.html) into new 
@@ -37,7 +37,7 @@ shapes that would be compatible with it.
 > While this package parses and serializes HTTP field value, it does not validate its content
 > against any conformance rule out of the box. You are still required to perform such a
 > compliance check against the constraints of the corresponding field. While Content
-> validation is still possible and higly encouraged when using this library. Because
+> validation is still possible and highly encouraged when using this library. Because
 > of the wide variety of HTTP fields it can not be made mandatory.
 
 ## System Requirements
@@ -49,7 +49,7 @@ shapes that would be compatible with it.
 Use composer:
 
 ```
-composer require bakame/http-structured-fields
+composer require bakame/http-structured-fields:^2.0
 ```
 
 ## Using the package

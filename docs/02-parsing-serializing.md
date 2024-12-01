@@ -47,7 +47,7 @@ As example the following existing headers can be classified within the Structure
 These example are taken from a list of [already supported fields](https://httpwg.org/http-extensions/draft-ietf-httpbis-retrofit.html)
 
 > [!NOTE]
-> This means that those headers are already supported when parsing or serializing them by the package
+> This means that all the headers listed are already parsable and/or serializable by the package
 
 All the classes share the same methods for parsing the HTTP text representation of the field. They all use
 the `fromHttpValue` named constructor. This method will parse the field string representation and
@@ -97,7 +97,7 @@ construct can be summarized as follows:
 - `InnerList`and `Parameters` instances can only contain `Item`;
 - `OuterList` and `InnerList` members can only be accessed by their indices (ie: they are list);
 - `Dictionary` and `Parameters` members can also be accessed by their name (ie: they are ordered map);
-- `Item` and `InnerList` instancs can have a `Parameters` container attached to.
+- `Item` and `InnerList` instances can have a `Parameters` container attached to them.
 - `Item` contain in a `Parameters` container **can not have** parameters attached to them to avoid recursion. They are named **Bare Item**.
 - `Item` contain in a `InnerList` container **can have** parameters attached to them.
 
@@ -142,8 +142,8 @@ $field[0]->parameterByName('q'); // returns null
 Each Data type implementation is able to convert itself into a proper HTTP text representation
 using its `toHttpValue` method. The method is complementary to the `fromHttpValue` named constructor
 in that it does the opposite of that method. Just like the `fromHttpValue`, it can take an optional
-`Ietf` enum to specifu which RFC version it should adhere to for serialization. And two syntactic
-methods `toRfc9651` and `toRfc8941` are also present to ease usage. Last but not least All classes
+`Ietf` enum to specify which RFC version it should adhere to for serialization. And two syntactic
+methods `toRfc9651` and `toRfc8941` are also present to ease usage. Last but not least, all classes
 implements the `Stringable` interface using the latest accepted RFC.
 
 ```php
@@ -158,7 +158,7 @@ $field->toHttpValue();
 The `toHttpValue` method applies by default all the normalizations recommended by the RFC. 
 
 > [!TIP]
-> This is the mechanism used by the `DataType::serialize` method. Once the Structured
-> field has been created, the method calls its `toHttpValue` method.
+> This is the mechanism used by the `DataType::serialize` method. Once the HTTP Structured
+> Field has been created, the method calls its `toHttpValue` method.
 
 &larr; [Basic Usage](01-basic-usage.md)  |  [Accessing Field Values](03-field-values.md) &rarr;

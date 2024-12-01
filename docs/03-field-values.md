@@ -54,7 +54,7 @@ echo Type::tryFromVariable(new SplTempFileObject()); // returns null
 ```
 
 To ease validation the `Type::equals`  and `Type::isOneOf` methods are added to check if
-the variable is of expected type. It can also be used to compare types.
+the variable is one of the expected type. It can also be used to compare types.
 
 ```php
 use Bakame\Http\StructuredFields\Type;
@@ -149,9 +149,9 @@ use Bakame\Http\StructuredFields\Token;
 Item:new(DateTimeInterface|Byte|Token|DisplayString|string|int|array|float|bool $value): self
 Item:tryNew(mixed $value): ?self
 Item::fromDecodedBytes(Stringable|string $value): self;
+Item::fromEncodedBytes(Stringable|string $value): self;
 Item::fromEncodedDisplayString(Stringable|string $value): self;
 Item::fromDecodedDisplayString(Stringable|string $value): self;
-Item::fromEncodedBytes(Stringable|string $value): self;
 Item::fromToken(Stringable|string $value): self;
 Item::fromString(Stringable|string $value): self;
 Item::fromDate(DateTimeInterface $datetime): self;
@@ -169,14 +169,14 @@ To update the `Item` instance value, use the `withValue` method:
 ```php
 use Bakame\Http\StructuredFields\Item;
 
-Item::withValue(DateTimeInterface|Byte|Token|DisplayString|string|int|float|bool $value): static
+Item::withValue(DateTimeInterface|Byte|Token|DisplayString|string|int|float|bool $value): self
 ```
 
 ### Item Parameters
 
-Items can have parameters attached to them. A parameter is a bere item, an item which can not have parameters
+Items can have parameters attached to them. A parameter is a **bare item**, an item which can not have parameters
 attach to it, to avoid recursive behaviour. Parameters are grouped in an ordered map container called `Parameters`.
-They can be accessed by their indices **but also** by their required key attached to them.
+They can be accessed by their indices **but also** by their **required key** attached to them.
 
 ```php
 
@@ -193,7 +193,7 @@ By default, you can access the member `Item` of a parameters using the following
 - `Item::parameterByName` returns the value of the bare item instance attached to the supplied `name`;
 - `Item::parameterByIndex` returns the value of the bare item instance attached to the supplied `index`;
 
-It is possible to alter and modify the `Parameters` attached to an `Item` but this section
-will be explored in the next section about the containers.
+It is possible to alter and modify the `Parameters` attached to an `Item` but this will be explored in
+the next section about the containers.
 
 &larr; [Parsing and Serializing](02-parsing-serializing.md)  |  [Containers](04-containers.md) &rarr;

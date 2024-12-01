@@ -5,7 +5,7 @@ order: 5
 
 # Working with Structured Fields Containers
 
-While building or updating a Bare Item is straightforward, doing the same with the structured field containers
+While building or updating a Bare Item is straightforward, doing the same with structured field containers
 requires a bit more logic. In the following sections we will explore how we can access, build and update
 containers.
 
@@ -65,7 +65,7 @@ unset($permissions['a']); // triggers a ForbiddenOperation exception
 > For ordered map the ArrayAccess interface will use the member name
 > whereas for lists the interface will use the member index.
 
-The `Dictionary` and `Parameters` classes also allow accessing its members as value using their name:
+The `Dictionary` and `Parameters` classes also allow accessing their members as value using their name:
 
 ```php
 $permissions->hasName('picture-in-picture');           // returns true
@@ -87,13 +87,13 @@ $permissions->indexByName('geolocation'): // returns 1
 > The `getByName` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
 
 > [!TIP]
-> The `ArrayAccess` interface proxy the result from `getByIndex` with `OuterList` and `InnerList`.
-> The `ArrayAccess` interface proxy the result from `getByName`  with `Dictionary` and `Parameters`.
+> The `ArrayAccess` interface proxy the result from `getByIndex` and `hasIndices` with `OuterList` and `InnerList`.
+> The `ArrayAccess` interface proxy the result from `getByName` and `hasNames` with `Dictionary` and `Parameters`.
 
 ### Accessing the parameters values
 
 As we have already seen, it is possible to access the `Parameters` values directly
-from the `Item` instance. The same public API is used from the `InnerList`.
+from the `Item` instance. The same public API is used for the `InnerList`.
 
 On the other hand if you already have a `Parameters` instance you can use the
 `valueByName` and `valueByIndex` methods to directly access the value from a single
@@ -103,7 +103,7 @@ parameter.
 > The `parameterByName` proxy the result from `valueByName`.
 > The `parameterByIndex` proxy the result from `valueByIndex`.
 
-## Building and Updating COntainers
+## Building and Updating Containers
 
 Every container can be used as a builder to create an HTTP field value. Because we are
 using immutable value objects any change to the value object will return a new instance
@@ -436,6 +436,20 @@ echo InnerList::new('foo', 'bar')
 
 // both flow return the InnerList HTTP value 
 // ("foo" "bar");expire=@1681538756;path="/";max-age=2500
+```
+
+Last but not least, all datatypes exposes the conditional `when` method to improve building the structured field.
+This can be helpful if fdr instance your input value would otherwise trigger an exception.
+
+In the example below we are conditionally building the an `Item` depending on the data found in the
+`$cache` value object. This is also possible for all containers.
+
+```php
+Item::new($cache->name)
+    ->when($cache->hit, fn (Item $item) => $item->appendParameter('hit', $cacher->hit))
+    ->when(null !== $cache->ttl, fn (Item $item) => $item->appendParameter('ttl', $cache->ttl)) 
+    ->when(null !== $cache->key, fn (Item $item) => $item->appendParameter('key', $cache->key)) 
+    ->when(null !== $cache->detail, fn (Item $item) => $item->appendParameter('detail', $cache->detail));
 ```
 
 &larr; [Accessing Field Values](03-field-values.md)  |  [Validation](05-validation) &rarr;

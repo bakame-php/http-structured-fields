@@ -8,7 +8,7 @@ order: 2
 ## Parsing the Field
 
 The first way to use the package is to enable HTTP header or HTTP trailer parsing. We will refer to them
-as fields for the rest of the documentation as it is how they are named in the IETF RFC.
+as HTTP fields for the rest of the documentation as it is how they are named in the IETF RFC.
 
 Let's say we want to parse the [Permissions-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Permissions-Policy#syntax) field. The first thing to know
 is that each structured field is defined against one specific data type which is
@@ -37,8 +37,7 @@ $permissions->isEmpty();                       // returns false the dictionary c
 ```
 
 > [!WARNING]
-> If parsing fails a `SyntaxError` exception is thrown with the information about why the conversion
-> could not be achieved.
+> If parsing fails a `SyntaxError` exception is thrown with the information about why it failed.
 
 ## Creating a new field
 
@@ -54,11 +53,14 @@ echo DataType::Dictionary->serialize([
 // returns picture-in-picture=(), geolocation=(self "https://example.com/"), camera=*
 ```
 
-Again, we start from the knowledge that the field is a `Dictionary`, and by default content is added using
-tuple or pairs. As such we can turn the iterable construct we have into a proper HTTP field text 
-representation by applying the serialization mechanism described in the RFC. While field building
-may look overwhelming, at first, it follows a fully described and tested process that the package
-can simplify for you once you read the documentation.
+Again, we start from the knowledge that the field is a `Dictionary`, content is added using
+pairs to respect value position. As such we can turn the iterable construct we have into a
+proper HTTP field text representation by applying the serialization mechanism described in
+the RFC.
+
+While field building may look overwhelming, at first, it follows a fully described and tested
+process that the package can simplify for you once you read the documentation.
+
 The goal of the example is to show that even without dwelling too much into the ins and out
 of the package you can easily and quickly parse or serialize compliant fields in PHP.
 
