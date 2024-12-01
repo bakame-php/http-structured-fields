@@ -438,10 +438,14 @@ echo InnerList::new('foo', 'bar')
 // ("foo" "bar");expire=@1681538756;path="/";max-age=2500
 ```
 
+To ease, usage and validation all containers exposes the `map`, `reduce`, `filter` and `sort` methods.
+The methods leverage the result of the `foreach` loop on each container. While the `filter` and `sort` method
+will return a new container instance, the `map` method returns an `Iterator`.
+
 Last but not least, all datatypes exposes the conditional `when` method to improve building the structured field.
 This can be helpful if fdr instance your input value would otherwise trigger an exception.
 
-In the example below we are conditionally building the an `Item` depending on the data found in the
+In the example below we are conditionally building an `Item` depending on the data found in the
 `$cache` value object. This is also possible for all containers.
 
 ```php
