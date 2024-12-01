@@ -49,8 +49,7 @@
         "phpstan/phpstan-phpunit": "^1.4.1",
         "phpstan/phpstan-deprecation-rules": "^1.2.1",
         "phpunit/phpunit": "^10.5.38 || ^11.4.4",
-        "phpbench/phpbench": "^1.3.1",
-        "symfony/var-dumper": "^6.4.15",
+        "symfony/var-dumper": "^6.4.15 || ^v7.2.0",
         "bakame/aide-base32": "dev-main"
     },
     "autoload": {
@@ -64,7 +63,6 @@
         }
     },
     "scripts": {
-        "benchmark": "phpbench run --report=default",
         "phpcs": "php-cs-fixer fix --dry-run --diff -vvv --allow-risky=yes --ansi",
         "phpcs:fix": "php-cs-fixer fix -vvv --allow-risky=yes --ansi",
         "phpstan": "phpstan analyse -c phpstan.neon --ansi --memory-limit 192M",
@@ -81,7 +79,6 @@
         "phpunit": "Runs unit and functional testing",
         "phpcs": "Runs coding style testing",
         "phpcs:fix": "Fix coding style issues",
-        "benchmark": "Runs parser benchmark",
         "test": "Runs all tests"
     },
     "repositories": [
