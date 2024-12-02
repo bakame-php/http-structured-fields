@@ -124,22 +124,26 @@ final class Item
      */
     public static function new(mixed $value): self
     {
+        if ($value instanceof Item) {
+            return new self(new Value($value->value()), $value->parameters());
+        }
+
         if (is_array($value)) {
             return self::fromPair($value);
         }
 
-        return self::fromValue(new Value($value));
+        return self::fromValue(new Value($value)); /* @phpstan-ignore-line */
     }
 
     /**
      * Returns a new bare instance from value or null on error.
      *
-     * @param SfItemInput|array{0:SfItemInput, 1:Parameters|iterable<array{0:string, 1:SfItemInput}>} $value
+     * @param SfTypeInput|Item|array{0:SfTypeInput, 1:Parameters|iterable<array{0:string, 1:SfTypeInput}>} $value
      */
-    public static function tryNew(mixed $value): ?self
+    public static function tryNew(StructuredFieldProvider|Item|DateTimeInterface|Bytes|DisplayString|Token|array|int|float|string|bool  $value): ?self
     {
         try {
-            return self::fromValue(new Value($value));
+            return self::new($value);
         } catch (SyntaxError) {
             return null;
         }

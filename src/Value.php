@@ -11,13 +11,10 @@ use Exception;
 use Stringable;
 use Throwable;
 
-use function abs;
 use function date_default_timezone_get;
-use function floor;
 use function is_float;
 use function is_int;
 use function json_encode;
-use function preg_match;
 use function preg_replace;
 use function round;
 
@@ -34,9 +31,9 @@ final class Value
     public readonly Type $type;
 
     /**
-     * @throws InvalidArgument
+     * @throws SyntaxError
      */
-    public function __construct(mixed $value)
+    public function __construct(Item|Token|Bytes|DisplayString|DateTimeInterface|int|float|string|bool $value)
     {
         [$this->value, $this->type] = match (true) {
             $value instanceof Item => [$value->value(), $value->type()],
@@ -46,49 +43,7 @@ final class Value
             false === $value,
             $value => [$value, Type::Boolean],
             $value instanceof DateTimeInterface => [self::filterDate($value), Type::Date],
-            is_int($value) => [self::filterIntegerRange($value, 'Integer'), Type::Integer],
-            is_float($value) => [self::filterDecimal($value), Type::Decimal],
-            is_string($value) => [self::filterString($value), Type::String],
-            default => throw new InvalidArgument('Unknown or unsupported type.')
-        };
-    }
-
-    /**
-     * Filter a decimal according to RFC8941.
-     *
-     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3.1
-     */
-    private static function filterIntegerRange(int $value, string $type): int
-    {
-        return match (true) {
-            Type::MAXIMUM_INT < abs($value) => throw new SyntaxError($type.' are limited to 15 digits.'),
-            default => $value,
-        };
-    }
-
-    /**
-     * Filter a decimal according to RFC8941.
-     *
-     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3.2
-     */
-    private static function filterDecimal(float $value): float
-    {
-        return match (true) {
-            Type::MAXIMUM_FLOAT < abs(floor($value)) => throw new SyntaxError('The integer portion of decimals is limited to 12 digits.'),
-            default => $value,
-        };
-    }
-
-    /**
-     * Filter a decimal according to RFC8941.
-     *
-     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3.3
-     */
-    private static function filterString(string $value): string
-    {
-        return match (true) {
-            1 === preg_match('/[^\x20-\x7E]/i', $value) => throw new SyntaxError('The string contains invalid characters.'),
-            default => $value,
+            default => [$value, Type::fromVariable($value)],
         };
     }
 
@@ -99,9 +54,11 @@ final class Value
      */
     private static function filterDate(DateTimeInterface $value): DateTimeImmutable
     {
-        self::filterIntegerRange($value->getTimestamp(), 'Date timestamp');
-
-        return $value instanceof DateTimeImmutable ? $value : DateTimeImmutable::createFromInterface($value);
+        return match (true) {
+            !Type::Integer->supports($value->getTimestamp()) => throw new SyntaxError('Date timestamp are limited to 15 digits.'),
+            !$value instanceof DateTimeImmutable => DateTimeImmutable::createFromInterface($value),
+            default => $value,
+        };
     }
 
     /**

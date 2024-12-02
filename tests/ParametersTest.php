@@ -7,6 +7,7 @@ namespace Bakame\Http\StructuredFields;
 use LogicException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use TypeError;
 
 final class ParametersTest extends StructuredFieldTestCase
 {
@@ -363,7 +364,7 @@ final class ParametersTest extends StructuredFieldTestCase
     #[Test]
     public function it_throws_if_the_structured_field_is_not_supported(): void
     {
-        $this->expectException(InvalidArgument::class);
+        $this->expectException(TypeError::class);
 
         Parameters::fromPairs([['foo', InnerList::new(42)]]);
     }
