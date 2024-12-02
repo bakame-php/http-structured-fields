@@ -11,8 +11,8 @@ use DateTimeInterface;
  */
 enum Type: string
 {
-    public const MAXIMUM_INT = 999_999_999_999_999;
-    public const MAXIMUM_FLOAT = 999_999_999_999;
+    private const MAXIMUM_INT = 999_999_999_999_999;
+    private const MAXIMUM_FLOAT = 999_999_999_999;
 
     case Integer = 'integer';
     case Decimal = 'decimal';
@@ -45,7 +45,7 @@ enum Type: string
     /**
      * @throws SyntaxError if the value can not be resolved into a supported HTTP structured field data type
      */
-    public static function fromVariable(mixed $value): self
+    public static function fromVariable(Item|Token|DisplayString|Bytes|DateTimeInterface|int|float|bool|string $value): self
     {
         return self::tryFromVariable($value) ?? throw new SyntaxError(match (true) {
             $value instanceof DateTimeInterface => 'The integer representation of a date is limited to 15 digits for a HTTP structured field date type.',
