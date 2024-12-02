@@ -134,7 +134,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
      *
      * @throws SyntaxError|Exception If the string is not a valid
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = Ietf::Rfc9651): self
     {
         return self::fromPairs(Parser::new($rfc)->parseParameters($httpValue)); /* @phpstan-ignore-line */
     }
@@ -149,7 +149,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
         return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
-    public function toHttpValue(?Ietf $rfc = null): string
+    public function toHttpValue(?Ietf $rfc = Ietf::Rfc9651): string
     {
         $rfc ??= Ietf::Rfc9651;
         $formatter = static fn (Item $member, string $offset): string => match (true) {

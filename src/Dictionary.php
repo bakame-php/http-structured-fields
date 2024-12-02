@@ -191,7 +191,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      *
      * @throws StructuredFieldError|Throwable If the string is not a valid
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = Ietf::Rfc9651): self
     {
         return self::fromPairs(Parser::new($rfc)->parseDictionary($httpValue)); /* @phpstan-ignore-line */
     }
@@ -206,7 +206,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
         return $this->toHttpValue(Ietf::Rfc8941);
     }
 
-    public function toHttpValue(?Ietf $rfc = null): string
+    public function toHttpValue(?Ietf $rfc = Ietf::Rfc9651): string
     {
         $rfc ??= Ietf::Rfc9651;
         $members = [];
@@ -380,7 +380,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     /**
      * Filters and format instance index.
      */
-    private function filterIndex(int $index, int|null $max = null): int|null
+    private function filterIndex(int $index, ?int $max = null): ?int
     {
         $max ??= count($this->members);
 

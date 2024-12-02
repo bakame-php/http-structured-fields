@@ -61,7 +61,7 @@ final class Value
     private static function filterIntegerRange(int $value, string $type): int
     {
         return match (true) {
-            999_999_999_999_999 < abs($value) => throw new SyntaxError($type.' are limited to 15 digits.'),
+            Type::MAXIMUM_INT < abs($value) => throw new SyntaxError($type.' are limited to 15 digits.'),
             default => $value,
         };
     }
@@ -74,7 +74,7 @@ final class Value
     private static function filterDecimal(float $value): float
     {
         return match (true) {
-            999_999_999_999 < abs(floor($value)) => throw new SyntaxError('Integer portion of decimals is limited to 12 digits.'),
+            Type::MAXIMUM_FLOAT < abs(floor($value)) => throw new SyntaxError('The integer portion of decimals is limited to 12 digits.'),
             default => $value,
         };
     }
@@ -230,7 +230,7 @@ final class Value
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.1
      */
-    public function serialize(?Ietf $rfc = null): string
+    public function serialize(?Ietf $rfc = Ietf::Rfc9651): string
     {
         $rfc ??= Ietf::Rfc9651;
         if (!$rfc->supports($this->type)) {

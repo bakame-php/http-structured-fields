@@ -20,10 +20,14 @@ package will use the `Dictionary` parsing process to split the field accordingly
 
 ```php
 use Bakame\Http\StructuredFields\Dictionary;
+use Bakame\Http\StructuredFields\DataType;
 
 $headerLine = 'picture-in-picture=(), geolocation=(self "https://example.com/"), camera=*'; 
+
+$permission = DataType::Dictionary->parse($headerLine);
 // can also be written as follows
 $permission = Dictionary::fromHttpValue($headerLine);
+//both call will return a Dictionary instance on success
 ```
 
 The `Dictionary` class is an implementation of the structured field `Dictionary` data type. The package
@@ -44,7 +48,7 @@ As example the following existing headers can be classified within the Structure
 - The `Accept` headers are `List`
 - The `Content-Type` header is an `Item`
 
-These example are taken from a list of [already supported fields](https://httpwg.org/http-extensions/draft-ietf-httpbis-retrofit.html)
+These examples are taken from a list of [already supported fields](https://httpwg.org/http-extensions/draft-ietf-httpbis-retrofit.html)
 
 > [!NOTE]
 > This means that all the headers listed are already parsable and/or serializable by the package
@@ -54,7 +58,7 @@ the `fromHttpValue` named constructor. This method will parse the field string r
 return an instantiated PHP class containing the parsing result. Because there are 2 RFC related
 to structured fields, the method accepts an optional enum `Ietf` that indicates which RFC
 should be used for conformance. If no enum value is provided, the method will fall back
-to using the latest accepted RFC which is at the moment of writing `RFC9651`.
+to using the latest accepted RFC at the moment of its release: `RFC9651`.
 
 ```php
 use Bakame\Http\StructuredFields\OuterList;

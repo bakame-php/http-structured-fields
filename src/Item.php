@@ -47,7 +47,7 @@ final class Item
      *
      * @throws SyntaxError If the HTTP value can not be parsed
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = Ietf::Rfc9651): self
     {
         return self::fromPair(Parser::new($rfc)->parseItem($httpValue));
     }
@@ -329,7 +329,7 @@ final class Item
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.1
      */
-    public function toHttpValue(?Ietf $rfc = null): string
+    public function toHttpValue(?Ietf $rfc = Ietf::Rfc9651): string
     {
         $rfc ??= Ietf::Rfc9651;
 

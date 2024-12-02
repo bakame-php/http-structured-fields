@@ -25,7 +25,8 @@ $headerLine = 'picture-in-picture=(), geolocation=(self "https://example.com/"),
 $permissions = DataType::Dictionary->parse($headerLine); // parse the field
 ```
 
-You can now access each permission individually using the following PHP syntax:
+The `$permission` variable is a `Dictionary` container instance. you can now access each permission individually
+using the container public API:
 
 ```php
 $permissions['picture-in-picture']->isEmpty(); // returns true because the list is empty
@@ -61,7 +62,7 @@ the RFC.
 While field building may look overwhelming, at first, it follows a fully described and tested
 process that the package can simplify for you once you read the documentation.
 
-The goal of the example is to show that even without dwelling too much into the ins and out
+The goal of the examples are to show that even without dwelling too much into the ins and out
 of the package you can easily and quickly parse or serialize compliant fields in PHP.
 
 &larr; [Intro](00-intro.md)  |  [Parsing and Serializing](02-parsing-serializing.md) &rarr;

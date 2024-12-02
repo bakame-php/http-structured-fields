@@ -75,7 +75,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
+    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = Ietf::Rfc9651): self
     {
         return self::fromPairs(Parser::new($rfc)->parseList($httpValue)); /* @phpstan-ignore-line */
     }
@@ -152,7 +152,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
         return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
-    public function toHttpValue(?Ietf $rfc = null): string
+    public function toHttpValue(?Ietf $rfc = Ietf::Rfc9651): string
     {
         $rfc ??= Ietf::Rfc9651;
 
@@ -239,7 +239,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
         return [] !== $indices;
     }
 
-    private function filterIndex(int $index, int|null $max = null): int|null
+    private function filterIndex(int $index, ?int $max = null): ?int
     {
         $max ??= count($this->members);
 
@@ -382,8 +382,8 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     {
         $max = count($this->members);
         $offsets = array_filter(
-            array_map(fn (int $index): int|null => $this->filterIndex($index, $max), $indices),
-            fn (int|null $index): bool => null !== $index
+            array_map(fn (int $index): ?int => $this->filterIndex($index, $max), $indices),
+            fn (?int $index): bool => null !== $index
         );
 
         return match (true) {
