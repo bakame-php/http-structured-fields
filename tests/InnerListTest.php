@@ -130,10 +130,10 @@ final class InnerListTest extends TestCase
     {
         $instance = InnerList::fromAssociative([false], ['foo' => 'bar']);
 
-        self::assertSame('bar', $instance->parameters()->getByName('foo')->value());
-        self::assertSame('bar', $instance->parameterByName('foo'));
+        self::assertSame('bar', $instance->parameters()->getByKey('foo')->value());
+        self::assertSame('bar', $instance->parameterByKey('foo'));
         self::assertSame(['foo', 'bar'], $instance->parameterByIndex(0));
-        self::assertNull($instance->parameterByName('non-existing-key'));
+        self::assertNull($instance->parameterByKey('non-existing-key'));
         self::assertSame([], $instance->parameterByIndex(42));
     }
 
@@ -142,7 +142,7 @@ final class InnerListTest extends TestCase
     {
         $this->expectException(StructuredFieldError::class);
 
-        InnerList::new(false)->parameters()->getByName('bar')->value();
+        InnerList::new(false)->parameters()->getByKey('bar')->value();
     }
 
     #[Test]
@@ -152,11 +152,11 @@ final class InnerListTest extends TestCase
 
         self::assertCount(3, $instance);
         self::assertCount(1, $instance->parameters());
-        self::assertSame('bar(', $instance->parameters()->getByName('foo')->value());
+        self::assertSame('bar(', $instance->parameters()->getByKey('foo')->value());
         self::assertSame('hello)world', $instance->getByIndex(0)->value());
         self::assertSame(42, $instance->getByIndex(1)->value());
         self::assertSame(42.0, $instance->getByIndex(2)->value());
-        self::assertEquals(Token::fromString('doe'), $instance->getByIndex(2)->parameters()->getByName('john')->value());
+        self::assertEquals(Token::fromString('doe'), $instance->getByIndex(2)->parameters()->getByKey('john')->value());
     }
 
     #[Test]
@@ -254,8 +254,8 @@ final class InnerListTest extends TestCase
         $instance2 = $instance1->appendParameter('a', true);
         $instance7 = $instance1->addParameter('a', true);
         $instance3 = $instance1->prependParameter('a', false);
-        $instance4 = $instance1->withoutParameterByNames('b');
-        $instance5 = $instance1->withoutParameterByNames('a');
+        $instance4 = $instance1->withoutParameterByKeys('b');
+        $instance5 = $instance1->withoutParameterByKeys('a');
         $instance6 = $instance1->withoutAnyParameter();
 
         self::assertSame($instance1, $instance2);
@@ -265,8 +265,8 @@ final class InnerListTest extends TestCase
         self::assertSame($instance1, $instance4);
         self::assertFalse($instance5->parameters()->isNotEmpty());
         self::assertTrue($instance6->parameters()->isEmpty());
-        self::assertTrue($instance1->parameterByName('a'));
-        self::assertNull($instance5->parameterByName('a'));
+        self::assertTrue($instance1->parameterByKey('a'));
+        self::assertNull($instance5->parameterByKey('a'));
     }
 
     #[Test]

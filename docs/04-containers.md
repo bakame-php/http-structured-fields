@@ -48,7 +48,7 @@ $permissions->isEmpty();      // returns false
 
 > [!IMPORTANT]
 > For ordered maps, the `getByIndex` method returns a list containing exactly 2 entries.
-> The first entry is the member name, the second entry is the member value.
+> The first entry is the member key, the second entry is the member value.
 > For lists, the method directly returns the value.
 
 To avoid invalid states, `ArrayAccess` modifying methods throw a `ForbiddenOperation`
@@ -68,27 +68,27 @@ unset($permissions['a']); // triggers a ForbiddenOperation exception
 The `Dictionary` and `Parameters` classes also allow accessing their members as value using their name:
 
 ```php
-$permissions->hasName('picture-in-picture');           // returns true
-$permissions->hasName('picture-in-picture', 'foobar'); // returns false 
+$permissions->hasKey('picture-in-picture');           // returns true
+$permissions->hasKey('picture-in-picture', 'foobar'); // returns false 
 // 'foobar' is not a valid name or at least it is not present
 
-$permissions->getByName('camera'); // returns Item::fromToken('*');
+$permissions->getByKey('camera'); // returns Item::fromToken('*');
 $permissions->toAssociative(); // returns an iterator
 // the iterator key is the member name and the value is the member value
 // the offset is "lost"
-$permissions->nameByIndex(42); // returns null because there's no member with the offset 42
-$permissions->nameByIndex(2);  // returns 'camera'
+$permissions->keyByIndex(42); // returns null because there's no member with the offset 42
+$permissions->keyByIndex(2);  // returns 'camera'
 
-$permissions->indexByName('foobar'): // returns null because there's no member with the name 'foobar'
-$permissions->indexByName('geolocation'): // returns 1
+$permissions->indexByKey('foobar'): // returns null because there's no member with the name 'foobar'
+$permissions->indexByKey('geolocation'): // returns 1
 ```
 
 > [!IMPORTANT]
-> The `getByName` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
+> The `getByKey` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
 
 > [!TIP]
 > The `ArrayAccess` interface proxy the result from `getByIndex` and `hasIndices` with `OuterList` and `InnerList`.
-> The `ArrayAccess` interface proxy the result from `getByName` and `hasNames` with `Dictionary` and `Parameters`.
+> The `ArrayAccess` interface proxy the result from `getByNKey` and `hasKeys` with `Dictionary` and `Parameters`.
 
 ### Accessing the parameters values
 
@@ -96,11 +96,11 @@ As we have already seen, it is possible to access the `Parameters` values direct
 from the `Item` instance. The same public API is used for the `InnerList`.
 
 On the other hand if you already have a `Parameters` instance you can use the
-`valueByName` and `valueByIndex` methods to directly access the value from a single
+`valueByKey` and `valueByIndex` methods to directly access the value from a single
 parameter.
 
 > [!TIP]
-> The `parameterByName` proxy the result from `valueByName`.
+> The `parameterByKey` proxy the result from `valueByKey`.
 > The `parameterByIndex` proxy the result from `valueByIndex`.
 
 ## Building and Updating Containers
@@ -149,11 +149,11 @@ following steps. You, first, create a `Parameters` or a `Dictionary` instance us
 use any of the following modifying methods to populate it.
 
 ```php
-$map->add(string $name, $value): static;
-$map->append(string $name, $value): static;
-$map->prepend(string $name, $value): static;
+$map->add(string $key, $value): static;
+$map->append(string $key, $value): static;
+$map->prepend(string $key, $value): static;
 $map->mergeAssociative(...$others): static;
-$map->removeByNames(string ...$names): static;
+$map->removeByKeys(string ...$keys): static;
 ```
 
 As shown below:
@@ -183,14 +183,14 @@ using indices and pair as described in the RFC.
 
 The `$pair` parameter is a tuple (ie: an array as list with exactly two members) where:
 
-- the first array member is the parameter `$name`
+- the first array member is the parameter `$key`
 - the second array member is the parameter `$value`
 
 ```php
 $map->unshift(array ...$pairs): static;
 $map->push(array ...$pairs): static;
-$map->insert(int $name, array ...$pairs): static;
-$map->replace(int $name, array $pair): static;
+$map->insert(int $index, array ...$pairs): static;
+$map->replace(int $index, array $pair): static;
 $map->mergePairs(...$others): static;
 $map->removeByIndices(int ...$indices): static;
 ```
@@ -223,7 +223,7 @@ echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 > [!CAUTION]
 > on duplicate `names` pair values are merged as per RFC logic.
 
-The following methods `removeByIndices` and/or `removeByNames` allow removing members
+The following methods `removeByIndices` and/or `removeByKeys` allow removing members
 per indices or per names.
 
 ```php
@@ -231,7 +231,7 @@ use Bakame\Http\StructuredFields\Parameters;
 
 $field = Parameters::fromHttpValue(';expire=@1681504328;path="/";max-age=2500;secure;httponly=?0;samesite=lax');
 echo $field->removeByIndices(4, 2, 0)->toHttpValue();                      // returns ;path="/";secure;samesite=lax
-echo $field->removeByNames('expire', 'httponly', 'max-age')->toHttpValue(); // returns ;path="/";secure;samesite=lax
+echo $field->removeByKeys('expire', 'httponly', 'max-age')->toHttpValue(); // returns ;path="/";secure;samesite=lax
 ```
 
 ### Automatic conversion
@@ -396,21 +396,21 @@ You can attach and update the associated `Parameters` instance using the followi
 
 ```php
 $field->withParameters(Parameters $parameters): static;
-$field->addParameter(string $name, mixed $value): static;
-$field->appendParameter(string $name, mixed $value): static;
-$field->prependParameter(string $name, mixed $value): static;
+$field->addParameter(string $key, mixed $value): static;
+$field->appendParameter(string $key, mixed $value): static;
+$field->prependParameter(string $key, mixed $value): static;
 $field->pushParameters(array ...$pairs): static
 $field->unshiftParameters(array ...$pairs): static
 $field->insertParameters(int $index, array ...$pairs): static
 $field->replaceParameter(int $index, array $pair): static
-$field->withoutParametersByNames(string ...$names): static
+$field->withoutParametersByKeys(string ...$keys): static
 $field->withoutParametersByIndices(int ...$indices): static
 $field->withoutAnyParameter(): static;
 ```
 
 The `$pair` parameter is an array as list with exactly two members where:
 
-- the first array member is the parameter `$name`
+- the first array member is the parameter `$key`
 - the second array member is the parameter `$value`
 
 > [!WARNING]

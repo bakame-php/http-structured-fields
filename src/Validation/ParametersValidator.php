@@ -14,7 +14,7 @@ use Stringable;
  *
  * @phpstan-import-type SfType from StructuredFieldProvider
  *
- * @phpstan-type SfParameterNameRule array{validate?:callable(SfType): (bool|string), required?:bool|string, default?:SfType|null}
+ * @phpstan-type SfParameterKeyRule array{validate?:callable(SfType): (bool|string), required?:bool|string, default?:SfType|null}
  * @phpstan-type SfParameterIndexRule array{validate?:callable(SfType, string): (bool|string), required?:bool|string, default?:array{0:string, 1:SfType}|array{}}
  */
 final class ParametersValidator
@@ -25,12 +25,12 @@ final class ParametersValidator
     /** @var ?callable(Parameters): (string|bool) */
     private mixed $criteria;
     private int $type;
-    /** @var array<string, SfParameterNameRule>|array<int, SfParameterIndexRule> */
+    /** @var array<string, SfParameterKeyRule>|array<int, SfParameterIndexRule> */
     private array $filterConstraints;
 
     /**
      * @param ?callable(Parameters): (string|bool) $criteria
-     * @param array<string, SfParameterNameRule>|array<int, SfParameterIndexRule> $filterConstraints
+     * @param array<string, SfParameterKeyRule>|array<int, SfParameterIndexRule> $filterConstraints
      */
     private function __construct(
         ?callable $criteria = null,
@@ -65,9 +65,9 @@ final class ParametersValidator
      * On success populate the result item property
      * On failure populates the result errors property
      *
-     * @param array<string, SfParameterNameRule> $constraints
+     * @param array<string, SfParameterKeyRule> $constraints
      */
-    public function filterByNames(array $constraints): self
+    public function filterByKeys(array $constraints): self
     {
         return new self($this->criteria, self::USE_KEYS, $constraints);
     }
@@ -116,7 +116,7 @@ final class ParametersValidator
         if ([] !== $this->filterConstraints) {
             $parsedParameters = match ($this->type) {
                 self::USE_INDICES => $this->validateByIndices($parameters),
-                default => $this->validateByNames($parameters),
+                default => $this->validateByKeys($parameters),
             };
 
             if ($parsedParameters->isFailed()) {
@@ -169,19 +169,19 @@ final class ParametersValidator
      *
      * @return Result<ValidatedParameters>|Result<null>
      */
-    private function validateByNames(Parameters $parameters): Result /* @phpstan-ignore-line */
+    private function validateByKeys(Parameters $parameters): Result /* @phpstan-ignore-line */
     {
         $data = [];
         $violations = new ViolationList();
         /**
-         * @var string $name
-         * @var SfParameterNameRule $rule
+         * @var string $key
+         * @var SfParameterKeyRule $rule
          */
-        foreach ($this->filterConstraints as $name => $rule) {
+        foreach ($this->filterConstraints as $key => $rule) {
             try {
-                $data[$name] = $parameters->valueByName($name, $rule['validate'] ?? null, $rule['required'] ?? false, $rule['default'] ?? null);
+                $data[$key] = $parameters->valueByKey($key, $rule['validate'] ?? null, $rule['required'] ?? false, $rule['default'] ?? null);
             } catch (Violation $exception) {
-                $violations[$name] = $exception;
+                $violations[$key] = $exception;
             }
         }
 

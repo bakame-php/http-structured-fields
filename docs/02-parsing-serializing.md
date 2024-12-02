@@ -128,9 +128,9 @@ The following field is an example from the Accept header which is already struct
 $fieldValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
 $field = DataType::List->parse($fieldValue);
 $field[2]->value()->toString(); // returns 'application/xml'
-$field[2]->parameterByName('q'); // returns (float) 0.9
+$field[2]->parameterByKey('q'); // returns (float) 0.9
 $field[0]->value()->toString(); // returns 'text/html'
-$field[0]->parameterByName('q'); // returns null
+$field[0]->parameterByKey('q'); // returns null
 ```
 
 - The Accept header is an `List` field made of `Item` only.

@@ -85,7 +85,7 @@ following variables:
 
 - `{index}` the member index
 - `{value}` the member value in its serialized version
-- `{name}` the member name (only available with `Dictionary` and `Parameters`)
+- `{key}` the member name (only available with `Dictionary` and `Parameters`)
 
 Now that we know how to discriminate between an `InnerList` and a `Item` we want to validate
 the `Item` entry.
@@ -150,13 +150,13 @@ to the item are: `location`, `longitude`, `latitude` and `date`
 ```php
 use Bakame\Http\StructuredFields\Validation\Violation;
 
-if (!$member->parameters()->allowedNames(['location', 'longitude', 'latitude', 'date'])) {
+if (!$member->parameters()->allowedKeys(['location', 'longitude', 'latitude', 'date'])) {
     throw new Violation('The parameters contains extra names that are not allowed.');
 }
 ```
 
 > [!TIP]
-> The `Dictionary` class also exposes an `allowedNames` method which behave the same way.
+> The `Dictionary` class also exposes an `allowedKeys` method which behave the same way.
 
 > [!WARNING]
 > if the parameters container is empty no error will be triggered
@@ -164,7 +164,7 @@ if (!$member->parameters()->allowedNames(['location', 'longitude', 'latitude', '
 ### Validating single parameters
 
 The `parameterByName` and `parameterByIndex` methods can be used to validate a parameter value.
-Since in our field there is no mention of offset, we will use the `::parameterByName` method.
+Since in our field there is no mention of offset, we will use the `::parameterByKey` method.
 
 Let's try to validate the `longitude` parameter
 
@@ -172,11 +172,11 @@ Because parameters are optional by default and the `longitude` parameter is requ
 require its presence. So to fully validate the parameter we need to do the following
 
 ```php
-$member->parameterByName(
+$member->parameterByKey(
     name: 'longitude',
     validate: fn (mixed $value) => match (true) {
         Type::Decimal->supports($value) => true,
-        default => "The `{name}` '{value}' failed the validation check."
+        default => "The `{key}` '{value}' failed the validation check."
     },
     required: true,
 );
@@ -214,7 +214,7 @@ expects the `Parameters` container as its sole argument.
 ```php
 $parametersValidator = ParametersValidator::new()
     ->filterByCriteria(function (Parameters $parameters): bool|string {
-        return $parameters->allowedNames(['location', 'longitude', 'latitude', 'date']);
+        return $parameters->alloweKeys(['location', 'longitude', 'latitude', 'date']);
     });
 ```
 
@@ -228,11 +228,11 @@ we did earlier we end up with the following entries.
 ```php
 use Bakame\Http\StructuredFields\Type;
 
-$parametersValidator = ->filterByNames([
+$parametersValidator = ->filterByKeys([
         'longitude' => [
             'validate' => function (mixed $value) {
                  if (!Type::Decimal->supports($value)) {
-                    return "The `{name}` '{value}' failed the validation check.";
+                    return "The `{key}` '{value}' failed the validation check.";
                  }
 
                  return true; 
@@ -257,16 +257,16 @@ use Bakame\Http\StructuredFields\Validation\ParametersValidator;
 $parametersValidator = ParametersValidator::new()
     ->filterByCriteria(
         fn (Parameters $parameters): bool|string => $parameters
-            ->allowedNames(['location', 'longitude', 'latitude', 'date'])
+            ->allowedKeys(['location', 'longitude', 'latitude', 'date'])
     )
-    ->filterByNames([
+    ->filterByKeys([
         'location' => [
             'validate' => fn (mixed $value) => Type::fromVariable($value)->isOneOf(Type::String, Type::DisplayString),
         ],
         'longitude' => [
             'validate' => function (mixed $value) {
                  if (!Type::Decimal->supports($value)) {
-                    return "The `{name}` '{value}' failed the validation check.";
+                    return "The `{key}` '{value}' failed the validation check.";
                  }
 
                  return true; 
@@ -276,7 +276,7 @@ $parametersValidator = ParametersValidator::new()
         'latitude' => [
             'validate' => function (mixed $value) {
                  if (!Type::Decimal->supports($value)) {
-                    return "The `{name}` '{value}' failed the validation check.";
+                    return "The `{key}` '{value}' failed the validation check.";
                  }
 
                  return true; 
@@ -286,7 +286,7 @@ $parametersValidator = ParametersValidator::new()
         'date' => [
             'validate' => function (mixed $value) {
                  if (!Type::Date->supports($value)) {
-                    return "The `{name}` '{value}' is not a valid date";
+                    return "The `{key}` '{value}' is not a valid date";
                  }
 
                  return true; 
@@ -329,7 +329,7 @@ if ($validation->isSucces()) {
 > [!NOTE]
 > If we only use the `filterByCriteria` method the full parameter data is returned.
 
- A `filterByIndices` method exists and behave exactly as the `filterByNames` method.
+ A `filterByIndices` method exists and behave exactly as the `filterByKeys` method.
 There are two differences when it is used:
  
 - The callback parameters are different (they match those of `parameterByIndex`)

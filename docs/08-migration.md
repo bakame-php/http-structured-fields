@@ -27,7 +27,7 @@ This will edit (or create) your `composer.json` file.
 
 ### Structured Field Interfaces
 
-All the Interfaces around the structured field data types are remove. So if you typehinted your code using
+All the Interfaces around the structured field data types are removed. So if you type-hinted your code using
 the interfaces, you will need to replace them by their actual implementation.
 
 - The `MemberOrderedMap` interface will need to be replaced either by `Dictionary` or `Parameters` classes
@@ -45,7 +45,7 @@ facing public API.
 + public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = null): self
 ```
 
-In v2, the parser instance is replaced by a enum that indicates which RFC should be used for parsing.
+In v2, the parser instance is replaced by an Enum that indicates which RFC should be used for parsing.
 If your code did not provide any second parameter to the method then the parsing will be done using `RFC9651`
 if you want to only consider the previous active RFC, then you will have to explicitly name it via the `Ietf` Enum.
 
@@ -54,32 +54,26 @@ if you want to only consider the previous active RFC, then you will have to expl
 `Dictionary` and `Parameters` container members can be accessed vi their name or via their index.
 To normalize the accessor methods the following changes were introduced
 
-| `1.x` method name                   | `2.x` method name                    |
-|-------------------------------------|--------------------------------------|
-| `Item::parameter`                   | `Item::parameterByName`              |
-| `Item::withoutParamtersByKeys`      | `Item::withoutParamtersByNames`      |
-| `InnerList::parameter`              | `InnerList::parameterByName`         |
-| `InnerList::withoutParamtersByKeys` | `InnerList::withoutParamtersByNames` |
-| `InnerList::has`                    | `InnerList::hasIndices`              |
-| `InnerList::get`                    | `InnerList::getIndex`                |
-| `OuterList::get`                    | `OuterList::getIndex`                |
-| `OuterList::has`                    | `OuterList::hasIndices`              |
-| `Dictionary::has`                   | `Dictionary::hasNames`               |
-| `Dictionary::keys`                  | `Dictionary::names`                  |
-| `Dictionary::get`                   | `Dictionary::getByName`              |
-| `Dictionary::removeByKeys`          | `Dictionary::removeByNames`          |
-| `Dictionary::pair`                  | `Dictionary::getByIndex`             |
-| `Parameters::has`                   | `Parameters::hasNames`               |
-| `Parameters::keys`                  | `Parameters::names`                  |
-| `Parameters::get`                   | `Parameters::getByName`              |
-| `Parameters::pair`                  | `Parameters::getByIndex`             |
-| `Parameters::removeByKeys`          | `Parameters::removeByNames`          |
-| `Container::remove`                 | `Container::removeByIndices`         |
-| `Container::hasNoMember`            | `Container::isEmpty`                 |
-| `Container::hasMembers`             | `Container::isNotEmpty`              |
+| `1.x` method name                   | `2.x` method name            |
+|-------------------------------------|------------------------------|
+| `Item::parameter`                   | `Item::parameterByKey`       |
+| `InnerList::parameter`              | `InnerList::parameterByKey`  |
+| `InnerList::has`                    | `InnerList::hasIndices`      |
+| `InnerList::get`                    | `InnerList::getIndex`        |
+| `OuterList::get`                    | `OuterList::getIndex`        |
+| `OuterList::has`                    | `OuterList::hasIndices`      |
+| `Dictionary::has`                   | `Dictionary::hasKeys`        |
+| `Dictionary::get`                   | `Dictionary::getByKey`       |
+| `Dictionary::pair`                  | `Dictionary::getByIndex`     |
+| `Parameters::has`                   | `Parameters::hasKeys`        |
+| `Parameters::get`                   | `Parameters::getByKey`       |
+| `Parameters::pair`                  | `Parameters::getByIndex`     |
+| `Container::remove`                 | `Container::removeByIndices` |
+| `Container::hasNoMember`            | `Container::isEmpty`         |
+| `Container::hasMembers`             | `Container::isNotEmpty`      |
 
 The `Parameters::remove` and `Dictionary::remove` methods are removed from the public API, they
-were accepting `indices` and `names` indiscriminately which may lead to subtle bugs in code.
+were accepting `indices` and `keys` indiscriminately which may lead to subtle bugs in code.
 
 ## Behaviour changes
 

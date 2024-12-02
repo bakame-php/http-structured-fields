@@ -182,7 +182,7 @@ They can be accessed by their indices **but also** by their **required key** att
 
 $item = Item::fromHttpValue('application/xml;q=0.9;foobar');
 $item->value()->toString(); // returns 'application/xhtml+xml'
-$item->parameterByName(name: 'q', default: 1.0); // returns 1.0 if the parameter is not defined
+$item->parameterByKey(key: 'q', default: 1.0); // returns 1.0 if the parameter is not defined
 $item->parameterByIndex(index: 1, default: ['toto', false]); // returns ['foobar', true] because there's a parameter at index 1
 $item->parameters(); // returns a Parameters instance.
 ```
@@ -190,7 +190,7 @@ $item->parameters(); // returns a Parameters instance.
 By default, you can access the member `Item` of a parameters using the following methods:
 
 - `Item::parameters` returns a `Parameters` instance;
-- `Item::parameterByName` returns the value of the bare item instance attached to the supplied `name`;
+- `Item::parameterByKey` returns the value of the bare item instance attached to the supplied `name`;
 - `Item::parameterByIndex` returns the value of the bare item instance attached to the supplied `index`;
 
 It is possible to alter and modify the `Parameters` attached to an `Item` but this will be explored in

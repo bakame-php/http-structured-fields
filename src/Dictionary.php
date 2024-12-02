@@ -42,8 +42,8 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     private function __construct(iterable $members = [])
     {
         $filteredMembers = [];
-        foreach ($members as $name => $member) {
-            $filteredMembers[MapKey::from($name)->value] = self::filterMember($member);
+        foreach ($members as $key => $member) {
+            $filteredMembers[MapKey::from($key)->value] = self::filterMember($member);
         }
 
         $this->members = $filteredMembers;
@@ -104,7 +104,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * Returns a new instance from a pair iterable construct.
      *
      * Each member is composed of an array with two elements
-     * the first member represents the instance entry name
+     * the first member represents the instance entry key
      * the second member represents the instance entry value
      *
      * @param StructuredFieldProvider|Dictionary|Parameters|iterable<array{0:string, 1?:SfMemberInput}> $pairs
@@ -153,8 +153,8 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
             $pairs instanceof Dictionary,
             $pairs instanceof Parameters => new self($pairs->toAssociative()),
             default => new self((function (iterable $pairs) use ($converter) {
-                foreach ($pairs as [$name, $member]) {
-                    yield $name => $converter($member);
+                foreach ($pairs as [$key, $member]) {
+                    yield $key => $converter($member);
                 }
             })($pairs)),
         };
@@ -210,10 +210,10 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     {
         $rfc ??= Ietf::Rfc9651;
         $members = [];
-        foreach ($this->members as $name => $member) {
+        foreach ($this->members as $key => $member) {
             $members[] = match (true) {
-                $member instanceof Item && true === $member->value() => $name.$member->parameters()->toHttpValue($rfc),
-                default => $name.'='.$member->toHttpValue($rfc),
+                $member instanceof Item && true === $member->value() => $key.$member->parameters()->toHttpValue($rfc),
+                default => $key.'='.$member->toHttpValue($rfc),
             };
         }
 
@@ -292,11 +292,11 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Returns an ordered list of the instance names.
+     * Returns an ordered list of the instance keys.
      *
      * @return array<string>
      */
-    public function names(): array
+    public function keys(): array
     {
         return array_keys($this->members);
     }
@@ -306,37 +306,37 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function indices(): array
     {
-        return array_keys($this->names());
+        return array_keys($this->keys());
     }
 
     /**
      * Tells whether the instance contain a members at the specified offsets.
      */
-    public function hasNames(string ...$names): bool
+    public function hasKeys(string ...$keys): bool
     {
-        foreach ($names as $name) {
-            if (!array_key_exists($name, $this->members)) {
+        foreach ($keys as $key) {
+            if (!array_key_exists($key, $this->members)) {
                 return false;
             }
         }
 
-        return [] !== $names;
+        return [] !== $keys;
     }
 
     /**
      * Returns true only if the instance only contains the listed keys, false otherwise.
      *
-     * @param array<string> $names
+     * @param array<string> $keys
      */
-    public function allowedNames(array $names): bool
+    public function allowedKeys(array $keys): bool
     {
-        foreach ($this->members as $name => $member) {
-            if (!in_array($name, $names, true)) {
+        foreach ($this->members as $key => $member) {
+            if (!in_array($key, $keys, true)) {
                 return false;
             }
         }
 
-        return [] !== $names;
+        return [] !== $keys;
     }
 
     /**
@@ -344,9 +344,9 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      *
      * @throws InvalidOffset|Violation|StructuredFieldError
      */
-    public function getByName(string $name, ?callable $validate = null): Item|InnerList
+    public function getByKey(string $key, ?callable $validate = null): Item|InnerList
     {
-        $value = $this->members[$name] ?? throw InvalidOffset::dueToNameNotFound($name);
+        $value = $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
         if (null === $validate) {
             return $value;
         }
@@ -356,10 +356,10 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
         }
 
         if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
-            $exceptionMessage = "The parameter '{name}' whose value is '{value}' failed validation.";
+            $exceptionMessage = "The parameter '{key}' whose value is '{value}' failed validation.";
         }
 
-        throw new Violation(strtr($exceptionMessage, ['{name}' => $name, '{value}' => $value->toHttpValue()]));
+        throw new Violation(strtr($exceptionMessage, ['{key}' => $key, '{value}' => $value->toHttpValue()]));
     }
 
     /**
@@ -394,7 +394,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Returns the item or the inner-list and its name as attached to the given
+     * Returns the item or the inner-list and its key as attached to the given
      * collection according to their index position otherwise throw.
      *
      * @param ?callable(Item|InnerList, string): (bool|string) $validate
@@ -407,16 +407,16 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     {
         $foundOffset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
-        $validator = function (Item|InnerList $value, string $name, int $index, callable $validate): array {
-            if (true === ($exceptionMessage = $validate($value, $name))) {
-                return [$name, $value];
+        $validator = function (Item|InnerList $value, string $key, int $index, callable $validate): array {
+            if (true === ($exceptionMessage = $validate($value, $key))) {
+                return [$key, $value];
             }
 
             if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
-                $exceptionMessage = "The member at position '{index}' whose name is '{name}' with the value '{value}' failed validation.";
+                $exceptionMessage = "The member at position '{index}' whose key is '{key}' with the value '{value}' failed validation.";
             }
 
-            throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{name}' => $name, '{value}' => $value->toHttpValue()]));
+            throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{key}' => $key, '{value}' => $value->toHttpValue()]));
         };
 
         foreach ($this as $offset => $pair) {
@@ -432,12 +432,12 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Returns the name associated with the given index or null otherwise.
+     * Returns the key associated with the given index or null otherwise.
      */
-    public function indexByName(string $name): ?int
+    public function indexByKey(string $key): ?int
     {
         foreach ($this as $index => $member) {
-            if ($name === $member[0]) {
+            if ($key === $member[0]) {
                 return $index;
             }
         }
@@ -446,9 +446,9 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Returns the index associated with the given name or null otherwise.
+     * Returns the index associated with the given key or null otherwise.
      */
-    public function nameByIndex(int $index): ?string
+    public function keyByIndex(int $index): ?string
     {
         $index = $this->filterIndex($index);
         if (null === $index) {
@@ -465,7 +465,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Returns the first member whether it is an item or an inner-list and its name as attached to the given
+     * Returns the first member whether it is an item or an inner-list and its key as attached to the given
      * collection according to their index position otherwise returns an empty array.
      *
      * @return array{0:string, 1:InnerList|Item}|array{}
@@ -480,7 +480,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Returns the first member whether it is an item or an inner-list and its name as attached to the given
+     * Returns the first member whether it is an item or an inner-list and its key as attached to the given
      * collection according to their index position otherwise returns an empty array.
      *
      * @return array{0:string, 1:InnerList|Item}|array{}
@@ -495,24 +495,24 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Adds a member at the end of the instance otherwise updates the value associated with the name if already present.
+     * Adds a member at the end of the instance otherwise updates the value associated with the key if already present.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
      * @param SfMemberInput|null $member
      *
-     * @throws SyntaxError If the string name is not a valid
+     * @throws SyntaxError If the string key is not a valid
      */
     public function add(
-        string $name,
+        string $key,
         iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
         }
         $members = $this->members;
-        $members[MapKey::from($name)->value] = self::filterMember($member);
+        $members[MapKey::from($key)->value] = self::filterMember($member);
 
         return $this->newInstance($members);
     }
@@ -534,21 +534,21 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      */
-    private function remove(string|int ...$names): self
+    private function remove(string|int ...$offsets): self
     {
-        if ([] === $this->members || [] === $names) {
+        if ([] === $this->members || [] === $offsets) {
             return $this;
         }
 
-        $offsets = array_keys($this->members);
-        $max = count($offsets);
-        $reducer = fn (array $carry, string|int $name): array => match (true) {
-            is_string($name) && (false !== ($position = array_search($name, $offsets, true))),
-            is_int($name) && (null !== ($position = $this->filterIndex($name, $max))) => [$position => true] + $carry,
+        $keys = array_keys($this->members);
+        $max = count($keys);
+        $reducer = fn (array $carry, string|int $key): array => match (true) {
+            is_string($key) && (false !== ($position = array_search($key, $keys, true))),
+            is_int($key) && (null !== ($position = $this->filterIndex($key, $max))) => [$position => true] + $carry,
             default => $carry,
         };
 
-        $indices = array_reduce($names, $reducer, []);
+        $indices = array_reduce($offsets, $reducer, []);
 
         return match (true) {
             [] === $indices => $this,
@@ -575,53 +575,53 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * Deletes members associated with the list using the member name.
+     * Deletes members associated with the list using the member key.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      */
-    public function removeByNames(string ...$names): self
+    public function removeByKeys(string ...$keys): self
     {
-        return $this->remove(...$names);
+        return $this->remove(...$keys);
     }
 
     /**
-     * Adds a member at the end of the instance and deletes any previous reference to the name if present.
+     * Adds a member at the end of the instance and deletes any previous reference to the key if present.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
      * @param SfMemberInput $member
-     * @throws SyntaxError If the string name is not a valid
+     * @throws SyntaxError If the string key is not a valid
      */
     public function append(
-        string $name,
+        string $key,
         iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
         $members = $this->members;
-        unset($members[$name]);
+        unset($members[$key]);
 
-        return $this->newInstance([...$members, MapKey::from($name)->value => self::filterMember($member)]);
+        return $this->newInstance([...$members, MapKey::from($key)->value => self::filterMember($member)]);
     }
 
     /**
-     * Adds a member at the beginning of the instance and deletes any previous reference to the name if present.
+     * Adds a member at the beginning of the instance and deletes any previous reference to the key if present.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
      * @param SfMemberInput $member
      *
-     * @throws SyntaxError If the string name is not a valid
+     * @throws SyntaxError If the string key is not a valid
      */
     public function prepend(
-        string $name,
+        string $key,
         iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
         $members = $this->members;
-        unset($members[$name]);
+        unset($members[$key]);
 
-        return $this->newInstance([MapKey::from($name)->value => self::filterMember($member), ...$members]);
+        return $this->newInstance([MapKey::from($key)->value => self::filterMember($member), ...$members]);
     }
 
     /**
@@ -730,8 +730,8 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
                 $other = $other->toAssociative();
             }
 
-            foreach ($other as $name => $value) {
-                $members[$name] = $value;
+            foreach ($other as $key => $value) {
+                $members[$key] = $value;
             }
         }
 
@@ -753,8 +753,8 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
             if (!$other instanceof self) {
                 $other = self::fromPairs($other);
             }
-            foreach ($other->toAssociative() as $name => $value) {
-                $members[$name] = $value;
+            foreach ($other->toAssociative() as $key => $value) {
+                $members[$key] = $value;
             }
         }
 
@@ -766,7 +766,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function offsetExists(mixed $offset): bool
     {
-        return $this->hasNames($offset);
+        return $this->hasKeys($offset);
     }
 
     /**
@@ -776,7 +776,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function offsetGet(mixed $offset): InnerList|Item
     {
-        return $this->getByName($offset);
+        return $this->getByKey($offset);
     }
 
     public function offsetUnset(mixed $offset): void

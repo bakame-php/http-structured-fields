@@ -34,17 +34,17 @@ trait ParameterAccess
      *
      * @return SfType|null
      */
-    public function parameterByName(
-        string $name,
+    public function parameterByKey(
+        string $key,
         ?callable $validate = null,
         bool|string $required = false,
         Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null $default = null
     ): Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool|null {
-        return $this->parameters->valueByName($name, $validate, $required, $default);
+        return $this->parameters->valueByKey($key, $validate, $required, $default);
     }
 
     /**
-     * Returns the member value and name as pair or an empty array if no members value exists.
+     * Returns the member value and key as pair or an empty array if no members value exists.
      *
      * @param ?callable(SfType, string): (bool|string) $validate
      * @param array{0:string, 1:SfType}|array{} $default
@@ -71,54 +71,54 @@ trait ParameterAccess
     abstract public function withParameters(Parameters $parameters): static;
 
     /**
-     * Adds a member if its name is not present at the of the associated parameter instance or update the instance at the given name.
+     * Adds a member if its key is not present at the of the associated parameter instance or update the instance at the given key.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
      * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType|null $member
      *
-     * @throws SyntaxError If the string name is not a valid
+     * @throws SyntaxError If the string key is not a valid
      */
     public function addParameter(
-        string $name,
+        string $key,
         StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): static {
-        return $this->withParameters($this->parameters()->add($name, $member));
+        return $this->withParameters($this->parameters()->add($key, $member));
     }
 
     /**
-     * Adds a member at the start of the associated parameter instance and deletes any previous reference to the name if present.
+     * Adds a member at the start of the associated parameter instance and deletes any previous reference to the key if present.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
      * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType $member
      *
-     * @throws SyntaxError If the string name is not a valid
+     * @throws SyntaxError If the string key is not a valid
      */
     public function prependParameter(
-        string $name,
+        string $key,
         StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool  $member
     ): static {
-        return $this->withParameters($this->parameters()->prepend($name, $member));
+        return $this->withParameters($this->parameters()->prepend($key, $member));
     }
 
     /**
-     * Adds a member at the end of the associated parameter instance and deletes any previous reference to the name if present.
+     * Adds a member at the end of the associated parameter instance and deletes any previous reference to the key if present.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
      * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType $member
      *
-     * @throws SyntaxError If the string name is not a valid
+     * @throws SyntaxError If the string key is not a valid
      */
     public function appendParameter(
-        string $name,
+        string $key,
         StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
-        return $this->withParameters($this->parameters()->append($name, $member));
+        return $this->withParameters($this->parameters()->append($key, $member));
     }
 
     /**
@@ -159,14 +159,14 @@ trait ParameterAccess
     }
 
     /**
-     * Delete member based on their name.
+     * Delete member based on their key.
      *
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      */
-    public function withoutParameterByNames(string ...$names): static
+    public function withoutParameterByKeys(string ...$keys): static
     {
-        return $this->withParameters($this->parameters()->removeByKeys(...$names));
+        return $this->withParameters($this->parameters()->removeByKeys(...$keys));
     }
 
     /**

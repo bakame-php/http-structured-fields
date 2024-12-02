@@ -19,7 +19,7 @@ use Bakame\Http\StructuredFields\OuterList;
 $fieldValue = 'text/html, application/xhtml+xml, application/xml;q=0.9, image/webp, */*;q=0.8';
 $container = OuterList::fromRfc9651($fieldValue);
 $container[1]->value()->toString(); // returns 'application/xhtml+xml'
-$container[1]->parameterByName(key: 'q', default: 1.0); // returns 1.0 if the parameter is not defined
+$container[1]->parameterByKey(key: 'q', default: 1.0); // returns 1.0 if the parameter is not defined
 ```
 
 ## System Requirements
