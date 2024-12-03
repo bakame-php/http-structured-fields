@@ -22,6 +22,7 @@ use function count;
 use function implode;
 use function is_int;
 use function is_string;
+use function uasort;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.2
@@ -29,7 +30,7 @@ use function is_string;
  * @phpstan-import-type SfItemInput from StructuredFieldProvider
  * @phpstan-import-type SfType from StructuredFieldProvider
  *
- * @implements ArrayAccess<string, InnerList|Item>
+ * @implements ArrayAccess<string, Item>
  * @implements IteratorAggregate<int, array{0:string, 1:Item}>
  */
 final class Parameters implements ArrayAccess, Countable, IteratorAggregate
@@ -57,13 +58,22 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     {
         if ($member instanceof StructuredFieldProvider) {
             $member = $member->toStructuredField();
+            if ($member instanceof Item) {
+                return self::filterMember($member);
+            }
+
+            throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Item::class.'; '.$member::class.' given.');
         }
 
-        return match (true) {
-            !$member instanceof Item => Item::new($member),
-            $member->parameters()->isEmpty() => $member,
-            default => throw new InvalidArgument('The "'.$member::class.'" instance is not a Bare Item.'),
-        };
+        if (!$member instanceof Item) {
+            $member = Item::new($member);
+        }
+
+        if ($member->parameters()->isNotEmpty()) {
+            throw new InvalidArgument('The "'.$member::class.'" instance is not a Bare Item.');
+        }
+
+        return $member;
     }
 
     /**
@@ -134,9 +144,9 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
      *
      * @throws SyntaxError|Exception If the string is not a valid
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = Ietf::Rfc9651): self
+    public static function fromHttpValue(Stringable|string $httpValue, Ietf $rfc = Ietf::Rfc9651): self
     {
-        return self::fromPairs(Parser::new($rfc)->parseParameters($httpValue)); /* @phpstan-ignore-line */
+        return self::fromPairs((new Parser($rfc))->parseParameters($httpValue)); /* @phpstan-ignore-line */
     }
 
     public static function fromRfc9651(Stringable|string $httpValue): self
@@ -149,9 +159,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
         return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
-    public function toHttpValue(?Ietf $rfc = Ietf::Rfc9651): string
+    public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string
     {
-        $rfc ??= Ietf::Rfc9651;
         $formatter = static fn (Item $member, string $offset): string => match (true) {
             true === $member->value() => ';'.$offset,
             default => ';'.$offset.'='.$member->toHttpValue($rfc),
@@ -497,15 +506,12 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType|null $member
+     * @param StructuredFieldProvider|Item|SfType $member
      */
     public function add(
         string $key,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
-        if (null === $member) {
-            return $this;
-        }
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
 
@@ -563,11 +569,11 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType $member
+     * @param StructuredFieldProvider|Item|SfType $member
      */
     public function append(
         string $key,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldProvider|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
         $members = $this->members;
         unset($members[$key]);
@@ -576,11 +582,11 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType $member
+     * @param StructuredFieldProvider|Item|SfType $member
      */
     public function prepend(
         string $key,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldProvider|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
         $members = $this->members;
         unset($members[$key]);

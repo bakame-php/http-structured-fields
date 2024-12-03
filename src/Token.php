@@ -37,7 +37,7 @@ final class Token
 
     public static function fromString(Stringable|string $value): self
     {
-        return new self((string) $value);
+        return new self((string)$value);
     }
 
     public function equals(mixed $other): bool

@@ -76,13 +76,13 @@ trait ParameterAccess
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
-     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType|null $member
+     * @param StructuredFieldProvider|Item|SfType $member
      *
      * @throws SyntaxError If the string key is not a valid
      */
     public function addParameter(
         string $key,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        StructuredFieldProvider|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         return $this->withParameters($this->parameters()->add($key, $member));
     }
@@ -93,13 +93,13 @@ trait ParameterAccess
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
-     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType $member
+     * @param StructuredFieldProvider|Item|SfType $member
      *
      * @throws SyntaxError If the string key is not a valid
      */
     public function prependParameter(
         string $key,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool  $member
+        StructuredFieldProvider|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool  $member
     ): static {
         return $this->withParameters($this->parameters()->prepend($key, $member));
     }
@@ -110,13 +110,13 @@ trait ParameterAccess
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified parameter change.
      *
-     * @param StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|SfType $member
+     * @param StructuredFieldProvider|Item|SfType $member
      *
      * @throws SyntaxError If the string key is not a valid
      */
     public function appendParameter(
         string $key,
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
+        StructuredFieldProvider|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): static {
         return $this->withParameters($this->parameters()->append($key, $member));
     }

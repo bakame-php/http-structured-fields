@@ -11,6 +11,7 @@ use function preg_match;
 use function preg_replace_callback;
 use function rawurldecode;
 use function rawurlencode;
+use function str_contains;
 
 /**
  * @see https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-sfbis#section-4.2.10

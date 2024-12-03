@@ -22,6 +22,7 @@ use function count;
 use function implode;
 use function is_array;
 use function is_iterable;
+use function uasort;
 
 use const ARRAY_FILTER_USE_BOTH;
 use const ARRAY_FILTER_USE_KEY;
@@ -45,7 +46,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
      * @param SfMemberInput ...$members
      */
     private function __construct(
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        iterable|StructuredFieldProvider|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ) {
         $this->members = array_map($this->filterMember(...), array_values([...$members]));
     }
@@ -57,14 +58,16 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     {
         if ($member instanceof StructuredFieldProvider) {
             $member = $member->toStructuredField();
+            if ($member instanceof Item || $member instanceof InnerList) {
+                return $member;
+            }
+
+            throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Item::class.' or an '.InnerList::class.'; '.$member::class.' given.');
         }
 
         return match (true) {
             $member instanceof InnerList,
             $member instanceof Item => $member,
-            $member instanceof OuterList,
-            $member instanceof Parameters,
-            $member instanceof Dictionary => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             is_iterable($member) => InnerList::new(...$member),
             default => Item::new($member),
         };
@@ -75,9 +78,9 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = Ietf::Rfc9651): self
+    public static function fromHttpValue(Stringable|string $httpValue, Ietf $rfc = Ietf::Rfc9651): self
     {
-        return self::fromPairs(Parser::new($rfc)->parseList($httpValue)); /* @phpstan-ignore-line */
+        return self::fromPairs((new Parser($rfc))->parseList($httpValue)); /* @phpstan-ignore-line */
     }
 
     /**
@@ -96,6 +99,11 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
         $converter = function (mixed $pair): InnerList|Item {
             if ($pair instanceof StructuredFieldProvider) {
                 $pair = $pair->toStructuredField();
+                if ($pair instanceof Item || $pair instanceof InnerList) {
+                    return $pair;
+                }
+
+                throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Item::class.' or an '.InnerList::class.'; '.$pair::class.' given.');
             }
 
             if ($pair instanceof InnerList || $pair instanceof Item) {
@@ -114,13 +122,11 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
                 return InnerList::new();
             }
 
-            [$member, $parameters] = match (count($pair)) {
-                2 => $pair,
-                1 => [$pair[0], []],
-                default => throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.'),
-            };
+            if (!in_array(count($pair), [1, 2], true)) {
+                throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.');
+            }
 
-            return is_iterable($member) ? InnerList::fromPair([$member, $parameters]) : Item::fromPair([$member, $parameters]);
+            return is_iterable($pair[0]) ? InnerList::fromPair($pair) : Item::fromPair($pair);
         };
 
         return match (true) {
@@ -137,7 +143,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     /**
      * @param SfMemberInput ...$members
      */
-    public static function new(iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members): self
+    public static function new(iterable|StructuredFieldProvider|InnerList|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members): self
     {
         return new self(...$members);
     }
@@ -152,10 +158,8 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
         return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
-    public function toHttpValue(?Ietf $rfc = Ietf::Rfc9651): string
+    public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string
     {
-        $rfc ??= Ietf::Rfc9651;
-
         return implode(', ', array_map(fn (Item|InnerList $member): string => $member->toHttpValue($rfc), $this->members));
     }
 
@@ -291,7 +295,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
      * @param SfMemberInput ...$members
      */
     public function unshift(
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|iterable|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        StructuredFieldProvider|InnerList|Item|iterable|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ): self {
         $membersToAdd = array_reduce(
             $members,
@@ -317,7 +321,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
      * @param SfMemberInput ...$members
      */
     public function push(
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        iterable|StructuredFieldProvider|InnerList|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ): self {
         $membersToAdd = array_reduce(
             $members,
@@ -346,7 +350,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
      */
     public function insert(
         int $index,
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        iterable|StructuredFieldProvider|InnerList|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ): self {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
 
@@ -367,7 +371,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
      */
     public function replace(
         int $index,
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
+        iterable|StructuredFieldProvider|InnerList|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
         $member = self::filterMember($member);
@@ -473,7 +477,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     public function sort(callable $callback): self
     {
         $members = $this->members;
-        usort($members, $callback);
+        uasort($members, $callback);
 
         return new self(...$members);
     }

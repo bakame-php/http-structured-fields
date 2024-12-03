@@ -20,6 +20,7 @@ use function array_splice;
 use function array_values;
 use function count;
 use function implode;
+use function uasort;
 
 use const ARRAY_FILTER_USE_BOTH;
 use const ARRAY_FILTER_USE_KEY;
@@ -46,10 +47,10 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
     /**
      * @param iterable<SfItemInput> $members
      */
-    private function __construct(iterable $members, Parameters $parameters)
+    private function __construct(iterable $members, ?Parameters $parameters = null)
     {
         $this->members = array_map($this->filterMember(...), array_values([...$members]));
-        $this->parameters = $parameters;
+        $this->parameters = $parameters ?? Parameters::new();
     }
 
     /**
@@ -59,12 +60,18 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
     {
         if ($member instanceof StructuredFieldProvider) {
             $member = $member->toStructuredField();
+            if (!$member instanceof Item) {
+                throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Item::class.'; '.$member::class.' given.');
+            }
+
+            return $member;
         }
 
-        return match (true) {
-            $member instanceof Item => $member,
-            default => Item::new($member),
-        };
+        if (!$member instanceof Item) {
+            return Item::new($member);
+        }
+
+        return $member;
     }
 
     /**
@@ -72,9 +79,9 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = Ietf::Rfc9651): self
+    public static function fromHttpValue(Stringable|string $httpValue, Ietf $rfc = Ietf::Rfc9651): self
     {
-        return self::fromPair(Parser::new($rfc)->parseInnerList($httpValue));
+        return self::fromPair((new Parser($rfc))->parseInnerList($httpValue));
     }
 
     /**
@@ -95,7 +102,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
         }
 
         if (!$parameters instanceof Parameters) {
-            $parameters = Parameters::fromAssociative($parameters);
+            return new self($value, Parameters::fromAssociative($parameters));
         }
 
         return new self($value, $parameters);
@@ -115,7 +122,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
         }
 
         if (1 === count($pair)) {
-            return new self($pair[0], Parameters::new());
+            return new self($pair[0]);
         }
 
         if ($pair[1] instanceof StructuredFieldProvider) {
@@ -126,7 +133,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
         }
 
         if (!$pair[1] instanceof Parameters) {
-            $pair[1] = Parameters::fromPairs($pair[1]);
+            return new self($pair[0], Parameters::fromPairs($pair[1]));
         }
 
         return new self($pair[0], $pair[1]);
@@ -138,7 +145,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
     public static function new(
         StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ): self {
-        return new self($members, Parameters::new());
+        return new self($members);
     }
 
     public static function fromRfc9651(Stringable|string $httpValue): self
@@ -151,10 +158,8 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
         return self::fromHttpValue($httpValue, Ietf::Rfc8941);
     }
 
-    public function toHttpValue(?Ietf $rfc = Ietf::Rfc9651): string
+    public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string
     {
-        $rfc ??= Ietf::Rfc9651;
-
         return '('.implode(' ', array_map(fn (Item $value): string => $value->toHttpValue($rfc), $this->members)).')'.$this->parameters->toHttpValue($rfc);
     }
 
@@ -483,7 +488,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
     public function sort(callable $callback): self
     {
         $members = $this->members;
-        usort($members, $callback);
+        uasort($members, $callback);
 
         return new self($members, $this->parameters);
     }

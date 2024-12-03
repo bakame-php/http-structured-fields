@@ -50,6 +50,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - `Dictionary::toPairs` and `Parameters::toPairs`
 - `ByteSequence` class replaced by `Bytes` class
 - `DataType::create` method use a specific DataType class instead.
+- `Value` internal class.
 
 ## [1.3.0](https://github.com/bakame-php/http-structured-fields/compare/1.2.2...1.3.0) - 2024-01-05
 

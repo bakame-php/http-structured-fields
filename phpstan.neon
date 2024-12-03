@@ -11,7 +11,7 @@ parameters:
     ignoreErrors:
         - message: '#it_fails_to_create_an_item_from_an_array_of_pairs\(\)#'
           path: tests/ItemTest.php
-        - message: '#Method Bakame\\Http\\StructuredFields\\DataType::(serialize|build|create|toRfc9651|toRfc8941)\(\) has parameter \$data with no value type specified in iterable type iterable.#'
+        - message: '#Method Bakame\\Http\\StructuredFields\\DataType::(serialize|parse)\(\) has parameter \$data with no value type specified in iterable type iterable.#'
           path: src/DataType.php
     excludePaths:
         - tests/Record.php

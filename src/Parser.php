@@ -14,6 +14,7 @@ use function preg_match;
 use function str_contains;
 use function strlen;
 use function substr;
+use function trim;
 
 /**
  * A class to parse HTTP Structured Fields from their HTTP textual representation according to RFC8941.
@@ -51,11 +52,6 @@ final class Parser
     private const REGEXP_VALID_SPACE = '/^(?<space>,[ \t]*)/';
     private const FIRST_CHARACTER_RANGE_NUMBER = '-1234567890';
     private const FIRST_CHARACTER_RANGE_TOKEN = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*';
-
-    public static function new(?Ietf $rfc = Ietf::Rfc9651): self
-    {
-        return new self($rfc ?? Ietf::Rfc9651);
-    }
 
     public function __construct(private readonly Ietf $rfc)
     {
@@ -518,10 +514,10 @@ final class Parser
      */
     private static function extractBytes(string $httpValue): array
     {
-        if (1 !== preg_match(self::REGEXP_BYTES, $httpValue, $matches)) {
+        if (1 !== preg_match(self::REGEXP_BYTES, $httpValue, $found)) {
             throw new SyntaxError("The HTTP textual representation \"$httpValue\" for a Byte Sequence contains invalid characters.");
         }
 
-        return [Bytes::fromEncoded($matches['byte']), strlen($matches['sequence'])];
+        return [Bytes::fromEncoded($found['byte']), strlen($found['sequence'])];
     }
 }

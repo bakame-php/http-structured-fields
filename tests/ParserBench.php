@@ -12,7 +12,7 @@ final class ParserBench
 
     public function __construct()
     {
-        $this->parser = Parser::new();
+        $this->parser = new Parser(Ietf::Rfc9651);
     }
 
     #[Bench\Iterations(4)]

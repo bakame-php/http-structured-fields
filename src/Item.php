@@ -8,10 +8,15 @@ use Bakame\Http\StructuredFields\Validation\Violation;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
+use Exception;
 use Stringable;
+use Throwable;
 
 use function array_is_list;
 use function count;
+
+use const JSON_PRESERVE_ZERO_FRACTION;
+use const PHP_ROUND_HALF_EVEN;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3
@@ -25,8 +30,19 @@ final class Item
 {
     use ParameterAccess;
 
-    private function __construct(private readonly Value $value, private readonly Parameters $parameters)
+    private readonly Token|Bytes|DisplayString|DateTimeImmutable|int|float|string|bool $value;
+    private readonly Parameters $parameters;
+    private readonly Type $type;
+
+    private function __construct(Token|Bytes|DisplayString|DateTimeInterface|int|float|string|bool $value, ?Parameters $parameters = null)
     {
+        if ($value instanceof DateTimeInterface && !$value instanceof DateTimeImmutable) {
+            $value = DateTimeImmutable::createFromInterface($value);
+        }
+
+        $this->value = $value;
+        $this->parameters = $parameters ?? Parameters::new();
+        $this->type = Type::fromVariable($value);
     }
 
     public static function fromRfc9651(Stringable|string $httpValue): self
@@ -45,11 +61,11 @@ final class Item
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3
      *
-     * @throws SyntaxError If the HTTP value can not be parsed
+     * @throws SyntaxError|Exception If the HTTP value can not be parsed
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = Ietf::Rfc9651): self
+    public static function fromHttpValue(Stringable|string $httpValue, Ietf $rfc = Ietf::Rfc9651): self
     {
-        return self::fromPair(Parser::new($rfc)->parseItem($httpValue));
+        return self::fromPair((new Parser($rfc))->parseItem($httpValue));
     }
 
     /**
@@ -65,16 +81,18 @@ final class Item
     ): self {
         if ($parameters instanceof StructuredFieldProvider) {
             $parameters = $parameters->toStructuredField();
-            if (!$parameters instanceof Parameters) {
-                throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Parameters::class.'; '.$parameters::class.' given.');
+            if ($parameters instanceof Parameters) {
+                return new self($value, $parameters);
             }
+
+            throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Parameters::class.'; '.$parameters::class.' given.');
         }
 
         if (!$parameters instanceof Parameters) {
-            $parameters = Parameters::fromAssociative($parameters);
+            return new self($value, Parameters::fromAssociative($parameters));
         }
 
-        return new self(new Value($value), $parameters);
+        return new self($value, $parameters);
     }
 
     /**
@@ -97,22 +115,27 @@ final class Item
     public static function fromPair(array $pair): self
     {
         if ([] === $pair || !array_is_list($pair) || 2 < count($pair)) {
-            throw new SyntaxError('The pair must be represented by an non-empty array as a list containing at most 2 members.');
+            throw new SyntaxError('The pair must be represented by an non-empty array as a list containing exactly 1 or 2 members.');
         }
 
         if (1 === count($pair)) {
-            return new self(new Value($pair[0]), Parameters::new());
+            return new self($pair[0]);
         }
 
         if ($pair[1] instanceof StructuredFieldProvider) {
             $pair[1] = $pair[1]->toStructuredField();
+            if ($pair[1] instanceof Parameters) {
+                return new self($pair[0], Parameters::fromPairs($pair[1]));
+            }
+
+            throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Parameters::class.'; '.$pair[1]::class.' given.');
         }
 
         if (!$pair[1] instanceof Parameters) {
-            $pair[1] = Parameters::fromPairs($pair[1]);
+            return new self($pair[0], Parameters::fromPairs($pair[1]));
         }
 
-        return new self(new Value($pair[0]), $pair[1]);
+        return new self($pair[0], $pair[1]);
     }
 
     /**
@@ -125,14 +148,14 @@ final class Item
     public static function new(mixed $value): self
     {
         if ($value instanceof Item) {
-            return new self(new Value($value->value()), $value->parameters());
+            return new self($value->value(), $value->parameters());
         }
 
         if (is_array($value)) {
             return self::fromPair($value);
         }
 
-        return self::fromValue(new Value($value)); /* @phpstan-ignore-line */
+        return new self($value); /* @phpstan-ignore-line */
     }
 
     /**
@@ -140,7 +163,7 @@ final class Item
      *
      * @param SfTypeInput|Item|array{0:SfTypeInput, 1:Parameters|iterable<array{0:string, 1:SfTypeInput}>} $value
      */
-    public static function tryNew(StructuredFieldProvider|Item|DateTimeInterface|Bytes|DisplayString|Token|array|int|float|string|bool  $value): ?self
+    public static function tryNew(StructuredFieldProvider|Item|DateTimeInterface|Bytes|DisplayString|Token|array|int|float|string|bool $value): ?self
     {
         try {
             return self::new($value);
@@ -150,21 +173,13 @@ final class Item
     }
 
     /**
-     * Returns a new bare instance from value.
-     */
-    private static function fromValue(Value $value): self
-    {
-        return new self($value, Parameters::new());
-    }
-
-    /**
      * Returns a new instance from a string.
      *
      * @throws SyntaxError if the string is invalid
      */
     public static function fromString(Stringable|string $value): self
     {
-        return self::fromValue(Value::fromString($value));
+        return new self((string)$value);
     }
 
     /**
@@ -174,7 +189,7 @@ final class Item
      */
     public static function fromEncodedBytes(Stringable|string $value): self
     {
-        return self::fromValue(Value::fromEncodedBytes($value));
+        return new self(Bytes::fromEncoded($value));
     }
 
     /**
@@ -184,7 +199,7 @@ final class Item
      */
     public static function fromDecodedBytes(Stringable|string $value): self
     {
-        return self::fromValue(Value::fromDecodedBytes($value));
+        return new self(Bytes::fromDecoded($value));
     }
 
     /**
@@ -194,7 +209,7 @@ final class Item
      */
     public static function fromEncodedDisplayString(Stringable|string $value): self
     {
-        return self::fromValue(Value::fromEncodedDisplayString($value));
+        return new self(DisplayString::fromEncoded($value));
     }
 
     /**
@@ -204,7 +219,7 @@ final class Item
      */
     public static function fromDecodedDisplayString(Stringable|string $value): self
     {
-        return self::fromValue(Value::fromDecodedDisplayString($value));
+        return new self(DisplayString::fromDecoded($value));
     }
 
     /**
@@ -214,7 +229,7 @@ final class Item
      */
     public static function fromToken(Stringable|string $value): self
     {
-        return self::fromValue(Value::fromToken($value));
+        return new self(Token::fromString($value));
     }
 
     /**
@@ -224,7 +239,7 @@ final class Item
      */
     public static function fromTimestamp(int $timestamp): self
     {
-        return self::fromValue(Value::fromTimestamp($timestamp));
+        return new self((new DateTimeImmutable())->setTimestamp($timestamp));
     }
 
     /**
@@ -234,7 +249,17 @@ final class Item
      */
     public static function fromDateFormat(string $format, string $datetime): self
     {
-        return self::fromValue(Value::fromDateFormat($format, $datetime));
+        try {
+            $value = DateTimeImmutable::createFromFormat($format, $datetime);
+        } catch (Exception $exception) {
+            throw new SyntaxError('The date notation `'.$datetime.'` is incompatible with the date format `'.$format.'`.', 0, $exception);
+        }
+
+        if (!$value instanceof DateTimeImmutable) {
+            throw new SyntaxError('The date notation `'.$datetime.'` is incompatible with the date format `'.$format.'`.');
+        }
+
+        return new self($value);
     }
 
     /**
@@ -244,7 +269,20 @@ final class Item
      */
     public static function fromDateString(string $datetime, DateTimeZone|string|null $timezone = null): self
     {
-        return self::fromValue(Value::fromDateString($datetime, $timezone));
+        $timezone ??= date_default_timezone_get();
+        if (!$timezone instanceof DateTimeZone) {
+            try {
+                $timezone = new DateTimeZone($timezone);
+            } catch (Throwable $exception) {
+                throw new SyntaxError('The timezone could not be instantiated.', 0, $exception);
+            }
+        }
+
+        try {
+            return new self(new DateTimeImmutable($datetime, $timezone));
+        } catch (Throwable $exception) {
+            throw new SyntaxError('Unable to create a '.DateTimeImmutable::class.' instance with the date notation `'.$datetime.'.`', 0, $exception);
+        }
     }
 
     /**
@@ -254,7 +292,7 @@ final class Item
      */
     public static function fromDate(DateTimeInterface $datetime): self
     {
-        return self::fromValue(Value::fromDate($datetime));
+        return new self($datetime);
     }
 
     /**
@@ -264,7 +302,7 @@ final class Item
      */
     public static function fromDecimal(int|float $value): self
     {
-        return self::fromValue(Value::fromDecimal($value));
+        return new self((float)$value);
     }
 
     /**
@@ -274,7 +312,7 @@ final class Item
      */
     public static function fromInteger(int|float $value): self
     {
-        return self::fromValue(Value::fromInteger($value));
+        return new self((int)$value);
     }
 
     /**
@@ -282,7 +320,7 @@ final class Item
      */
     public static function true(): self
     {
-        return self::fromValue(Value::true());
+        return new self(true);
     }
 
     /**
@@ -290,7 +328,7 @@ final class Item
      */
     public static function false(): self
     {
-        return self::fromValue(Value::false());
+        return new self(false);
     }
 
     /**
@@ -306,26 +344,25 @@ final class Item
      */
     public function value(?callable $validate = null): Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool
     {
-        $value = $this->value->value;
         if (null === $validate) {
-            return $value;
+            return $this->value;
         }
 
-        $exceptionMessage = $validate($value);
+        $exceptionMessage = $validate($this->value);
         if (true === $exceptionMessage) {
-            return $value;
+            return $this->value;
         }
 
         if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
             $exceptionMessage = "The item value '{value}' failed validation.";
         }
 
-        throw new Violation(strtr($exceptionMessage, ['{value}' => $this->value->serialize()]));
+        throw new Violation(strtr($exceptionMessage, ['{value}' => $this->serialize()]));
     }
 
     public function type(): Type
     {
-        return $this->value->type;
+        return $this->type;
     }
 
     /**
@@ -333,11 +370,30 @@ final class Item
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.1
      */
-    public function toHttpValue(?Ietf $rfc = Ietf::Rfc9651): string
+    public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string
     {
-        $rfc ??= Ietf::Rfc9651;
+        return $this->serialize($rfc).$this->parameters->toHttpValue($rfc);
+    }
 
-        return $this->value->serialize($rfc).$this->parameters->toHttpValue($rfc);
+    /**
+     * Serialize the Item value according to RFC8941.
+     *
+     * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-4.1
+     */
+    private function serialize(Ietf $rfc = Ietf::Rfc9651): string
+    {
+        return match (true) {
+            !$rfc->supports($this->type) => throw MissingFeature::dueToLackOfSupport($this->type, $rfc),
+            $this->value instanceof DateTimeImmutable => '@'.$this->value->getTimestamp(),
+            $this->value instanceof Token => $this->value->toString(),
+            $this->value instanceof Bytes => ':'.$this->value->encoded().':',
+            $this->value instanceof DisplayString => '%"'.$this->value->encoded().'"',
+            is_int($this->value) => (string)$this->value,
+            is_float($this->value) => (string)json_encode(round($this->value, 3, PHP_ROUND_HALF_EVEN), JSON_PRESERVE_ZERO_FRACTION),
+            $this->value,
+            false === $this->value => '?'.($this->value ? '1' : '0'),
+            default => '"'.preg_replace('/(["\\\])/', '\\\$1', $this->value).'"',
+        };
     }
 
     public function toRfc9651(): string
@@ -360,7 +416,7 @@ final class Item
      */
     public function toPair(): array
     {
-        return [$this->value->value, $this->parameters];
+        return [$this->value, $this->parameters];
     }
 
     public function equals(mixed $other): bool
@@ -396,11 +452,17 @@ final class Item
      *
      * @throws SyntaxError If the value is invalid or not supported
      */
-    public function withValue(
-        DateTimeInterface|Bytes|Token|DisplayString|string|int|float|bool $value
-    ): self {
-        $value = new Value($value);
-        if ($value->equals($this->value)) {
+    public function withValue(DateTimeInterface|Bytes|Token|DisplayString|string|int|float|bool $value): self
+    {
+        $isEqual = match (true) {
+            $this->value instanceof Bytes,
+            $this->value instanceof Token,
+            $this->value instanceof DisplayString => $this->value->equals($value),
+            $this->value instanceof DateTimeInterface && $value instanceof DateTimeInterface => $value == $this->value,
+            default => $value === $this->value,
+        };
+
+        if ($isEqual) {
             return $this;
         }
 

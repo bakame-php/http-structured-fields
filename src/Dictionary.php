@@ -14,14 +14,18 @@ use IteratorAggregate;
 use Stringable;
 use Throwable;
 
+use function array_is_list;
 use function array_key_exists;
 use function array_keys;
+use function array_map;
 use function count;
 use function implode;
 use function is_array;
+use function is_bool;
 use function is_int;
 use function is_iterable;
 use function is_string;
+use function uasort;
 
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.2
@@ -56,14 +60,16 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     {
         if ($member instanceof StructuredFieldProvider) {
             $member = $member->toStructuredField();
+            if ($member instanceof Item || $member instanceof InnerList) {
+                return $member;
+            }
+
+            throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Item::class.' or an '.InnerList::class.'; '.$member::class.' given.');
         }
 
         return match (true) {
             $member instanceof InnerList,
             $member instanceof Item => $member,
-            $member instanceof OuterList,
-            $member instanceof Dictionary,
-            $member instanceof Parameters => throw new InvalidArgument('An instance of "'.$member::class.'" can not be a member of "'.self::class.'".'),
             is_iterable($member) => InnerList::new(...$member),
             default => Item::new($member),
         };
@@ -122,6 +128,11 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
         $converter = function (mixed $pair): InnerList|Item {
             if ($pair instanceof StructuredFieldProvider) {
                 $pair = $pair->toStructuredField();
+                if ($pair instanceof Item || $pair instanceof InnerList) {
+                    return $pair;
+                }
+
+                throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Item::class.' or an '.InnerList::class.'; '.$pair::class.' given.');
             }
 
             if ($pair instanceof InnerList || $pair instanceof Item) {
@@ -140,13 +151,11 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
                 return InnerList::new();
             }
 
-            [$member, $parameters] = match (count($pair)) {
-                2 => $pair,
-                1 => [$pair[0], []],
-                default => throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.'),
-            };
+            if (!in_array(count($pair), [1, 2], true)) {
+                throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.');
+            }
 
-            return is_iterable($member) ? InnerList::fromPair([$member, $parameters]) : Item::fromPair([$member, $parameters]);
+            return is_iterable($pair[0]) ? InnerList::fromPair($pair) : Item::fromPair($pair);
         };
 
         return match (true) {
@@ -191,9 +200,9 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      *
      * @throws StructuredFieldError|Throwable If the string is not a valid
      */
-    public static function fromHttpValue(Stringable|string $httpValue, ?Ietf $rfc = Ietf::Rfc9651): self
+    public static function fromHttpValue(Stringable|string $httpValue, Ietf $rfc = Ietf::Rfc9651): self
     {
-        return self::fromPairs(Parser::new($rfc)->parseDictionary($httpValue)); /* @phpstan-ignore-line */
+        return self::fromPairs((new Parser($rfc))->parseDictionary($httpValue)); /* @phpstan-ignore-line */
     }
 
     public function toRfc9651(): string
@@ -206,18 +215,14 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
         return $this->toHttpValue(Ietf::Rfc8941);
     }
 
-    public function toHttpValue(?Ietf $rfc = Ietf::Rfc9651): string
+    public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string
     {
-        $rfc ??= Ietf::Rfc9651;
-        $members = [];
-        foreach ($this->members as $key => $member) {
-            $members[] = match (true) {
-                $member instanceof Item && true === $member->value() => $key.$member->parameters()->toHttpValue($rfc),
-                default => $key.'='.$member->toHttpValue($rfc),
-            };
-        }
+        $formatter = static fn (Item|InnerList $member, string $offset): string => match (true) {
+            $member instanceof Item && true === $member->value() => $offset.$member->parameters()->toHttpValue($rfc),
+            default => $offset.'='.$member->toHttpValue($rfc),
+        };
 
-        return implode(', ', $members);
+        return implode(', ', array_map($formatter, $this->members, array_keys($this->members)));
     }
 
     public function __toString(): string
@@ -506,7 +511,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function add(
         string $key,
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        iterable|StructuredFieldProvider|Dictionary|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
     ): self {
         if (null === $member) {
             return $this;
@@ -596,7 +601,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function append(
         string $key,
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
+        iterable|StructuredFieldProvider|Dictionary|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
         $members = $this->members;
         unset($members[$key]);
@@ -616,7 +621,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     public function prepend(
         string $key,
-        iterable|StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
+        iterable|StructuredFieldProvider|Dictionary|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
         $members = $this->members;
         unset($members[$key]);
@@ -840,7 +845,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     public function sort(callable $callback): self
     {
         $members = iterator_to_array($this);
-        usort($members, $callback);
+        uasort($members, $callback);
 
         return self::fromPairs($members);
     }

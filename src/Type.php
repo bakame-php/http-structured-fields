@@ -6,6 +6,15 @@ namespace Bakame\Http\StructuredFields;
 
 use DateTimeInterface;
 
+use function abs;
+use function floor;
+use function gettype;
+use function is_float;
+use function is_int;
+use function is_object;
+use function is_string;
+use function preg_match;
+
 /**
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.3
  */

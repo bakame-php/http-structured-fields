@@ -98,7 +98,7 @@ final class DataTypeTest extends TestCase
     {
         $this->expectExceptionObject(MissingFeature::dueToLackOfSupport(Type::Date, Ietf::Rfc8941));
 
-        DataType::Dictionary->toRfc8941([['a', false], ['b', Item::fromDateString('+30 minutes')]]);
+        DataType::Dictionary->serialize([['a', false], ['b', Item::fromDateString('+30 minutes')]], Ietf::Rfc8941);
     }
 
     #[Test]
@@ -108,6 +108,6 @@ final class DataTypeTest extends TestCase
 
         $string = DataType::Dictionary->serialize([['a', false], ['b', Item::fromDateString('+30 minutes')]]);
 
-        DataType::Dictionary->fromRfc8941($string);
+        DataType::Dictionary->parse($string, Ietf::Rfc8941);
     }
 }

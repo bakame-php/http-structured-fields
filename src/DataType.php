@@ -18,7 +18,7 @@ enum DataType: string
     /**
      * @throws SyntaxError|Exception
      */
-    public function parse(Stringable|string $httpValue, ?Ietf $rfc = Ietf::Rfc9651): OuterList|InnerList|Parameters|Dictionary|Item
+    public function parse(Stringable|string $httpValue, Ietf $rfc = Ietf::Rfc9651): OuterList|InnerList|Parameters|Dictionary|Item
     {
         return match ($this) {
             self::List => OuterList::fromHttpValue($httpValue, $rfc),
@@ -32,7 +32,7 @@ enum DataType: string
     /**
      * @throws SyntaxError|Exception
      */
-    public function serialize(iterable $data, ?Ietf $rfc = Ietf::Rfc9651): string
+    public function serialize(iterable $data, Ietf $rfc = Ietf::Rfc9651): string
     {
         return (match ($this) {
             self::List => OuterList::fromPairs($data),
@@ -41,37 +41,5 @@ enum DataType: string
             self::InnerList => InnerList::fromPair([...$data]),
             self::Parameters => Parameters::fromPairs($data),
         })->toHttpValue($rfc);
-    }
-
-    /**
-     * @throws SyntaxError|Exception
-     */
-    public function fromRfc9651(Stringable|string $httpValue): OuterList|InnerList|Parameters|Dictionary|Item
-    {
-        return $this->parse($httpValue, Ietf::Rfc9651);
-    }
-
-    /**
-     * @throws SyntaxError|Exception
-     */
-    public function toRfc9651(iterable $data): string
-    {
-        return $this->serialize($data, Ietf::Rfc9651);
-    }
-
-    /**
-     * @throws SyntaxError|Exception
-     */
-    public function fromRfc8941(Stringable|string $httpValue): OuterList|InnerList|Parameters|Dictionary|Item
-    {
-        return $this->parse($httpValue, Ietf::Rfc8941);
-    }
-
-    /**
-     * @throws SyntaxError|Exception
-     */
-    public function toRfc8941(iterable $data): string
-    {
-        return $this->serialize($data, Ietf::Rfc8941);
     }
 }

@@ -6,6 +6,7 @@ namespace Bakame\Http\StructuredFields;
 
 use LogicException;
 use PHPUnit\Framework\Attributes\Test;
+use TypeError;
 
 final class DictionaryTest extends StructuredFieldTestCase
 {
@@ -125,7 +126,7 @@ final class DictionaryTest extends StructuredFieldTestCase
     #[Test]
     public function it_fails_to_insert_something_other_than_a_inner_list_or_an_item(): void
     {
-        $this->expectException(InvalidArgument::class);
+        $this->expectException(TypeError::class);
 
         Dictionary::new()->add('foo', Parameters::fromAssociative(['foo' => 'bar']));
     }
