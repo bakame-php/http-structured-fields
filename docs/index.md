@@ -54,10 +54,10 @@ composer require bakame/http-structured-fields:^2.0
 
 ## Using the package
 
-- [Basic usage](01-basic-usage.md)
-- [Parsing and Serializing](02-parsing-serializing.md)
-- [Accessing The Field Values](03-field-values.md)
-- [Working with The Containers](04-containers.md)
-- [Structured Field Validation](05-validation.md)
-- [Interacting with the PHP Ecosystem](06-extensions)
-- [Upgrading from 1.x to 2.0](07-migration)
+- [Basic usage](basic-usage)
+- [Parsing and Serializing](parsing-serializing)
+- [Accessing The Field Values](field-values)
+- [Working with The Containers](containers)
+- [Structured Field Validation](validation)
+- [Interacting with the PHP Ecosystem](extensions)
+- [Upgrading from 1.x to 2.0](migration)

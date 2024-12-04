@@ -1,8 +1,0 @@
----
-permalink: pretty
-remote_theme: pages-themes/minimal@v0.2.0
-plugins:
-    - jekyll-redirect-from
-    - jekyll-remote-theme # add this line to the plugins list if you already have one
-title: bakame/http-structured-fields
-description: is a framework-agnostic PHP library that allows you to parse, serialize, create, update and validate HTTP Structured Fields in PHP

@@ -101,4 +101,4 @@ To show how this can be achieved you can check the codebase from [HTTP Cache Sta
 which uses the interface. Of note by using this interface you can completely hide the presence of 
 this package to your end users if needed.
 
-&larr; [Validation](05-validation.md)  | [Upgrading to v2.0](07-migration)
+&larr; [Validation](validation)  | [Upgrading to v2.0](migration)
