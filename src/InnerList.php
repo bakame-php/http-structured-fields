@@ -69,11 +69,11 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
             return $member;
         }
 
-        if (!$member instanceof Item) {
-            return Item::new($member);
+        if ($member instanceof Item) {
+            return $member;
         }
 
-        return $member;
+        return Item::new($member);
     }
 
     /**
