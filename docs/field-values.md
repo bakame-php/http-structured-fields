@@ -196,4 +196,4 @@ By default, you can access the member `Item` of a parameters using the following
 It is possible to alter and modify the `Parameters` attached to an `Item` but this will be explored in
 the next section about the containers.
 
-&larr; [Parsing and Serializing](../parsing-serializing)  |  [Containers](../containers) &rarr;
+&larr; [Parsing and Serializing](parsing-serializing)  |  [Containers](containers) &rarr;

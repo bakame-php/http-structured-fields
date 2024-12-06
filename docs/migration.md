@@ -150,4 +150,4 @@ OuterList::fromPairs([
 > [!NOTE]
 > The v1 syntax is still supported.
 
-&larr; [Extending the package functionalities](../extensions)  |  [Intro](../index) &rarr;
+&larr; [Extending the package functionalities](extensions)  |  [Intro](index) &rarr;

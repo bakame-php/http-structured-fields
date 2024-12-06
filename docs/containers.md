@@ -456,4 +456,4 @@ Item::new($cache->name)
     ->when(null !== $cache->detail, fn (Item $item) => $item->appendParameter('detail', $cache->detail));
 ```
 
-&larr; [Accessing Field Values](../field-values)  |  [Validation](../validation) &rarr;
+&larr; [Accessing Field Values](field-values)  |  [Validation](validation) &rarr;
