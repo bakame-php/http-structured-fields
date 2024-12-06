@@ -35,6 +35,7 @@ $permissions['geolocation'][-1]->value();      // returns the last value of the 
 $permissions['camera']->value();               // returns '*' the sole value attached to the 'camera' feature
 isset($permissions['yolo']);                   // returns false this permission does not exust
 $permissions->isEmpty();                       // returns false the dictionary contains some permissions
+echo $permissions;                             // returns 'picture-in-picture=(), geolocation=(self "https://example.com/"), camera=*'
 ```
 
 > [!WARNING]

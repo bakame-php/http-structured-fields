@@ -236,8 +236,8 @@ echo $field->removeByKeys('expire', 'httponly', 'max-age')->toHttpValue(); // re
 
 ### Automatic conversion
 
-Learning new types may be a daunting tasks so for ease of usage, for all containers, the following automatic
-conversion are applied on the member argument of each modifying methods.
+Learning new types may be a daunting tasks so for ease of usage, all datatype can be represented using an array as list.
+The automatic conversion are applied on the member argument of each modifying methods>
 
 If the submitted type is:
 

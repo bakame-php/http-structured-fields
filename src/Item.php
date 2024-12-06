@@ -114,6 +114,7 @@ final class Item
      */
     public static function fromPair(array $pair): self
     {
+        ;
         if ([] === $pair || !array_is_list($pair) || 2 < count($pair)) {
             throw new SyntaxError('The pair must be represented by an non-empty array as a list containing exactly 1 or 2 members.');
         }
@@ -141,7 +142,7 @@ final class Item
     /**
      * Returns a new bare instance from value.
      *
-     * @param SfItemInput|array{0:SfItemInput, 1:Parameters|iterable<array{0:string, 1:SfItemInput}>} $value
+     * @param SfItemInput|SfItemPair $value
      *
      * @throws SyntaxError If the value is not valid.
      */

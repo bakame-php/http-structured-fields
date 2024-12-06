@@ -141,11 +141,11 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param SfMemberInput ...$members
+     * @param StructuredFieldProvider|SfInnerListPair|SfItemPair|SfMemberInput ...$members
      */
     public static function new(iterable|StructuredFieldProvider|InnerList|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members): self
     {
-        return new self(...$members);
+        return self::fromPairs($members); /* @phpstan-ignore-line*/
     }
 
     public static function fromRfc9651(Stringable|string $httpValue): self

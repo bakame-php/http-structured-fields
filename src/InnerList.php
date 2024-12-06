@@ -29,7 +29,9 @@ use const ARRAY_FILTER_USE_KEY;
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.1
  *
  * @phpstan-import-type SfType from StructuredFieldProvider
+ * @phpstan-import-type SfTypeInput from StructuredFieldProvider
  * @phpstan-import-type SfItemInput from StructuredFieldProvider
+ * @phpstan-import-type SfItemPair from StructuredFieldProvider
  * @phpstan-import-type SfInnerListPair from StructuredFieldProvider
  * @phpstan-import-type SfParameterInput from StructuredFieldProvider
  *
@@ -45,7 +47,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
     private readonly Parameters $parameters;
 
     /**
-     * @param iterable<SfItemInput> $members
+     * @param iterable<SfItemInput|SfItemPair> $members
      */
     private function __construct(iterable $members, ?Parameters $parameters = null)
     {
@@ -54,7 +56,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
     }
 
     /**
-     * @param SfItemInput $member
+     * @param SfItemInput|SfItemPair $member
      */
     private function filterMember(mixed $member): Item
     {
@@ -141,9 +143,11 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
 
     /**
      * Returns a new instance.
+     *
+     * @param StructuredFieldProvider|Item|SfTypeInput|SfItemPair ...$members
      */
     public static function new(
-        StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
+        StructuredFieldProvider|Item|Token|Bytes|DisplayString|DateTimeInterface|array|string|int|float|bool ...$members
     ): self {
         return new self($members);
     }
