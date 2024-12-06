@@ -65,4 +65,4 @@ process that the package can simplify for you once you read the documentation.
 The goal of the examples are to show that even without dwelling too much into the ins and out
 of the package you can easily and quickly parse or serialize compliant fields in PHP.
 
-&larr; [Intro](index)  |  [Parsing and Serializing](parsing-serializing) &rarr;
+&larr; [Intro](index.md)  |  [Parsing and Serializing](parsing-serializing.md) &rarr;
