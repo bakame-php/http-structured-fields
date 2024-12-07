@@ -18,6 +18,7 @@ use Stringable;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
+use function array_replace;
 use function count;
 use function implode;
 use function is_int;
@@ -523,10 +524,13 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
      */
     private function newInstance(array $members): self
     {
-        return match(true) {
-            $members == $this->members => $this,
-            default => new self($members),
-        };
+        foreach ($members as $offset => $member) {
+            if (!isset($this->members[$offset]) || !$this->members[$offset]->equals($member)) {
+                return new self($members);
+            }
+        }
+
+        return $this;
     }
 
     private function remove(string|int ...$offsets): self
@@ -652,7 +656,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
         $pairs = iterator_to_array($this);
 
         return match (true) {
-            $pairs[$offset] == $pair => $this,
+            $pairs[$offset][0] === $pair[0] && $pairs[$offset][1]->equals($pair[1]) => $this,
             default => self::fromPairs(array_replace($pairs, [$offset => $pair])),
         };
     }
@@ -666,7 +670,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
         foreach ($others as $other) {
             if ($other instanceof StructuredFieldProvider) {
                 $other = $other->toStructuredField();
-                if (!is_iterable($other)) {
+                if (!$other instanceof Dictionary && !$other instanceof Parameters) {
                     throw new InvalidArgument('The "'.$other::class.'" instance can not be used for creating a .'.self::class.' structured field.');
                 }
             }

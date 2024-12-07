@@ -92,7 +92,7 @@ final class ItemTest extends StructuredFieldTestCase
     }
 
     /**
-     * @return iterable<string, array{value:SfItemInput, expected:string}>>
+     * @return iterable<string, array{value:SfItemInput, expected:string}>
      */
     public static function provideFrom1stArgument(): iterable
     {

@@ -108,7 +108,7 @@ final class ParametersValidator
             }
         }
 
-        if ([] == $this->filterConstraints && null === $this->criteria) {
+        if ([] === $this->filterConstraints && null === $this->criteria) {
             $violations->add(ErrorCode::ParametersMissingConstraints->value, new Violation('The parameters constraints are missing.'));
         }
 
