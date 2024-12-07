@@ -152,7 +152,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
             }
 
             if (!in_array(count($pair), [1, 2], true)) {
-                throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.');
+                throw new SyntaxError('The pair first member represents its value; the second member is its associated parameters.');
             }
 
             return is_iterable($pair[0]) ? InnerList::fromPair($pair) : Item::fromPair($pair);
@@ -527,10 +527,13 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      */
     private function newInstance(array $members): self
     {
-        return match (true) {
-            $members == $this->members => $this,
-            default => new self($members),
-        };
+        foreach ($members as $offset => $member) {
+            if (!isset($this->members[$offset]) || !$this->members[$offset]->equals($member)) {
+                return new self($members);
+            }
+        }
+
+        return $this;
     }
 
     /**
@@ -707,7 +710,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
         $pairs = iterator_to_array($this->getIterator());
 
         return match (true) {
-            $pairs[$offset] == $pair => $this,
+            $pairs[$offset][0] === $pair[0] && $pairs[$offset][1]->equals($pair[1]) => $this,
             default => self::fromPairs(array_replace($pairs, [$offset => $pair])),
         };
     }

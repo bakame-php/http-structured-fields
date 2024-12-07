@@ -459,7 +459,7 @@ final class Item
             $this->value instanceof Bytes,
             $this->value instanceof Token,
             $this->value instanceof DisplayString => $this->value->equals($value),
-            $this->value instanceof DateTimeInterface && $value instanceof DateTimeInterface => $value == $this->value,
+            $this->value instanceof DateTimeInterface && $value instanceof DateTimeInterface => $value->getTimestamp() === $this->value->getTimestamp(),
             default => $value === $this->value,
         };
 

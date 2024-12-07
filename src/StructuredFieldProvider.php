@@ -10,7 +10,9 @@ use DateTimeInterface;
 /**
  * @phpstan-type SfType Bytes|Token|DisplayString|DateTimeImmutable|string|int|float|bool
  * @phpstan-type SfTypeInput SfType|DateTimeInterface
- * @phpstan-type SfDataType Dictionary|InnerList|Item|OuterList|Parameters
+ * @phpstan-type SfList InnerList|OuterList
+ * @phpstan-type SfOrderedMap Dictionary|Parameters
+ * @phpstan-type SfDataType SfList|SfOrderedMap|Item
  * @phpstan-type SfItemInput SfTypeInput|SfDataType|StructuredFieldProvider
  * @phpstan-type SfMemberInput iterable<SfItemInput>|SfItemInput
  * @phpstan-type SfParameterInput iterable<array{0:string, 1?:SfItemInput}>
