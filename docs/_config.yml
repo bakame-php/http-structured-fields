@@ -1,5 +1,5 @@
 ---
 permalink: pretty
 plugins:
-    - jekyll-redirect-from
     - jekyll-gfm-admonitions
+    - jekyll-seo-tag

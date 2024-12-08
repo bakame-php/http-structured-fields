@@ -1,0 +1,8 @@
+source 'https://rubygems.org'
+
+group :jekyll_plugins do
+   gem "jekyll-gfm-admonitions"
+   gem "kramdown-parser-gfm"
+   gem "minima"
+   gem "jekyll-seo-tag"
+end
