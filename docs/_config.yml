@@ -1,7 +1,5 @@
 ---
-remote_theme: pages-themes/minimal@v0.2.0
 permalink: pretty
 plugins:
     - jekyll-gfm-admonitions
-    - jekyll-remote-theme
     - jekyll-seo-tag
