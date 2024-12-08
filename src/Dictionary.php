@@ -9,18 +9,17 @@ use Bakame\Http\StructuredFields\Validation\Violation;
 use CallbackFilterIterator;
 use Countable;
 use DateTimeInterface;
+use Exception;
 use Iterator;
 use IteratorAggregate;
 use Stringable;
 use Throwable;
 
-use function array_is_list;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function count;
 use function implode;
-use function is_array;
 use function is_bool;
 use function is_int;
 use function is_iterable;
@@ -47,32 +46,10 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     {
         $filteredMembers = [];
         foreach ($members as $key => $member) {
-            $filteredMembers[MapKey::from($key)->value] = self::filterMember($member);
+            $filteredMembers[Key::from($key)->value] = Member::innerListOrItem($member);
         }
 
         $this->members = $filteredMembers;
-    }
-
-    /**
-     * @param SfMemberInput $member
-     */
-    private static function filterMember(mixed $member): InnerList|Item
-    {
-        if ($member instanceof StructuredFieldProvider) {
-            $member = $member->toStructuredField();
-            if ($member instanceof Item || $member instanceof InnerList) {
-                return $member;
-            }
-
-            throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Item::class.' or an '.InnerList::class.'; '.$member::class.' given.');
-        }
-
-        return match (true) {
-            $member instanceof InnerList,
-            $member instanceof Item => $member,
-            is_iterable($member) => InnerList::new(...$member),
-            default => Item::new($member),
-        };
     }
 
     /**
@@ -125,45 +102,12 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
             throw new InvalidArgument('The "'.$pairs::class.'" instance can not be used for creating a .'.self::class.' structured field.');
         }
 
-        $converter = function (mixed $pair): InnerList|Item {
-            if ($pair instanceof StructuredFieldProvider) {
-                $pair = $pair->toStructuredField();
-                if ($pair instanceof Item || $pair instanceof InnerList) {
-                    return $pair;
-                }
-
-                throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Item::class.' or an '.InnerList::class.'; '.$pair::class.' given.');
-            }
-
-            if ($pair instanceof InnerList || $pair instanceof Item) {
-                return $pair;
-            }
-
-            if (!is_array($pair)) {
-                return Item::new($pair); /* @phpstan-ignore-line */
-            }
-
-            if (!array_is_list($pair)) {
-                throw new SyntaxError('The pair must be represented by an array as a list.');
-            }
-
-            if ([] === $pair) {
-                return InnerList::new();
-            }
-
-            if (!in_array(count($pair), [1, 2], true)) {
-                throw new SyntaxError('The pair first member represents its value; the second member is its associated parameters.');
-            }
-
-            return is_iterable($pair[0]) ? InnerList::fromPair($pair) : Item::fromPair($pair);
-        };
-
         return match (true) {
             $pairs instanceof Dictionary,
             $pairs instanceof Parameters => new self($pairs->toAssociative()),
-            default => new self((function (iterable $pairs) use ($converter) {
+            default => new self((function (iterable $pairs) {
                 foreach ($pairs as [$key, $member]) {
-                    yield $key => $converter($member);
+                    yield $key => Member::innerListOrItemFromPair($member);
                 }
             })($pairs)),
         };
@@ -198,7 +142,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.2
      *
-     * @throws StructuredFieldError|Throwable If the string is not a valid
+     * @throws StructuredFieldError|Exception If the string is not a valid
      */
     public static function fromHttpValue(Stringable|string $httpValue, Ietf $rfc = Ietf::Rfc9651): self
     {
@@ -352,11 +296,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     public function getByKey(string $key, ?callable $validate = null): Item|InnerList
     {
         $value = $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
-        if (null === $validate) {
-            return $value;
-        }
-
-        if (true === ($exceptionMessage = $validate($value))) {
+        if (null === $validate || true === ($exceptionMessage = $validate($value))) {
             return $value;
         }
 
@@ -411,29 +351,25 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     public function getByIndex(int $index, ?callable $validate = null): array
     {
         $foundOffset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
-
-        $validator = function (Item|InnerList $value, string $key, int $index, callable $validate): array {
-            if (true === ($exceptionMessage = $validate($value, $key))) {
-                return [$key, $value];
-            }
-
-            if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
-                $exceptionMessage = "The member at position '{index}' whose key is '{key}' with the value '{value}' failed validation.";
-            }
-
-            throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{key}' => $key, '{value}' => $value->toHttpValue()]));
-        };
-
         foreach ($this as $offset => $pair) {
             if ($offset === $foundOffset) {
-                return match ($validate) {
-                    null => $pair,
-                    default => $validator($pair[1], $pair[0], $index, $validate),
-                };
+                break;
             }
         }
 
-        throw InvalidOffset::dueToIndexNotFound($index);
+        if (!isset($pair)) {
+            throw InvalidOffset::dueToIndexNotFound($index);
+        }
+
+        if (null === $validate || true === ($exceptionMessage = $validate($pair[1], $pair[0]))) {
+            return $pair;
+        }
+
+        if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
+            $exceptionMessage = "The member at position '{index}' whose key is '{key}' with the value '{value}' failed validation.";
+        }
+
+        throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{key}' => $pair[0], '{value}' => $pair[1]->toHttpValue()]));
     }
 
     /**
@@ -514,7 +450,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
         iterable|StructuredFieldProvider|Dictionary|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
         $members = $this->members;
-        $members[MapKey::from($key)->value] = self::filterMember($member);
+        $members[Key::from($key)->value] = Member::innerListOrItem($member);
 
         return $this->newInstance($members);
     }
@@ -606,7 +542,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
         $members = $this->members;
         unset($members[$key]);
 
-        return $this->newInstance([...$members, MapKey::from($key)->value => self::filterMember($member)]);
+        return $this->newInstance([...$members, Key::from($key)->value => Member::innerListOrItem($member)]);
     }
 
     /**
@@ -626,7 +562,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
         $members = $this->members;
         unset($members[$key]);
 
-        return $this->newInstance([MapKey::from($key)->value => self::filterMember($member), ...$members]);
+        return $this->newInstance([Key::from($key)->value => Member::innerListOrItem($member), ...$members]);
     }
 
     /**
@@ -703,7 +639,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
     public function replace(int $index, array $pair): self
     {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
-        $pair[1] = self::filterMember($pair[1]);
+        $pair[1] = Member::innerListOrItem($pair[1]);
         $pairs = iterator_to_array($this->getIterator());
 
         return match (true) {

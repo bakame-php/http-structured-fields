@@ -8,19 +8,18 @@ use ArrayAccess;
 use Bakame\Http\StructuredFields\Validation\Violation;
 use Countable;
 use DateTimeInterface;
+use Exception;
 use Iterator;
 use IteratorAggregate;
 use Stringable;
 
 use function array_filter;
-use function array_is_list;
 use function array_map;
 use function array_replace;
 use function array_splice;
 use function array_values;
 use function count;
 use function implode;
-use function is_array;
 use function is_iterable;
 use function uasort;
 
@@ -48,35 +47,15 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
     private function __construct(
         iterable|StructuredFieldProvider|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool ...$members
     ) {
-        $this->members = array_map($this->filterMember(...), array_values([...$members]));
-    }
-
-    /**
-     * @param SfMemberInput $member
-     */
-    private function filterMember(mixed $member): InnerList|Item
-    {
-        if ($member instanceof StructuredFieldProvider) {
-            $member = $member->toStructuredField();
-            if ($member instanceof Item || $member instanceof InnerList) {
-                return $member;
-            }
-
-            throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Item::class.' or an '.InnerList::class.'; '.$member::class.' given.');
-        }
-
-        return match (true) {
-            $member instanceof InnerList,
-            $member instanceof Item => $member,
-            is_iterable($member) => InnerList::new(...$member),
-            default => Item::new($member),
-        };
+        $this->members = array_map(Member::innerListOrItem(...), array_values([...$members]));
     }
 
     /**
      * Returns an instance from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1
+     *
+     * @throws SyntaxError|Exception
      */
     public static function fromHttpValue(Stringable|string $httpValue, Ietf $rfc = Ietf::Rfc9651): self
     {
@@ -96,45 +75,12 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
             throw new InvalidArgument('The "'.$pairs::class.'" instance can not be used for creating a .'.self::class.' structured field.');
         }
 
-        $converter = function (mixed $pair): InnerList|Item {
-            if ($pair instanceof StructuredFieldProvider) {
-                $pair = $pair->toStructuredField();
-                if ($pair instanceof Item || $pair instanceof InnerList) {
-                    return $pair;
-                }
-
-                throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Item::class.' or an '.InnerList::class.'; '.$pair::class.' given.');
-            }
-
-            if ($pair instanceof InnerList || $pair instanceof Item) {
-                return $pair;
-            }
-
-            if (!is_array($pair)) {
-                return Item::new($pair); /* @phpstan-ignore-line */
-            }
-
-            if (!array_is_list($pair)) {
-                throw new SyntaxError('The pair must be represented by an array as a list.');
-            }
-
-            if ([] === $pair) {
-                return InnerList::new();
-            }
-
-            if (!in_array(count($pair), [1, 2], true)) {
-                throw new SyntaxError('The pair first member is the item value; its second member is the item parameters.');
-            }
-
-            return is_iterable($pair[0]) ? InnerList::fromPair($pair) : Item::fromPair($pair);
-        };
-
         return match (true) {
             $pairs instanceof OuterList,
             $pairs instanceof InnerList => new self($pairs),
-            default => new self(...(function (iterable $pairs) use ($converter) {
+            default => new self(...(function (iterable $pairs) {
                 foreach ($pairs as $member) {
-                    yield $converter($member);
+                    yield Member::innerListOrItemFromPair($member);
                 }
             })($pairs)),
         };
@@ -374,7 +320,7 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
         iterable|StructuredFieldProvider|InnerList|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
-        $member = self::filterMember($member);
+        $member = Member::innerListOrItem($member);
 
         return match (true) {
             $member->equals($this->members[$offset]) => $this,

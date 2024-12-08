@@ -23,6 +23,7 @@ use function count;
 use function implode;
 use function is_int;
 use function is_string;
+use function trim;
 use function uasort;
 
 /**
@@ -46,35 +47,10 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     {
         $filteredMembers = [];
         foreach ($members as $key => $member) {
-            $filteredMembers[MapKey::from($key)->value] = self::filterMember($member);
+            $filteredMembers[Key::from($key)->value] = Member::bareItem($member);
         }
 
         $this->members = $filteredMembers;
-    }
-
-    /**
-     * @param SfItemInput $member
-     */
-    private static function filterMember(mixed $member): Item
-    {
-        if ($member instanceof StructuredFieldProvider) {
-            $member = $member->toStructuredField();
-            if ($member instanceof Item) {
-                return self::filterMember($member);
-            }
-
-            throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Item::class.'; '.$member::class.' given.');
-        }
-
-        if (!$member instanceof Item) {
-            $member = Item::new($member);
-        }
-
-        if ($member->parameters()->isNotEmpty()) {
-            throw new InvalidArgument('The "'.$member::class.'" instance is not a Bare Item.');
-        }
-
-        return $member;
     }
 
     /**
@@ -162,8 +138,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
 
     public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string
     {
-        $formatter = static fn (Item $member, string $offset): string => match (true) {
-            true === $member->value() => ';'.$offset,
+        $formatter = static fn (Item $member, string $offset): string => match ($member->value()) {
+            true => ';'.$offset,
             default => ';'.$offset.'='.$member->toHttpValue($rfc),
         };
 
@@ -273,11 +249,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     public function getByKey(string $key, ?callable $validate = null): Item
     {
         $value = $this->members[$key] ?? throw InvalidOffset::dueToKeyNotFound($key);
-        if (null === $validate) {
-            return $value;
-        }
-
-        if (true === ($exceptionMessage = $validate($value->value()))) {
+        if (null === $validate || true === ($exceptionMessage = $validate($value->value()))) {
             return $value;
         }
 
@@ -334,29 +306,25 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     public function getByIndex(int $index, ?callable $validate = null): array
     {
         $foundOffset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
-
-        $validator = function (Item $value, string $key, int $index, callable $validate): array {
-            if (true === ($exceptionMessage = $validate($value->value(), $key))) {
-                return [$key, $value];
-            }
-
-            if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
-                $exceptionMessage = "The parameter at position '{index}' whose key is '{key}' with the value '{value}' failed validation.";
-            }
-
-            throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{key}' => $key, '{value}' => $value->toHttpValue()]));
-        };
-
         foreach ($this as $offset => $pair) {
             if ($offset === $foundOffset) {
-                return match ($validate) {
-                    null => $pair,
-                    default =>  $validator($pair[1], $pair[0], $index, $validate),
-                };
+                break;
             }
         }
 
-        throw InvalidOffset::dueToIndexNotFound($index);
+        if (!isset($pair)) {
+            throw InvalidOffset::dueToIndexNotFound($index);
+        }
+
+        if (null === $validate || true === ($exceptionMessage = $validate($pair[1]->value(), $pair[0]))) {
+            return $pair;
+        }
+
+        if (!is_string($exceptionMessage) || '' === trim($exceptionMessage)) {
+            $exceptionMessage = "The parameter at position '{index}' whose key is '{key}' with the value '{value}' failed validation.";
+        }
+
+        throw new Violation(strtr($exceptionMessage, ['{index}' => $index, '{key}' => $pair[0], '{value}' => $pair[1]->toHttpValue()]));
     }
 
     /**
@@ -483,7 +451,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
             [] === $default => [],
             !array_is_list($default) => throw new SyntaxError('The pair must be represented by an array as a list.'), /* @phpstan-ignore-line */
             2 !== count($default) => throw new SyntaxError('The pair first member is the key; its second member is its value.'), /* @phpstan-ignore-line */
-            null === ($key = MapKey::tryFrom($default[0])?->value) => throw new SyntaxError('The pair first member is invalid.'),
+            null === ($key = Key::tryFrom($default[0])?->value) => throw new SyntaxError('The pair first member is invalid.'),
             null === ($value = Item::tryNew($default[1])?->value()) => throw new SyntaxError('The pair second member is invalid.'),
             default => [$key, $value],
         };
@@ -513,10 +481,17 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
         string $key,
         StructuredFieldProvider|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
-        $members = $this->members;
-        $members[MapKey::from($key)->value] = self::filterMember($member);
+        $key = Key::from($key)->value;
+        $member = Member::bareItem($member);
+        $oldMember = $this->members[$key] ?? null;
+        if (null === $oldMember || !$oldMember->equals($member)) {
+            $members = $this->members;
+            $members[$key] = $member;
 
-        return $this->newInstance($members);
+            return new self($members);
+        }
+
+        return $this;
     }
 
     /**
@@ -579,10 +554,13 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
         string $key,
         StructuredFieldProvider|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
+        $key = Key::from($key)->value;
+        $member = Member::bareItem($member);
         $members = $this->members;
         unset($members[$key]);
+        $members[$key] = $member;
 
-        return $this->newInstance([...$members, MapKey::from($key)->value => self::filterMember($member)]);
+        return $this->newInstance($members);
     }
 
     /**
@@ -592,10 +570,12 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
         string $key,
         StructuredFieldProvider|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
+        $key = Key::from($key)->value;
+        $member = Member::bareItem($member);
         $members = $this->members;
         unset($members[$key]);
 
-        return $this->newInstance([MapKey::from($key)->value => self::filterMember($member), ...$members]);
+        return $this->newInstance([$key => $member, ...$members]);
     }
 
     /**
@@ -652,7 +632,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
     public function replace(int $index, array $pair): self
     {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
-        $pair[1] = self::filterMember($pair[1]);
+        $pair[1] = Member::bareItem($pair[1]);
         $pairs = iterator_to_array($this);
 
         return match (true) {

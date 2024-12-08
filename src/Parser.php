@@ -138,7 +138,7 @@ final class Parser
         $map = [];
         $remainder = ltrim((string) $httpValue, ' ');
         while ('' !== $remainder) {
-            $key = MapKey::fromStringBeginning($remainder)->value;
+            $key = Key::fromStringBeginning($remainder)->value;
             $remainder = substr($remainder, strlen($key));
             if ('' === $remainder || '=' !== $remainder[0]) {
                 $remainder = '=?1'.$remainder;
@@ -322,7 +322,7 @@ final class Parser
         $remainder = $httpValue;
         while ('' !== $remainder && ';' === $remainder[0]) {
             $remainder = ltrim(substr($remainder, 1), ' ');
-            $key = MapKey::fromStringBeginning($remainder)->value;
+            $key = Key::fromStringBeginning($remainder)->value;
             $member = [$key, true];
             $remainder = substr($remainder, strlen($key));
             if ('' !== $remainder && '=' === $remainder[0]) {

@@ -11,9 +11,11 @@ use DateTimeZone;
 use Exception;
 use Stringable;
 use Throwable;
+use TypeError;
 
 use function array_is_list;
 use function count;
+use function in_array;
 
 use const JSON_PRESERVE_ZERO_FRACTION;
 use const PHP_ROUND_HALF_EVEN;
@@ -114,12 +116,12 @@ final class Item
      */
     public static function fromPair(array $pair): self
     {
-        ;
-        if ([] === $pair || !array_is_list($pair) || 2 < count($pair)) {
+        $nbElements = count($pair);
+        if (!in_array($nbElements, [1, 2], true) || !array_is_list($pair)) {
             throw new SyntaxError('The pair must be represented by an non-empty array as a list containing exactly 1 or 2 members.');
         }
 
-        if (1 === count($pair)) {
+        if (1 === $nbElements) {
             return new self($pair[0]);
         }
 
@@ -142,16 +144,12 @@ final class Item
     /**
      * Returns a new bare instance from value.
      *
-     * @param SfItemInput|SfItemPair $value
+     * @param SfItemPair|SfItemInput $value
      *
-     * @throws SyntaxError If the value is not valid.
+     * @throws SyntaxError|TypeError If the value is not valid.
      */
     public static function new(mixed $value): self
     {
-        if ($value instanceof Item) {
-            return new self($value->value(), $value->parameters());
-        }
-
         if (is_array($value)) {
             return self::fromPair($value);
         }
@@ -389,8 +387,8 @@ final class Item
             $this->value instanceof Token => $this->value->toString(),
             $this->value instanceof Bytes => ':'.$this->value->encoded().':',
             $this->value instanceof DisplayString => '%"'.$this->value->encoded().'"',
-            is_int($this->value) => (string)$this->value,
-            is_float($this->value) => (string)json_encode(round($this->value, 3, PHP_ROUND_HALF_EVEN), JSON_PRESERVE_ZERO_FRACTION),
+            is_int($this->value) => (string) $this->value,
+            is_float($this->value) => (string) json_encode(round($this->value, 3, PHP_ROUND_HALF_EVEN), JSON_PRESERVE_ZERO_FRACTION),
             $this->value,
             false === $this->value => '?'.($this->value ? '1' : '0'),
             default => '"'.preg_replace('/(["\\\])/', '\\\$1', $this->value).'"',

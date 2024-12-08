@@ -10,7 +10,7 @@ use function preg_match;
  * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1.2
  * @internal normalize HTTP field key
  */
-final class MapKey
+final class Key
 {
     private function __construct(public readonly string $value)
     {
