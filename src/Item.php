@@ -14,6 +14,7 @@ use Throwable;
 
 use function array_is_list;
 use function count;
+use function in_array;
 
 use const JSON_PRESERVE_ZERO_FRACTION;
 use const PHP_ROUND_HALF_EVEN;
@@ -114,12 +115,12 @@ final class Item
      */
     public static function fromPair(array $pair): self
     {
-        ;
-        if ([] === $pair || !array_is_list($pair) || 2 < count($pair)) {
+        $nbElements = count($pair);
+        if (!in_array($nbElements, [1, 2], true) || !array_is_list($pair)) {
             throw new SyntaxError('The pair must be represented by an non-empty array as a list containing exactly 1 or 2 members.');
         }
 
-        if (1 === count($pair)) {
+        if (1 === $nbElements) {
             return new self($pair[0]);
         }
 
@@ -142,12 +143,21 @@ final class Item
     /**
      * Returns a new bare instance from value.
      *
-     * @param SfItemInput|SfItemPair $value
+     * @param StructuredFieldProvider|SfItemInput|SfItemPair $value
      *
      * @throws SyntaxError If the value is not valid.
      */
     public static function new(mixed $value): self
     {
+        if ($value instanceof StructuredFieldProvider) {
+            $value = $value->toStructuredField();
+            if (!$value instanceof Item) {
+                throw new InvalidArgument('The value must from the '.StructuredFieldProvider::class.' must be an '.Item::class.' instance; '.$value::class.' given.');
+            }
+
+            return new self($value->value(), $value->parameters());
+        }
+
         if ($value instanceof Item) {
             return new self($value->value(), $value->parameters());
         }

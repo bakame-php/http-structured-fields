@@ -13,14 +13,12 @@ use IteratorAggregate;
 use Stringable;
 
 use function array_filter;
-use function array_is_list;
 use function array_map;
 use function array_replace;
 use function array_splice;
 use function array_values;
 use function count;
 use function implode;
-use function is_array;
 use function is_iterable;
 use function uasort;
 

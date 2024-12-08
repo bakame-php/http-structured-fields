@@ -42,11 +42,6 @@ final class Member
         };
     }
 
-    /**
-     * @param mixed $value
-     *
-     * @return InnerList|Item
-     */
     public static function innerListOrItemFromPair(mixed $value): InnerList|Item
     {
         if ($value instanceof StructuredFieldProvider) {
@@ -106,9 +101,9 @@ final class Member
         return Item::new($value);
     }
 
-     /**
-      * @param SfItemInput|SfItemPair $value
-      */
+    /**
+     * @param SfItemInput|SfItemPair $value
+     */
     public static function bareItem(mixed $value): Item
     {
         $bareItem = self::item($value);

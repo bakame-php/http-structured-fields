@@ -14,13 +14,11 @@ use IteratorAggregate;
 use Stringable;
 use Throwable;
 
-use function array_is_list;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function count;
 use function implode;
-use function is_array;
 use function is_bool;
 use function is_int;
 use function is_iterable;

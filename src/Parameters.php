@@ -138,8 +138,8 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
 
     public function toHttpValue(Ietf $rfc = Ietf::Rfc9651): string
     {
-        $formatter = static fn (Item $member, string $offset): string => match (true) {
-            true === $member->value() => ';'.$offset,
+        $formatter = static fn (Item $member, string $offset): string => match ($member->value()) {
+            true => ';'.$offset,
             default => ';'.$offset.'='.$member->toHttpValue($rfc),
         };
 
