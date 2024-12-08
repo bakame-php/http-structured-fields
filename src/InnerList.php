@@ -51,29 +51,8 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
      */
     private function __construct(iterable $members, ?Parameters $parameters = null)
     {
-        $this->members = array_map($this->filterMember(...), array_values([...$members]));
+        $this->members = array_map(Member::item(...), array_values([...$members]));
         $this->parameters = $parameters ?? Parameters::new();
-    }
-
-    /**
-     * @param SfItemInput|SfItemPair $member
-     */
-    private function filterMember(mixed $member): Item
-    {
-        if ($member instanceof StructuredFieldProvider) {
-            $member = $member->toStructuredField();
-            if (!$member instanceof Item) {
-                throw new InvalidArgument('The '.StructuredFieldProvider::class.' must provide a '.Item::class.'; '.$member::class.' given.');
-            }
-
-            return $member;
-        }
-
-        if ($member instanceof Item) {
-            return $member;
-        }
-
-        return Item::new($member);
     }
 
     /**
@@ -113,7 +92,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
     /**
      * @param array{0:iterable<SfItemInput>, 1?:Parameters|SfParameterInput}|array<mixed> $pair
      */
-    public static function fromPair(array $pair): self
+    public static function fromPair(array $pair = []): self
     {
         if ([] === $pair) {
             return self::new();
@@ -389,7 +368,7 @@ final class InnerList implements ArrayAccess, Countable, IteratorAggregate
         StructuredFieldProvider|OuterList|Dictionary|InnerList|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
         $offset = $this->filterIndex($index) ?? throw InvalidOffset::dueToIndexNotFound($index);
-        $member = self::filterMember($member);
+        $member = Member::item($member);
 
         return match (true) {
             $member->equals($this->members[$offset]) => $this,
