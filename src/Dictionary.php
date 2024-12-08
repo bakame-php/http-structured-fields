@@ -505,17 +505,14 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      * This method MUST retain the state of the current instance, and return
      * an instance that contains the specified changes.
      *
-     * @param SfMemberInput|null $member
+     * @param SfMemberInput $member
      *
      * @throws SyntaxError If the string key is not a valid
      */
     public function add(
         string $key,
-        iterable|StructuredFieldProvider|Dictionary|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool|null $member
+        iterable|StructuredFieldProvider|Dictionary|Parameters|Item|Token|Bytes|DisplayString|DateTimeInterface|string|int|float|bool $member
     ): self {
-        if (null === $member) {
-            return $this;
-        }
         $members = $this->members;
         $members[MapKey::from($key)->value] = self::filterMember($member);
 
