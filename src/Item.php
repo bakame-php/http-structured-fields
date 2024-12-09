@@ -11,6 +11,7 @@ use DateTimeZone;
 use Exception;
 use Stringable;
 use Throwable;
+use TypeError;
 
 use function array_is_list;
 use function count;
@@ -145,7 +146,7 @@ final class Item
      *
      * @param SfItemPair|SfItemInput $value
      *
-     * @throws SyntaxError If the value is not valid.
+     * @throws SyntaxError|TypeError If the value is not valid.
      */
     public static function new(mixed $value): self
     {
