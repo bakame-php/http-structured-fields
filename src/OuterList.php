@@ -8,6 +8,7 @@ use ArrayAccess;
 use Bakame\Http\StructuredFields\Validation\Violation;
 use Countable;
 use DateTimeInterface;
+use Exception;
 use Iterator;
 use IteratorAggregate;
 use Stringable;
@@ -53,6 +54,8 @@ final class OuterList implements ArrayAccess, Countable, IteratorAggregate
      * Returns an instance from an HTTP textual representation.
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.1
+     *
+     * @throws SyntaxError|Exception
      */
     public static function fromHttpValue(Stringable|string $httpValue, Ietf $rfc = Ietf::Rfc9651): self
     {

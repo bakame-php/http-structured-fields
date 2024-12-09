@@ -9,6 +9,7 @@ use Bakame\Http\StructuredFields\Validation\Violation;
 use CallbackFilterIterator;
 use Countable;
 use DateTimeInterface;
+use Exception;
 use Iterator;
 use IteratorAggregate;
 use Stringable;
@@ -141,7 +142,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
      *
      * @see https://www.rfc-editor.org/rfc/rfc9651.html#section-3.2
      *
-     * @throws StructuredFieldError|Throwable If the string is not a valid
+     * @throws StructuredFieldError|Exception If the string is not a valid
      */
     public static function fromHttpValue(Stringable|string $httpValue, Ietf $rfc = Ietf::Rfc9651): self
     {
