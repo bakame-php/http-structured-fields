@@ -143,25 +143,12 @@ final class Item
     /**
      * Returns a new bare instance from value.
      *
-     * @param StructuredFieldProvider|SfItemInput|SfItemPair $value
+     * @param SfItemPair|SfItemInput $value
      *
      * @throws SyntaxError If the value is not valid.
      */
     public static function new(mixed $value): self
     {
-        if ($value instanceof StructuredFieldProvider) {
-            $value = $value->toStructuredField();
-            if (!$value instanceof Item) {
-                throw new InvalidArgument('The value must from the '.StructuredFieldProvider::class.' must be an '.Item::class.' instance; '.$value::class.' given.');
-            }
-
-            return new self($value->value(), $value->parameters());
-        }
-
-        if ($value instanceof Item) {
-            return new self($value->value(), $value->parameters());
-        }
-
         if (is_array($value)) {
             return self::fromPair($value);
         }
