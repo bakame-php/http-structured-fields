@@ -12,7 +12,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="{{ site.data.project.description }}">
-    <meta name="docsearch:version" content="{{ version }}">
+    <link rel="icon" href="{{ site.baseurl }}/assets/img/httpsf-logo.svg" type="image/svg+xml">
     <title>{{ page.title }} - {{ site.data.project.title }}</title>
     <link rel="apple-touch-icon-precomposed" href="//theme.thephpleague.com/img/apple-touch-icon-precomposed.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,6 +25,7 @@
     <header class="flex items-center sm:justify-center pl-6 pr-6 pb-6 max-w-7xl mx-auto pb-32">
         <div class="flex gap-6 md:gap-0 md:flex-row justify-between md:items-center p-3 md:p-6 w-full max-w-7xl">
             <a class="flex items-center gap-2 sm:gap-3" href="{{ site.baseurl }}/">
+                <img src="{{ site.baseurl }}/assets/img/httpsf-logo.svg" alt="Logo" class="w-[40px] sm:w-[50px] h-[40px] sm:h-[50px]"/>
                 <div class="font-black">HTTP Structured Fields</div>
             </a>
         </div>
@@ -82,6 +83,9 @@
             <article class="content">
                 {{ content }}
             </article>
+            <div class="flex justify-center items-center">
+                <img src="{{ site.baseurl }}/assets/img/httpsf.svg" alt="Logo" class="w-[240px] sm:w-[250px] h-[80px] sm:h-[82px]"/>
+            </div>
         </div>
     </main>
     <footer class="p-6 max-w-7xl mx-auto pb-32">

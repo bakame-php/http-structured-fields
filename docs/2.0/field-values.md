@@ -164,9 +164,9 @@ Item::true(): self;
 Item::false(): self;
 ```
 
-On error, those named constructor will throw an exception, if you do not want an exception
-and prefer a softer approache where the named constructor would instead return `null`, you
-can prepend the named constructor with the `try` prefix.
+On error, the listed named constructors will throw an exception, if you do not want an exception
+and prefer a softer approach where the named constructor would instead return `null`, you
+can prepend the listed named constructor with the `try` prefix.
 
 ```php
 Item::fromDecimal('42'); // will throw because the value is a string;

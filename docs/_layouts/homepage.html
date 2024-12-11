@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{{ site.data.project.description }}">
-    <meta name="docsearch:version" content="4.0">
+    <link rel="icon" href="{{ site.baseurl }}/assets/img/httpsf-logo.svg" type="image/svg+xml">
     <title>{{ site.data.project.tagline }} - {{ site.data.project.title }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,10 @@
 <div class="relative z-10">
     <header class="flex items-center sm:justify-center">
         <div class="flex gap-6 md:gap-0 md:flex-row justify-between md:items-center p-3 md:p-6 w-full max-w-7xl">
-            <div class="flex items-center gap-2 sm:gap-3"></div>
+            <div class="flex items-center gap-2 sm:gap-3">
+                <img src="{{ site.baseurl }}/assets/img/httpsf-logo.svg" alt="Logo" class="w-[40px] sm:w-[50px] h-[40px] sm:h-[50px]"/>
+                <div class="font-black text-2xl">HTTP Structured Fields</div>
+            </div>
             <div class="flex items-center gap-0 md:gap-0">
                 <a href="{{ site.data.project.repository_url }}" class="px-2 py-2 sm:px-6 sm:py-3 font-black text-md text-black-50 hover:text-csv-dark hover:underlines whitespace-nowrap">SOURCE CODE</a>
                 <a href="{{ site.baseurl }}/{{ site.data.project.release_major }}/" class="px-2 py-2 sm:px-6 sm:py-3 text-md text-white bg-csv-base hover:bg-csv-dark transition-all whitespace-nowrap rounded">Documentation</a>
@@ -47,6 +50,9 @@
 
             <div class="flex flex-col gap-3 my-16 content">
                 {{ content }}
+            </div>
+            <div class="flex justify-center items-center">
+                <img src="{{ site.baseurl }}/assets/img/httpsf.svg" alt="Logo" class="w-[240px] sm:w-[250px] h-[80px] sm:h-[82px]"/>
             </div>
         </div>
     </main>
