@@ -1,4 +1,5 @@
 ---
+layout: default
 title: Interacting with the PHP ecosystem
 order: 7
 ---
@@ -100,5 +101,3 @@ contract.
 To show how this can be achieved you can check the codebase from [HTTP Cache Status](https://github.com/bakame-php/http-cache-status)
 which uses the interface. Of note by using this interface you can completely hide the presence of 
 this package to your end users if needed.
-
-&larr; [Validation](validation.md)  | [Upgrading to v2.0](migration.md) &rarr;

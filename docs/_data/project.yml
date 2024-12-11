@@ -1,0 +1,10 @@
+# Documentation website
+title: HTTP Structured Fields
+tagline: "Work with HTTP Structured Fields in PHP."
+description: "A framework-agnostic PHP library that allows you to parse, serialize, create, update and validate HTTP Structured Fields in PHP following RFC9651 and RFC8941."
+# Github repository
+package: 'bakame/http-structured-fields'
+repository_url: 'https://github.com/bakame-php/http-structured-fields'
+release_major: '2.0'
+version: 2.0.0
+support: 'Once a new major version is released, the previous stable release remains supported for six more months with patches and security fixes.'

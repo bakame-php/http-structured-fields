@@ -1,6 +1,7 @@
 vendor
 build
 .idea
+docs/_site
 .phpunit.cache
 composer.lock
 .php-cs-fixer.cache

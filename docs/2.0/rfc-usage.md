@@ -1,11 +1,11 @@
 ---
-title: Basic usage
-order: 2
+layout: default
+title: RFC Usage
 ---
 
-# Basic Usage
+# RFC Usage
 
-## Parsing the Field
+## Parsing a field
 
 The first way to use the package is to enable HTTP header or HTTP trailer parsing. We will refer to them
 as HTTP fields for the rest of the documentation as it is how they are named in the IETF RFC.
@@ -38,13 +38,12 @@ $permissions->isEmpty();                       // returns false the dictionary c
 echo $permissions;                             // returns 'picture-in-picture=(), geolocation=(self "https://example.com/"), camera=*'
 ```
 
-> [!WARNING]
-> If parsing fails a `SyntaxError` exception is thrown with the information about why it failed.
+<p class="message-warning">If parsing fails a <code>SyntaxError</code> exception is thrown with the information about why it failed.</p>
 
-## Creating a new field
+## Serializing a field
 
 Conversely, if you need to quickly create a permission policy HTTP field text representation, the package
-provides the following ways to do so:
+provides the following ways to do by strictly following the RFC:
 
 ```php
 echo DataType::Dictionary->serialize([
@@ -60,10 +59,9 @@ pairs to respect value position. As such we can turn the iterable construct we h
 proper HTTP field text representation by applying the serialization mechanism described in
 the RFC.
 
-While field building may look overwhelming, at first, it follows a fully described and tested
-process that the package can simplify for you once you read the documentation.
+While field building may look overwhelming, at first, it follows the fully described and tested
+process from the RFC. The package exposes numerous methods to simplify this process for you.
 
 The goal of the examples are to show that even without dwelling too much into the ins and out
-of the package you can easily and quickly parse or serialize compliant fields in PHP.
-
-&larr; [Intro](index.md)  |  [Parsing and Serializing](parsing-serializing.md) &rarr;
+of the package you can easily and quickly parse or serialize compliant fields in PHP base solely
+on the RFC.

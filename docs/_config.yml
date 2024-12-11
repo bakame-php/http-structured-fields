@@ -1,5 +1,5 @@
 ---
 permalink: pretty
+baseurl: /http-structured-fields
 plugins:
-    - jekyll-gfm-admonitions
-    - jekyll-seo-tag
+  - jekyll-redirect-from

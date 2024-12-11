@@ -1,4 +1,5 @@
 ---
+layout: default
 title: The Structured Field containers Data Types
 order: 5
 ---
@@ -29,8 +30,10 @@ $permissions->isNotEmpty():;  // returns true
 $permissions->isEmpty();      // returns false
 ```
 
-> [!IMPORTANT]
-> The `getByIndex` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
+<p class="message-warning">
+The <code>getByIndex</code> method will throw an <code>InvalidOffset</code> exception if no
+member exists for the given <code>$offset</code>.
+</p>
 
 Here's an example with a `List` container:
 
@@ -46,10 +49,11 @@ $permissions->isNotEmpty():;  // returns true
 $permissions->isEmpty();      // returns false
 ```
 
-> [!IMPORTANT]
-> For ordered maps, the `getByIndex` method returns a list containing exactly 2 entries.
-> The first entry is the member key, the second entry is the member value.
-> For lists, the method directly returns the value.
+<p class="message-warning">
+For ordered maps, the <code>getByIndex</code> method returns a list containing exactly 2 entries.
+The first entry is the member key, the second entry is the member value. For lists, the method
+directly returns the value.
+</p>
 
 To avoid invalid states, `ArrayAccess` modifying methods throw a `ForbiddenOperation`
 if you try to use them on any container object:
@@ -61,9 +65,10 @@ $permissions['a'] = 23    // triggers a ForbiddenOperation exception
 unset($permissions['a']); // triggers a ForbiddenOperation exception
 ```
 
-> [!IMPORTANT]
-> For ordered map the ArrayAccess interface will use the member name
-> whereas for lists the interface will use the member index.
+<p class="message-warning">
+For ordered map the <code>ArrayAccess</code> interface will use the member name
+whereas for lists the interface will use the member index.
+</p>
 
 The `Dictionary` and `Parameters` classes also allow accessing their members as value using their name:
 
@@ -83,12 +88,16 @@ $permissions->indexByKey('foobar'): // returns null because there's no member wi
 $permissions->indexByKey('geolocation'): // returns 1
 ```
 
-> [!IMPORTANT]
-> The `getByKey` method will throw an `InvalidOffset` exception if no member exists for the given `$offset`.
+<p class="message-warning">
+The <code>getByKey</code> method will throw an <code>InvalidOffset</code> exception if no
+member exists for the given <code>$offset</code>.
+</p>
 
-> [!TIP]
-> The `ArrayAccess` interface proxy the result from `getByIndex` and `hasIndices` with `OuterList` and `InnerList`.
-> The `ArrayAccess` interface proxy the result from `getByNKey` and `hasKeys` with `Dictionary` and `Parameters`.
+
+<ul class="message-info">
+<li>The <code>ArrayAccess</code> interface proxy the result from <code>getByIndex</code> and <code>hasIndices</code> with <code>OuterList</code> and <code>InnerList</code>.</li>
+<li>The <code>ArrayAccess</code> interface proxy the result from <code>getByKey</code> and <code>hasKeys</code> with <code>Dictionary</code> and <code>Parameters</code>.</li>
+</ul>
 
 ### Accessing the parameters values
 
@@ -99,9 +108,10 @@ On the other hand if you already have a `Parameters` instance you can use the
 `valueByKey` and `valueByIndex` methods to directly access the value from a single
 parameter.
 
-> [!TIP]
-> The `parameterByKey` proxy the result from `valueByKey`.
-> The `parameterByIndex` proxy the result from `valueByIndex`.
+<ul class-="message-info">
+<li>The <code>parameterByKey</code> proxy the result from <code>valuerByKey</code>.</li>
+<li>The <code>parameterByIndex</code> proxy the result from <code>valuerByIndex</code>.</li>
+</ul>
 
 ## Building and Updating Containers
 
@@ -220,8 +230,8 @@ echo $value->toHttpValue(); //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 echo $value;                //b=?0, a=(bar "42" 42 42.0), c=@1671800423
 ```
 
-> [!CAUTION]
-> on duplicate `names` pair values are merged as per RFC logic.
+<p class="message-warning">on duplicate <code>names</code> pair values are merged as per RFC logic.</p>
+
 
 The following methods `removeByIndices` and/or `removeByKeys` allow removing members
 per indices or per names.
@@ -413,8 +423,7 @@ The `$pair` parameter is an array as list with exactly two members where:
 - the first array member is the parameter `$key`
 - the second array member is the parameter `$value`
 
-> [!WARNING]
-> The return value will be the parent class an NOT a `Parameters` instance
+<p class="message-warning">The return value will be the parent class an NOT a <code>Parameters</code>` instance</p>
 
 ```php
 use Bakame\Http\StructuredFields\InnerList;
@@ -455,5 +464,3 @@ Item::new($cache->name)
     ->when(null !== $cache->key, fn (Item $item) => $item->appendParameter('key', $cache->key)) 
     ->when(null !== $cache->detail, fn (Item $item) => $item->appendParameter('detail', $cache->detail));
 ```
-
-&larr; [Accessing Field Values](field-values.md)  |  [Validation](validation.md) &rarr;

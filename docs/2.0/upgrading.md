@@ -1,4 +1,5 @@
 ---
+layout: default
 title: Migrating from version 1.x
 order: 8
 ---
@@ -149,5 +150,3 @@ OuterList::fromPairs([
 
 > [!NOTE]
 > The v1 syntax is still supported.
-
-&larr; [Extending the package functionalities](extensions.md)  |  [Intro](index.md) &rarr;

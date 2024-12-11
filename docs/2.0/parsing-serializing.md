@@ -1,4 +1,5 @@
 ---
+layout: default
 title: Parsing and Serializing HTTP Fields
 order: 3
 ---
@@ -50,8 +51,8 @@ As example the following existing headers can be classified within the Structure
 
 These examples are taken from a list of [already supported fields](https://httpwg.org/http-extensions/draft-ietf-httpbis-retrofit.html)
 
-> [!NOTE]
-> This means that all the headers listed are already parsable and/or serializable by the package
+<p class="message-info">This means that all the headers listed are already parsable and/or
+serializable by the package.</p>
 
 All the classes share the same methods for parsing the HTTP text representation of the field. They all use
 the `fromHttpValue` named constructor. This method will parse the field string representation and
@@ -85,9 +86,9 @@ $field = Item::fromRfc8941($headerLine);
 // will trigger a SyntaxError because the field syntax is invalid for RFC8941
 ```
 
-> [!TIP]
-> The `DataType::parse` method uses the `fromHttpValue` named constructor for
-> each specific class to generate the structured field PHP representation.
+<p class="message-info">The <code>DataType::parse</code> method uses the
+<code>fromHttpValue</code> named constructor for each specific class to
+generate the structured field PHP representation.</p>
 
 ### Data Types relationships
 
@@ -161,8 +162,6 @@ $field->toHttpValue();
 
 The `toHttpValue` method applies by default all the normalizations recommended by the RFC. 
 
-> [!TIP]
-> This is the mechanism used by the `DataType::serialize` method. Once the HTTP Structured
-> Field has been created, the method calls its `toHttpValue` method.
+<p class="message-info">This is the mechanism used by the <code>DataType::serialize</code> method.
+Once the HTTP Structured Field has been created, the method calls its <code>toHttpValue</code> method.</p>
 
-&larr; [Basic Usage](basic-usage.md)  |  [Accessing Field Values](field-values.md) &rarr;

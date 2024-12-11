@@ -1,0 +1,20 @@
+version:
+    '2.0':
+        Getting Started:
+            Installation: '/2.0/'
+            Upgrading from 1.x: '/2.0/upgrading/'
+        Documentation:
+            RFC Usage: '/2.0/rfc-usage/'
+            Parsing & Serializing: '/2.0/parsing-serializing/'
+            Field Values: '/2.0/field-values/'
+            Containers: '/2.0/containers/'
+            Validation: '/2.0/validation/'
+            Extending: '/2.0/extensions/'
+    '1.0':
+        Getting Started:
+            Overview: '/1.0/'
+            Documentation: '/1.0/documentation/'
+upgrading:
+    'Upgrading guide':
+        Release Notes: '/releases/'
+        From 1.x to 2.x: '/2.0/upgrading/'

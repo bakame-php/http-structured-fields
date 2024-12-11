@@ -36,7 +36,7 @@ composer require bakame/http-structured-fields
 
 ## Documentation
 
-- The documentation for **the upcoming [version 2.x](docs/) release**
+Full documentation can be found at [https://bakame-php.github.io/http-structured-fields](//bakame-php.github.io/http-structured-fields)
 
 ## Contributing
 

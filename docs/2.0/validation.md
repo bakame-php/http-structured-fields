@@ -1,4 +1,5 @@
 ---
+layout: default
 title: Structured Field validation
 order: 6
 ---
@@ -37,8 +38,7 @@ $field->last()->value();  // returns 12.8
 
 So far so good, the field is successfully parsed by the package.
 
-> [!NOTE]
-> The field would fail parsing with the obsolete RFC8941 definition
+<p class="message-info">The field would fail parsing with the obsolete RFC8941 definition.</p>
 
 ### Validating each entry separately
 
@@ -131,9 +131,10 @@ $value = $member
 // new Violation("The value 'foo' failed the RFC validation.");
 ```
 
-> [!NOTE]
-> we used `mixed` as parameter type for convenience but the effective parameter type should be
-> `Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool`
+<p class="message-notice">
+we used <code>mixed</code> as parameter type for convenience but the effective parameter type should be
+<code>Byte|Token|DisplayString|DateTimeImmutable|string|int|float|bool</code>
+</p>
 
 ### Validating the Item parameters.
 
@@ -155,11 +156,8 @@ if (!$member->parameters()->allowedKeys(['location', 'longitude', 'latitude', 'd
 }
 ```
 
-> [!TIP]
-> The `Dictionary` class also exposes an `allowedKeys` method which behave the same way.
-
-> [!WARNING]
-> if the parameters container is empty no error will be triggered
+<p class="message-info">The <code>Dictionary</code> class also exposes an <code>allowedKeys</code> method which behave the same way.</p>
+<p class="message-warning">if the parameters container is empty no error will be triggered</p>
 
 ### Validating single parameters
 
@@ -182,10 +180,11 @@ $member->parameterByKey(
 );
 ```
 
-> [!NOTE]
-> `parameterByIndex` uses the same parameter only the callback parameter are
-> different as a second parameter the string name is added to the callback
-> for validation purpose.
+<p class="message-notice">
+<code>parameterByIndex</code> uses the same parameter only the callback parameter are
+different as a second parameter the string name is added to the callback
+for validation purpose.
+</p>
 
 ### Validating the complete Parameter container
 
@@ -322,12 +321,14 @@ if ($validation->isSucces()) {
 }
 ```
 
-> [!NOTE]
-> If we only had validated the `longitude` parameter. it would have been
-> the only one present in the returned data.
+<p class="message-notice">
+If we only had validated the `longitude` parameter. it would have been
+the only one present in the returned data.
+</p>
 
-> [!NOTE]
-> If we only use the `filterByCriteria` method the full parameter data is returned.
+<p class="message-notice">
+If we only use the `filterByCriteria` method the full parameter data is returned.
+</p>
 
  A `filterByIndices` method exists and behave exactly as the `filterByKeys` method.
 There are two differences when it is used:
@@ -345,9 +346,11 @@ if ($validation->isSucces()) {
 }
 ```
 
-> [!IMPORTANT]
-> Both methods are mutually exclusive if you use them both, the last one used will 
-> be the one which format the returned data. 
+<p class="message-warning">
+Both methods are mutually exclusive if you use them both, the last one used will 
+be the one which format the returned data. 
+</p>
+
 
 ### Validating the full Item
 
@@ -417,19 +420,21 @@ The `ParametersValidator` and the `ItemValidator` are invokable, so we can use t
 directly with the `getBy*` methods. So once you have configured your validator in a
 class it becomes easier to reuse it to validate your data.
 
-> [!NOTE]
-> When used as invokable the validators return `true` on success and the aggregated 
-> error messages as string on error.
+<p class="message-info">
+When used as invokable the validators return <code>true</code> on success and the aggregated 
+error messages as string on error.
+</p>
 
-> [!TIP]
-> A best practice is to move all this validation definition in its own class, and use that 
-> class instead to ease maintenance and testing.
+<p class="message-info">
+A best practice is to move all this validation definition in its own class, and use that 
+class instead to ease maintenance and testing.
+</p>
 
-> [!TIP]
-> Once you have a specific class to validate a single entry for your list or dictionary it is 
-> easy to validate all the container using either the `map`, `filter` or the `reduce` method 
-> associated with each container.
+<p class="message-info">
+Once you have a specific class to validate a single entry for your list or dictionary it is 
+easy to validate all the container using either the <code>map</code>, <code>filter</code>
+or the <code>recude</code> method associated with each container.
+</p>
+
 
 To show how this can be achieved you can check the codebase from [HTTP Cache Status](https://github.com/bakame-php/http-cache-status)
-
-&larr; [Containers](containers.md)  | [Extending the package functionalities](extensions.md) &rarr;

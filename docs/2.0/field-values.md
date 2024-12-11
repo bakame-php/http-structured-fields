@@ -1,4 +1,5 @@
 ---
+layout: default
 title: Accessing the HTTP field values
 order: 4
 ---
@@ -21,10 +22,11 @@ or provides a class based alternative. The table below summarizes the value type
 | Date          | class `DateTimeImmutable` | `Type::Date`          | `date`             | RFC9651          |
 | DisplayString | class `DisplayString`     | `Type::DisplayString` | `displaystring`    | RFC9651          |
 
-> [!WARNING]
-> The translation to PHP native type does not mean that all PHP values are usable. For instance, in the
-> following example, what is considered to be a valid string in PHP is not considered as compliant
-> to the string type according to the RFC.
+<p class="message-warning">
+The translation to PHP native type does not mean that all PHP values are usable. For instance, in the
+following example, what is considered to be a valid string in PHP is not considered as compliant
+to the string type according to the RFC.
+</p>
 
 ```php
 Item::fromString("https://a.bébé.com");
@@ -33,9 +35,10 @@ Item::fromString("https://a.bébé.com");
  // contain UTF-8 characters
 ```
 
-> [!NOTE]
-> The `Date` and `DisplayString` types were added in the accepted RFC9651 
-> but are not part of the obsolete RFC8941 specification.
+<p class="message-notice">
+The <code>Date</code> and <code>DisplayString</code> types were added in the accepted <code>RFC9651</code>
+but are not part of the obsolete <code>RFC8941</code> specification.
+</p>
 
 The Enum `Type` list all available types and can be used to determine the RFC type
 corresponding to a PHP structure using the `Type::fromVariable` static method.
@@ -113,13 +116,11 @@ $byte->type();          // returns Type::Byte
 $displayString->type(); // returns Type::DisplayString
 ```
 
-> [!WARNING]
-> The classes DO NOT expose the `Stringable` interface to help distinguish
-> them from the string type or a stringable object
+<p class="message-warning">The classes DO NOT expose the <code>Stringable</code> interface to help distinguish
+them from the string type or a stringable object
+</p>
 
-> [!IMPORTANT]
-> Values are not directly accessible. They can only be retrieved from an Item
-> Data type.
+<p class="message-warning">Values are not directly accessible. They can only be retrieved from an Item Data type.</p>
 
 ## The Item Data Type
 
@@ -195,5 +196,3 @@ By default, you can access the member `Item` of a parameters using the following
 
 It is possible to alter and modify the `Parameters` attached to an `Item` but this will be explored in
 the next section about the containers.
-
-&larr; [Parsing and Serializing](parsing-serializing.md)  |  [Containers](containers.md) &rarr;
