@@ -8,3 +8,12 @@ repository_url: 'https://github.com/bakame-php/http-structured-fields'
 release_major: '2.0'
 version: 2.0.0
 support: 'Once a new major version is released, the previous stable release remains supported for six more months with patches and security fixes.'
+releases:
+    next:
+        version: '2.0'
+        requires: 'PHP >= 8.1.0'
+        documentation_link: '/2.0/'
+    current:
+        version: '1.0'
+        requires: 'PHP >= 8.1.10'
+        documentation_link: '/1.0/'

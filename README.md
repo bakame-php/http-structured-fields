@@ -1,4 +1,4 @@
-![HTTPsf](.github/httpsf-logo.jpg?raw=true)
+![HTTPsf](.github/httpsf-logo.png?raw=true)
 
 # HTTP Structured Fields for PHP
 
