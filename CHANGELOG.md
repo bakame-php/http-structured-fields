@@ -17,7 +17,7 @@ All Notable changes to `bakame/http-strucured-fields` will be documented in this
 - methods `getByKey`, `hasKeys`, `indexByKey`, `keyByIndex`, `toAssociative` to all ordered map classes (`Dictionary` and `Parameters`).
 - `StructuredFieldProvider` interface
 - `Item::parameterByKey` and `Item::parameterByIndex` methods to mirror the new public API.
-- `Item::tryNew` and `Item::tryFromPair` which return `null` instead of throwing an exception
+-  All `Item` named constructors have a `try` equivalent which return `null` instead of throwing an exception
 - `Parameters::valueByKey`
 - `Parameters::valueByIndex`
 - Added a validation mechanism to facilitate `Item` and `Parameters` validation against field definition.

@@ -148,7 +148,6 @@ use Bakame\Http\StructuredFields\Item;
 use Bakame\Http\StructuredFields\Token;
 
 Item:new(DateTimeInterface|Byte|Token|DisplayString|string|int|array|float|bool $value): self
-Item:tryNew(mixed $value): ?self
 Item::fromDecodedBytes(Stringable|string $value): self;
 Item::fromEncodedBytes(Stringable|string $value): self;
 Item::fromEncodedDisplayString(Stringable|string $value): self;
@@ -163,6 +162,15 @@ Item::fromDecimal(int|float $value): self;
 Item::fromInteger(int|float $value): self;
 Item::true(): self;
 Item::false(): self;
+```
+
+On error, those named constructor will throw an exception, if you do not want an exception
+and prefer a softer approache where the named constructor would instead return `null`, you
+can prepend the named constructor with the `try` prefix.
+
+```php
+Item::fromDecimal('42'); // will throw because the value is a string;
+Item::tryFromDecimal('42'); // will return null instead
 ```
 
 To update the `Item` instance value, use the `withValue` method:

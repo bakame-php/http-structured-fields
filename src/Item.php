@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Bakame\Http\StructuredFields;
 
+use BadMethodCallException;
 use Bakame\Http\StructuredFields\Validation\Violation;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use Exception;
+use ReflectionMethod;
 use Stringable;
 use Throwable;
 use TypeError;
@@ -27,6 +29,24 @@ use const PHP_ROUND_HALF_EVEN;
  * @phpstan-import-type SfItemInput from StructuredFieldProvider
  * @phpstan-import-type SfItemPair from StructuredFieldProvider
  * @phpstan-import-type SfTypeInput from StructuredFieldProvider
+ *
+ * @method static ?Item tryFromPair(array{0: SfItemInput, 1?: Parameters|iterable<array{0:string, 1:SfItemInput}>}|array<mixed> $pair) try to create a new instance from a Pair
+ * @method static ?Item tryFromRfc9651(Stringable|string $httpValue) try to create a new instance from a string using RFC9651
+ * @method static ?Item tryFromRfc8941(Stringable|string $httpValue) try to create a new instance from a string using RFC8941
+ * @method static ?Item tryFromHttpValue(Stringable|string $httpValue) try to create a new instance from a string
+ * @method static ?Item tryFromAssociative(Bytes|Token|DisplayString|DateTimeInterface|string|int|float|bool $value, StructuredFieldProvider|Parameters|iterable<string, SfItemInput> $parameters) try to create a new instance from a value and a parameters as associative construct
+ * @method static ?Item tryNew(mixed $value) try to create a new bare instance from a value
+ * @method static ?Item tryFromEncodedBytes(Stringable|string $value) try to create a new instance from an encoded byte sequence
+ * @method static ?Item tryFromDecodedBytes(Stringable|string $value) try to create a new instance from a decoded byte sequence
+ * @method static ?Item tryFromEncodedDisplayString(Stringable|string $value) try to create a new instance from an encoded display string
+ * @method static ?Item tryFromDecodedDisplayString(Stringable|string $value) try to create a new instance from a decoded display string
+ * @method static ?Item tryFromToken(Stringable|string $value) try to create a new instance from a token string
+ * @method static ?Item tryFromTimestamp(int $timestamp) try to create a new instance from a timestamp
+ * @method static ?Item tryFromDateFormat(string $format, string $datetime) try to create a new instance from a date format
+ * @method static ?Item tryFromDateString(string $datetime, DateTimeZone|string|null $timezone = null) try to create a new instance from a date string
+ * @method static ?Item tryFromDate(DateTimeInterface $datetime) try to create a new instance from a DateTimeInterface object
+ * @method static ?Item tryFromDecimal(int|float $value) try to create a new instance from a float
+ * @method static ?Item tryFromInteger(int|float $value) try to create a new instance from an integer
  */
 final class Item
 {
@@ -45,6 +65,32 @@ final class Item
         $this->value = $value;
         $this->parameters = $parameters ?? Parameters::new();
         $this->type = Type::fromVariable($value);
+    }
+
+    /**
+     * @throws BadMethodCallException
+     */
+    public static function __callStatic(string $name, array $arguments): ?self  /* @phpstan-ignore-line */
+    {
+        if (!str_starts_with($name, 'try')) {
+            throw new BadMethodCallException('The method "'.self::class.'::'.$name.'" does not exist.');
+        }
+
+        $namedConstructor = lcfirst(substr($name, strlen('try')));
+        if (!method_exists(self::class, $namedConstructor)) {
+            throw new BadMethodCallException('The method "'.self::class.'::'.$name.'" does not exist.');
+        }
+
+        $method = new ReflectionMethod(self::class, $namedConstructor);
+        if (!$method->isPublic() || !$method->isStatic()) {
+            throw new BadMethodCallException('The method "'.self::class.'::'.$name.'" can not be accessed directly.');
+        }
+
+        try {
+            return self::$namedConstructor(...$arguments); /* @phpstan-ignore-line */
+        } catch (Throwable) {  /* @phpstan-ignore-line */
+            return null;
+        }
     }
 
     public static function fromRfc9651(Stringable|string $httpValue): self
@@ -99,18 +145,6 @@ final class Item
 
     /**
      * @param array{0: SfItemInput, 1?: Parameters|iterable<array{0:string, 1:SfItemInput}>}|array<mixed> $pair
-     */
-    public static function tryFromPair(array $pair): ?self
-    {
-        try {
-            return self::fromPair($pair);
-        } catch (StructuredFieldError) {
-            return null;
-        }
-    }
-
-    /**
-     * @param array{0: SfItemInput, 1?: Parameters|iterable<array{0:string, 1:SfItemInput}>}|array<mixed> $pair
      *
      * @throws SyntaxError If the pair or its content is not valid.
      */
@@ -155,20 +189,6 @@ final class Item
         }
 
         return new self($value); /* @phpstan-ignore-line */
-    }
-
-    /**
-     * Returns a new bare instance from value or null on error.
-     *
-     * @param SfTypeInput|Item|array{0:SfTypeInput, 1:Parameters|iterable<array{0:string, 1:SfTypeInput}>} $value
-     */
-    public static function tryNew(StructuredFieldProvider|Item|DateTimeInterface|Bytes|DisplayString|Token|array|int|float|string|bool $value): ?self
-    {
-        try {
-            return self::new($value);
-        } catch (SyntaxError) {
-            return null;
-        }
     }
 
     /**
