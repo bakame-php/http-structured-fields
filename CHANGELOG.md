@@ -2,6 +2,24 @@
 
 All Notable changes to `bakame/http-strucured-fields` will be documented in this file.
 
+## [Next](https://github.com/bakame-php/http-structured-fields/compare/2.0.0...master) - TBD
+
+### Added
+
+- None
+
+### Fixed
+
+- None
+
+### Deprecated
+
+- None
+
+### Removed
+
+- None
+
 ## [2.0.0](https://github.com/bakame-php/http-structured-fields/compare/1.3.0...2.0.0) - 2024-12-12
 
 ### Added
