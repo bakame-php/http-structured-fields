@@ -380,6 +380,18 @@ code {
     color: #099
 }
 
+dl {
+    @apply p-5 my-3 rounded-r-lg text-light border-l-green-500 border-l-4
+}
+
+dl dfn {
+  @apply font-bold text-black not-italic
+}
+
+dl dt {
+    @apply not-italic
+}
+
 .message-info,
 .message-notice,
 .message-warning {

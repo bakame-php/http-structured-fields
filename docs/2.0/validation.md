@@ -6,17 +6,34 @@ order: 6
 
 # Validation
 
+## Foreword
+
+<p class="message-warning">
+While this package parses and serializes HTTP field value, it does not validate its content
+against any conformance rule out of the box. You are still required to perform such a
+compliance check against the constraints of the corresponding field. While Content
+validation is still possible and highly encouraged when using this library. Because
+of the wide variety of HTTP fields it can not be made mandatory.
+</p>
+
+## Validating a field
+`
 When it comes to make sure about the incoming data the package provides a simple approach around validation,
 To learn and understand the package validation mechanism we will look at a real world example and expand on it.
 
 So what we are going to do is validating the following putative HTTP field `temperature`.
 
-> The field is defined as a List. meaning it can contain multiple temperature
-> definitions as items. Each temperature entry MUST contain a temperature value express in Celsius.
-> The temperature has the following required parameters `date`, `longitude` and `latitude`
-> and an optional `location` parameter which is a human-readable name of the location where
-> the temperature was read. The `location` can be a `string` or a `displaystring`. The latitude
-> and longitude are express as `decimal` values. You will find below an example of such HTTP field.
+<dl>
+<dt><dfn>temperature</dfn></dt>
+<dt>
+The field is defined as a List. meaning it can contain multiple temperature
+definitions as items. Each temperature entry MUST contain a temperature value express in Celsius.
+The temperature has the following required parameters `date`, `longitude` and `latitude`
+and an optional `location` parameter which is a human-readable name of the location where
+the temperature was read. The `location` can be a `string` or a `displaystring`. The latitude
+and longitude are express as `decimal` values. You will find below an example of such HTTP field.
+</dt>
+</dl>
 
 ```bash
 temperature: 18.3;location=%"lagos";date=@1731573026;longitude=6.418;latitude=3.389, 12.8;date=@1730894400;longitude=6.418;latitude=3.389
