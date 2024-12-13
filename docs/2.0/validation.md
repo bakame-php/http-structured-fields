@@ -28,10 +28,10 @@ So what we are going to do is validating the following putative HTTP field `temp
 <dt>
 The field is defined as a List. meaning it can contain multiple temperature
 definitions as items. Each temperature entry MUST contain a temperature value express in Celsius.
-The temperature has the following required parameters `date`, `longitude` and `latitude`
-and an optional `location` parameter which is a human-readable name of the location where
-the temperature was read. The `location` can be a `string` or a `displaystring`. The latitude
-and longitude are express as `decimal` values. You will find below an example of such HTTP field.
+The temperature has the following required parameters <code>date</code>, <code>longitude</code> and <code>latitude</code>
+and an optional <code>location</code> parameter which is a human-readable name of the location where
+the temperature was read. The <code>location</code> can be a <code>string</code> or a <code>displaystring</code>. The latitude
+and longitude are express as <code>decimal</code> values. You will find below an example of such HTTP field.
 </dt>
 </dl>
 
