@@ -27,11 +27,11 @@ abstract class StructuredFieldTestCase extends TestCase
             $this->expectException(SyntaxError::class);
         }
 
-        $structuredField = $test->type->parse(implode(',', $test->raw));
+        $structuredField = $test->type->parse(implode(', ', $test->raw));
 
         if (!$test->mustFail) {
             self::assertSame(
-                $test->expected?->toHttpValue() ?? implode(',', $test->canonical),
+                $test->expected?->toHttpValue() ?? implode(', ', $test->canonical),
                 $structuredField->toHttpValue()
             );
         }
