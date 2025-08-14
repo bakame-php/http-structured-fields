@@ -465,7 +465,7 @@ dl dt {
 }
 
 .content code.language-plaintext {
-  @apply text-orange-600
+  @apply text-csv-dark
 }
 
 .content table {
@@ -473,7 +473,7 @@ dl dt {
 }
 
 .content thead {
-  @apply bg-gray-800 text-white bg-period-base
+  @apply bg-gray-800 text-white bg-csv-base
 }
 
 .content th,
@@ -482,7 +482,7 @@ dl dt {
 }
 
 .content tr:nth-child(even) {
-  @apply bg-period-light
+  @apply bg-csv-light
 }
 
 .header-permalink {
