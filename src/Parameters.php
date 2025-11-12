@@ -106,7 +106,7 @@ final class Parameters implements ArrayAccess, Countable, IteratorAggregate
         return match (true) {
             $pairs instanceof Parameters,
             $pairs instanceof Dictionary => new self($pairs->toAssociative()),
-            default => new self((function (iterable $pairs) {
+            default => new self((function (iterable $pairs) { /* @phpstan-ignore-line */
                 foreach ($pairs as [$key, $member]) {
                     yield $key => $member;
                 }

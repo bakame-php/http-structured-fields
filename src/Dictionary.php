@@ -105,7 +105,7 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
         return match (true) {
             $pairs instanceof Dictionary,
             $pairs instanceof Parameters => new self($pairs->toAssociative()),
-            default => new self((function (iterable $pairs) {
+            default => new self((function (iterable $pairs) { /* @phpstan-ignore-line */
                 foreach ($pairs as [$key, $member]) {
                     yield $key => Member::innerListOrItemFromPair($member);
                 }
@@ -671,12 +671,13 @@ final class Dictionary implements ArrayAccess, Countable, IteratorAggregate
                 $other = $other->toAssociative();
             }
 
+            /** @var string $key */
             foreach ($other as $key => $value) {
                 $members[$key] = $value;
             }
         }
 
-        return new self($members);
+        return new self($members); /* @phpstan-ignore-line */
     }
 
     /**
