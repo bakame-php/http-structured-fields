@@ -571,3 +571,32 @@ img {
     display: none !important;
   }
 }
+
+
+#onthispage {
+    @apply sticky top-[4.5rem] h-[calc(100vh-4.5rem)] w-72 overflow-y-auto pr-8 text-sm xl:pr-16 self-start hidden lg:block shrink-0;
+}
+
+#onthispage nav h3 {
+    @apply font-semibold tracking-tight text-slate-900;
+}
+
+#onthispage ul {
+    @apply pl-3 mt-3 space-y-2;
+}
+
+#onthispage a {
+    @apply block border-l-2 border-transparent pl-2 no-underline;
+}
+
+#onthispage a:hover {
+    @apply underline;
+}
+
+#onthispage .active {
+    @apply text-csv-dark border-l-csv-dark;
+}
+
+html {
+    scroll-behavior: smooth;
+}

@@ -14,7 +14,7 @@
     <title>{{ page.title }} - {{ site.data.project.title }}</title>
     <meta http-equiv="refresh" content="0; url={{ page.redirect.to }}">
     <title>{{ site.data.project.tagline }} - {{ site.data.project.title }}</title>
-    <link rel="stylesheet"href="{{ site.baseurl }}{{ site.data.manifest['docs.css'] }}">
+    <link rel="stylesheet"href="{{ site.baseurl }}{{ site.data.manifest['docs.css'] }}?v={{ site.time | date:'%s' }}">
     <link rel="canonical" href="{{ site.baseurl }}{{ page.redirect.to }}">
 </head>
 <body>

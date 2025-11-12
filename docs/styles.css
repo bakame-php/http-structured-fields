@@ -819,6 +819,10 @@ video {
   gap: 1.5rem;
 }
 
+.gap-8 {
+  gap: 2rem;
+}
+
 .space-y-2 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
   margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
@@ -1855,6 +1859,82 @@ img {
   .algolia-autocomplete .algolia-docsearch-suggestion--subcategory-column {
     display: none !important;
   }
+}
+
+#onthispage {
+  position: sticky;
+  top: 4.5rem;
+  display: none;
+  height: calc(100vh - 4.5rem);
+  width: 18rem;
+  flex-shrink: 0;
+  align-self: flex-start;
+  overflow-y: auto;
+  padding-right: 2rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+@media (min-width: 1024px) {
+  #onthispage {
+    display: block;
+  }
+}
+
+@media (min-width: 1280px) {
+  #onthispage {
+    padding-right: 4rem;
+  }
+}
+
+#onthispage nav h3 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  --tw-text-opacity: 1;
+  color: rgb(15 23 42 / var(--tw-text-opacity, 1));
+}
+
+#onthispage ul {
+  margin-top: 0.75rem;
+}
+
+#onthispage ul > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
+}
+
+#onthispage ul {
+  padding-left: 0.75rem;
+}
+
+#onthispage a {
+  display: block;
+  border-left-width: 2px;
+  border-color: transparent;
+  padding-left: 0.5rem;
+  text-decoration-line: none;
+}
+
+#onthispage a:hover {
+  text-decoration-line: underline;
+}
+
+.hover-text:hover #onthispage a:hover {
+  --tw-text-opacity: 1;
+  color: rgb(128 128 128 / var(--tw-text-opacity, 1));
+  text-decoration-line: none;
+}
+
+#onthispage .active {
+  --tw-border-opacity: 1;
+  border-left-color: rgb(39 135 69 / var(--tw-border-opacity, 1));
+  --tw-text-opacity: 1;
+  color: rgb(39 135 69 / var(--tw-text-opacity, 1));
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 .hover\:bg-csv-dark:hover {
