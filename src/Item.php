@@ -268,15 +268,8 @@ final class Item
      */
     public static function fromDateFormat(string $format, string $datetime): self
     {
-        try {
-            $value = DateTimeImmutable::createFromFormat($format, $datetime);
-        } catch (Exception $exception) {
-            throw new SyntaxError('The date notation `'.$datetime.'` is incompatible with the date format `'.$format.'`.', 0, $exception);
-        }
-
-        if (!$value instanceof DateTimeImmutable) {
-            throw new SyntaxError('The date notation `'.$datetime.'` is incompatible with the date format `'.$format.'`.');
-        }
+        $value = DateTimeImmutable::createFromFormat($format, $datetime);
+        $value instanceof DateTimeImmutable || throw new SyntaxError('The date notation `'.$datetime.'` is incompatible with the date format `'.$format.'`.');
 
         return new self($value);
     }
